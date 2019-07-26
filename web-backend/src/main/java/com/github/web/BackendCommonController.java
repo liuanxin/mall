@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@ApiGroup(CommonConst.MODULE_INFO)
+@ApiGroup(value = CommonConst.MODULE_INFO, index = 1)
 @ApiTokens(false)
 @RestController
 @RequestMapping("/common")

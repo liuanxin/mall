@@ -24,15 +24,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@ApiGroup(ProductConst.MODULE_INFO)
+@ApiGroup(value = ProductConst.MODULE_INFO, index = 3)
 @RestController
 @RequestMapping("/product")
-public class BackendExampleController {
+public class BackendProductController {
 
     private final UserTestService userExampleService;
     private final ProductTestService productExampleService;
 
-    public BackendExampleController(UserTestService userExampleService, ProductTestService productExampleService) {
+    public BackendProductController(UserTestService userExampleService, ProductTestService productExampleService) {
         this.userExampleService = userExampleService;
         this.productExampleService = productExampleService;
     }
