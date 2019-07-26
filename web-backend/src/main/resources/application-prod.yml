@@ -1,0 +1,28 @@
+
+server.port: 8686
+logging.config: classpath:log-prod.xml
+
+online: true
+
+spring:
+  application.name: web-backend
+  mvc.throw-exception-if-no-handler-found: true
+  resources.add-mappings: false
+#  session:
+#    store-type: redis
+  redis:
+    host: prod-redis
+    port: 6379
+    password: redis-prod-pass
+  datasource:
+    url: jdbc:mysql://prod-db:3306/mall?useSSL=false&useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true
+    username: root
+    password: root
+    hikari:
+      minimumIdle: 10
+      maximumPoolSize: 30
+      dataSourceProperties:
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        cachePrepStmts: true
+        useServerPrepStmts: true

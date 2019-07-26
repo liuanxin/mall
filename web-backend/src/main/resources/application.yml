@@ -1,0 +1,23 @@
+
+server.port: 8686
+logging.config: classpath:log-dev.xml
+
+online: false
+
+spring:
+  application.name: web-backend
+  mvc.throw-exception-if-no-handler-found: true
+  resources.add-mappings: false
+#  session:
+#    store-type: redis
+  redis:
+    host: dev-redis
+    port: 6379
+  datasource:
+    url: jdbc:mysql://dev-db:3306/mall?useSSL=false&useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&statementInterceptors=com.github.common.sql.ShowSqlInterceptor
+    username: root
+    password: root
+    hikari:
+      minimumIdle: 1
+      maximumPoolSize: 1
+

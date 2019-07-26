@@ -1,0 +1,18 @@
+
+logging.config: classpath:log-dev.xml
+
+online: false
+
+spring:
+  application.name: task
+  redis:
+    host: dev-redis
+    port: 6379
+    timeout: 5000
+  datasource:
+    url: jdbc:mysql://dev-db:3306/mall?useSSL=false&useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&statementInterceptors=com.github.common.sql.ShowSqlInterceptor
+    username: root
+    password: root
+    hikari:
+      minimumIdle: 1
+      maximumPoolSize: 1
