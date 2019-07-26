@@ -1,6 +1,7 @@
 package com.github.web;
 
 import com.github.common.RenderViewResolver;
+import com.github.common.annotation.NotNeedLogin;
 import com.github.common.json.JsonResult;
 import com.github.common.util.SecurityCodeUtil;
 import com.github.liuanxin.api.annotation.ApiIgnore;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+@NotNeedLogin
 @ApiIgnore
 @Controller
 public class ManagerIndexController {

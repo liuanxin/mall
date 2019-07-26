@@ -1,5 +1,6 @@
 package com.github.web;
 
+import com.github.common.annotation.NotNeedLogin;
 import com.github.common.constant.CommonConst;
 import com.github.common.json.JsonResult;
 import com.github.common.util.U;
@@ -11,6 +12,7 @@ import com.github.util.ManagerDataCollectUtil;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@NotNeedLogin
 @ApiGroup(CommonConst.MODULE_INFO)
 @RestController
 public class ManagerCommonController {
