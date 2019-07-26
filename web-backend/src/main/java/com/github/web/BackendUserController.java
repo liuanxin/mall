@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/user")
 public class BackendUserController {
 
-    @ApiMethod(title = "刷新 token", develop = Develop.USER, desc = "每次打开 app 且本地有 token 值就请求此接口(pc 无视)")
+    @ApiMethod(value = "刷新 token", develop = Develop.USER, desc = "每次打开 app 且本地有 token 值就请求此接口(pc 无视)")
     @GetMapping("/refresh-token")
     public JsonResult<String> refreshToken() {
         String refreshToken = AppTokenHandler.resetTokenExpireTime();
@@ -34,7 +34,7 @@ public class BackendUserController {
     // 不需要登录, 文档示例中也不需要全局 token
     @NeedLogin(false)
     @ApiTokens(false)
-    @ApiMethod(title = "登录", develop = Develop.USER)
+    @ApiMethod(value = "登录", develop = Develop.USER)
     @GetMapping("/login")
     public JsonResult<UserLoginVo> login(@ApiParam(value = "用户名", must = true) String userName,
                                          @ApiParam("密码, 当验证码为空时") String password,
@@ -66,7 +66,7 @@ public class BackendUserController {
         return JsonResult.success("登录成功", UserLoginVo.assemblyData(user, token));
     }
 
-    @ApiMethod(title = "获取登录信息", develop = Develop.USER)
+    @ApiMethod(value = "获取登录信息", develop = Develop.USER)
     @GetMapping("/login-info")
     public JsonResult loginInfo() {
         // 如果没有登录, 获取当前接口将会直接返回 401, 如果登录了(session 或 token), 可以直接在方法内获取 session 里的数据
@@ -82,7 +82,7 @@ public class BackendUserController {
         return JsonResult.success("获取成功");
     }
 
-    @ApiMethod(title = "退出", develop = Develop.USER, desc = "如果本地有存 token, 请先删除再请求")
+    @ApiMethod(value = "退出", develop = Develop.USER, desc = "如果本地有存 token, 请先删除再请求")
     @GetMapping("/logout")
     public JsonResult login() {
         BackendSessionUtil.signOut();

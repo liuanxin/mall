@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ManagerCommonController {
 
-    @ApiMethod(title = "枚举数据", develop = Develop.COMMON)
+    @ApiMethod(value = "枚举数据", develop = Develop.COMMON)
     @GetMapping("/enum")
     public JsonResult enumList(@ApiParam("枚举类型. 不传则返回列表, type 与 枚举的类名相同, 忽略大小写") String type) {
         return U.isBlank(type) ?

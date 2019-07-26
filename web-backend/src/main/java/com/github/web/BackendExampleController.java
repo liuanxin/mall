@@ -37,7 +37,7 @@ public class BackendExampleController {
         this.productExampleService = productExampleService;
     }
 
-    @ApiMethod(title = "分页查询", develop = Develop.PRODUCT)
+    @ApiMethod(value = "分页查询", develop = Develop.PRODUCT)
     @GetMapping
     public JsonResult<PageInfo<ExampleVo>> enumList(ExampleDto dto,
                                                     @ApiParam(value = "枚举", example = "One") TestEnum enumTest,
