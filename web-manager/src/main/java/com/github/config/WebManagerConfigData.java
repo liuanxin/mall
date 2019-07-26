@@ -33,7 +33,7 @@ final class WebManagerConfigData {
         Collections.addAll(resources, ProductConfigData.RESOURCE_ARRAY);
         Collections.addAll(resources, OrderConfigData.RESOURCE_ARRAY);
         Collections.addAll(resources, ManagerConfigData.RESOURCE_ARRAY);
-        RESOURCE_ARRAY = resources.toArray(new Resource[resources.size()]);
+        RESOURCE_ARRAY = resources.toArray(new Resource[0]);
 
         List<TypeHandler> typeHandlers = Lists.newArrayList();
         Collections.addAll(typeHandlers, CollectTypeHandlerUtil.typeHandler(A.maps(GlobalConst.MODULE_NAME, GlobalConst.class)));

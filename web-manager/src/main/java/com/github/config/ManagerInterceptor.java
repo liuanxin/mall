@@ -64,9 +64,9 @@ public class ManagerInterceptor implements HandlerInterceptor {
 
     /** 检查登录及权限 */
     private void checkLoginAndPermission(Object handler) {
-        if (!online) {
+        /*if (!online) {
             return;
-        }
+        }*/
         if (LET_IT_GO.contains(RequestUtils.getRequest().getRequestURI())) {
             return;
         }

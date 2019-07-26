@@ -10,11 +10,13 @@ import com.github.liuanxin.api.annotation.ApiMethod;
 import com.github.liuanxin.api.annotation.ApiParam;
 import com.github.util.ManagerDataCollectUtil;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @NotNeedLogin
 @ApiGroup(CommonConst.MODULE_INFO)
 @RestController
+@RequestMapping("/common")
 public class ManagerCommonController {
 
     @ApiMethod(value = "枚举数据", develop = Develop.COMMON)
