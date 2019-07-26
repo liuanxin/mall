@@ -31,7 +31,7 @@ public class BackendUserController {
         return JsonResult.success("token 刷新成功!", refreshToken);
     }
 
-    // 不需要登录, 文档示例中也不需要全局 token
+    // 请求当前接口时不需要登录, 文档示例中也不需要全局 token
     @NeedLogin(false)
     @ApiTokens(false)
     @ApiMethod(value = "登录", develop = Develop.USER)
@@ -42,7 +42,8 @@ public class BackendUserController {
         U.assertNil(userName, "请输入用户名");
         U.assertException(U.isBlank(password) && U.isBlank(code), "请使用密码或验证码登录");
 
-        /* User user;
+        /*
+        User user;
         if (U.isNotBlank(code)) {
             // 使用验证码登录
             U.assertException(!U.checkPhone(userName), "请输入手机号");
