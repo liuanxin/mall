@@ -67,3 +67,4 @@ INSERT INTO `t_product_test` (`id`, `user_id`, `name`, `type`, `create_time`, `u
 项目文档: http://127.0.0.1:8686/static/api-info.html  
 在商品模块的接口处, 向后端发起请求, 会打印出 sql 和 请求的整个上下文及返回
 
+~
