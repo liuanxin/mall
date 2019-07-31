@@ -18,12 +18,10 @@ public class JsonResult<T> {
     // @ApiReturn("返回码")
     // private JsonCode code;
 
-    /** 返回说明. 如: 用户名密码错误, 收货地址添加成功 等 */
-    @ApiReturn("返回说明. 如: 用户名密码错误, 收货地址添加成功 等")
+    @ApiReturn(value = "返回说明", example = "用户名密码错误 | 收货地址添加成功")
     private String msg;
 
-    /** 返回的数据. 具体是返回实体 {"id":1} 还是列表 [{"id":1},{"id":2}] 依具体的业务而定 */
-    @ApiReturn("返回的数据. 实体 {\"id\":1} 还是列表 [{\"id\":1},{\"id\":2}] 依具体的业务而定")
+    @ApiReturn("返回数据, 实体 {\"id\":1} | 列表 [{\"id\":1},{\"id\":2}] 看具体的业务")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private T data;
 
