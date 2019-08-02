@@ -622,7 +622,7 @@ public final class U {
             Object value = entry.getValue();
             if (isNotBlank(value)) {
                 String key = entry.getKey();
-                if (!Arrays.asList("password", "pwd").contains(key.toLowerCase())) {
+                if (!"password".equalsIgnoreCase(key)) {
                     if (value.getClass().isArray()) {
                         for (Object obj : (Object[]) value) {
                             i = appendParam(sbd, i, key, obj);
@@ -715,29 +715,25 @@ public final class U {
     }
 
     public static void assertException(String msg) {
-        throw new ServiceException(msg);
+        serviceException(msg);
     }
 
     /** 错误的请求 */
     public static void badRequestException(String msg) {
         throw new BadRequestException(msg);
     }
-
     /** 需要权限 */
     public static void forbiddenException(String msg) {
         throw new ForbiddenException(msg);
     }
-
     /** 404 */
     public static void notFoundException(String msg) {
         throw new NotFoundException(msg);
     }
-
     /** 未登录 */
     public static void notLoginException() {
         throw new NotLoginException();
     }
-
     /** 业务异常 */
     public static void serviceException(String msg) {
         throw new ServiceException(msg);
