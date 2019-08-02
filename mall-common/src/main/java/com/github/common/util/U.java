@@ -1,8 +1,7 @@
 package com.github.common.util;
 
 import com.github.common.date.DateUtil;
-import com.github.common.exception.ServiceException;
-import com.github.common.exception.ServiceMustHandleException;
+import com.github.common.exception.*;
 import com.github.common.json.JsonUtil;
 
 import java.io.UnsupportedEncodingException;
@@ -29,7 +28,10 @@ public final class U {
     public static final String EMPTY = "";
 
     private static final String LIKE = "%";
-    private static final String PHONE = "^1[0-9]{10}$";
+
+    // 匹配所有手机卡: ^(?:\+?86)?1(?:3\d{3}|5[^4\D]\d{2}|8\d{3}|7[^0129\D](?(?<=4)(?:0\d|1[0-2]|9\d)|\d{2})|9[189]\d{2}|66\d{2})\d{6}$
+    /** 匹配所有支持短信功能的号码（手机卡 + 上网卡） */
+    private static final String PHONE = "^(?:\\+?86)?1(?:3\\d{3}|5[^4\\D]\\d{2}|8\\d{3}|7[^29\\D](?(?<=4)(?:0\\d|1[0-2]|9\\d)|\\d{2})|9[189]\\d{2}|6[567]\\d{2}|4[579]\\d{2})\\d{6}$";
     /** _abc-def@123-hij.uvw_xyz.com 是正确的, -123@xyz.com 不是 */
     private static final String EMAIL = "^\\w[\\w\\-]*@([\\w\\-]+\\.\\w+)+$";
     /** ico, jpeg, jpg, bmp, png 后缀 */
@@ -218,27 +220,12 @@ public final class U {
         return !greater0(obj);
     }
 
-    /** 数值在指定的数区间时(包含边界)返回 true */
-    public static boolean betweenBorder(Number num, Number min, Number max) {
-        return isNotBlank(num) && (num.doubleValue() >= min.doubleValue()) && (num.doubleValue() <= max.doubleValue());
-    }
-    /** 数值不在指定的数区间时(包含边界)返回 true */
-    public static boolean notBetweenBorder(Number num, Number min, Number max) {
-        return !betweenBorder(num, min, max);
-    }
-
-    /** 数值在指定的数区间时(不包含边界)返回 true */
-    public static boolean between(Number num, Number min, Number max) {
-        return isNotBlank(num) && (num.doubleValue() > min.doubleValue()) && (num.doubleValue() < max.doubleValue());
-    }
-    /** 数值不在指定的数区间时(不包含边界)返回 true */
-    public static boolean notBetween(Number num, Number min, Number max) {
-        return !between(num, min, max);
-    }
-
     public static int toInt(Object obj) {
         if (isBlank(obj)) {
             return 0;
+        }
+        if (obj instanceof Number) {
+            return ((Number) obj).intValue();
         }
         try {
             return Integer.parseInt(obj.toString());
@@ -250,6 +237,9 @@ public final class U {
         if (isBlank(obj)) {
             return 0L;
         }
+        if (obj instanceof Number) {
+            return ((Number) obj).longValue();
+        }
         try {
             return Long.parseLong(obj.toString());
         } catch (NumberFormatException e) {
@@ -259,6 +249,9 @@ public final class U {
     public static float toFloat(Object obj) {
         if (isBlank(obj)) {
             return 0F;
+        }
+        if (obj instanceof Number) {
+            return ((Number) obj).floatValue();
         }
         try {
             return Float.parseFloat(obj.toString());
@@ -270,6 +263,9 @@ public final class U {
         if (isBlank(obj)) {
             return 0D;
         }
+        if (obj instanceof Number) {
+            return ((Number) obj).doubleValue();
+        }
         try {
             return Double.parseDouble(obj.toString());
         } catch (NumberFormatException e) {
@@ -280,6 +276,9 @@ public final class U {
         if (isBlank(obj)) {
             return false;
         }
+        if (obj instanceof Number) {
+            return true;
+        }
         try {
             Double.parseDouble(obj.toString());
             return true;
@@ -287,13 +286,16 @@ public final class U {
             return false;
         }
     }
+    public static boolean isNotNumber(Object obj) {
+        return !isNumber(obj);
+    }
 
     /** 比例, 主要是指小数点后面的位数 */
     private static final int SCALE = 2;
 
     /** 设置金额的精度 */
-    public static BigDecimal setPrecision(BigDecimal money) {
-        return U.isBlank(money) ? money : money.setScale(SCALE, RoundingMode.HALF_EVEN);
+    public static BigDecimal setPrecision(BigDecimal num) {
+        return U.isBlank(num) ? num : num.setScale(SCALE, RoundingMode.HALF_EVEN);
     }
 
     // + ==> add
@@ -365,6 +367,37 @@ public final class U {
 
 
     // ========== object & string ==========
+    public static boolean equals(Object obj1, Object obj2) {
+        if (obj1 == obj2) {
+            return true;
+        } else if (obj1 != null && obj2 != null) {
+            String s1 = obj1.toString();
+            String s2 = obj2.toString();
+            if (s1.length() != s2.length()) {
+                return false;
+            } else {
+                return s1.equals(s2);
+            }
+        } else {
+            return false;
+        }
+    }
+    public static boolean equalsIgnoreCase(Object obj1, Object obj2) {
+        if (obj1 == obj2) {
+            return true;
+        } else if (obj1 != null && obj2 != null) {
+            String s1 = obj1.toString();
+            String s2 = obj2.toString();
+            if (s1.length() != s2.length()) {
+                return false;
+            } else {
+                return s1.equalsIgnoreCase(s2);
+            }
+        } else {
+            return false;
+        }
+    }
+
     public static String toStr(Object obj) {
         return isBlank(obj) ? EMPTY : obj.toString();
     }
@@ -495,15 +528,17 @@ public final class U {
 
 
     /** 字符转义. 主要针对 url 传递给后台前的操作. 如 ? 转换为 %3F, = 转换为 %3D, & 转换为 %26 等 */
-    public static String urlEncode(String url) {
-        if (isBlank(url)) {
+    public static String urlEncode(String src) {
+        if (isBlank(src)) {
             return EMPTY;
         }
         try {
             // java 中的 encode 是把空格变成 +, 转义后需要将 + 替换成 %2B
-            return URLEncoder.encode(url, StandardCharsets.UTF_8.displayName());//.replaceAll("\\+", "%2B");
+            return URLEncoder.encode(src, StandardCharsets.UTF_8.displayName());//.replaceAll("\\+", "%2B");
         } catch (UnsupportedEncodingException e) {
             return EMPTY;
+        } catch (IllegalArgumentException e) {
+            return src;
         }
     }
     /** 字符反转义, 主要针对 url 传递到后台后的操作 */
@@ -516,6 +551,8 @@ public final class U {
             return URLDecoder.decode(src/*.replaceAll("%2B", "\\+")*/, StandardCharsets.UTF_8.displayName());
         } catch (UnsupportedEncodingException e) {
             return EMPTY;
+        } catch (IllegalArgumentException e) {
+            return src;
         }
     }
 
@@ -660,26 +697,37 @@ public final class U {
         for (Map.Entry<String, ?> entry : params.entrySet()) {
             Object value = entry.getValue();
             if (isNotBlank(value)) {
-                if (value.getClass().isArray()) {
-                    for (Object obj : (Object[]) value) {
-                        if (isNotBlank(obj)) {
-                            if (i > 0) {
-                                sbd.append("&");
-                            }
-                            sbd.append(entry.getKey()).append("=").append(obj.toString());
-                            i++;
+                String key = entry.getKey();
+                if (!Arrays.asList("password", "pwd").contains(key.toLowerCase())) {
+                    if (value.getClass().isArray()) {
+                        for (Object obj : (Object[]) value) {
+                            i = appendParam(sbd, i, key, obj);
                         }
+                    } else if (value instanceof Collection) {
+                        for (Object obj : (Collection) value) {
+                            i = appendParam(sbd, i, key, obj);
+                        }
+                    } else {
+                        if (i > 0) {
+                            sbd.append("&");
+                        }
+                        sbd.append(key).append("=").append(value.toString());
+                        i++;
                     }
-                } else {
-                    if (i > 0) {
-                        sbd.append("&");
-                    }
-                    sbd.append(entry.getKey()).append("=").append(value.toString());
-                    i++;
                 }
             }
         }
         return sbd.toString();
+    }
+    private static int appendParam(StringBuilder sbd, int i, String key, Object obj) {
+        if (isNotBlank(obj)) {
+            if (i > 0) {
+                sbd.append("&");
+            }
+            sbd.append(key).append("=").append(obj.toString());
+            i++;
+        }
+        return i;
     }
 
     /** 获取指定类所在 jar 包的地址 */
@@ -735,13 +783,6 @@ public final class U {
         }
     }
 
-    /** 字符长度不在指定的倍数之间则抛出异常 */
-    public static void assertLength(String str, int min, int max, String name) {
-        if (!lengthBorder(str, min, max)) {
-            assertException(String.format("%s长度要在 %s 到 %s 位之间", name, min, max));
-        }
-    }
-
     /** 条件为 true 则抛出业务异常 */
     public static void assertException(Boolean flag, String msg) {
         if (flag != null && flag) {
@@ -749,8 +790,32 @@ public final class U {
         }
     }
 
-    /** 无条件抛出业务异常 */
     public static void assertException(String msg) {
+        throw new ServiceException(msg);
+    }
+
+    /** 错误的请求 */
+    public static void badRequestException(String msg) {
+        throw new BadRequestException(msg);
+    }
+
+    /** 需要权限 */
+    public static void forbiddenException(String msg) {
+        throw new ForbiddenException(msg);
+    }
+
+    /** 404 */
+    public static void notFoundException(String msg) {
+        throw new NotFoundException(msg);
+    }
+
+    /** 未登录 */
+    public static void notLoginException() {
+        throw new NotLoginException();
+    }
+
+    /** 业务异常 */
+    public static void serviceException(String msg) {
         throw new ServiceException(msg);
     }
 

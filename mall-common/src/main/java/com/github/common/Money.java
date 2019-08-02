@@ -6,18 +6,18 @@ import com.github.common.util.U;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.regex.Pattern;
 
+/**
+ * 运算全部基于到分的 long 来做, 它的性能比 BigDecimal 要好很多
+ * 链式运算时, 如 Money count = xxx.plus(y).lessSelf(z).multiplySelf(n).divideSelf(m) 这种
+ * 第一次不要用 self, 后面的都加上 self, 这样只会实例化一次.
+ * 如果都不带 self 则每一次运算都将实例化一个 Money 对象
+ * 如果都带 self 将会改变第一个调用的值, 如上面的示例如果每次调用都带 self 将会改变 xxx 的值
+ */
 public class Money implements Serializable {
     private static final long serialVersionUID = 0L;
-
-    /*
-     * 运算全部基于到分的 long 来做, 它的性能比 BigDecimal 要好很多, 只有在 除法 的地方会出现精度问题需要小心处理
-     * 链式运算时, 如 Money count = xxx.plus(y).lessSelf(z).multiplySelf(n).divideSelf(m) 这种
-     * 第一次不要用 self, 后面的都加上 self, 这样只会实例化一次.
-     * 如果都不带 self 则每一次运算都将实例化一个 Money 对象
-     * 如果都带 self 将会改变第一个调用的值, 如上面的示例如果每次调用都带 self 将会改变 xxx 的值
-     */
 
     /** 元分换算的比例. 左移右移的位数 */
     private static final int SCALE = 2;
@@ -30,7 +30,6 @@ public class Money implements Serializable {
     @JsonCreator
     public Money(String yuan) {
         cent = yuan2Cent(yuan);
-        // checkNegative();
     }
     /** 从数据库过来的数据, 使用此构造 */
     public Money(Long cent) {
@@ -79,7 +78,7 @@ public class Money implements Serializable {
 
 
     /** 检查金额是否是负数 */
-    public void checkNegative() {
+    public void checkEmptyAndNegative() {
         if (cent == null || cent < 0) {
             U.assertException("金额不能是负数");
         }
@@ -97,25 +96,65 @@ public class Money implements Serializable {
         return ChineseConvert.upperCase(toString());
     }
 
+
     /** 元转换为分 */
     private static Long yuan2Cent(String yuan) {
         if (U.isBlank(yuan)) {
             return null;
         }
-
-        double money = 0D;
-        try {
-            // ignore return
-            money = Double.parseDouble(yuan);
-        } catch (NumberFormatException e) {
-            U.assertException(String.format("不是有效的金额(%s)", yuan));
+        if (U.isNotNumber(yuan)) {
+            U.assertException(String.format("金额(%s)必须是数字", yuan));
         }
-        // U.assertException(money < 0, "金额不能是负数");
-        return new BigDecimal(money).movePointRight(SCALE).longValue();
+        return new BigDecimal(yuan).movePointRight(SCALE).longValue();
     }
     /** 分转换为元 */
     private static String cent2Yuan(Long cent) {
         return U.greater0(cent) ? BigDecimal.valueOf(cent).movePointLeft(SCALE).toString() : U.EMPTY;
+    }
+
+
+    // 上面主要是用 long, 下面是 BigDecimal, 前者比后者的运算效率要好一些
+
+    /** 设置金额的精度 */
+    public static BigDecimal setPrecision(BigDecimal money) {
+        return U.isBlank(money) ? money : money.setScale(SCALE, RoundingMode.DOWN);
+    }
+
+    /** num1 + num2 */
+    public static BigDecimal add(BigDecimal num1, BigDecimal num2) {
+        BigDecimal n1 = U.isBlank(num1) ? BigDecimal.ZERO : num1;
+        BigDecimal n2 = U.isBlank(num2) ? BigDecimal.ZERO : num2;
+        return n1.add(n2);
+    }
+    /** num1 - num2 */
+    public static BigDecimal subtract(BigDecimal num1, BigDecimal num2) {
+        BigDecimal n1 = U.isBlank(num1) ? BigDecimal.ZERO : num1;
+        BigDecimal n2 = U.isBlank(num2) ? BigDecimal.ZERO : num2;
+        return n1.subtract(n2);
+    }
+    /** num1 * num2 */
+    public static BigDecimal multiply(BigDecimal num1, int num2) {
+        return multiply(num1, new BigDecimal(num2));
+    }
+    /** num1 * num2 第二个参数为空则是 1 */
+    public static BigDecimal multiply(BigDecimal num1, BigDecimal num2) {
+        if (U.isBlank(num2)) {
+            return num1;
+        } else {
+            BigDecimal n1 = U.isBlank(num1) ? BigDecimal.ZERO : num1;
+            return n1.multiply(num2);
+        }
+    }
+    /** num1 / num2 返回有 2 位小数点精度的结果 */
+    public static BigDecimal divide(BigDecimal num1, Integer num2) {
+        return divide(num1, new BigDecimal(num2));
+    }
+    /** num1 / num2 返回有 2 位小数点精度的结果 */
+    public static BigDecimal divide(BigDecimal num1, BigDecimal num2) {
+        U.assertException(num2 == null || num2.doubleValue() == 0, "除数要有值且不能为 0");
+
+        BigDecimal n1 = U.isBlank(num1) ? BigDecimal.ZERO : num1;
+        return n1.divide(num2, SCALE, RoundingMode.DOWN);
     }
 
 

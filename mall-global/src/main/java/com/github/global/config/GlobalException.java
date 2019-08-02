@@ -1,8 +1,6 @@
 package com.github.global.config;
 
-import com.github.common.exception.ForbiddenException;
-import com.github.common.exception.NotLoginException;
-import com.github.common.exception.ServiceException;
+import com.github.common.exception.*;
 import com.github.common.json.JsonCode;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
@@ -12,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -63,6 +60,26 @@ public class GlobalException {
         return ResponseEntity.status(JsonCode.FAIL.getCode()).body(msg);
         // return ResponseEntity.status(JsonCode.NOT_PERMISSION.getCode()).body(msg);
     }
+    /** 404 */
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<String> notFound(NotFoundException e) {
+        String msg = e.getMessage();
+        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+            LogUtil.ROOT_LOG.debug(msg);
+        }
+        return ResponseEntity.status(JsonCode.FAIL.getCode()).body(msg);
+        // return ResponseEntity.status(JsonCode.NOT_FOUND.getCode()).body(msg);
+    }
+    /** 错误的请求 */
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<String> badRequest(BadRequestException e) {
+        String msg = e.getMessage();
+        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+            LogUtil.ROOT_LOG.debug(msg);
+        }
+        return ResponseEntity.status(JsonCode.FAIL.getCode()).body(msg);
+        // return ResponseEntity.status(JsonCode.BAD_REQUEST.getCode()).body(msg);
+    }
 
 
     // 以下是 spring 的内部异常
@@ -77,17 +94,7 @@ public class GlobalException {
     }
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<String> missParam(MissingServletRequestParameterException e) {
-        String msg = online
-                ? "无法响应此请求"
-                : String.format("缺少必须的参数(%s), 类型(%s)", e.getParameterName(), e.getParameterType());
-
-        bindAndPrintLog(msg, e);
-        return ResponseEntity.status(JsonCode.FAIL.getCode()).body(msg);
-        // return ResponseEntity.status(JsonCode.BAD_REQUEST.getCode()).body(msg);
-    }
-    @ExceptionHandler(MissingRequestHeaderException.class)
-    public ResponseEntity<String> missHeader(MissingRequestHeaderException e) {
-        String msg = online ? "无法响应这个请求" : String.format("缺少头(%s)", e.getHeaderName());
+        String msg = online ? "无法响应此请求" : String.format("缺少必须的参数(%s), 类型(%s)", e.getParameterName(), e.getParameterType());
 
         bindAndPrintLog(msg, e);
         return ResponseEntity.status(JsonCode.FAIL.getCode()).body(msg);
