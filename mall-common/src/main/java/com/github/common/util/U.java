@@ -6,8 +6,6 @@ import com.github.common.json.JsonUtil;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -288,80 +286,6 @@ public final class U {
     }
     public static boolean isNotNumber(Object obj) {
         return !isNumber(obj);
-    }
-
-    /** 比例, 主要是指小数点后面的位数 */
-    private static final int SCALE = 2;
-
-    /** 设置金额的精度 */
-    public static BigDecimal setPrecision(BigDecimal num) {
-        return U.isBlank(num) ? num : num.setScale(SCALE, RoundingMode.HALF_EVEN);
-    }
-
-    // + ==> add
-    // - ==> subtract
-    // * ==> multiply
-    // / ==> divide
-
-    /** num1 + num2 */
-    public static BigDecimal add(BigDecimal num1, BigDecimal num2) {
-        if (isNotBlank(num1)) {
-            if (isNotBlank(num2)) {
-                return num1.add(num2);
-            } else {
-                return num1;
-            }
-        } else {
-            if (isNotBlank(num2)) {
-                return num2;
-            } else {
-                return BigDecimal.ZERO;
-            }
-        }
-    }
-    /** num1 - num2 */
-    public static BigDecimal subtract(BigDecimal num1, BigDecimal num2) {
-        if (isNotBlank(num1)) {
-            if (isNotBlank(num2)) {
-                return num1.subtract(num2);
-            } else {
-                return num1;
-            }
-        } else {
-            if (isNotBlank(num2)) {
-                return BigDecimal.valueOf(-num2.doubleValue());
-            } else {
-                return BigDecimal.ZERO;
-            }
-        }
-    }
-    /** num1 * num2 */
-    public static BigDecimal multiply(BigDecimal num1, Integer num2) {
-        if (isNotBlank(num1)) {
-            if (greater0(num2)) {
-                return num1.multiply(new BigDecimal(num2));
-            } else {
-                return num1;
-            }
-        } else {
-            return BigDecimal.ZERO;
-        }
-    }
-    /** num1 / num2. 返回有 2 位小数点精度的结果 */
-    public static BigDecimal divide(BigDecimal num1, Integer num2) {
-        return divide(num1, num2, SCALE);
-    }
-    /** num1 / num2. 返回有指定位小数点精度的结果 */
-    public static BigDecimal divide(BigDecimal num1, Integer num2, int scale) {
-        if (isNotBlank(num1)) {
-            if (greater0(num2)) {
-                return num1.divide(new BigDecimal(num2), scale, RoundingMode.UP);
-            } else {
-                return num1;
-            }
-        } else {
-            return BigDecimal.ZERO;
-        }
     }
     // ========== number ==========
 
