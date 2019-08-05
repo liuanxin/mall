@@ -192,17 +192,40 @@ public final class RequestUtils {
     }
 
     /** 从 cookie 中获取值 */
-    public static String getCookie(String param) {
+    public static String getCookieValue(String name) {
+        Cookie cookie = getCookie(name);
+        return U.isBlank(cookie) ? U.EMPTY : cookie.getValue();
+    }
+    private static Cookie getCookie(String name) {
         HttpServletRequest request = getRequest();
         Cookie[] cookies = request.getCookies();
         if (A.isNotEmpty(cookies)) {
             for (Cookie cookie : cookies) {
-                if (cookie.getName().equals(param)) {
-                    return cookie.getValue();
+                if (cookie.getName().equals(name)) {
+                    return cookie;
                 }
             }
         }
-        return U.EMPTY;
+        return null;
+    }
+    /** 添加一个 http-only 的 cookie(浏览器环境中 js 用 document.cookie 获取时将会忽略) */
+    public static void addHttpOnlyCookie(String name, String value, int second, int extendSecond) {
+        HttpServletResponse response = getResponse();
+        Cookie cookie = getCookie(name);
+        if (U.isBlank(cookie)) {
+            Cookie add = new Cookie(name, value);
+            add.setPath("/");
+            add.setHttpOnly(true);
+            add.setMaxAge(second);
+            response.addCookie(add);
+        } else {
+            int maxAge = cookie.getMaxAge();
+            // 如果 cookie 中已经有值且过期时间在延长时间以内了, 则把 cookie 的过期时间延长到指定时间
+            if (maxAge > 0 && maxAge < extendSecond && second > extendSecond) {
+                cookie.setMaxAge(second);
+                response.addCookie(cookie);
+            }
+        }
     }
 
     /** 格式化头里的参数: 键值以冒号分隔 */

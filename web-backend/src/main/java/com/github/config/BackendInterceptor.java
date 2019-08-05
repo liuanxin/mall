@@ -1,8 +1,10 @@
 package com.github.config;
 
+import com.github.common.Const;
 import com.github.common.annotation.NeedLogin;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtils;
+import com.github.common.util.U;
 import com.github.util.BackendSessionUtil;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.method.HandlerMethod;
@@ -18,6 +20,7 @@ public class BackendInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
                              Object handler) throws Exception {
+        RequestUtils.addHttpOnlyCookie(Const.TRACE, U.uuid(), Const.TRACE_EXPIRY_SECOND, Const.TRACE_EXTEND_SECOND);
         bindParam();
         checkLoginAndPermission(handler);
         return true;
