@@ -16,7 +16,7 @@ public class ExampleDto {
     @ApiParam("昵称")
     private String nickName;
 
-    @ApiParam(value = "性别", must = true)
+    @ApiParam(value = "性别", must = true, example = "1")
     private Gender gender;
 
     @ApiParam("用户等级")

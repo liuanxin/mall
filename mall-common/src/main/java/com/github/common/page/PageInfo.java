@@ -36,10 +36,10 @@ import java.util.List;
 public class PageInfo<T> implements Serializable {
     private static final long serialVersionUID = 0L;
 
-    @ApiReturn("总条数")
+    @ApiReturn("SELECT COUNT(*) FROM ... 的结果")
     private int total;
 
-    @ApiReturn("当前页的数据")
+    @ApiReturn("SELECT ... FROM ... LIMIT 0, 15 的结果")
     private List<T> list;
 
     public static <T> PageInfo<T> emptyReturn() {
