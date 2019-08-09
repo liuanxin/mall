@@ -50,12 +50,29 @@ public final class SpringMvc {
             super.writeSuffix(generator, object);
 
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                String toRender = JsonUtil.toJsonNil(object);
-                // 如果长度大于 6000 就只输出前 200 个字符
-                if (U.isNotBlank(toRender) && toRender.length() > 6000) {
-                    toRender = toRender.substring(0, 200) + " ...";
+                String json = JsonUtil.toJsonNil(object);
+                if (U.isNotBlank(json)) {
+                    // 长度如果超过 1100 就只输出前后 500 个字符
+                    int maxLen = 1100, headTail = 500;
+
+                    int len = json.length();
+                    StringBuilder sbd = new StringBuilder();
+                    if (len > maxLen) {
+                        sbd.append(json, 0, headTail).append(" ... ").append(json, len - headTail, len);
+                    }
+
+                    boolean notRequestInfo = LogUtil.hasNotRequestInfo();
+                    try {
+                        if (notRequestInfo) {
+                            LogUtil.bind(RequestUtils.logContextInfo());
+                        }
+                        LogUtil.ROOT_LOG.info("return: ({})", (sbd.length() > 0 ? sbd.toString() : json));
+                    } finally {
+                        if (notRequestInfo) {
+                            LogUtil.unbind();
+                        }
+                    }
                 }
-                LogUtil.ROOT_LOG.info("return: ({})", toRender);
             }
         }
     }
