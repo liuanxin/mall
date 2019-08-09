@@ -19,9 +19,7 @@ public class WebBackendApplication extends SpringBootServletInitializer {
         ApplicationContext ctx = new SpringApplicationBuilder().sources(WebBackendApplication.class).run(args);
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
             String[] activeProfiles = ctx.getEnvironment().getActiveProfiles();
-            if (A.isNotEmpty(activeProfiles)) {
-                LogUtil.ROOT_LOG.debug("current profile : ({})", A.toStr(activeProfiles));
-            }
+            LogUtil.ROOT_LOG.debug("current profile : ({})", A.toStr(activeProfiles));
         }
     }
 }
