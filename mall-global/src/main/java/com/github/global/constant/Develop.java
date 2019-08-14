@@ -6,7 +6,7 @@ public class Develop {
 
     public static final String TITLE = "xx 项目";
     public static final String TEAM = "技术部";
-    public static final String COPYRIGHT = "xxx 科技技术有限公司";
+    public static final String COPYRIGHT = "xxx 网络科技有限公司";
     public static final String VERSION = "1.0";
 
 
