@@ -251,10 +251,10 @@ public class HttpClientUtil {
         List<NameValuePair> nameValuePairs = Lists.newArrayList();
         if (A.isNotEmpty(params)) {
             for (Map.Entry<String, Object> entry : params.entrySet()) {
+                String key = entry.getKey();
                 Object value = entry.getValue();
-                if (U.isNotBlank(value)) {
-                    String str = (A.isArray(value)) ? A.toStr((Object[]) value) : value.toString();
-                    nameValuePairs.add(new BasicNameValuePair(entry.getKey(), str));
+                if (U.isNotBlank(key) && U.isNotBlank(value)) {
+                    nameValuePairs.add(new BasicNameValuePair(key, A.toStringWithArrayOrCollection(value)));
                 }
             }
             request.setEntity(new UrlEncodedFormEntity(nameValuePairs, StandardCharsets.UTF_8));
