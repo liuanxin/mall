@@ -25,7 +25,7 @@ public final class Render {
 
     public static String url(String url) {
         // 前缀改成 // 开头(去掉 http 或 https)
-        // domain = domain.replaceFirst("http(s?):", "");
+        // domain = domain.replaceFirst("(?i)^http(s?):", "");
         return HTTP_PATTERN.matcher(url).replaceFirst("");
     }
 
