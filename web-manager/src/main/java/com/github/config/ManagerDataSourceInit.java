@@ -6,7 +6,6 @@ import com.github.manager.constant.ManagerConst;
 import com.github.order.constant.OrderConst;
 import com.github.product.constant.ProductConst;
 import com.github.user.constant.UserConst;
-import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -36,7 +35,7 @@ public class ManagerDataSourceInit {
         // 装载 typeHandler 实现
         sessionFactory.setTypeHandlers(WebManagerConfigData.HANDLER_ARRAY);
         // mybatis 的分页插件
-        sessionFactory.setPlugins(new Interceptor[] { new PageInterceptor("mysql") });
+        sessionFactory.setPlugins(new PageInterceptor("mysql"));
         return sessionFactory.getObject();
     }
 

@@ -42,6 +42,6 @@ final class WebManagerConfigData {
         Collections.addAll(typeHandlers, ProductConfigData.HANDLER_ARRAY);
         Collections.addAll(typeHandlers, OrderConfigData.HANDLER_ARRAY);
         Collections.addAll(typeHandlers, ManagerConfigData.HANDLER_ARRAY);
-        HANDLER_ARRAY = typeHandlers.toArray(new TypeHandler[typeHandlers.size()]);
+        HANDLER_ARRAY = typeHandlers.toArray(new TypeHandler[0]);
     }
 }
