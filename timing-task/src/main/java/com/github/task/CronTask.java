@@ -15,7 +15,6 @@ public class CronTask {
     private static final String CRON = "0/30 * * * * *";
 
     private final OrderService orderService;
-
     public CronTask(OrderService orderService) {
         this.orderService = orderService;
     }

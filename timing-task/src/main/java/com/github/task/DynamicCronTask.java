@@ -22,9 +22,8 @@ public class DynamicCronTask implements SchedulingConfigurer {
     /** 当前任务的默认表达式 */
     private static final String CRON = "0 0 0/1 * * *";
 
-     private final ProductService productService;
-     private final CommonService commonService;
-
+    private final ProductService productService;
+    private final CommonService commonService;
     public DynamicCronTask(ProductService productService, CommonService commonService) {
         this.productService = productService;
         this.commonService = commonService;
