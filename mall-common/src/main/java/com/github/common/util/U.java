@@ -4,7 +4,6 @@ import com.github.common.date.DateUtil;
 import com.github.common.exception.*;
 import com.github.common.json.JsonUtil;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -481,9 +480,7 @@ public final class U {
         try {
             // java 中的 encode 是把空格变成 +, 转义后需要将 + 替换成 %2B
             return URLEncoder.encode(src, StandardCharsets.UTF_8.displayName());//.replaceAll("\\+", "%2B");
-        } catch (UnsupportedEncodingException e) {
-            return EMPTY;
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             return src;
         }
     }
@@ -495,11 +492,33 @@ public final class U {
         try {
             // java 中的 encode 是把空格变成 +, 反转义前需要将 %2B 替换成 +
             return URLDecoder.decode(src/*.replaceAll("%2B", "\\+")*/, StandardCharsets.UTF_8.displayName());
-        } catch (UnsupportedEncodingException e) {
-            return EMPTY;
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             return src;
         }
+    }
+    /** 给参数中的值转义 */
+    public static String urlEncodeValue(String src) {
+        if (isBlank(src)) {
+            return EMPTY;
+        }
+
+        if (!src.contains("=")) {
+            return src;
+        }
+        StringBuilder sbd = new StringBuilder();
+        String[] sp = src.split("&");
+        for (int i = 0; i < sp.length; i++) {
+            String[] split = sp[i].split("=");
+
+            if (i > 0) {
+                sbd.append("&");
+            }
+            sbd.append(split[0]).append("=");
+            if (split.length == 2) {
+                sbd.append(urlEncode(split[1]));
+            }
+        }
+        return sbd.toString();
     }
 
     /** 生成不带 - 的 uuid */
