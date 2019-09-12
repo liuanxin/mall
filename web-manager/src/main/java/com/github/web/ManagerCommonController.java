@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/common")
 public class ManagerCommonController {
 
-    @ApiTokens(false)
+    @ApiTokens
     @ApiMethod(value = "枚举数据", develop = Develop.COMMON)
     @GetMapping("/enum")
     public JsonResult enumList(@ApiParam("枚举类型. 不传则返回所有列表, 多个以逗号分隔") String type) {

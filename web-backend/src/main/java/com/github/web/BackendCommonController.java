@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @ApiGroup(value = CommonConst.MODULE_INFO, index = 1)
-@ApiTokens(false)
+@ApiTokens
 @RestController
 @RequestMapping("/common")
 public class BackendCommonController {
