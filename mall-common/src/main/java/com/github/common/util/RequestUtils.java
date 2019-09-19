@@ -143,13 +143,14 @@ public final class RequestUtils {
         if (U.isBlank(url)) {
             return U.EMPTY;
         }
-        if (url.startsWith(HTTP)) {
+        String lowerUrl = url.toLowerCase();
+        if (lowerUrl.startsWith(HTTP)) {
             String tmp = url.substring(HTTP.length());
             return url.substring(0, HTTP.length() + tmp.indexOf(URL_SPLIT));
-        } else if (url.startsWith(HTTPS)) {
+        } else if (lowerUrl.startsWith(HTTPS)) {
             String tmp = url.substring(HTTPS.length());
             return url.substring(0, HTTPS.length() + tmp.indexOf(URL_SPLIT));
-        } else if (url.startsWith(SCHEME)) {
+        } else if (lowerUrl.startsWith(SCHEME)) {
             String tmp = url.substring(SCHEME.length());
             return url.substring(0, SCHEME.length() + tmp.indexOf(URL_SPLIT));
         }
@@ -159,19 +160,21 @@ public final class RequestUtils {
     /** 检查 url 在不在指定的域名中(以根域名检查, 如 www.qq.com 是以 qq.com 为准), 将所在根域名返回, 不在指定域名中则返回空 */
     public static String getDomainInUrl(String url, List<String> domainList) {
         url = getDomain(url);
-        if (U.isNotBlank(url)) {
+        if (U.isNotBlank(url) && A.isNotEmpty(domainList)) {
             for (String domain : domainList) {
-                if (domain.startsWith(HTTP)) {
+                String lowerDomain = domain.toLowerCase();
+                if (lowerDomain.startsWith(HTTP)) {
                     domain = domain.substring(HTTP.length());
-                } else if (domain.startsWith(HTTPS)) {
+                } else if (lowerDomain.startsWith(HTTPS)) {
                     domain = domain.substring(HTTPS.length());
-                } else if (domain.startsWith(SCHEME)) {
+                } else if (lowerDomain.startsWith(SCHEME)) {
                     domain = domain.substring(SCHEME.length());
                 }
-                if (domain.startsWith(WWW)) {
+
+                if (domain.toLowerCase().startsWith(WWW)) {
                     domain = domain.substring(WWW.length());
                 }
-                if (url.endsWith("." + domain)) {
+                if (url.toLowerCase().endsWith("." + domain.toLowerCase())) {
                     return domain;
                 }
             }
