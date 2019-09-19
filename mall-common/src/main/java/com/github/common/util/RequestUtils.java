@@ -9,6 +9,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.List;
@@ -108,22 +109,33 @@ public final class RequestUtils {
         return getRequest().getHeader(REFERRER);
     }
 
-    /** 返回当前访问的域. 是 request.getRequestURL().toString() 中域的部分 */
+    /** 获取请求地址, 比如请求的是 http://www.abc.com/x/y 将返回 /x/y */
+    public static String getRequestUri() {
+        return getRequest().getRequestURI();
+    }
+    /** 获取请求地址, 如 http://www.abc.com/x/y */
+    public static String getRequestUrl() {
+        return getDomain() + getRequestUri();
+    }
+
+    /** 返回当前访问的域. 是 request.getRequestURL().toString() 中域的部分, 默认的 scheme 不会返回 https */
     public static String getDomain() {
-        StringBuilder domain = new StringBuilder();
+        StringBuilder sbd = new StringBuilder();
 
         HttpServletRequest request = getRequest();
-        String scheme = request.getScheme();
+        String proxyScheme = request.getHeader("X-Forwarded-Proto");
+        String scheme = U.isNotBlank(proxyScheme) ? proxyScheme : request.getScheme();
+
         int port = request.getServerPort();
         boolean http = ("http".equals(scheme) && port != 80);
         boolean https = ("https".equals(scheme) && port != 443);
 
-        domain.append(scheme).append("://").append(request.getServerName());
+        sbd.append(scheme).append("://").append(request.getServerName());
         if (http || https) {
-            domain.append(':');
-            domain.append(port);
+            sbd.append(':');
+            sbd.append(port);
         }
-        return domain.toString();
+        return sbd.toString();
     }
 
     /** 从 url 中获取 domain 信息. 如: http://www.jd.com/product/123 返回 http://www.jd.com */
@@ -181,6 +193,22 @@ public final class RequestUtils {
         return upload ? "uploading file" : U.formatParam(request.getParameterMap());
     }
 
+    public static String getRequestBody() {
+        try (BufferedReader reader = getRequest().getReader()) {
+            StringBuilder sbd = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sbd.append(line);
+            }
+            return sbd.toString();
+        } catch (IOException e) {
+            if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+                LogUtil.ROOT_LOG.debug("get RequestBody exception", e);
+            }
+            return U.EMPTY;
+        }
+    }
+
     /** 先从请求头中查, 为空再从参数中查 */
     public static String getHeaderOrParam(String param) {
         HttpServletRequest request = getRequest();
@@ -233,12 +261,10 @@ public final class RequestUtils {
         HttpServletRequest request = getRequest();
 
         StringBuilder sbd = new StringBuilder();
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            sbd.append("<");
-            String headName = headerNames.nextElement();
-            sbd.append(headName).append(" : ").append(request.getHeader(headName));
-            sbd.append(">");
+        Enumeration<String> headers = request.getHeaderNames();
+        while (headers.hasMoreElements()) {
+            String headName = headers.nextElement();
+            sbd.append("<").append(headName).append(" : ").append(request.getHeader(headName)).append(">");
         }
         return sbd.toString();
     }
@@ -257,7 +283,7 @@ public final class RequestUtils {
         try {
             response.setCharacterEncoding("utf-8");
             response.setContentType(type + ";charset=utf-8;");
-            response.getWriter().write(result);
+            response.getWriter().write(U.toStr(result));
         } catch (IllegalStateException e) {
             // 基于 response 调用了 getOutputStream(), 又再调用 getWriter() 会被 web 容器拒绝
             if (LogUtil.ROOT_LOG.isDebugEnabled()) {
