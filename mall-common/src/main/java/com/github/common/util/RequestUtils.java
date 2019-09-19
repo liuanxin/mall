@@ -301,11 +301,9 @@ public final class RequestUtils {
 
     /** 基于请求上下文生成一个日志需要的上下文信息对象 */
     public static LogUtil.RequestLogContext logContextInfo() {
-        HttpServletRequest request = getRequest();
-
         String ip = getRealIp();
-        String method = request.getMethod();
-        String url = request.getRequestURL().toString();
+        String method = getRequest().getMethod();
+        String url = getRequestUrl();
         String param = formatParam();
         String headParam = formatHeadParam();
         return new LogUtil.RequestLogContext(ip, method, url, param, headParam);
