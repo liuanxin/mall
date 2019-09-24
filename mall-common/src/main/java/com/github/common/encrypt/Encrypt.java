@@ -5,6 +5,7 @@ import com.github.common.encrypt.jwt.JWTSigner;
 import com.github.common.encrypt.jwt.JWTVerifier;
 import com.github.common.encrypt.jwt.JWTVerifyException;
 import com.github.common.util.LogUtil;
+import com.github.common.util.U;
 import lombok.Data;
 
 import javax.crypto.BadPaddingException;
@@ -328,7 +329,7 @@ public final class Encrypt {
 
     /** 使用 jwt 将 map 加密, 其内部默认使用 HmacSHA256 算法 */
     public static String jwtEncode(Map<String, Object> map) {
-        return JWT_SIGNER.sign(map);
+        return aesEncode(JWT_SIGNER.sign(map));
     }
     /** 使用 jwt 将 map 加密, 并设置一个过期时间. 其内部默认使用 HmacSHA256 算法 */
     public static String jwtEncode(Map<String, Object> map, long time, TimeUnit unit) {
@@ -337,8 +338,13 @@ public final class Encrypt {
     }
     /** 使用 jwt 解密, 其内部默认使用 HmacSHA256 算法 */
     public static Map<String, Object> jwtDecode(String data) {
+        if (U.isBlank(data)) {
+            return Collections.emptyMap();
+        }
+
+        String jwt = aesDecode(data);
         try {
-            return JWT_VERIFIER.verify(data);
+            return JWT_VERIFIER.verify(jwt);
         } catch (JWTExpiredException e) {
             if (LogUtil.ROOT_LOG.isWarnEnabled()) {
                 LogUtil.ROOT_LOG.warn("使用 jwt 解密(" + data + ")时, 数据已过期", e);
