@@ -11,7 +11,7 @@ spring:
     password: redis-test-pass
     timeout: 5000
   datasource:
-    url: jdbc:mysql://test-db:3306/mall?useSSL=false&useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&statementInterceptors=com.github.common.sql.ShowSqlInterceptor
+    url: jdbc:mysql://test-db:3306/mall?useAffectedRows=true&useSSL=false&useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&statementInterceptors=com.github.common.sql.ShowSqlInterceptor
     username: root
     password: root
     hikari:
