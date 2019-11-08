@@ -61,6 +61,24 @@
 //        }
 //        return JsonResult.needLogin(e.getMessage());
 //    }
+//    /** 404 */
+//    @ExceptionHandler(NotFoundException.class)
+//    public JsonResult notFound(NotFoundException e) {
+//        String msg = e.getMessage();
+//        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+//            LogUtil.ROOT_LOG.debug(msg);
+//        }
+//        return JsonResult.notFound(e.getMessage());
+//    }
+//    /** 错误的请求 */
+//    @ExceptionHandler(BadRequestException.class)
+//    public JsonResult badRequest(BadRequestException e) {
+//        String msg = e.getMessage();
+//        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+//            LogUtil.ROOT_LOG.debug(msg);
+//        }
+//        return JsonResult.badRequest(msg);
+//    }
 //
 //
 //    // 以下是 spring 的内部异常
@@ -116,7 +134,9 @@
 //            LogUtil.ROOT_LOG.error("有错误", e);
 //        }
 //
-//        String msg = U.returnMsg(e, online);
+//        Throwable cause = e.getCause();
+//        Throwable t = (cause == null ? e : cause);
+//        String msg = U.returnMsg(t, online);
 //        // return JsonResult.fail(msg);
 //        return ResponseEntity.status(JsonCode.FAIL.getCode()).body(msg);
 //    }
