@@ -62,21 +62,13 @@ public final class SpringMvc {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 String json = JsonUtil.toJsonNil(object);
                 if (U.isNotBlank(json)) {
-                    // 长度如果超过 1100 就只输出前后 500 个字符
-                    int maxLen = 1100, headTail = 500;
-
-                    int len = json.length();
-                    StringBuilder sbd = new StringBuilder();
-                    if (len > maxLen) {
-                        sbd.append(json, 0, headTail).append(" ... ").append(json, len - headTail, len);
-                    }
-
                     boolean notRequestInfo = LogUtil.hasNotRequestInfo();
                     try {
                         if (notRequestInfo) {
                             LogUtil.bind(RequestUtils.logContextInfo());
                         }
-                        LogUtil.ROOT_LOG.info("return: ({})", (sbd.length() > 0 ? sbd.toString() : json));
+                        // 太长就只输出前后, 不全部输出
+                        LogUtil.ROOT_LOG.info("return: ({})", U.toStr(json, 1000, 200));
                     } finally {
                         if (notRequestInfo) {
                             LogUtil.unbind();
@@ -130,4 +122,31 @@ public final class SpringMvc {
             }
         });
     }
+
+    /*
+     * 这种方式下方法上将不能标 @ResponseBody,
+     * 标了的话会被 {@link org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor} 处理.
+     *
+     * 见 com.github.config.BackendJsonResultAdvice 的处理方式
+     *
+    public static void handlerReturn(List<HandlerMethodReturnValueHandler> returnValueHandlers) {
+        // 当返回类型是 JsonResult 对象时
+        returnValueHandlers.add(new HandlerMethodReturnValueHandler() {
+            @Override
+            public boolean supportsReturnType(MethodParameter parameter) {
+                return JsonResult.class.isAssignableFrom(parameter.getParameterType());
+            }
+
+            @Override
+            public void handleReturnValue(Object returnValue, MethodParameter returnType,
+                                          ModelAndViewContainer container, NativeWebRequest request) throws Exception {
+                container.setRequestHandled(true);
+                String token = AppTokenHandler.resetTokenExpireTime();
+                if (U.isNotBlank(token)) {
+                    ((JsonResult) returnValue).setToken(token);
+                }
+            }
+        });
+    }
+    */
 }
