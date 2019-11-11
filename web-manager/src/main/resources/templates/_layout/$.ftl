@@ -7,7 +7,7 @@
 <meta name="keywords" content="xxx<#if key != ""> ${key!}</#if>"/>
 <meta name="description" content="<#if desc != "">${desc!} </#if>xxx"/>
 
-<#-- <link rel="shortcut icon" href="${Render.url(domain.getStill(), "favicon.ico")}"/> -->
+<#-- <link rel="shortcut icon" href="//xxx.yyy.com/favicon.ico"/> -->
 <#--<@style ["common/global.css"]/>-->
 </#macro>
 
@@ -20,14 +20,14 @@
 <#-- <@style ["x/y.css", "z/m.css"] /> -->
 <#macro style csses=[]>
 <#list csses as css>
-<link rel="stylesheet" href="${Render.url(domain.getStill(), css)}"/>
+<link rel="stylesheet" href="${Render.url(css)}"/>
 </#list>
 </#macro>
 
 <#-- <@script ["x/y.js", "z/m.js"] /> -->
 <#macro script jses=[]>
 <#list jses as js>
-<script type="text/javascript" src="${Render.url(domain.getStill(), js)}"></script>
+<script type="text/javascript" src="${Render.url(js)}"></script>
 </#list>
 </#macro>
 
