@@ -71,7 +71,6 @@ public class ManagerUserController {
         } else {
             cacheService.delete(failLoginKey);
         }
-
         // 登录成功后填充菜单和权限, 平级放到用户上
         user.assignmentData(adminService.getUserRole(user));
         return JsonResult.success("登录成功并返回用户及菜单信息", getManagerUserVo(user));
