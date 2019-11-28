@@ -43,7 +43,7 @@ public class ManagerUserVo {
         private String front;
 
         @ApiReturn("子菜单")
-        private List<ManagerMenuVo> childMenus;
+        private List<ManagerMenuVo> children;
     }
 
 
