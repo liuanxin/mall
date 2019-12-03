@@ -68,6 +68,24 @@ public class UtilTest {
     }
 
     @Test
+    public void ipNum() {
+        Map<String, Long> ipNumMap = A.maps(
+                "127.0.0.1", 2130706433L,
+                "192.168.1.5", 3232235781L,
+                "106.12.99.55", 1779196727L
+        );
+        for (Map.Entry<String, Long> entry : ipNumMap.entrySet()) {
+            Assert.assertEquals(U.ip2num(entry.getKey()), entry.getValue().longValue());
+            Assert.assertEquals(U.num2ip(entry.getValue()), entry.getKey());
+        }
+        System.out.println(U.ip2num("::1"));
+        System.out.println(U.ip2num("ff02::2"));
+        System.out.println();
+        System.out.println(U.num2ip(1L));
+        System.out.println(U.num2ip(2L));
+    }
+
+    @Test
     public void sign() {
         Map<String, String[]> paramMap = A.linkedMaps(
                 "id", new String[] { "123" },

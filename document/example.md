@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `t_user_test` (
   `level` INT(11) NOT NULL DEFAULT '0' COMMENT '等级',
   `avatar_url` varchar(64) NOT NULL DEFAULT '' COMMENT '头像',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户示例表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户示例';
 
 INSERT INTO `t_user_test` (`id`, `nick_name`, `gender`, `avatar_url`) VALUES
   (1, '张一', 1, '//abcdp0.png'),

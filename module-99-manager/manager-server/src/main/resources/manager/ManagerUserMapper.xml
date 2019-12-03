@@ -3,7 +3,7 @@
 <mapper namespace="com.github.manager.repository.ManagerUserMapper">
     <resultMap id="BaseResultMap" type="com.github.manager.model.ManagerUser">
         <id column="id" jdbcType="BIGINT" property="id" />
-        <result column="username" jdbcType="VARCHAR" property="username" />
+        <result column="user_name" jdbcType="VARCHAR" property="userName" />
         <result column="password" jdbcType="VARCHAR" property="password" />
         <result column="nick_name" jdbcType="VARCHAR" property="nickName" />
         <result column="avatar" jdbcType="VARCHAR" property="avatar" />
@@ -68,7 +68,7 @@
         </where>
     </sql>
     <sql id="Base_Column_List">
-        `id`, `username`, `password`, `nick_name`, `avatar`, `status`
+        `id`, `user_name`, `password`, `nick_name`, `avatar`, `status`
     </sql>
     <select id="selectByExample" parameterType="com.github.manager.model.ManagerUserExample" resultMap="BaseResultMap">
         select
@@ -106,8 +106,8 @@
             <if test="id != null">
                 `id`,
             </if>
-            <if test="username != null">
-                `username`,
+            <if test="userName != null">
+                `user_name`,
             </if>
             <if test="password != null">
                 `password`,
@@ -126,8 +126,8 @@
             <if test="id != null">
                 #{id,jdbcType=BIGINT},
             </if>
-            <if test="username != null">
-                #{username,jdbcType=VARCHAR},
+            <if test="userName != null">
+                #{userName,jdbcType=VARCHAR},
             </if>
             <if test="password != null">
                 #{password,jdbcType=VARCHAR},
@@ -155,8 +155,8 @@
             <if test="record.id != null">
                 `id` = #{record.id,jdbcType=BIGINT},
             </if>
-            <if test="record.username != null">
-                `username` = #{record.username,jdbcType=VARCHAR},
+            <if test="record.userName != null">
+                `user_name` = #{record.userName,jdbcType=VARCHAR},
             </if>
             <if test="record.password != null">
                 `password` = #{record.password,jdbcType=VARCHAR},
@@ -178,8 +178,8 @@
     <update id="updateByPrimaryKeySelective" parameterType="com.github.manager.model.ManagerUser">
         update `t_manager_user`
         <set>
-            <if test="username != null">
-                `username` = #{username,jdbcType=VARCHAR},
+            <if test="userName != null">
+                `user_name` = #{userName,jdbcType=VARCHAR},
             </if>
             <if test="password != null">
                 `password` = #{password,jdbcType=VARCHAR},
@@ -205,8 +205,8 @@
                     <if test="item.id != null">
                         `id`,
                     </if>
-                    <if test="item.username != null">
-                        `username`,
+                    <if test="item.userName != null">
+                        `user_name`,
                     </if>
                     <if test="item.password != null">
                         `password`,
@@ -230,8 +230,8 @@
                 <if test="item.id != null">
                     #{item.id,jdbcType=BIGINT},
                 </if>
-                <if test="item.username != null">
-                    #{item.username,jdbcType=VARCHAR},
+                <if test="item.userName != null">
+                    #{item.userName,jdbcType=VARCHAR},
                 </if>
                 <if test="item.password != null">
                     #{item.password,jdbcType=VARCHAR},
