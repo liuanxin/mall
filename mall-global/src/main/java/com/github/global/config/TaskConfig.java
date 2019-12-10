@@ -16,7 +16,7 @@ import java.util.concurrent.Executor;
  * &lt;task:executor id="myExecutor" pool-size="4-32" queue-capacity="8"/&gt;<br>
  * &lt;context id="exceptionHandler" class="...SimpleAsyncUncaughtExceptionHandler"/&gt;<br><br>
  *
- * 如果想异步处理后返回结果, 在 @Async 注解的方法返回上使用 AsyncResult
+ * 如果想异步处理后返回结果, 在 @Async 注解的方法返回上使用 Future<>, 方法体里面的返回使用 new AsyncResult<>()
  */
 @Configuration
 @EnableAsync
