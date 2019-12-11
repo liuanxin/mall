@@ -14,6 +14,8 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.lang.reflect.Method;
+
 /**
  * <pre>
  * 1. 添加多数据源
@@ -56,9 +58,10 @@ public class MybatisQueryInterceptor implements Interceptor {
         try {
             boolean hasTransaction = TransactionSynchronizationManager.isActualTransactionActive();
             // 查询自增主键: select last_insert_id()
-            MappedStatement mappedStatement = (MappedStatement) invocation.getArgs()[0];
-            boolean hasSelectKey = mappedStatement.getSqlCommandType().equals(SqlCommandType.SELECT)
-                    && mappedStatement.getId().contains(SelectKeyGenerator.SELECT_KEY_SUFFIX);
+            MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
+            String classAndMethod = ms.getId();
+            boolean hasSelectKey = ms.getSqlCommandType().equals(SqlCommandType.SELECT)
+                    && classAndMethod.contains(SelectKeyGenerator.SELECT_KEY_SUFFIX);
 
             // 如果是在一个事务或者在查询自增主键则使用主库
             ClientDatabase clientDatabase;
@@ -66,17 +69,28 @@ public class MybatisQueryInterceptor implements Interceptor {
                 clientDatabase = ClientDatabase.MASTER;
             } else {
                 // 看方法或类上有没有标注解, 没有标就随机用一个从库, 有标就用标了的
-                DatabaseRouter router = invocation.getMethod().getAnnotation(DatabaseRouter.class);
-                if (router == null) {
-                    router = invocation.getMethod().getReturnType().getAnnotation(DatabaseRouter.class);
-                }
-                clientDatabase = (router == null ? ClientDatabase.randomSlave() : router.value());
+                DatabaseRouter router = getAnnotation(classAndMethod);
+                clientDatabase = ClientDatabase.handleRouter(router);
             }
             ClientDatabaseContextHolder.set(clientDatabase);
 
             return invocation.proceed();
         } finally {
             ClientDatabaseContextHolder.clear();
+        }
+    }
+
+    /** com.github.user.repository.UserMapper.selectByExample */
+    private DatabaseRouter getAnnotation(String classAndMethod) {
+        try {
+            int endIndex = classAndMethod.lastIndexOf(".");
+            Class<?> clazz = Class.forName(classAndMethod.substring(0, endIndex));
+            Method method = clazz.getMethod(classAndMethod.substring(endIndex + 1));
+
+            DatabaseRouter router = method.getAnnotation(DatabaseRouter.class);
+            return (router == null) ? clazz.getAnnotation(DatabaseRouter.class) : router;
+        } catch (Exception e) {
+            return null;
         }
     }
 }

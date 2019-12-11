@@ -1,6 +1,6 @@
 package com.github.global.dynamic;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * <pre>
@@ -34,7 +34,12 @@ public enum ClientDatabase {
     SLAVE2
     ;
 
-    public static ClientDatabase randomSlave() {
-        return new Random().nextBoolean() ? SLAVE1 : SLAVE2;
+    public static ClientDatabase handleRouter(DatabaseRouter router) {
+        if (router != null) {
+            return router.value();
+        } else {
+            // 随机用一个从节点
+            return ThreadLocalRandom.current().nextBoolean() ? SLAVE1 : SLAVE2;
+        }
     }
 }
