@@ -15,6 +15,8 @@ import org.apache.ibatis.session.RowBounds;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <pre>
@@ -53,26 +55,32 @@ import java.lang.reflect.Method;
 })
 public class MybatisQueryInterceptor implements Interceptor {
 
+    private static final Map<String, DatabaseRouter> CLASS_METHOD_CACHE = new ConcurrentHashMap<>();
+
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
         try {
-            boolean hasTransaction = TransactionSynchronizationManager.isActualTransactionActive();
-            // 查询自增主键: select last_insert_id()
             MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
-            String classAndMethod = ms.getId();
-            boolean hasSelectKey = ms.getSqlCommandType().equals(SqlCommandType.SELECT)
-                    && classAndMethod.contains(SelectKeyGenerator.SELECT_KEY_SUFFIX);
+            if (ms.getSqlCommandType() == SqlCommandType.SELECT) {
+                // 比如: com.github.user.repository.UserMapper.selectByExample
+                String classAndMethod = ms.getId();
 
-            // 如果是在一个事务或者在查询自增主键则使用主库
-            ClientDatabase clientDatabase;
-            if (hasTransaction || hasSelectKey) {
-                clientDatabase = ClientDatabase.MASTER;
-            } else {
-                // 看方法或类上有没有标注解, 没有标就随机用一个从库, 有标就用标了的
+                ClientDatabase clientDatabase;
+                // 方法或类上有标注解就用标了的
                 DatabaseRouter router = getAnnotation(classAndMethod);
-                clientDatabase = ClientDatabase.handleRouter(router);
+                if (router != null) {
+                    clientDatabase = router.value();
+                } else {
+                    boolean transactionActive = TransactionSynchronizationManager.isActualTransactionActive();
+                    // 如果是在一个事务中 或者 在查询自增主键(查询 select last_insert_id() 这种)则使用主库
+                    if (transactionActive || classAndMethod.contains(SelectKeyGenerator.SELECT_KEY_SUFFIX)) {
+                        clientDatabase = ClientDatabase.MASTER;
+                    } else {
+                        clientDatabase = ClientDatabase.handleQueryRouter();
+                    }
+                }
+                ClientDatabaseContextHolder.set(clientDatabase);
             }
-            ClientDatabaseContextHolder.set(clientDatabase);
 
             return invocation.proceed();
         } finally {
@@ -80,17 +88,37 @@ public class MybatisQueryInterceptor implements Interceptor {
         }
     }
 
-    /** com.github.user.repository.UserMapper.selectByExample */
     private DatabaseRouter getAnnotation(String classAndMethod) {
+        DatabaseRouter cacheRouter = CLASS_METHOD_CACHE.get(classAndMethod);
+        if (cacheRouter != null) {
+            return cacheRouter;
+        }
         try {
             int endIndex = classAndMethod.lastIndexOf(".");
-            Class<?> clazz = Class.forName(classAndMethod.substring(0, endIndex));
-            Method method = clazz.getMethod(classAndMethod.substring(endIndex + 1));
+            String className = classAndMethod.substring(0, endIndex);
+            String methodName = classAndMethod.substring(endIndex + 1);
 
-            DatabaseRouter router = method.getAnnotation(DatabaseRouter.class);
-            return (router == null) ? clazz.getAnnotation(DatabaseRouter.class) : router;
-        } catch (Exception e) {
-            return null;
+            Class<?> clazz = Class.forName(className);
+            if (clazz != null) {
+                Method method = clazz.getDeclaredMethod(methodName);
+                if (method == null) {
+                    method = clazz.getMethod(methodName);
+                }
+
+                DatabaseRouter router = null;
+                if (method != null) {
+                    router = method.getAnnotation(DatabaseRouter.class);
+                }
+                if (router == null) {
+                    router = clazz.getAnnotation(DatabaseRouter.class);
+                }
+                if (router != null) {
+                    CLASS_METHOD_CACHE.put(classAndMethod, router);
+                    return router;
+                }
+            }
+        } catch (Exception ignore) {
         }
+        return null;
     }
 }
