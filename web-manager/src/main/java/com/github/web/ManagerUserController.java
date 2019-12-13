@@ -2,7 +2,6 @@ package com.github.web;
 
 import com.github.common.annotation.NotNeedLogin;
 import com.github.common.annotation.NotNeedPermission;
-import com.github.common.encrypt.Encrypt;
 import com.github.common.json.JsonResult;
 import com.github.common.util.FileUtil;
 import com.github.common.util.U;
@@ -22,8 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.concurrent.TimeUnit;
 
 @ApiGroup(UserConst.MODULE_INFO)
 @RestController
@@ -52,40 +49,49 @@ public class ManagerUserController {
                                            @ApiParam("密码") String password,
                                            @ApiParam("验证码, 密码输错 " + FAIL_LOGIN_COUNT + " 次后需要") String code) {
         U.assertException(U.isBlank(userName) || U.isBlank(password), "请输入用户名或密码");
-        String failLoginKey = active + ":login:fail:" + userName;
-        long failCount = U.toLong(cacheService.get(failLoginKey));
-        if (failCount >= FAIL_LOGIN_COUNT) {
-            U.assertNil(code, "请输入验证码");
-            if (!ManagerSessionUtil.checkImageCode(code)) {
-                U.assertException("验证码有误");
-            }
-        }
+//        String failLoginKey = active + ":login:fail:" + userName;
+//        long failCount = U.toLong(cacheService.get(failLoginKey));
+//        if (failCount >= FAIL_LOGIN_COUNT) {
+//            U.assertNil(code, "请输入验证码");
+//            if (!ManagerSessionUtil.checkImageCode(code)) {
+//                U.assertException("验证码有误");
+//            }
+//        }
+//
+//        ManagerUser user = adminService.login(userName, password);
+//        boolean cannotLogin = U.isNotBlank(user.getStatus()) && user.getStatus();
+//        U.assertException(cannotLogin, "用户无法登录");
+//        if (Encrypt.checkNotBcrypt(password, user.getPassword())) {
+//            cacheService.incr(failLoginKey);
+//            cacheService.expire(failLoginKey, FAIL_LOGIN_COUNT_EXPIRE_HOUR, TimeUnit.HOURS);
+//            U.assertException("用户名或密码不正确");
+//        } else {
+//            cacheService.delete(failLoginKey);
+//        }
+//        // 登录成功后填充菜单和权限, 平级放到用户上
+//        user.assignmentData(adminService.getUserRole(user));
+//        return JsonResult.success("登录成功并返回用户及菜单信息", getManagerUserVo(user));
 
-        ManagerUser user = adminService.login(userName, password);
-        boolean cannotLogin = U.isNotBlank(user.getStatus()) && user.getStatus();
-        U.assertException(cannotLogin, "用户无法登录");
-        if (Encrypt.checkNotBcrypt(password, user.getPassword())) {
-            cacheService.incr(failLoginKey);
-            cacheService.expire(failLoginKey, FAIL_LOGIN_COUNT_EXPIRE_HOUR, TimeUnit.HOURS);
-            U.assertException("用户名或密码不正确");
-        } else {
-            cacheService.delete(failLoginKey);
-        }
-        // 登录成功后填充菜单和权限, 平级放到用户上
-        user.assignmentData(adminService.getUserRole(user));
+        ManagerUser user = new ManagerUser();
+        user.setUserName("admin");
         return JsonResult.success("登录成功并返回用户及菜单信息", getManagerUserVo(user));
     }
     private ManagerUserVo getManagerUserVo(ManagerUser user) {
         // 将用户和权限放入 session, 将用户和菜单返回
         ManagerSessionUtil.whenLogin(user, user.getPermissions());
-        return ManagerUserVo.assemblyData(user, user.getMenus());
+//        return ManagerUserVo.assemblyData(user, user.getMenus());
+        return ManagerUserVo.testData();
     }
     @NotNeedPermission
     @ApiMethod(value = "获取用户及菜单信息", index = 1)
     @GetMapping("/info")
     public JsonResult<ManagerUserVo> info() {
-        Long userId = ManagerSessionUtil.getUserId();
-        ManagerUser user = adminService.getUser(userId);
+//        Long userId = ManagerSessionUtil.getUserId();
+//        ManagerUser user = adminService.getUser(userId);
+//        return JsonResult.success("获取用户及菜单信息", getManagerUserVo(user));
+
+        ManagerUser user = new ManagerUser();
+        user.setUserName("admin");
         return JsonResult.success("获取用户及菜单信息", getManagerUserVo(user));
     }
 
