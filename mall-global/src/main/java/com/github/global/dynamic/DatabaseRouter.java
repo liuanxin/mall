@@ -4,7 +4,7 @@ import java.lang.annotation.*;
 
 /**
  * <pre>
- * 1. 数据源使用多数据源
+ * 1. 添加多数据源
  * &#064;Bean
  * public DataSource clientDataSource() {
  *     Map&lt;ClientDatabase, DataSource> targetDataSources = new HashMap<>();
