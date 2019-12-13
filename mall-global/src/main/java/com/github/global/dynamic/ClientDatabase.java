@@ -26,8 +26,6 @@ import java.util.concurrent.ThreadLocalRandom;
  * 如果未标注解, 则: 如果不是在一个事务中 且 不是在查询自增主键: select last_insert_id() 则使用从库
  *
  * 默认使用上面的 defaultDataSource
- *
- * PS: 如果查询是在事务中, 又或者在查询自增主键(类似 select last_insert_id() 这种), 则标了 @DatabaseRouter 也走主库
  * </pre>
  */
 public enum ClientDatabase {
