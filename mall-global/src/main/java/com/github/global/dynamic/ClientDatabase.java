@@ -39,7 +39,7 @@ public enum ClientDatabase {
 
     public static ClientDatabase handleQueryRouter() {
         // 轮询: 申明一个全局 AtomLong, 每次自增 1 并跟从节点的总数(加权则将每个节点的权重相加, 每个节点占一些数字)进行取余
-        // 随机: 在从节点的总数内进行随机(加权则将每个节点的权重相加, 每个节点点一些数字)
+        // 随机: 在从节点的总数内进行随机(加权则将每个节点的权重相加, 每个节点占一些数字)
         // hash: 将用户 ip 与从节点的总数进行取余
         return ThreadLocalRandom.current().nextBoolean() ? SLAVE1 : SLAVE2;
     }
