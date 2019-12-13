@@ -38,8 +38,9 @@ import java.util.Map;
  * 2. 添加 mybatis 插件
  * sessionFactory.setPlugins(new ClientRouterInterceptor());
  *
- * 如果 Mapper 类或方法上有标 @DatabaseRouter 注解则使用相应的数据源
- * 如果未标注解, 则: 如果不是在一个事务中 且 不是在查询自增主键: select last_insert_id() 则使用从库
+ * 这之后基于 mybatis 做的 select 查询:
+ *   如果 Mapper 类或方法上有标 @DatabaseRouter 注解则使用相应的数据源
+ *   如果未标注解, 则: 如果不是在一个事务中 且 不是在查询自增主键: select last_insert_id() 则使用从库
  *
  * 默认使用上面的 defaultDataSource
  * </pre>
