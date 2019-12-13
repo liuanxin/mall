@@ -15,8 +15,8 @@ import org.apache.ibatis.session.RowBounds;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <pre>
@@ -58,7 +58,7 @@ import java.util.concurrent.ConcurrentHashMap;
 })
 public class MybatisQueryInterceptor implements Interceptor {
 
-    private static final Map<String, DatabaseRouter> CLASS_METHOD_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, DatabaseRouter> CLASS_METHOD_CACHE = new HashMap<>();
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
