@@ -4,7 +4,7 @@ import java.lang.annotation.*;
 
 /**
  * <pre>
- * 1. 添加多数据源
+ * 1. 数据源使用多数据源
  * &#064;Bean
  * public DataSource clientDataSource() {
  *     Map&lt;ClientDatabase, DataSource> targetDataSources = new HashMap<>();
@@ -20,10 +20,10 @@ import java.lang.annotation.*;
  * }
  *
  * 2. 添加 mybatis 插件
- * sessionFactory.setPlugins(new MybatisQueryInterceptor());
+ * sessionFactory.setPlugins(new ClientRouterInterceptor());
  *
  * 如果 Mapper 类或方法上有标 @DatabaseRouter 注解则使用相应的数据源
- * 如果未标注解, 则: 如果不是在一个事务中 且 不是在查询自增主键<select last_insert_id()>则使用从库
+ * 如果未标注解, 则: 如果不是在一个事务中 且 不是在查询自增主键: select last_insert_id() 则使用从库
  *
  * 默认使用上面的 defaultDataSource
  *
