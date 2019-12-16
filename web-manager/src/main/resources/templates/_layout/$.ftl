@@ -59,14 +59,7 @@ var some = "xyz";
 <meta name="description" content="<#if desc != "">${desc!} </#if>xxx"/>
 
 <#-- <link rel="shortcut icon" href="http://xxx.yyy.com/favicon.ico"/> -->
-<#--<@style ["common/global.css"]/>-->
-
-<meta charset="utf-8">
-<meta name="author" content="zzz Team">
-<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${title!}</title>
-<#--<@style ["http://cdn.bootcss.com/twitter-bootstrap/3.4.1/css/bootstrap.min.css"]/>-->
+<#-- <@style ["http://cdn.bootcss.com/twitter-bootstrap/3.4.1/css/bootstrap.min.css"]/> -->
 ${pageCss!}
 </head>
 <body>
@@ -82,7 +75,7 @@ ${pageCss!}
 "http://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"
 ] />
 <![endif]-->
-<#--<@script ["http://cdn.bootcss.com/twitter-bootstrap/3.4.1/js/bootstrap.min.js"]/>-->
+<#-- <@script ["http://cdn.bootcss.com/twitter-bootstrap/3.4.1/js/bootstrap.min.js"]/> -->
 ${pageJs!}
 </body>
 </html>
