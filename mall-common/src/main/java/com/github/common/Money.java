@@ -26,14 +26,21 @@ public class Money implements Serializable {
     private Long cent;
 
     public Money() {}
+    /** 从数据库过来的数据, 使用此构造 */
+    public Money(Long cent) {
+        this.cent = cent;
+    }
     /** 从前台过来的数据转换成金额对象时使用此构造 */
     @JsonCreator
     public Money(String yuan) {
         cent = yuan2Cent(yuan);
     }
-    /** 从数据库过来的数据, 使用此构造 */
-    public Money(Long cent) {
-        this.cent = cent;
+
+    /** 在前台或者在页面上显示 */
+    @JsonValue
+    @Override
+    public String toString() {
+        return U.formatNumberToThousands(cent2Yuan(cent));
     }
 
     public Long getCent() {
@@ -84,13 +91,6 @@ public class Money implements Serializable {
         }
     }
 
-    /** 在前台或者在页面上显示 */
-    @JsonValue
-    @Override
-    public String toString() {
-        return cent2Yuan(cent);
-    }
-
     /** 输出大写中文 */
     public String toChinese() {
         return ChineseConvert.upperCase(toString());
@@ -98,9 +98,15 @@ public class Money implements Serializable {
 
 
     /** 元转换为分 */
-    private static Long yuan2Cent(String yuan) {
+    public static Long yuan2Cent(String yuan) {
         if (U.isBlank(yuan)) {
             return null;
+        }
+        if (yuan.contains("_")) {
+            yuan = yuan.replace("_", "");
+        }
+        if (yuan.contains(",")) {
+            yuan = yuan.replace(",", "");
         }
         if (U.isNotNumber(yuan)) {
             U.assertException(String.format("金额(%s)必须是数字", yuan));
@@ -108,7 +114,7 @@ public class Money implements Serializable {
         return new BigDecimal(yuan).movePointRight(SCALE).longValue();
     }
     /** 分转换为元 */
-    private static String cent2Yuan(Long cent) {
+    public static String cent2Yuan(Long cent) {
         return U.greater0(cent) ? BigDecimal.valueOf(cent).movePointLeft(SCALE).toString() : U.EMPTY;
     }
 
@@ -212,7 +218,7 @@ public class Money implements Serializable {
             if (money == null || money.trim().length() == 0) {
                 return BLANK;
             }
-            // 必要的检查. 如果是 0 直接返回
+            // 如果是 0 直接返回
             try {
                 if (Double.parseDouble(money) == 0) {
                     return NUM[0] + INTEGER[0] + WHOLE;
