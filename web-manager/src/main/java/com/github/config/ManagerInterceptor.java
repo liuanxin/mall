@@ -19,7 +19,7 @@ import java.util.List;
 public class ManagerInterceptor implements HandlerInterceptor {
 
     private static final List<String> LET_IT_GO = Lists.newArrayList(
-            "/error", "/api/info", "/api/version"
+            "/error", "/api/project", "/api/info"
     );
 
     private boolean online;
