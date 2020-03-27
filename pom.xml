@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.0.RELEASE</version>
+        <version>2.2.5.RELEASE</version>
         <relativePath/>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -61,6 +61,7 @@
         <mybatis-redis-cache.version>1.2.7</mybatis-redis-cache.version>
 
         <api-document.version>0.6.6</api-document.version>
+        <google-jib.version>2.1.0</google-jib.version>
     </properties>
 
     <dependencyManagement>
@@ -267,6 +268,12 @@
                         <goals><goal>deploy</goal></goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>${google-jib.version}</version>
             </plugin>
         </plugins>
     </build>
