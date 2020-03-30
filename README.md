@@ -5,7 +5,7 @@
 安装 idea 并添加 lombok 和 mybatis 插件(如果使用 eclipse 只安装 lombok 插件就可以了).  
 基于 [hosts 文件](document/hosts.md) 修改本机 hosts 文件.
 
-将下面的内容保存成 `~/.m2/settings.xml`(没有则新建), 想要改变仓库地址, 注释解开并设置即可.
+将下面的内容保存成 `settings.xml` 并放到 `${user.home}/.m2`, 想要改变仓库地址, 注释解开并设置即可.
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
