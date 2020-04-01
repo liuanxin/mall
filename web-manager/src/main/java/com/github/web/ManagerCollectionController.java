@@ -87,7 +87,7 @@ public class ManagerCollectionController {
         for (Map.Entry<String, Collection<String>> entry : multimap.asMap().entrySet()) {
             String[] menuArr = entry.getKey().split(sp);
             System.out.println(String.format(
-                    "INSERT INTO `t_manager_menu`(`id`, `name`, `front`) VALUES(%s,'%s','%s')",
+                    "REPLACE INTO `t_manager_menu`(`id`, `name`, `front`) VALUES(%s,'%s','%s')",
                     i, menuArr[0], menuArr[1]
             ));
 
@@ -95,7 +95,7 @@ public class ManagerCollectionController {
             for (String permission : Sets.newLinkedHashSet(entry.getValue())) {
                 String[] arr = permission.split(sp);
                 System.out.println(String.format(
-                        "INSERT INTO `t_manager_permission`(`id`, `mid`, `name`, `method`, `url`)" +
+                        "REPLACE INTO `t_manager_permission`(`id`, `mid`, `name`, `method`, `url`)" +
                                 " VALUES(%s, %s, '%s', '%s', '%s')",
                         j, i, arr[0], arr[1], arr[2]
                 ));
