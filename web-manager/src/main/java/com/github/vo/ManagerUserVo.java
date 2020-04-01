@@ -6,7 +6,6 @@ import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiReturn;
 import com.github.manager.model.ManagerMenu;
 import com.github.manager.model.ManagerUser;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
@@ -38,17 +37,23 @@ public class ManagerUserVo {
 
     @Data
     @NoArgsConstructor
-    @AllArgsConstructor
     @Accessors(chain = true)
     public static class ManagerMenuVo {
+        // @ApiReturn("菜单 id")
+        // private Long id;
+
         @ApiReturn("前端对应的值")
         private String front;
 
         @ApiReturn("子菜单")
         private List<ManagerMenuVo> children;
-        
+
         public ManagerMenuVo(String front) {
             this.front = front;
+        }
+        public ManagerMenuVo(String front, List<ManagerMenuVo> children) {
+            this.front = front;
+            this.children = children;
         }
     }
 
