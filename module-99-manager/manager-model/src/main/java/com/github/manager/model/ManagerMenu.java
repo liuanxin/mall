@@ -109,19 +109,60 @@ public class ManagerMenu implements Serializable {
             return Collections.emptyList();
         } else {
             List<ManagerMenu> returnList = Lists.newArrayList();
-            for (ManagerMenu menu : menus) {
-                allMenu(returnList, menu);
-            }
+            allMenuUseDepth(returnList, menus);
+            // allMenuUseBreadth(returnList, menus);
             return returnList;
         }
     }
-    private static void allMenu(List<ManagerMenu> returnList, ManagerMenu menu) {
-        if (U.isNotBlank(menu)) {
-            returnList.add(menu);
+    /**
+     * <pre>
+     * 使用深度优先(Depth-First)
+     * 
+     * 比如:
+     * [
+     *   { "id": 1, "children": [ { "id": 11, "children": [ { "id": 111 } ] }, { "id": 12 } ] },
+     *   { "id": 2, "children": [ { "id": 21 }, { "id": 22, "children": [ { "id": 221 } ] } ] }
+     * ]
+     * 
+     * 返回:
+     * [ { "id": 1 }, { "id": 11 }, { "id": 111 }, { "id": 12 }, { "id": 2 }, { "id": 21 }, { "id": 22 }, { "id": 221 } ]
+     * </pre>
+     */
+    private static void allMenuUseDepth(List<ManagerMenu> returnList, List<ManagerMenu> menus) {
+        if (A.isNotEmpty(menus)) {
+            for (ManagerMenu menu : menus) {
+                returnList.add(menu);
+
+                List<ManagerMenu> children = menu.getChildren();
+                if (A.isNotEmpty(children)) {
+                    allMenuUseDepth(returnList, children);
+                }
+            }
         }
-        if (A.isNotEmpty(menu.getChildren())) {
-            for (ManagerMenu childMenu : menu.getChildren()) {
-                allMenu(returnList, childMenu);
+    }
+    /**
+     * <pre>
+     * 使用广度优先(Breadth-First)
+     *
+     * 比如:
+     * [
+     *   { "id": 1, "children": [ { "id": 11, "children": [ { "id": 111 } ] }, { "id": 12 } ] },
+     *   { "id": 2, "children": [ { "id": 21 }, { "id": 22, "children": [ { "id": 221 } ] } ] }
+     * ]
+     *
+     * 返回:
+     * [ { "id": 1 }, { "id": 2 }, { "id": 11 }, { "id": 12 }, { "id": 111 }, { "id": 21 }, { "id": 22 }, { "id": 221 } ]
+     * </pre>
+     */
+    private static void allMenuUseBreadth(List<ManagerMenu> returnList, List<ManagerMenu> menus) {
+        if (A.isNotEmpty(menus)) {
+            returnList.addAll(menus);
+
+            for (ManagerMenu menu : menus) {
+                List<ManagerMenu> children = menu.getChildren();
+                if (A.isNotEmpty(children)) {
+                    allMenuUseBreadth(returnList, children);
+                }
             }
         }
     }
