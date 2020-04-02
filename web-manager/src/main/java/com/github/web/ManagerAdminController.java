@@ -39,15 +39,15 @@ public class ManagerAdminController {
     }
     @ApiMethod(value = "添加或修改用户", index = 11)
     @PostMapping("/user")
-    public JsonResult addOrUpdateUser(ManagerUserDto user, @ApiParam("头像") MultipartFile image) {
-        user.basicCheck();
+    public JsonResult addOrUpdateUser(ManagerUserDto userDto, @ApiParam("头像") MultipartFile image) {
+        userDto.basicCheck();
 
-        ManagerUser managerUser = user.operateParam();
+        ManagerUser managerUser = userDto.operateParam();
         if (U.isNotBlank(managerUser)) {
             managerUser.setAvatar(FileUtil.save(image, config.getFilePath(), config.getFileUrl(), false));
         }
         adminService.addOrUpdateUser(managerUser);
-        return JsonResult.success(String.format("用户%s成功", (user.hasUpdate() ? "修改" : "添加")));
+        return JsonResult.success(String.format("用户%s成功", (userDto.hasUpdate() ? "修改" : "添加")));
     }
     @ApiMethod(value = "删除用户", index = 12)
     @DeleteMapping("/user")
