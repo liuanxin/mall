@@ -19,11 +19,11 @@ import java.util.List;
 public class ManagerInterceptor implements HandlerInterceptor {
 
     private static final List<String> LET_IT_GO = Lists.newArrayList(
-            "/error", "/api/project", "/api/info", "/api/example"
+            "/error", "/api/project", "/api/info", "/api/example/*"
     );
 
     private boolean online;
-    ManagerInterceptor(boolean online) {
+    public ManagerInterceptor(boolean online) {
         this.online = online;
     }
 
@@ -44,14 +44,15 @@ public class ManagerInterceptor implements HandlerInterceptor {
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) throws Exception {
         if (ex != null) {
-            if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-                LogUtil.ROOT_LOG.debug("request was over, but have exception: " + ex.getMessage());
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("request was over, but have exception", ex);
             }
         }
         unbindParam();
     }
 
     private void bindParam() {
+        // 打印日志上下文中的数据
         LogUtil.RequestLogContext logContextInfo = RequestUtils.logContextInfo()
                 .setId(String.valueOf(ManagerSessionUtil.getUserId()))
                 .setName(ManagerSessionUtil.getUserName());
@@ -59,16 +60,26 @@ public class ManagerInterceptor implements HandlerInterceptor {
     }
 
     private void unbindParam() {
+        // 删除打印日志上下文中的数据
         LogUtil.unbind();
     }
 
     /** 检查登录及权限 */
     private void checkLoginAndPermission(Object handler) {
-        /*if (!online) {
+        if (!online) {
             return;
-        }*/
-        if (LET_IT_GO.contains(RequestUtils.getRequest().getRequestURI())) {
-            return;
+        }
+        String uri = RequestUtils.getRequest().getRequestURI();
+        for (String letItGo : LET_IT_GO) {
+            if (letItGo.equals(uri)) {
+                return;
+            }
+            if (letItGo.contains("*")) {
+                letItGo = letItGo.replace("*", "(.*)?");
+                if (uri.matches(letItGo)) {
+                    return;
+                }
+            }
         }
         if (!handler.getClass().isAssignableFrom(HandlerMethod.class)) {
             return;
