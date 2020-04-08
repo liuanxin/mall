@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * 这之后基于 mybatis 做的 select 查询:
  *   如果 Mapper 类或方法上有标 @DatabaseRouter 注解则使用相应的数据源
  *   如果未标注解, 则: 如果不是在一个事务中 且 不是在查询自增主键: select last_insert_id() 则使用从库
- *     规则见: {@link ClientDatabase#handleQueryRouter()}
+ *     规则见: {@link ClientDatabase#handleSlaveRouter()}
  *
  * 默认使用上面的 defaultDataSource
  * </pre>
@@ -40,7 +40,7 @@ public enum ClientDatabase {
     public static ClientDatabase handleMasterRouter() {
         return MASTER;
     }
-    public static ClientDatabase handleQueryRouter() {
+    public static ClientDatabase handleSlaveRouter() {
         // 轮询: 申明一个全局 AtomLong, 每次自增 1 并跟从节点的总数(加权则将每个节点的权重相加, 每个节点占一些数字)进行取余
         // 随机: 在从节点的总数内进行随机(加权则将每个节点的权重相加, 每个节点占一些数字)
         // hash: 将用户 ip 与从节点的总数进行取余
