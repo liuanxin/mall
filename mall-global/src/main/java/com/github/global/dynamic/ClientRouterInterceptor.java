@@ -15,8 +15,8 @@ import org.apache.ibatis.session.RowBounds;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <pre>
@@ -58,31 +58,29 @@ import java.util.Map;
 })
 public class ClientRouterInterceptor implements Interceptor {
 
-    private static final Map<String, DatabaseRouter> CLASS_METHOD_CACHE = new HashMap<>();
+    private static final Map<String, DatabaseRouter> CLASS_METHOD_CACHE = new ConcurrentHashMap<>();
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
         try {
             MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
+            // 只在查询时路由
             if (ms.getSqlCommandType() == SqlCommandType.SELECT) {
                 // 比如: com.github.user.repository.UserMapper.selectByExample
                 String classAndMethod = ms.getId();
 
-                // 方法或类上有标注解就用标了的
-                DatabaseRouter router = getAnnotation(classAndMethod);
-                if (router != null) {
-                    ClientDatabaseContextHolder.set(router.value());
+                ClientDatabase clientData;
+                boolean transactionActive = TransactionSynchronizationManager.isActualTransactionActive();
+                // 如果是在一个事务中 或者 是在查询自增主键<select last_insert_id()> 则强制走主库
+                if (transactionActive || classAndMethod.endsWith(SelectKeyGenerator.SELECT_KEY_SUFFIX)) {
+                    clientData = ClientDatabase.handleMasterRouter();
                 } else {
-                    boolean transactionActive = TransactionSynchronizationManager.isActualTransactionActive();
-                    // 如果不是在一个事务中 且 不是在查询自增主键<select last_insert_id()>则使用从库
-                    if (!transactionActive && !classAndMethod.contains(SelectKeyGenerator.SELECT_KEY_SUFFIX)) {
-                        ClientDatabaseContextHolder.set(ClientDatabase.handleQueryRouter());
-                    }/* else {
-                        // 不设置则走默认源
-                    }*/
+                    // 方法或类上有标注解就用标了的, 否则使用从库
+                    DatabaseRouter router = getAnnotation(classAndMethod);
+                    clientData = (router != null ? router.value() : ClientDatabase.handleQueryRouter());
                 }
+                ClientDatabaseContextHolder.set(clientData);
             }
-
             return invocation.proceed();
         } finally {
             ClientDatabaseContextHolder.clear();
@@ -94,6 +92,7 @@ public class ClientRouterInterceptor implements Interceptor {
         if (cacheRouter != null) {
             return cacheRouter;
         }
+
         try {
             int endIndex = classAndMethod.lastIndexOf(".");
             String className = classAndMethod.substring(0, endIndex);
