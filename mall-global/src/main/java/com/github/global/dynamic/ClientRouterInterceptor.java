@@ -93,32 +93,44 @@ public class ClientRouterInterceptor implements Interceptor {
             return cacheRouter;
         }
 
+        // 比如: com.github.user.repository.UserMapper.selectByExample
+        int endIndex = classAndMethod.lastIndexOf(".");
+        String className = classAndMethod.substring(0, endIndex);
+        String methodName = classAndMethod.substring(endIndex + 1);
+
+        Class<?> clazz;
         try {
-            int endIndex = classAndMethod.lastIndexOf(".");
-            String className = classAndMethod.substring(0, endIndex);
-            String methodName = classAndMethod.substring(endIndex + 1);
-
-            Class<?> clazz = Class.forName(className);
-            if (clazz != null) {
-                Method method = clazz.getDeclaredMethod(methodName);
-                if (method == null) {
-                    method = clazz.getMethod(methodName);
-                }
-
-                DatabaseRouter router = null;
-                if (method != null) {
-                    router = method.getAnnotation(DatabaseRouter.class);
-                }
-                if (router == null) {
-                    router = clazz.getAnnotation(DatabaseRouter.class);
-                }
-                if (router != null) {
-                    CLASS_METHOD_CACHE.put(classAndMethod, router);
-                    return router;
-                }
-            }
-        } catch (Exception ignore) {
+            clazz = Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            return null;
         }
-        return null;
+
+        Method method;
+        try {
+            method = clazz.getDeclaredMethod(methodName);
+        } catch (NoSuchMethodException | SecurityException e) {
+            method = null;
+        }
+        if (method == null) {
+            try {
+                method = clazz.getMethod(methodName);
+            } catch (NoSuchMethodException | SecurityException ignore) {
+            }
+        }
+
+        DatabaseRouter router = null;
+        if (method != null) {
+            router = method.getAnnotation(DatabaseRouter.class);
+        }
+        if (router == null) {
+            router = clazz.getAnnotation(DatabaseRouter.class);
+        }
+
+        if (router == null) {
+            return null;
+        } else {
+            CLASS_METHOD_CACHE.put(classAndMethod, router);
+            return router;
+        }
     }
 }
