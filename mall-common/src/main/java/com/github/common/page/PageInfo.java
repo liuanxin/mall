@@ -27,6 +27,8 @@ import java.util.List;
  *     List&lt;XXX> xxxList = xxxMapper.selectByExample(xxxxx, pageBounds);
  *     return Pages.returnPage(xxxList);
  * }
+ *
+ * 这么做的目的是分页包只需要在服务端引入即可
  * </pre>
  */
 @Setter
@@ -39,14 +41,14 @@ public class PageInfo<T> implements Serializable {
     @ApiReturn("SELECT COUNT(*) FROM ... 的结果")
     private int total;
 
-    @ApiReturn("SELECT ... FROM ... LIMIT 0, 15 的结果")
+    @ApiReturn("SELECT ... FROM ... LIMIT 0, 10 的结果")
     private List<T> list;
 
     public static <T> PageInfo<T> emptyReturn() {
-        return new PageInfo<>(0, Collections.emptyList());
+        return new PageInfo<T>(0, Collections.emptyList());
     }
     public static <T> PageInfo<T> returnPage(int total, List<T> list) {
-        return new PageInfo<>(total, list);
+        return new PageInfo<T>(total, list);
     }
 
     /** 在 Controller 中调用 --> 组装不同的 vo 时使用此方法 */
@@ -55,7 +57,7 @@ public class PageInfo<T> implements Serializable {
             return emptyReturn();
         } else {
             // 只要总条数
-            PageInfo<T> info = new PageInfo<>();
+            PageInfo<T> info = new PageInfo<T>();
             info.setTotal(pageInfo.getTotal());
             return info;
         }
