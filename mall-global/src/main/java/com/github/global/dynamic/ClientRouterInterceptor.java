@@ -58,7 +58,8 @@ import java.util.concurrent.ConcurrentHashMap;
 })
 public class ClientRouterInterceptor implements Interceptor {
 
-    private static final Map<String, DatabaseRouter> CLASS_METHOD_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Object> CLASS_METHOD_CACHE = new ConcurrentHashMap<>();
+    private static final Object NIL_OBJ = new Object();
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
@@ -88,9 +89,13 @@ public class ClientRouterInterceptor implements Interceptor {
     }
 
     private DatabaseRouter getAnnotation(String classAndMethod) {
-        DatabaseRouter cacheRouter = CLASS_METHOD_CACHE.get(classAndMethod);
-        if (cacheRouter != null) {
-            return cacheRouter;
+        Object cacheRouter = CLASS_METHOD_CACHE.get(classAndMethod);
+        // 如果在缓存里的是一个空对象, 直接返回 null
+        if (cacheRouter == NIL_OBJ) {
+            return null;
+        }
+        if (cacheRouter instanceof DatabaseRouter) {
+            return (DatabaseRouter) cacheRouter;
         }
 
         // 比如: com.github.user.repository.UserMapper.selectByExample
@@ -126,11 +131,8 @@ public class ClientRouterInterceptor implements Interceptor {
             router = clazz.getAnnotation(DatabaseRouter.class);
         }
 
-        if (router == null) {
-            return null;
-        } else {
-            CLASS_METHOD_CACHE.put(classAndMethod, router);
-            return router;
-        }
+        // 方法或类上都没有标注解就拿一个空对象写入缓存, 这样后面再来的时候在最上面就可以直接返回了
+        CLASS_METHOD_CACHE.put(classAndMethod, (router == null ? NIL_OBJ : router));
+        return router;
     }
 }
