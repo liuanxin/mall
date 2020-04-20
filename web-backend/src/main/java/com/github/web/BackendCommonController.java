@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @ApiGroup(value = CommonConst.MODULE_INFO, index = 1)
 @ApiTokens
 @RestController
@@ -21,7 +23,8 @@ public class BackendCommonController {
 
     @ApiMethod(value = "枚举数据", develop = Develop.COMMON)
     @GetMapping("/enum")
-    public JsonResult enumList(@ApiParam("枚举类型. 不传则返回所有列表, 多个以逗号分隔") String type) {
+    public JsonResult<Map<String, Map<String, Object>>> enumList(
+            @ApiParam("枚举类型. 不传则返回所有列表, 多个以逗号分隔") String type) {
         return U.isBlank(type) ?
                 JsonResult.success("枚举列表", BackendDataCollectUtil.ALL_ENUM_INFO) :
                 JsonResult.success("枚举信息", BackendDataCollectUtil.singleEnumInfo(type));

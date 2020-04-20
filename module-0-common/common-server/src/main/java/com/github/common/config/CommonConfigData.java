@@ -10,9 +10,10 @@ import org.springframework.core.io.Resource;
 /**
  * 用户模块的配置数据. 主要是 mybatis 的多配置目录和类型处理器
  */
+@SuppressWarnings("rawtypes")
 public final class CommonConfigData {
 
-    public static final String[] RESOURCE_PATH = new String[] {
+    private static final String[] RESOURCE_PATH = new String[] {
             CommonConst.MODULE_NAME + "/*.xml",
             CommonConst.MODULE_NAME + "-custom/*.xml"
     };

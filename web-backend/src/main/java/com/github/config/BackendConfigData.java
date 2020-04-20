@@ -17,6 +17,7 @@ import java.util.List;
 /**
  * 管理模块的配置数据. 主要是 mybatis 的多配置目录和类型处理器
  */
+@SuppressWarnings("rawtypes")
 final class BackendConfigData {
 
     /** 要加载的 mybatis 的配置文件目录 */
@@ -31,7 +32,7 @@ final class BackendConfigData {
         Collections.addAll(resources, UserConfigData.RESOURCE_ARRAY);
         Collections.addAll(resources, ProductConfigData.RESOURCE_ARRAY);
         Collections.addAll(resources, OrderConfigData.RESOURCE_ARRAY);
-        RESOURCE_ARRAY = resources.toArray(new Resource[resources.size()]);
+        RESOURCE_ARRAY = resources.toArray(new Resource[0]);
 
         List<TypeHandler> typeHandlers = Lists.newArrayList();
         Collections.addAll(typeHandlers, CollectTypeHandlerUtil.typeHandler(A.maps(GlobalConst.MODULE_NAME, GlobalConst.class)));
@@ -39,6 +40,6 @@ final class BackendConfigData {
         Collections.addAll(typeHandlers, UserConfigData.HANDLER_ARRAY);
         Collections.addAll(typeHandlers, ProductConfigData.HANDLER_ARRAY);
         Collections.addAll(typeHandlers, OrderConfigData.HANDLER_ARRAY);
-        HANDLER_ARRAY = typeHandlers.toArray(new TypeHandler[typeHandlers.size()]);
+        HANDLER_ARRAY = typeHandlers.toArray(new TypeHandler[0]);
     }
 }
