@@ -37,7 +37,7 @@ public final class LogUtil {
     }
 
     public static void recordTime() {
-        MDC.put(RECEIVE_TIME, DateUtil.nowDateTimeMs() + " -> ");
+        MDC.put(RECEIVE_TIME, DateUtil.nowTimeMs() + " -> ");
     }
 
 
