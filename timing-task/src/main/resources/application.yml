@@ -10,7 +10,7 @@ spring:
     port: 6379
     timeout: 5000
   datasource:
-    url: jdbc:mysql://dev-db:3306/mall?useAffectedRows=true&useSSL=false&useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&statementInterceptors=com.github.common.sql.ShowSqlInterceptor
+    url: jdbc:mysql://dev-db:3306/mall?useAffectedRows=true&useSSL=false&useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&queryInterceptors=com.github.common.sql.ShowSql8Interceptor
     username: root
     password: root
     hikari:
