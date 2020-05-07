@@ -16,7 +16,7 @@ spring:
     password: root
     hikari:
       minimumIdle: 2
-      maximumPoolSize: 5
+      maximumPoolSize: 2
       dataSourceProperties:
         prepStmtCacheSize: 250
         prepStmtCacheSqlLimit: 2048
