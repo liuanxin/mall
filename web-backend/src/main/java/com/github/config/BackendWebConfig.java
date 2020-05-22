@@ -1,6 +1,7 @@
 package com.github.config;
 
 import com.github.common.mvc.SpringMvc;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -19,6 +20,9 @@ import java.util.List;
 @Configuration
 public class BackendWebConfig extends WebMvcConfigurationSupport {
 
+    @Value("${online:false}")
+    private boolean online;
+
     @Override
     protected void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
@@ -31,7 +35,7 @@ public class BackendWebConfig extends WebMvcConfigurationSupport {
 
     @Override
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-        SpringMvc.handlerConvert(converters);
+        SpringMvc.handlerConvert(converters, online);
     }
 
     @Override
