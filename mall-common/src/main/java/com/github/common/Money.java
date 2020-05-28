@@ -246,7 +246,8 @@ public class Money implements Serializable {
             }
 
             // 基本的位数检查, 按小数拆分, 分别处理
-            String left = money.contains(".") ? money.substring(0, money.indexOf(".")) : money;
+            boolean hasPoint = money.contains(".");
+            String left = hasPoint ? money.substring(0, money.indexOf(".")) : money;
             long leftLong = U.toLong(left);
             if (leftLong < 0) {
                 left = left.substring(1);
@@ -254,7 +255,7 @@ public class Money implements Serializable {
             if (left.length() > INTEGER.length) {
                 return MAX_CONVERT;
             }
-            String right = money.contains(".") ? money.substring(money.indexOf(".") + 1) : "";
+            String right = hasPoint ? money.substring(money.indexOf(".") + 1) : "";
             if (right.length() > DECIMAL.length) {
                 // right = right.substring(0, DECIMAL.length);
                 return MIN_CONVERT;
