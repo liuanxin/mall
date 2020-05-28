@@ -277,6 +277,7 @@ public class Money implements Serializable {
                     sbd.append(NUM[number]).append(INTEGER[leftLen - i - 1]);
                 }
             }
+            // 处理小数位后面的值
             long rightLong = U.toLong(right);
             if (rightLong > 0) {
                 sbd.append(SPLIT);
