@@ -11,7 +11,7 @@ spring:
     password: redis-prod-pass
     timeout: 5000
   datasource:
-    url: jdbc:mysql://prod-db:3306/mall?useAffectedRows=true&useSSL=false&useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true
+    url: jdbc:mysql://prod-db:3306/mall?useAffectedRows=true&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true
     username: root
     password: root
     hikari:
