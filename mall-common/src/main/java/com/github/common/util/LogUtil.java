@@ -29,6 +29,25 @@ public final class LogUtil {
         recordTime();
         MDC.put(REQUEST_INFO, logContextInfo.requestInfo());
     }
+    /**
+     * <pre>
+     * 使用 &#064;RequestBody 注解时, 想要输出请求参数, 需要在 Control 第一行调用此方法
+     *
+     * &#064;XxxMapping("/xxx")
+     * public JsonResult&lt;XXX&gt; xxx(&#064;RequestBody XXX xxx) {
+     *     LogUtil.bindRequestBody(JsonUtil.toJson(xxx));
+     *     ...
+     * }
+     * </pre>
+     */
+    public static void bindRequestBody(String requestBody) {
+        if (U.isNotBlank(requestBody)) {
+            String requestInfo = MDC.get(REQUEST_INFO);
+            if (U.isNotBlank(requestInfo)) {
+                MDC.put(REQUEST_INFO, requestInfo.replace("params()", "requestBody(" + requestInfo + ")"));
+            }
+        }
+    }
     public static void unbind() {
         MDC.clear();
     }
@@ -69,15 +88,42 @@ public final class LogUtil {
 
         /** 输出 " [ip (id/name) (method url) params(...) headers(...)]" */
         private String requestInfo() {
+            // 参数 及 头 的长度如果超过 1100 就只输出前后 500 个字符
+            int maxLen = 1100, headTail = 500;
             StringBuilder sbd = new StringBuilder();
             sbd.append(" [");
             sbd.append(ip);
-            if (U.isNotBlank(id) && U.isNotBlank(name)) {
-                sbd.append(" (").append(id).append("/").append(name).append(")");
+            if (U.isNotBlank(id) || U.isNotBlank(name)) {
+                sbd.append(" (");
+                sbd.append(U.isBlank(id) ? U.EMPTY : id);
+                sbd.append("/");
+                sbd.append(U.isBlank(name) ? U.EMPTY : name);
+                sbd.append(")");
             }
             sbd.append(" (").append(method).append(" ").append(url).append(")");
-            sbd.append(" params(").append(params).append(")");
-            sbd.append(" headers(").append(heads).append(")");
+
+            if (U.isNotBlank(params)) {
+                sbd.append(" params(");
+                int paramLen = params.length();
+                if (paramLen > maxLen) {
+                    sbd.append(params, 0, headTail).append(" ... ").append(params, paramLen - headTail, paramLen);
+                } else {
+                    sbd.append(params);
+                }
+                sbd.append(")");
+            }
+
+            if (U.isNotBlank(heads)) {
+                sbd.append(" headers(");
+                int headLen = heads.length();
+                if (headLen > maxLen) {
+                    sbd.append(heads, 0, headTail).append(" ... ").append(heads, headLen - headTail, headLen);
+                } else {
+                    sbd.append(heads);
+                }
+                sbd.append(")");
+            }
+
             sbd.append("]");
             return sbd.toString();
         }
