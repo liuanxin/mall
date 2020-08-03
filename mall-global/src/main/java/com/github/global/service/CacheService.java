@@ -112,7 +112,7 @@ public class CacheService {
                 return true;
             } else {
                 try {
-                    Thread.sleep(sleep);
+                    TimeUnit.MILLISECONDS.sleep(sleep);
                 } catch (InterruptedException ignore) {
                 }
             }
