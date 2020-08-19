@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS `t_manager_user_role` (
   `uid` bigint(20) unsigned NOT NULL COMMENT '用户 id',
   `rid` bigint(20) unsigned NOT NULL COMMENT '角色 id',
   UNIQUE KEY `uid_rid` (`uid`,`rid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户 和 角色 的中间表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户和角色的中间表';
 
 
 DROP TABLE IF EXISTS `t_manager_role_menu`;
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS `t_manager_role_menu` (
   `rid` bigint(20) unsigned NOT NULL COMMENT '角色 id',
   `mid` bigint(20) unsigned NOT NULL COMMENT '菜单 id',
   UNIQUE KEY `rid_mid` (`rid`,`mid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色 和 菜单 的中间表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色和菜单的中间表';
 
 
 DROP TABLE IF EXISTS `t_manager_role_permission`;
@@ -87,4 +87,4 @@ CREATE TABLE IF NOT EXISTS `t_manager_role_permission` (
   `rid` bigint(20) unsigned NOT NULL COMMENT '角色 id',
   `pid` bigint(20) unsigned NOT NULL COMMENT '权限 id',
 	UNIQUE INDEX `rid_pid` (`rid`, `pid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色 和 权限 的 中间表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色和权限的中间表';
