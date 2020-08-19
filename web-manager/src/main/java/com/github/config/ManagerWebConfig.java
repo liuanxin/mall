@@ -1,5 +1,6 @@
 package com.github.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.common.mvc.SpringMvc;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +24,11 @@ public class ManagerWebConfig extends WebMvcConfigurationSupport {
     @Value("${online:false}")
     private boolean online;
 
+    private final ObjectMapper objectMapper;
+    public ManagerWebConfig(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     @Override
     protected void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
@@ -35,7 +41,7 @@ public class ManagerWebConfig extends WebMvcConfigurationSupport {
 
     @Override
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-        SpringMvc.handlerConvert(converters, online);
+        SpringMvc.handlerConvert(converters, online, objectMapper);
     }
 
     @Override
