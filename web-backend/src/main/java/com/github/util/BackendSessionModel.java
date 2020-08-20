@@ -37,6 +37,10 @@ class BackendSessionModel implements Serializable {
         this.name = name;
     }
 
+    public String userInfo() {
+        return id + "/" + name;
+    }
+
     /** 当前用户在指定域名下是否已登录. 已登录就返回 true */
     boolean wasLogin() {
         return !Objects.equals(DEFAULT_ID, id) && !Objects.equals(DEFAULT_NAME, name);
