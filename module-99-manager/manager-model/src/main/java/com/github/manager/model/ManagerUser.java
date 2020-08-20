@@ -57,15 +57,12 @@ public class ManagerUser implements Serializable {
     public void assignmentData(List<ManagerRole> roles) {
         if (A.isNotEmpty(roles)) {
             List<ManagerMenu> menuList = Lists.newArrayList();
-            for (ManagerRole role : roles) {
-                menuList.addAll(role.getMenus());
-            }
-            this.menus = ManagerMenu.handleAllMenu(menuList);
-
             Set<ManagerPermission> set = Sets.newHashSet();
             for (ManagerRole role : roles) {
-                set.addAll(role.getPermissions());
+                menuList.addAll(role.getMenus());
+                set.addAll(role.getPermissions()); // 权限去重
             }
+            this.menus = ManagerMenu.handleAllMenu(menuList);
             this.permissions = Lists.newArrayList(set);
         }
     }
