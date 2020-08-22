@@ -444,6 +444,66 @@ public class ManagerUserExample {
             return (Criteria) this;
         }
 
+        public Criteria andHasManagerIsNull() {
+            addCriterion("`has_manager` is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andHasManagerIsNotNull() {
+            addCriterion("`has_manager` is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andHasManagerEqualTo(Boolean value) {
+            addCriterion("`has_manager` =", value, "hasManager");
+            return (Criteria) this;
+        }
+
+        public Criteria andHasManagerNotEqualTo(Boolean value) {
+            addCriterion("`has_manager` <>", value, "hasManager");
+            return (Criteria) this;
+        }
+
+        public Criteria andHasManagerGreaterThan(Boolean value) {
+            addCriterion("`has_manager` >", value, "hasManager");
+            return (Criteria) this;
+        }
+
+        public Criteria andHasManagerGreaterThanOrEqualTo(Boolean value) {
+            addCriterion("`has_manager` >=", value, "hasManager");
+            return (Criteria) this;
+        }
+
+        public Criteria andHasManagerLessThan(Boolean value) {
+            addCriterion("`has_manager` <", value, "hasManager");
+            return (Criteria) this;
+        }
+
+        public Criteria andHasManagerLessThanOrEqualTo(Boolean value) {
+            addCriterion("`has_manager` <=", value, "hasManager");
+            return (Criteria) this;
+        }
+
+        public Criteria andHasManagerIn(List<Boolean> values) {
+            addCriterion("`has_manager` in", values, "hasManager");
+            return (Criteria) this;
+        }
+
+        public Criteria andHasManagerNotIn(List<Boolean> values) {
+            addCriterion("`has_manager` not in", values, "hasManager");
+            return (Criteria) this;
+        }
+
+        public Criteria andHasManagerBetween(Boolean value1, Boolean value2) {
+            addCriterion("`has_manager` between", value1, value2, "hasManager");
+            return (Criteria) this;
+        }
+
+        public Criteria andHasManagerNotBetween(Boolean value1, Boolean value2) {
+            addCriterion("`has_manager` not between", value1, value2, "hasManager");
+            return (Criteria) this;
+        }
+
         public Criteria andStatusIsNull() {
             addCriterion("`status` is null");
             return (Criteria) this;

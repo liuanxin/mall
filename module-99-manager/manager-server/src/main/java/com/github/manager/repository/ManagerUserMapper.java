@@ -4,11 +4,13 @@ import com.github.liuanxin.page.model.PageBounds;
 import com.github.manager.model.ManagerUser;
 import com.github.manager.model.ManagerUserExample;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface ManagerUserMapper {
-    int countByExample(ManagerUserExample example);
+    long countByExample(ManagerUserExample example);
 
     int deleteByExample(ManagerUserExample example);
 

@@ -7,7 +7,17 @@
         <result column="password" jdbcType="VARCHAR" property="password" />
         <result column="nick_name" jdbcType="VARCHAR" property="nickName" />
         <result column="avatar" jdbcType="VARCHAR" property="avatar" />
-        <result column="status" jdbcType="BIT" property="status" />
+        <result column="has_manager" jdbcType="TINYINT" property="hasManager" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+    </resultMap>
+    <resultMap id="BaseResultMap_Alias" type="com.github.manager.model.ManagerUser">
+        <id column="t_manager_user_id" jdbcType="BIGINT" property="id" />
+        <result column="t_manager_user_user_name" jdbcType="VARCHAR" property="userName" />
+        <result column="t_manager_user_password" jdbcType="VARCHAR" property="password" />
+        <result column="t_manager_user_nick_name" jdbcType="VARCHAR" property="nickName" />
+        <result column="t_manager_user_avatar" jdbcType="VARCHAR" property="avatar" />
+        <result column="t_manager_user_has_manager" jdbcType="TINYINT" property="hasManager" />
+        <result column="t_manager_user_status" jdbcType="TINYINT" property="status" />
     </resultMap>
     <sql id="Example_Where_Clause">
         <where>
@@ -68,7 +78,14 @@
         </where>
     </sql>
     <sql id="Base_Column_List">
-        `id`, `user_name`, `password`, `nick_name`, `avatar`, `status`
+        `id`, `user_name`, `password`, `nick_name`, `avatar`, `has_manager`, 
+        `status`
+    </sql>
+    <sql id="Base_Column_List_Alias">
+        `t_manager_user`.`id` as `t_manager_user_id`, `t_manager_user`.`user_name` as `t_manager_user_user_name`, 
+        `t_manager_user`.`password` as `t_manager_user_password`, `t_manager_user`.`nick_name` as `t_manager_user_nick_name`, 
+        `t_manager_user`.`avatar` as `t_manager_user_avatar`, `t_manager_user`.`has_manager` as `t_manager_user_has_manager`, 
+        `t_manager_user`.`status` as `t_manager_user_status`
     </sql>
     <select id="selectByExample" parameterType="com.github.manager.model.ManagerUserExample" resultMap="BaseResultMap">
         select
@@ -85,7 +102,7 @@
         </if>
     </select>
     <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
-        select
+        select 
         <include refid="Base_Column_List" />
         from `t_manager_user`
         where `id` = #{id,jdbcType=BIGINT}
@@ -118,6 +135,9 @@
             <if test="avatar != null">
                 `avatar`,
             </if>
+            <if test="hasManager != null">
+                `has_manager`,
+            </if>
             <if test="status != null">
                 `status`,
             </if>
@@ -138,12 +158,15 @@
             <if test="avatar != null">
                 #{avatar,jdbcType=VARCHAR},
             </if>
+            <if test="hasManager != null">
+                #{hasManager,jdbcType=TINYINT},
+            </if>
             <if test="status != null">
-                #{status,jdbcType=BIT},
+                #{status,jdbcType=TINYINT},
             </if>
         </trim>
     </insert>
-    <select id="countByExample" parameterType="com.github.manager.model.ManagerUserExample" resultType="java.lang.Integer">
+    <select id="countByExample" parameterType="com.github.manager.model.ManagerUserExample" resultType="java.lang.Long">
         select count(*) from `t_manager_user`
         <if test="_parameter != null">
             <include refid="Example_Where_Clause" />
@@ -167,8 +190,11 @@
             <if test="record.avatar != null">
                 `avatar` = #{record.avatar,jdbcType=VARCHAR},
             </if>
+            <if test="record.hasManager != null">
+                `has_manager` = #{record.hasManager,jdbcType=TINYINT},
+            </if>
             <if test="record.status != null">
-                `status` = #{record.status,jdbcType=BIT},
+                `status` = #{record.status,jdbcType=TINYINT},
             </if>
         </set>
         <if test="_parameter != null">
@@ -190,8 +216,11 @@
             <if test="avatar != null">
                 `avatar` = #{avatar,jdbcType=VARCHAR},
             </if>
+            <if test="hasManager != null">
+                `has_manager` = #{hasManager,jdbcType=TINYINT},
+            </if>
             <if test="status != null">
-                `status` = #{status,jdbcType=BIT},
+                `status` = #{status,jdbcType=TINYINT},
             </if>
         </set>
         where `id` = #{id,jdbcType=BIGINT}
@@ -216,6 +245,9 @@
                     </if>
                     <if test="item.avatar != null">
                         `avatar`,
+                    </if>
+                    <if test="item.hasManager != null">
+                        `has_manager`,
                     </if>
                     <if test="item.status != null">
                         `status`,
@@ -242,8 +274,11 @@
                 <if test="item.avatar != null">
                     #{item.avatar,jdbcType=VARCHAR},
                 </if>
+                <if test="item.hasManager != null">
+                    #{item.hasManager,jdbcType=TINYINT},
+                </if>
                 <if test="item.status != null">
-                    #{item.status,jdbcType=BIT},
+                    #{item.status,jdbcType=TINYINT},
                 </if>
             </trim>
         </foreach>

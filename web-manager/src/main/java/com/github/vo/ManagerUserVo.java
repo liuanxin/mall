@@ -29,7 +29,7 @@ public class ManagerUserVo {
     private String avatar;
 
     @ApiReturn("true 则表示是管理员")
-    private boolean hasAdmin;
+    private Boolean hasAdmin;
 
     @ApiReturn("用户能见到的菜单")
     private List<ManagerMenuVo> menus;

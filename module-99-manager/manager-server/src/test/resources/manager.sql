@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS `t_manager_user` (
   `password` varchar(32) NOT NULL DEFAULT '' COMMENT '密码',
   `nick_name` varchar(32) NOT NULL DEFAULT '' COMMENT '昵称',
   `avatar` varchar(256) NOT NULL DEFAULT '' COMMENT '头像',
+  `has_manager` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '1 表示是管理员',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '1 表示已禁用',
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_name` (`user_name`)

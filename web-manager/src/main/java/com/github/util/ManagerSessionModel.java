@@ -86,11 +86,11 @@ class ManagerSessionModel implements Serializable {
         return !wasLogin();
     }
 
-    private boolean wasSuper() {
+    boolean hasAdmin() {
         return SUPER_USER.contains(userName);
     }
-    boolean notSuper() {
-        return !wasSuper();
+    boolean notAdmin() {
+        return !hasAdmin();
     }
 
     /** 有访问权限就返回 true */

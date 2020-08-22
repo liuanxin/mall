@@ -6,7 +6,6 @@ import com.google.common.collect.Sets;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -14,8 +13,6 @@ import java.util.Set;
 @Data
 public class ManagerUser implements Serializable {
     private static final long serialVersionUID = 1L;
-
-    private static final List<String> ROOT_LIST = Arrays.asList("root", "admin");
 
     private Long id;
 
@@ -31,6 +28,9 @@ public class ManagerUser implements Serializable {
     /** 头像 --> avatar */
     private String avatar;
 
+    /** 1 表示是管理员 --> has_manager */
+    private Boolean hasManager;
+
     /** 1 表示已禁用 --> status */
     private Boolean status;
 
@@ -44,14 +44,6 @@ public class ManagerUser implements Serializable {
     private List<ManagerMenu> menus;
     /** 用户的所有角色下的所有权限 */
     private List<ManagerPermission> permissions;
-
-    /** 当前用户是管理员账号就返回 true */
-    public boolean getHasAdmin() {
-        return ROOT_LIST.contains(userName);
-    }
-    public boolean notAdmin() {
-        return !getHasAdmin();
-    }
 
     /** 一个用户有多个角色, 一个角色又有多个菜单(且会有父子层级关系)和多个权限, 基于用户的角色将菜单和权限赋值 */
     public void assignmentData(List<ManagerRole> roles) {

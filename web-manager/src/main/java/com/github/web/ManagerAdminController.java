@@ -37,21 +37,23 @@ public class ManagerAdminController {
     public JsonResult<PageInfo<ManagerUser>> queryUser(String userName, Boolean status, Page page) {
         return JsonResult.success("查询用户信息", adminService.queryUser(userName, status, page));
     }
+
     @ApiMethod(value = "添加或修改用户", index = 11)
     @PostMapping("/user")
-    public JsonResult addOrUpdateUser(ManagerUserDto userDto, @ApiParam("头像") MultipartFile image) {
+    public JsonResult<Void> addOrUpdateUser(ManagerUserDto userDto, @ApiParam("头像") MultipartFile image) {
         userDto.basicCheck();
 
         ManagerUser managerUser = userDto.operateParam();
-        if (U.isNotBlank(managerUser)) {
+        if (U.isNotBlank(managerUser) && U.greater0(image.getSize())) {
             managerUser.setAvatar(FileUtil.save(image, config.getFilePath(), config.getFileUrl(), false));
         }
         adminService.addOrUpdateUser(managerUser);
         return JsonResult.success(String.format("用户%s成功", (userDto.hasUpdate() ? "修改" : "添加")));
     }
+
     @ApiMethod(value = "删除用户", index = 12)
     @DeleteMapping("/user")
-    public JsonResult deleteUser(Long id) {
+    public JsonResult<Void> deleteUser(Long id) {
         adminService.deleteUser(id);
         return JsonResult.success("用户删除成功");
     }
@@ -61,17 +63,19 @@ public class ManagerAdminController {
     public JsonResult<List<ManagerRole>> queryRole() {
         return JsonResult.success("查询所有角色", adminService.queryBasicRole());
     }
+
     @ApiMethod(value = "添加或更新角色", index = 21)
     @PostMapping("/role")
-    public JsonResult addOrUpdateRole(ManagerRoleDto role) {
+    public JsonResult<Void> addOrUpdateRole(ManagerRoleDto role) {
         role.basicCheck();
 
         adminService.addOrUpdateRole(role.operateParam());
         return JsonResult.success(String.format("角色%s成功", (role.hasUpdate() ? "修改" : "添加")));
     }
+
     @ApiMethod(value = "删除角色", index = 22)
     @DeleteMapping("/role")
-    public JsonResult deleteRole(Long id) {
+    public JsonResult<Void> deleteRole(Long id) {
         adminService.deleteRole(id);
         return JsonResult.success("角色删除成功");
     }

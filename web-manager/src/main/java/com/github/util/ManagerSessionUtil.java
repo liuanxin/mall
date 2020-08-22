@@ -63,6 +63,10 @@ public class ManagerSessionUtil {
         return getSessionInfo().getUserName();
     }
 
+    public static boolean hasAdmin() {
+        return getSessionInfo().hasAdmin();
+    }
+
     public static String getUserInfo() {
         return getSessionInfo().userInfo();
     }
@@ -78,7 +82,7 @@ public class ManagerSessionUtil {
     public static void checkPermission() {
         ManagerSessionModel sessionModel = getSessionInfo();
         // 非超级管理员才验证权限
-        if (sessionModel.notSuper()) {
+        if (sessionModel.notAdmin()) {
             HttpServletRequest request = RequestUtils.getRequest();
             String url = request.getRequestURI();
             String method = request.getMethod();
