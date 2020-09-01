@@ -12,8 +12,8 @@ public class ManagerPermission implements Serializable {
 
     private Long id;
 
-    /** 所属菜单 --> mid */
-    private Long mid;
+    /** 所属菜单 --> menu_id */
+    private Long menuId;
 
     /** 权限说明, 如(查询用户) --> name */
     private String name;

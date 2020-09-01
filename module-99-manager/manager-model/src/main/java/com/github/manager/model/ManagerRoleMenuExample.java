@@ -104,123 +104,123 @@ public class ManagerRoleMenuExample {
             criteria.add(new Criterion(condition, value1, value2));
         }
 
-        public Criteria andRidIsNull() {
-            addCriterion("`rid` is null");
+        public Criteria andRoleIdIsNull() {
+            addCriterion("`role_id` is null");
             return (Criteria) this;
         }
 
-        public Criteria andRidIsNotNull() {
-            addCriterion("`rid` is not null");
+        public Criteria andRoleIdIsNotNull() {
+            addCriterion("`role_id` is not null");
             return (Criteria) this;
         }
 
-        public Criteria andRidEqualTo(Long value) {
-            addCriterion("`rid` =", value, "rid");
+        public Criteria andRoleIdEqualTo(Long value) {
+            addCriterion("`role_id` =", value, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidNotEqualTo(Long value) {
-            addCriterion("`rid` <>", value, "rid");
+        public Criteria andRoleIdNotEqualTo(Long value) {
+            addCriterion("`role_id` <>", value, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidGreaterThan(Long value) {
-            addCriterion("`rid` >", value, "rid");
+        public Criteria andRoleIdGreaterThan(Long value) {
+            addCriterion("`role_id` >", value, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidGreaterThanOrEqualTo(Long value) {
-            addCriterion("`rid` >=", value, "rid");
+        public Criteria andRoleIdGreaterThanOrEqualTo(Long value) {
+            addCriterion("`role_id` >=", value, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidLessThan(Long value) {
-            addCriterion("`rid` <", value, "rid");
+        public Criteria andRoleIdLessThan(Long value) {
+            addCriterion("`role_id` <", value, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidLessThanOrEqualTo(Long value) {
-            addCriterion("`rid` <=", value, "rid");
+        public Criteria andRoleIdLessThanOrEqualTo(Long value) {
+            addCriterion("`role_id` <=", value, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidIn(List<Long> values) {
-            addCriterion("`rid` in", values, "rid");
+        public Criteria andRoleIdIn(List<Long> values) {
+            addCriterion("`role_id` in", values, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidNotIn(List<Long> values) {
-            addCriterion("`rid` not in", values, "rid");
+        public Criteria andRoleIdNotIn(List<Long> values) {
+            addCriterion("`role_id` not in", values, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidBetween(Long value1, Long value2) {
-            addCriterion("`rid` between", value1, value2, "rid");
+        public Criteria andRoleIdBetween(Long value1, Long value2) {
+            addCriterion("`role_id` between", value1, value2, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidNotBetween(Long value1, Long value2) {
-            addCriterion("`rid` not between", value1, value2, "rid");
+        public Criteria andRoleIdNotBetween(Long value1, Long value2) {
+            addCriterion("`role_id` not between", value1, value2, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andMidIsNull() {
-            addCriterion("`mid` is null");
+        public Criteria andMenuIdIsNull() {
+            addCriterion("`menu_id` is null");
             return (Criteria) this;
         }
 
-        public Criteria andMidIsNotNull() {
-            addCriterion("`mid` is not null");
+        public Criteria andMenuIdIsNotNull() {
+            addCriterion("`menu_id` is not null");
             return (Criteria) this;
         }
 
-        public Criteria andMidEqualTo(Long value) {
-            addCriterion("`mid` =", value, "mid");
+        public Criteria andMenuIdEqualTo(Long value) {
+            addCriterion("`menu_id` =", value, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidNotEqualTo(Long value) {
-            addCriterion("`mid` <>", value, "mid");
+        public Criteria andMenuIdNotEqualTo(Long value) {
+            addCriterion("`menu_id` <>", value, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidGreaterThan(Long value) {
-            addCriterion("`mid` >", value, "mid");
+        public Criteria andMenuIdGreaterThan(Long value) {
+            addCriterion("`menu_id` >", value, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidGreaterThanOrEqualTo(Long value) {
-            addCriterion("`mid` >=", value, "mid");
+        public Criteria andMenuIdGreaterThanOrEqualTo(Long value) {
+            addCriterion("`menu_id` >=", value, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidLessThan(Long value) {
-            addCriterion("`mid` <", value, "mid");
+        public Criteria andMenuIdLessThan(Long value) {
+            addCriterion("`menu_id` <", value, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidLessThanOrEqualTo(Long value) {
-            addCriterion("`mid` <=", value, "mid");
+        public Criteria andMenuIdLessThanOrEqualTo(Long value) {
+            addCriterion("`menu_id` <=", value, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidIn(List<Long> values) {
-            addCriterion("`mid` in", values, "mid");
+        public Criteria andMenuIdIn(List<Long> values) {
+            addCriterion("`menu_id` in", values, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidNotIn(List<Long> values) {
-            addCriterion("`mid` not in", values, "mid");
+        public Criteria andMenuIdNotIn(List<Long> values) {
+            addCriterion("`menu_id` not in", values, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidBetween(Long value1, Long value2) {
-            addCriterion("`mid` between", value1, value2, "mid");
+        public Criteria andMenuIdBetween(Long value1, Long value2) {
+            addCriterion("`menu_id` between", value1, value2, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidNotBetween(Long value1, Long value2) {
-            addCriterion("`mid` not between", value1, value2, "mid");
+        public Criteria andMenuIdNotBetween(Long value1, Long value2) {
+            addCriterion("`menu_id` not between", value1, value2, "menuId");
             return (Criteria) this;
         }
     }

@@ -19,12 +19,12 @@ public class ManagerRole implements Serializable {
     // 下面的字段不与数据库关联, 只做为数据载体进行传输
 
     /** 角色下的菜单 id */
-    private List<Long> mids;
+    private List<Long> menuIds;
     /** 角色下的菜单 */
     private List<ManagerMenu> menus;
 
     /** 角色下的权限 id */
-    private List<Long> pids;
+    private List<Long> permissionIds;
     /** 角色下的权限 */
     private List<ManagerPermission> permissions;
 }

@@ -164,63 +164,63 @@ public class ManagerPermissionExample {
             return (Criteria) this;
         }
 
-        public Criteria andMidIsNull() {
-            addCriterion("`mid` is null");
+        public Criteria andMenuIdIsNull() {
+            addCriterion("`menu_id` is null");
             return (Criteria) this;
         }
 
-        public Criteria andMidIsNotNull() {
-            addCriterion("`mid` is not null");
+        public Criteria andMenuIdIsNotNull() {
+            addCriterion("`menu_id` is not null");
             return (Criteria) this;
         }
 
-        public Criteria andMidEqualTo(Long value) {
-            addCriterion("`mid` =", value, "mid");
+        public Criteria andMenuIdEqualTo(Long value) {
+            addCriterion("`menu_id` =", value, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidNotEqualTo(Long value) {
-            addCriterion("`mid` <>", value, "mid");
+        public Criteria andMenuIdNotEqualTo(Long value) {
+            addCriterion("`menu_id` <>", value, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidGreaterThan(Long value) {
-            addCriterion("`mid` >", value, "mid");
+        public Criteria andMenuIdGreaterThan(Long value) {
+            addCriterion("`menu_id` >", value, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidGreaterThanOrEqualTo(Long value) {
-            addCriterion("`mid` >=", value, "mid");
+        public Criteria andMenuIdGreaterThanOrEqualTo(Long value) {
+            addCriterion("`menu_id` >=", value, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidLessThan(Long value) {
-            addCriterion("`mid` <", value, "mid");
+        public Criteria andMenuIdLessThan(Long value) {
+            addCriterion("`menu_id` <", value, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidLessThanOrEqualTo(Long value) {
-            addCriterion("`mid` <=", value, "mid");
+        public Criteria andMenuIdLessThanOrEqualTo(Long value) {
+            addCriterion("`menu_id` <=", value, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidIn(List<Long> values) {
-            addCriterion("`mid` in", values, "mid");
+        public Criteria andMenuIdIn(List<Long> values) {
+            addCriterion("`menu_id` in", values, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidNotIn(List<Long> values) {
-            addCriterion("`mid` not in", values, "mid");
+        public Criteria andMenuIdNotIn(List<Long> values) {
+            addCriterion("`menu_id` not in", values, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidBetween(Long value1, Long value2) {
-            addCriterion("`mid` between", value1, value2, "mid");
+        public Criteria andMenuIdBetween(Long value1, Long value2) {
+            addCriterion("`menu_id` between", value1, value2, "menuId");
             return (Criteria) this;
         }
 
-        public Criteria andMidNotBetween(Long value1, Long value2) {
-            addCriterion("`mid` not between", value1, value2, "mid");
+        public Criteria andMenuIdNotBetween(Long value1, Long value2) {
+            addCriterion("`menu_id` not between", value1, value2, "menuId");
             return (Criteria) this;
         }
 

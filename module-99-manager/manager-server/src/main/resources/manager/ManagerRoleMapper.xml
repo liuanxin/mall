@@ -5,6 +5,10 @@
         <id column="id" jdbcType="BIGINT" property="id" />
         <result column="name" jdbcType="VARCHAR" property="name" />
     </resultMap>
+    <resultMap id="BaseResultMap_Alias" type="com.github.manager.model.ManagerRole">
+        <id column="t_manager_role_id" jdbcType="BIGINT" property="id" />
+        <result column="t_manager_role_name" jdbcType="VARCHAR" property="name" />
+    </resultMap>
     <sql id="Example_Where_Clause">
         <where>
             <foreach collection="oredCriteria" item="criteria" separator="or">
@@ -66,6 +70,9 @@
     <sql id="Base_Column_List">
         `id`, `name`
     </sql>
+    <sql id="Base_Column_List_Alias">
+        `t_manager_role`.`id` as `t_manager_role_id`, `t_manager_role`.`name` as `t_manager_role_name`
+    </sql>
     <select id="selectByExample" parameterType="com.github.manager.model.ManagerRoleExample" resultMap="BaseResultMap">
         select
         <if test="distinct">
@@ -81,7 +88,7 @@
         </if>
     </select>
     <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
-        select
+        select 
         <include refid="Base_Column_List" />
         from `t_manager_role`
         where `id` = #{id,jdbcType=BIGINT}
@@ -115,7 +122,7 @@
             </if>
         </trim>
     </insert>
-    <select id="countByExample" parameterType="com.github.manager.model.ManagerRoleExample" resultType="java.lang.Integer">
+    <select id="countByExample" parameterType="com.github.manager.model.ManagerRoleExample" resultType="java.lang.Long">
         select count(*) from `t_manager_role`
         <if test="_parameter != null">
             <include refid="Example_Where_Clause" />

@@ -46,7 +46,7 @@ public interface ManagerService {
 
     void deleteMenu(Long menuId);
 
-    void deleteMenus(List<Long> mids);
+    void deleteMenus(List<Long> menuIds);
 
 
     List<ManagerPermission> queryPermission(String name);
@@ -55,5 +55,5 @@ public interface ManagerService {
 
     void deletePermission(Long permissionId);
 
-    void deletePermissions(List<Long> pids);
+    void deletePermissions(List<Long> permissionIds);
 }

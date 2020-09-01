@@ -4,11 +4,13 @@ import com.github.liuanxin.page.model.PageBounds;
 import com.github.manager.model.ManagerRoleMenu;
 import com.github.manager.model.ManagerRoleMenuExample;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface ManagerRoleMenuMapper {
-    int countByExample(ManagerRoleMenuExample example);
+    long countByExample(ManagerRoleMenuExample example);
 
     int deleteByExample(ManagerRoleMenuExample example);
 

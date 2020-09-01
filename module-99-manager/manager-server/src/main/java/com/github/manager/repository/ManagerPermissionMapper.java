@@ -4,11 +4,13 @@ import com.github.liuanxin.page.model.PageBounds;
 import com.github.manager.model.ManagerPermission;
 import com.github.manager.model.ManagerPermissionExample;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface ManagerPermissionMapper {
-    int countByExample(ManagerPermissionExample example);
+    long countByExample(ManagerPermissionExample example);
 
     int deleteByExample(ManagerPermissionExample example);
 

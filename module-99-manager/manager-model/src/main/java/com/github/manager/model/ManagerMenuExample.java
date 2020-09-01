@@ -164,63 +164,63 @@ public class ManagerMenuExample {
             return (Criteria) this;
         }
 
-        public Criteria andPidIsNull() {
-            addCriterion("`pid` is null");
+        public Criteria andParentIdIsNull() {
+            addCriterion("`parent_id` is null");
             return (Criteria) this;
         }
 
-        public Criteria andPidIsNotNull() {
-            addCriterion("`pid` is not null");
+        public Criteria andParentIdIsNotNull() {
+            addCriterion("`parent_id` is not null");
             return (Criteria) this;
         }
 
-        public Criteria andPidEqualTo(Long value) {
-            addCriterion("`pid` =", value, "pid");
+        public Criteria andParentIdEqualTo(Long value) {
+            addCriterion("`parent_id` =", value, "parentId");
             return (Criteria) this;
         }
 
-        public Criteria andPidNotEqualTo(Long value) {
-            addCriterion("`pid` <>", value, "pid");
+        public Criteria andParentIdNotEqualTo(Long value) {
+            addCriterion("`parent_id` <>", value, "parentId");
             return (Criteria) this;
         }
 
-        public Criteria andPidGreaterThan(Long value) {
-            addCriterion("`pid` >", value, "pid");
+        public Criteria andParentIdGreaterThan(Long value) {
+            addCriterion("`parent_id` >", value, "parentId");
             return (Criteria) this;
         }
 
-        public Criteria andPidGreaterThanOrEqualTo(Long value) {
-            addCriterion("`pid` >=", value, "pid");
+        public Criteria andParentIdGreaterThanOrEqualTo(Long value) {
+            addCriterion("`parent_id` >=", value, "parentId");
             return (Criteria) this;
         }
 
-        public Criteria andPidLessThan(Long value) {
-            addCriterion("`pid` <", value, "pid");
+        public Criteria andParentIdLessThan(Long value) {
+            addCriterion("`parent_id` <", value, "parentId");
             return (Criteria) this;
         }
 
-        public Criteria andPidLessThanOrEqualTo(Long value) {
-            addCriterion("`pid` <=", value, "pid");
+        public Criteria andParentIdLessThanOrEqualTo(Long value) {
+            addCriterion("`parent_id` <=", value, "parentId");
             return (Criteria) this;
         }
 
-        public Criteria andPidIn(List<Long> values) {
-            addCriterion("`pid` in", values, "pid");
+        public Criteria andParentIdIn(List<Long> values) {
+            addCriterion("`parent_id` in", values, "parentId");
             return (Criteria) this;
         }
 
-        public Criteria andPidNotIn(List<Long> values) {
-            addCriterion("`pid` not in", values, "pid");
+        public Criteria andParentIdNotIn(List<Long> values) {
+            addCriterion("`parent_id` not in", values, "parentId");
             return (Criteria) this;
         }
 
-        public Criteria andPidBetween(Long value1, Long value2) {
-            addCriterion("`pid` between", value1, value2, "pid");
+        public Criteria andParentIdBetween(Long value1, Long value2) {
+            addCriterion("`parent_id` between", value1, value2, "parentId");
             return (Criteria) this;
         }
 
-        public Criteria andPidNotBetween(Long value1, Long value2) {
-            addCriterion("`pid` not between", value1, value2, "pid");
+        public Criteria andParentIdNotBetween(Long value1, Long value2) {
+            addCriterion("`parent_id` not between", value1, value2, "parentId");
             return (Criteria) this;
         }
 

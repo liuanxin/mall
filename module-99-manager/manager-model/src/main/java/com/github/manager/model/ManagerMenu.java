@@ -61,7 +61,7 @@ public class ManagerMenu implements Serializable {
         Multimap<String, ManagerPermission> perMap = LinkedListMultimap.create();
         if (A.isNotEmpty(permissions)) {
             for (ManagerPermission permission : permissions) {
-                perMap.put(U.toStr(permission.getMid()), permission);
+                perMap.put(U.toStr(permission.getMenuId()), permission);
             }
         }
 
@@ -117,13 +117,13 @@ public class ManagerMenu implements Serializable {
     /**
      * <pre>
      * 使用深度优先(Depth-First)
-     * 
+     *
      * 比如:
      * [
      *   { "id": 1, "children": [ { "id": 11, "children": [ { "id": 111 } ] }, { "id": 12 } ] },
      *   { "id": 2, "children": [ { "id": 21 }, { "id": 22, "children": [ { "id": 221 } ] } ] }
      * ]
-     * 
+     *
      * 返回:
      * [ { "id": 1 }, { "id": 11 }, { "id": 111 }, { "id": 12 }, { "id": 2 }, { "id": 21 }, { "id": 22 }, { "id": 221 } ]
      * </pre>

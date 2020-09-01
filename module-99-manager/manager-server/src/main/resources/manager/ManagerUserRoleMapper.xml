@@ -2,8 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.manager.repository.ManagerUserRoleMapper">
     <resultMap id="BaseResultMap" type="com.github.manager.model.ManagerUserRole">
-        <result column="uid" jdbcType="BIGINT" property="uid" />
-        <result column="rid" jdbcType="BIGINT" property="rid" />
+        <result column="user_id" jdbcType="BIGINT" property="userId" />
+        <result column="role_id" jdbcType="BIGINT" property="roleId" />
+    </resultMap>
+    <resultMap id="BaseResultMap_Alias" type="com.github.manager.model.ManagerUserRole">
+        <result column="t_manager_user_role_user_id" jdbcType="BIGINT" property="userId" />
+        <result column="t_manager_user_role_role_id" jdbcType="BIGINT" property="roleId" />
     </resultMap>
     <sql id="Example_Where_Clause">
         <where>
@@ -64,7 +68,11 @@
         </where>
     </sql>
     <sql id="Base_Column_List">
-        `uid`, `rid`
+        `user_id`, `role_id`
+    </sql>
+    <sql id="Base_Column_List_Alias">
+        `t_manager_user_role`.`user_id` as `t_manager_user_role_user_id`, 
+        `t_manager_user_role`.`role_id` as `t_manager_user_role_role_id`
     </sql>
     <select id="selectByExample" parameterType="com.github.manager.model.ManagerUserRoleExample" resultMap="BaseResultMap">
         select
@@ -89,23 +97,23 @@
     <insert id="insertSelective" parameterType="com.github.manager.model.ManagerUserRole">
         insert into `t_manager_user_role`
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="uid != null">
-                `uid`,
+            <if test="userId != null">
+                `user_id`,
             </if>
-            <if test="rid != null">
-                `rid`,
+            <if test="roleId != null">
+                `role_id`,
             </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="uid != null">
-                #{uid,jdbcType=BIGINT},
+            <if test="userId != null">
+                #{userId,jdbcType=BIGINT},
             </if>
-            <if test="rid != null">
-                #{rid,jdbcType=BIGINT},
+            <if test="roleId != null">
+                #{roleId,jdbcType=BIGINT},
             </if>
         </trim>
     </insert>
-    <select id="countByExample" parameterType="com.github.manager.model.ManagerUserRoleExample" resultType="java.lang.Integer">
+    <select id="countByExample" parameterType="com.github.manager.model.ManagerUserRoleExample" resultType="java.lang.Long">
         select count(*) from `t_manager_user_role`
         <if test="_parameter != null">
             <include refid="Example_Where_Clause" />
@@ -114,11 +122,11 @@
     <update id="updateByExampleSelective" parameterType="map">
         update `t_manager_user_role`
         <set>
-            <if test="record.uid != null">
-                `uid` = #{record.uid,jdbcType=BIGINT},
+            <if test="record.userId != null">
+                `user_id` = #{record.userId,jdbcType=BIGINT},
             </if>
-            <if test="record.rid != null">
-                `rid` = #{record.rid,jdbcType=BIGINT},
+            <if test="record.roleId != null">
+                `role_id` = #{record.roleId,jdbcType=BIGINT},
             </if>
         </set>
         <if test="_parameter != null">
@@ -131,11 +139,11 @@
         <foreach collection="list" index="index" item="item">
             <if test="index == 0">
                 <trim suffixOverrides=",">
-                    <if test="item.uid != null">
-                        `uid`,
+                    <if test="item.userId != null">
+                        `user_id`,
                     </if>
-                    <if test="item.rid != null">
-                        `rid`,
+                    <if test="item.roleId != null">
+                        `role_id`,
                     </if>
                 </trim>
             </if>
@@ -144,11 +152,11 @@
         values
         <foreach collection="list" item="item" separator=",">
             <trim prefix="(" suffix=")" suffixOverrides=",">
-                <if test="item.uid != null">
-                    #{item.uid,jdbcType=BIGINT},
+                <if test="item.userId != null">
+                    #{item.userId,jdbcType=BIGINT},
                 </if>
-                <if test="item.rid != null">
-                    #{item.rid,jdbcType=BIGINT},
+                <if test="item.roleId != null">
+                    #{item.roleId,jdbcType=BIGINT},
                 </if>
             </trim>
         </foreach>

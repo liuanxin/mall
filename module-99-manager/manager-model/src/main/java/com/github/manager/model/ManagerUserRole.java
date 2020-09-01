@@ -13,9 +13,9 @@ import java.io.Serializable;
 public class ManagerUserRole implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** 用户 id --> uid */
-    private Long uid;
+    /** 用户 id --> user_id */
+    private Long userId;
 
-    /** 角色 id --> rid */
-    private Long rid;
+    /** 角色 id --> role_id */
+    private Long roleId;
 }

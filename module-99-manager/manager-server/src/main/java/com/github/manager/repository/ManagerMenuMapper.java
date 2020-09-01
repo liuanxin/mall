@@ -4,11 +4,13 @@ import com.github.liuanxin.page.model.PageBounds;
 import com.github.manager.model.ManagerMenu;
 import com.github.manager.model.ManagerMenuExample;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface ManagerMenuMapper {
-    int countByExample(ManagerMenuExample example);
+    long countByExample(ManagerMenuExample example);
 
     int deleteByExample(ManagerMenuExample example);
 

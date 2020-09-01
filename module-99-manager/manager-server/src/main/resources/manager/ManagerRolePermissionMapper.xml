@@ -2,8 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.manager.repository.ManagerRolePermissionMapper">
     <resultMap id="BaseResultMap" type="com.github.manager.model.ManagerRolePermission">
-        <result column="rid" jdbcType="BIGINT" property="rid" />
-        <result column="pid" jdbcType="BIGINT" property="pid" />
+        <result column="role_id" jdbcType="BIGINT" property="roleId" />
+        <result column="permission_id" jdbcType="BIGINT" property="permissionId" />
+    </resultMap>
+    <resultMap id="BaseResultMap_Alias" type="com.github.manager.model.ManagerRolePermission">
+        <result column="t_manager_role_permission_role_id" jdbcType="BIGINT" property="roleId" />
+        <result column="t_manager_role_permission_permission_id" jdbcType="BIGINT" property="permissionId" />
     </resultMap>
     <sql id="Example_Where_Clause">
         <where>
@@ -64,7 +68,11 @@
         </where>
     </sql>
     <sql id="Base_Column_List">
-        `rid`, `pid`
+        `role_id`, `permission_id`
+    </sql>
+    <sql id="Base_Column_List_Alias">
+        `t_manager_role_permission`.`role_id` as `t_manager_role_permission_role_id`, 
+        `t_manager_role_permission`.`permission_id` as `t_manager_role_permission_permission_id`
     </sql>
     <select id="selectByExample" parameterType="com.github.manager.model.ManagerRolePermissionExample" resultMap="BaseResultMap">
         select
@@ -89,23 +97,23 @@
     <insert id="insertSelective" parameterType="com.github.manager.model.ManagerRolePermission">
         insert into `t_manager_role_permission`
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="rid != null">
-                `rid`,
+            <if test="roleId != null">
+                `role_id`,
             </if>
-            <if test="pid != null">
-                `pid`,
+            <if test="permissionId != null">
+                `permission_id`,
             </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="rid != null">
-                #{rid,jdbcType=BIGINT},
+            <if test="roleId != null">
+                #{roleId,jdbcType=BIGINT},
             </if>
-            <if test="pid != null">
-                #{pid,jdbcType=BIGINT},
+            <if test="permissionId != null">
+                #{permissionId,jdbcType=BIGINT},
             </if>
         </trim>
     </insert>
-    <select id="countByExample" parameterType="com.github.manager.model.ManagerRolePermissionExample" resultType="java.lang.Integer">
+    <select id="countByExample" parameterType="com.github.manager.model.ManagerRolePermissionExample" resultType="java.lang.Long">
         select count(*) from `t_manager_role_permission`
         <if test="_parameter != null">
             <include refid="Example_Where_Clause" />
@@ -114,11 +122,11 @@
     <update id="updateByExampleSelective" parameterType="map">
         update `t_manager_role_permission`
         <set>
-            <if test="record.rid != null">
-                `rid` = #{record.rid,jdbcType=BIGINT},
+            <if test="record.roleId != null">
+                `role_id` = #{record.roleId,jdbcType=BIGINT},
             </if>
-            <if test="record.pid != null">
-                `pid` = #{record.pid,jdbcType=BIGINT},
+            <if test="record.permissionId != null">
+                `permission_id` = #{record.permissionId,jdbcType=BIGINT},
             </if>
         </set>
         <if test="_parameter != null">
@@ -131,11 +139,11 @@
         <foreach collection="list" index="index" item="item">
             <if test="index == 0">
                 <trim suffixOverrides=",">
-                    <if test="item.rid != null">
-                        `rid`,
+                    <if test="item.roleId != null">
+                        `role_id`,
                     </if>
-                    <if test="item.pid != null">
-                        `pid`,
+                    <if test="item.permissionId != null">
+                        `permission_id`,
                     </if>
                 </trim>
             </if>
@@ -144,11 +152,11 @@
         values
         <foreach collection="list" item="item" separator=",">
             <trim prefix="(" suffix=")" suffixOverrides=",">
-                <if test="item.rid != null">
-                    #{item.rid,jdbcType=BIGINT},
+                <if test="item.roleId != null">
+                    #{item.roleId,jdbcType=BIGINT},
                 </if>
-                <if test="item.pid != null">
-                    #{item.pid,jdbcType=BIGINT},
+                <if test="item.permissionId != null">
+                    #{item.permissionId,jdbcType=BIGINT},
                 </if>
             </trim>
         </foreach>

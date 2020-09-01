@@ -13,9 +13,9 @@ import java.io.Serializable;
 public class ManagerRoleMenu implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** 角色 id --> rid */
-    private Long rid;
+    /** 角色 id --> role_id */
+    private Long roleId;
 
-    /** 菜单 id --> mid */
-    private Long mid;
+    /** 菜单 id --> menu_id */
+    private Long menuId;
 }

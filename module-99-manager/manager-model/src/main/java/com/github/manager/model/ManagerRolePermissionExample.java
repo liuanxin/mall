@@ -104,123 +104,123 @@ public class ManagerRolePermissionExample {
             criteria.add(new Criterion(condition, value1, value2));
         }
 
-        public Criteria andRidIsNull() {
-            addCriterion("`rid` is null");
+        public Criteria andRoleIdIsNull() {
+            addCriterion("`role_id` is null");
             return (Criteria) this;
         }
 
-        public Criteria andRidIsNotNull() {
-            addCriterion("`rid` is not null");
+        public Criteria andRoleIdIsNotNull() {
+            addCriterion("`role_id` is not null");
             return (Criteria) this;
         }
 
-        public Criteria andRidEqualTo(Long value) {
-            addCriterion("`rid` =", value, "rid");
+        public Criteria andRoleIdEqualTo(Long value) {
+            addCriterion("`role_id` =", value, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidNotEqualTo(Long value) {
-            addCriterion("`rid` <>", value, "rid");
+        public Criteria andRoleIdNotEqualTo(Long value) {
+            addCriterion("`role_id` <>", value, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidGreaterThan(Long value) {
-            addCriterion("`rid` >", value, "rid");
+        public Criteria andRoleIdGreaterThan(Long value) {
+            addCriterion("`role_id` >", value, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidGreaterThanOrEqualTo(Long value) {
-            addCriterion("`rid` >=", value, "rid");
+        public Criteria andRoleIdGreaterThanOrEqualTo(Long value) {
+            addCriterion("`role_id` >=", value, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidLessThan(Long value) {
-            addCriterion("`rid` <", value, "rid");
+        public Criteria andRoleIdLessThan(Long value) {
+            addCriterion("`role_id` <", value, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidLessThanOrEqualTo(Long value) {
-            addCriterion("`rid` <=", value, "rid");
+        public Criteria andRoleIdLessThanOrEqualTo(Long value) {
+            addCriterion("`role_id` <=", value, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidIn(List<Long> values) {
-            addCriterion("`rid` in", values, "rid");
+        public Criteria andRoleIdIn(List<Long> values) {
+            addCriterion("`role_id` in", values, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidNotIn(List<Long> values) {
-            addCriterion("`rid` not in", values, "rid");
+        public Criteria andRoleIdNotIn(List<Long> values) {
+            addCriterion("`role_id` not in", values, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidBetween(Long value1, Long value2) {
-            addCriterion("`rid` between", value1, value2, "rid");
+        public Criteria andRoleIdBetween(Long value1, Long value2) {
+            addCriterion("`role_id` between", value1, value2, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andRidNotBetween(Long value1, Long value2) {
-            addCriterion("`rid` not between", value1, value2, "rid");
+        public Criteria andRoleIdNotBetween(Long value1, Long value2) {
+            addCriterion("`role_id` not between", value1, value2, "roleId");
             return (Criteria) this;
         }
 
-        public Criteria andPidIsNull() {
-            addCriterion("`pid` is null");
+        public Criteria andPermissionIdIsNull() {
+            addCriterion("`permission_id` is null");
             return (Criteria) this;
         }
 
-        public Criteria andPidIsNotNull() {
-            addCriterion("`pid` is not null");
+        public Criteria andPermissionIdIsNotNull() {
+            addCriterion("`permission_id` is not null");
             return (Criteria) this;
         }
 
-        public Criteria andPidEqualTo(Long value) {
-            addCriterion("`pid` =", value, "pid");
+        public Criteria andPermissionIdEqualTo(Long value) {
+            addCriterion("`permission_id` =", value, "permissionId");
             return (Criteria) this;
         }
 
-        public Criteria andPidNotEqualTo(Long value) {
-            addCriterion("`pid` <>", value, "pid");
+        public Criteria andPermissionIdNotEqualTo(Long value) {
+            addCriterion("`permission_id` <>", value, "permissionId");
             return (Criteria) this;
         }
 
-        public Criteria andPidGreaterThan(Long value) {
-            addCriterion("`pid` >", value, "pid");
+        public Criteria andPermissionIdGreaterThan(Long value) {
+            addCriterion("`permission_id` >", value, "permissionId");
             return (Criteria) this;
         }
 
-        public Criteria andPidGreaterThanOrEqualTo(Long value) {
-            addCriterion("`pid` >=", value, "pid");
+        public Criteria andPermissionIdGreaterThanOrEqualTo(Long value) {
+            addCriterion("`permission_id` >=", value, "permissionId");
             return (Criteria) this;
         }
 
-        public Criteria andPidLessThan(Long value) {
-            addCriterion("`pid` <", value, "pid");
+        public Criteria andPermissionIdLessThan(Long value) {
+            addCriterion("`permission_id` <", value, "permissionId");
             return (Criteria) this;
         }
 
-        public Criteria andPidLessThanOrEqualTo(Long value) {
-            addCriterion("`pid` <=", value, "pid");
+        public Criteria andPermissionIdLessThanOrEqualTo(Long value) {
+            addCriterion("`permission_id` <=", value, "permissionId");
             return (Criteria) this;
         }
 
-        public Criteria andPidIn(List<Long> values) {
-            addCriterion("`pid` in", values, "pid");
+        public Criteria andPermissionIdIn(List<Long> values) {
+            addCriterion("`permission_id` in", values, "permissionId");
             return (Criteria) this;
         }
 
-        public Criteria andPidNotIn(List<Long> values) {
-            addCriterion("`pid` not in", values, "pid");
+        public Criteria andPermissionIdNotIn(List<Long> values) {
+            addCriterion("`permission_id` not in", values, "permissionId");
             return (Criteria) this;
         }
 
-        public Criteria andPidBetween(Long value1, Long value2) {
-            addCriterion("`pid` between", value1, value2, "pid");
+        public Criteria andPermissionIdBetween(Long value1, Long value2) {
+            addCriterion("`permission_id` between", value1, value2, "permissionId");
             return (Criteria) this;
         }
 
-        public Criteria andPidNotBetween(Long value1, Long value2) {
-            addCriterion("`pid` not between", value1, value2, "pid");
+        public Criteria andPermissionIdNotBetween(Long value1, Long value2) {
+            addCriterion("`permission_id` not between", value1, value2, "permissionId");
             return (Criteria) this;
         }
     }

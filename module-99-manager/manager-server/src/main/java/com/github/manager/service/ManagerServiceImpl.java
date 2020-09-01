@@ -93,7 +93,7 @@ public class ManagerServiceImpl implements ManagerService {
             uid = user.getId();
         }
 
-        List<Long> rids = user.getRids();
+        List<Long> rids = user.getRoleIds();
         if (A.isNotEmpty(rids)) {
             List<ManagerUserRole> userRoles = Lists.newArrayList();
             for (Long rid : rids) {
@@ -103,7 +103,7 @@ public class ManagerServiceImpl implements ManagerService {
             }
             if (A.isNotEmpty(userRoles)) {
                 ManagerUserRoleExample userRoleExample = new ManagerUserRoleExample();
-                userRoleExample.or().andUidEqualTo(uid);
+                userRoleExample.or().andUserIdEqualTo(uid);
                 userRoleMapper.deleteByExample(userRoleExample);
                 userRoleMapper.batchInsert(userRoles);
             }
@@ -116,7 +116,7 @@ public class ManagerServiceImpl implements ManagerService {
         int flag = userMapper.deleteByPrimaryKey(id);
         if (flag == 1) {
             ManagerUserRoleExample userRoleExample = new ManagerUserRoleExample();
-            userRoleExample.or().andUidEqualTo(id);
+            userRoleExample.or().andUserIdEqualTo(id);
             userRoleMapper.deleteByExample(userRoleExample);
         }
     }
@@ -140,12 +140,12 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     public List<ManagerRole> getUserRole(Long userId, boolean loadMenu, boolean loadPermission) {
         ManagerUserRoleExample userRoleExample = new ManagerUserRoleExample();
-        userRoleExample.or().andUidEqualTo(userId);
+        userRoleExample.or().andUserIdEqualTo(userId);
         List<ManagerUserRole> userRoles = userRoleMapper.selectByExample(userRoleExample);
         if (A.isEmpty(userRoles)) {
             return Collections.emptyList();
         }
-        List<Long> rids = Lists.transform(userRoles, ManagerUserRole::getRid);
+        List<Long> rids = Lists.transform(userRoles, ManagerUserRole::getRoleId);
         if (A.isEmpty(rids)) {
             return Collections.emptyList();
         }
@@ -153,10 +153,10 @@ public class ManagerServiceImpl implements ManagerService {
         Multimap<Long, ManagerMenu> menuMultiMap = HashMultimap.create();
         if (loadMenu) {
             ManagerRoleMenuExample roleMenuExample = new ManagerRoleMenuExample();
-            roleMenuExample.or().andRidIn(rids);
+            roleMenuExample.or().andRoleIdIn(rids);
             List<ManagerRoleMenu> roleMenus = roleMenuMapper.selectByExample(roleMenuExample);
             if (A.isNotEmpty(roleMenus)) {
-                List<Long> mids = Lists.transform(roleMenus, ManagerRoleMenu::getMid);
+                List<Long> mids = Lists.transform(roleMenus, ManagerRoleMenu::getMenuId);
                 if (A.isNotEmpty(mids)) {
                     ManagerMenuExample menuExample = new ManagerMenuExample();
                     menuExample.or().andIdIn(mids);
@@ -164,9 +164,9 @@ public class ManagerServiceImpl implements ManagerService {
 
                     Map<Long, ManagerMenu> menuMap = Maps.uniqueIndex(menus, ManagerMenu::getId);
                     for (ManagerRoleMenu roleMenu : roleMenus) {
-                        ManagerMenu menu = menuMap.get(roleMenu.getMid());
+                        ManagerMenu menu = menuMap.get(roleMenu.getMenuId());
                         if (U.isNotBlank(menu)) {
-                            menuMultiMap.put(roleMenu.getRid(), menu);
+                            menuMultiMap.put(roleMenu.getRoleId(), menu);
                         }
                     }
                 }
@@ -176,10 +176,10 @@ public class ManagerServiceImpl implements ManagerService {
         Multimap<Long, ManagerPermission> permissionMultimap = HashMultimap.create();
         if (loadPermission) {
             ManagerRolePermissionExample rolePermissionExample = new ManagerRolePermissionExample();
-            rolePermissionExample.or().andRidIn(rids);
+            rolePermissionExample.or().andRoleIdIn(rids);
             List<ManagerRolePermission> rolePermissions = rolePermissionMapper.selectByExample(rolePermissionExample);
             if (A.isNotEmpty(rolePermissions)) {
-                List<Long> pids = Lists.transform(rolePermissions, ManagerRolePermission::getPid);
+                List<Long> pids = Lists.transform(rolePermissions, ManagerRolePermission::getPermissionId);
                 if (A.isNotEmpty(pids)) {
                     ManagerPermissionExample permissionExample = new ManagerPermissionExample();
                     permissionExample.or().andIdIn(pids);
@@ -187,9 +187,9 @@ public class ManagerServiceImpl implements ManagerService {
 
                     Map<Long, ManagerPermission> permissionMap = Maps.uniqueIndex(permissions, ManagerPermission::getId);
                     for (ManagerRolePermission rolePermission : rolePermissions) {
-                        ManagerPermission permission = permissionMap.get(rolePermission.getPid());
+                        ManagerPermission permission = permissionMap.get(rolePermission.getPermissionId());
                         if (U.isNotBlank(permission)) {
-                            permissionMultimap.put(rolePermission.getPid(), permission);
+                            permissionMultimap.put(rolePermission.getPermissionId(), permission);
                         }
                     }
                 }
@@ -235,14 +235,14 @@ public class ManagerServiceImpl implements ManagerService {
         if (U.greater0(rid)) {
             ManagerRoleExample roleExample = new ManagerRoleExample();
             roleExample.or().andIdEqualTo(rid);
-            int count = roleMapper.countByExample(roleExample);
+            long count = roleMapper.countByExample(roleExample);
             U.assertException(count == 0, "没有这个角色, 无法修改");
 
             roleMapper.updateByPrimaryKeySelective(role);
         } else {
             ManagerRoleExample roleExample = new ManagerRoleExample();
             roleExample.or().andNameEqualTo(role.getName());
-            int count = roleMapper.countByExample(roleExample);
+            long count = roleMapper.countByExample(roleExample);
             U.assertException(count > 0, "已经有同名角色, 不能再次添加");
 
             role.setId(null);
@@ -250,7 +250,7 @@ public class ManagerServiceImpl implements ManagerService {
             rid = role.getId();
         }
 
-        List<Long> mids = role.getMids();
+        List<Long> mids = role.getMenuIds();
         if (A.isNotEmpty(mids)) {
             List<ManagerRoleMenu> roleMenus = Lists.newArrayList();
             for (Long mid : mids) {
@@ -260,13 +260,13 @@ public class ManagerServiceImpl implements ManagerService {
             }
             if (A.isNotEmpty(roleMenus)) {
                 ManagerRoleMenuExample roleMenuExample = new ManagerRoleMenuExample();
-                roleMenuExample.or().andRidEqualTo(rid);
+                roleMenuExample.or().andRoleIdEqualTo(rid);
                 roleMenuMapper.deleteByExample(roleMenuExample);
                 roleMenuMapper.batchInsert(roleMenus);
             }
         }
 
-        List<Long> pids = role.getPids();
+        List<Long> pids = role.getPermissionIds();
         if (A.isNotEmpty(pids)) {
             List<ManagerRolePermission> rolePermissions = Lists.newArrayList();
             for (Long pid : pids) {
@@ -276,7 +276,7 @@ public class ManagerServiceImpl implements ManagerService {
             }
             if (A.isNotEmpty(rolePermissions)) {
                 ManagerRolePermissionExample rolePermissionExample = new ManagerRolePermissionExample();
-                rolePermissionExample.or().andRidEqualTo(rid);
+                rolePermissionExample.or().andRoleIdEqualTo(rid);
                 rolePermissionMapper.deleteByExample(rolePermissionExample);
                 rolePermissionMapper.batchInsert(rolePermissions);
             }
@@ -289,18 +289,18 @@ public class ManagerServiceImpl implements ManagerService {
         U.assert0(roleId, "无此角色");
 
         ManagerUserRoleExample userRoleExample = new ManagerUserRoleExample();
-        userRoleExample.or().andRidEqualTo(roleId);
-        int count = userRoleMapper.countByExample(userRoleExample);
+        userRoleExample.or().andRoleIdEqualTo(roleId);
+        long count = userRoleMapper.countByExample(userRoleExample);
         U.assertException(count > 0, "有用户分配了此角色, 请先取消分配再删除");
 
         int flag = roleMapper.deleteByPrimaryKey(roleId);
         if (flag == 1) {
             ManagerRoleMenuExample roleMenuExample = new ManagerRoleMenuExample();
-            roleMenuExample.or().andRidEqualTo(roleId);
+            roleMenuExample.or().andRoleIdEqualTo(roleId);
             roleMenuMapper.deleteByExample(roleMenuExample);
 
             ManagerRolePermissionExample rolePermissionExample = new ManagerRolePermissionExample();
-            rolePermissionExample.or().andRidEqualTo(roleId);
+            rolePermissionExample.or().andRoleIdEqualTo(roleId);
             rolePermissionMapper.deleteByExample(rolePermissionExample);
         }
     }
@@ -326,7 +326,7 @@ public class ManagerServiceImpl implements ManagerService {
         } else {
             ManagerMenuExample menuExample = new ManagerMenuExample();
             menuExample.or().andNameEqualTo(menu.getName());
-            int count = menuMapper.countByExample(menuExample);
+            long count = menuMapper.countByExample(menuExample);
             U.assertException(count > 0, "已经有同名菜单, 不能再次添加");
 
             menu.setId(null);
@@ -339,8 +339,8 @@ public class ManagerServiceImpl implements ManagerService {
         U.assert0(menuId, "无此菜单");
 
         ManagerPermissionExample permissionExample = new ManagerPermissionExample();
-        permissionExample.or().andMidEqualTo(menuId);
-        int count = permissionMapper.countByExample(permissionExample);
+        permissionExample.or().andMenuIdEqualTo(menuId);
+        long count = permissionMapper.countByExample(permissionExample);
         U.assertException(count > 0, "此菜单下已经有权限了, 请先将权限删除再来删除菜单");
 
         menuMapper.deleteByPrimaryKey(menuId);
@@ -350,8 +350,8 @@ public class ManagerServiceImpl implements ManagerService {
     public void deleteMenus(List<Long> mids) {
         if (A.isNotEmpty(mids)) {
             ManagerPermissionExample permissionExample = new ManagerPermissionExample();
-            permissionExample.or().andMidIn(mids);
-            int count = permissionMapper.countByExample(permissionExample);
+            permissionExample.or().andMenuIdIn(mids);
+            long count = permissionMapper.countByExample(permissionExample);
             U.assertException(count > 0, "传入的菜单下已经有权限了, 请先将权限删除再来删除菜单");
 
             ManagerMenuExample menuExample = new ManagerMenuExample();
@@ -381,7 +381,7 @@ public class ManagerServiceImpl implements ManagerService {
         } else {
             ManagerPermissionExample permissionExample = new ManagerPermissionExample();
             permissionExample.or().andMethodEqualTo(permission.getMethod()).andUrlEqualTo(permission.getUrl());
-            int count = permissionMapper.countByExample(permissionExample);
+            long count = permissionMapper.countByExample(permissionExample);
             U.assertException(count > 0, "已经有同样规则的权限, 不能再次添加");
 
             permission.setId(null);

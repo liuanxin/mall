@@ -3,10 +3,17 @@
 <mapper namespace="com.github.manager.repository.ManagerPermissionMapper">
     <resultMap id="BaseResultMap" type="com.github.manager.model.ManagerPermission">
         <id column="id" jdbcType="BIGINT" property="id" />
-        <result column="mid" jdbcType="BIGINT" property="mid" />
+        <result column="menu_id" jdbcType="BIGINT" property="menuId" />
         <result column="name" jdbcType="VARCHAR" property="name" />
         <result column="method" jdbcType="VARCHAR" property="method" />
         <result column="url" jdbcType="VARCHAR" property="url" />
+    </resultMap>
+    <resultMap id="BaseResultMap_Alias" type="com.github.manager.model.ManagerPermission">
+        <id column="t_manager_permission_id" jdbcType="BIGINT" property="id" />
+        <result column="t_manager_permission_menu_id" jdbcType="BIGINT" property="menuId" />
+        <result column="t_manager_permission_name" jdbcType="VARCHAR" property="name" />
+        <result column="t_manager_permission_method" jdbcType="VARCHAR" property="method" />
+        <result column="t_manager_permission_url" jdbcType="VARCHAR" property="url" />
     </resultMap>
     <sql id="Example_Where_Clause">
         <where>
@@ -67,7 +74,13 @@
         </where>
     </sql>
     <sql id="Base_Column_List">
-        `id`, `mid`, `name`, `method`, `url`
+        `id`, `menu_id`, `name`, `method`, `url`
+    </sql>
+    <sql id="Base_Column_List_Alias">
+        `t_manager_permission`.`id` as `t_manager_permission_id`, `t_manager_permission`.`menu_id` as `t_manager_permission_menu_id`, 
+        `t_manager_permission`.`name` as `t_manager_permission_name`, 
+        `t_manager_permission`.`method` as `t_manager_permission_method`, 
+        `t_manager_permission`.`url` as `t_manager_permission_url`
     </sql>
     <select id="selectByExample" parameterType="com.github.manager.model.ManagerPermissionExample" resultMap="BaseResultMap">
         select
@@ -84,7 +97,7 @@
         </if>
     </select>
     <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
-        select
+        select 
         <include refid="Base_Column_List" />
         from `t_manager_permission`
         where `id` = #{id,jdbcType=BIGINT}
@@ -105,8 +118,8 @@
             <if test="id != null">
                 `id`,
             </if>
-            <if test="mid != null">
-                `mid`,
+            <if test="menuId != null">
+                `menu_id`,
             </if>
             <if test="name != null">
                 `name`,
@@ -122,8 +135,8 @@
             <if test="id != null">
                 #{id,jdbcType=BIGINT},
             </if>
-            <if test="mid != null">
-                #{mid,jdbcType=BIGINT},
+            <if test="menuId != null">
+                #{menuId,jdbcType=BIGINT},
             </if>
             <if test="name != null">
                 #{name,jdbcType=VARCHAR},
@@ -136,7 +149,7 @@
             </if>
         </trim>
     </insert>
-    <select id="countByExample" parameterType="com.github.manager.model.ManagerPermissionExample" resultType="java.lang.Integer">
+    <select id="countByExample" parameterType="com.github.manager.model.ManagerPermissionExample" resultType="java.lang.Long">
         select count(*) from `t_manager_permission`
         <if test="_parameter != null">
             <include refid="Example_Where_Clause" />
@@ -148,8 +161,8 @@
             <if test="record.id != null">
                 `id` = #{record.id,jdbcType=BIGINT},
             </if>
-            <if test="record.mid != null">
-                `mid` = #{record.mid,jdbcType=BIGINT},
+            <if test="record.menuId != null">
+                `menu_id` = #{record.menuId,jdbcType=BIGINT},
             </if>
             <if test="record.name != null">
                 `name` = #{record.name,jdbcType=VARCHAR},
@@ -168,8 +181,8 @@
     <update id="updateByPrimaryKeySelective" parameterType="com.github.manager.model.ManagerPermission">
         update `t_manager_permission`
         <set>
-            <if test="mid != null">
-                `mid` = #{mid,jdbcType=BIGINT},
+            <if test="menuId != null">
+                `menu_id` = #{menuId,jdbcType=BIGINT},
             </if>
             <if test="name != null">
                 `name` = #{name,jdbcType=VARCHAR},
@@ -192,8 +205,8 @@
                     <if test="item.id != null">
                         `id`,
                     </if>
-                    <if test="item.mid != null">
-                        `mid`,
+                    <if test="item.menuId != null">
+                        `menu_id`,
                     </if>
                     <if test="item.name != null">
                         `name`,
@@ -214,8 +227,8 @@
                 <if test="item.id != null">
                     #{item.id,jdbcType=BIGINT},
                 </if>
-                <if test="item.mid != null">
-                    #{item.mid,jdbcType=BIGINT},
+                <if test="item.menuId != null">
+                    #{item.menuId,jdbcType=BIGINT},
                 </if>
                 <if test="item.name != null">
                     #{item.name,jdbcType=VARCHAR},

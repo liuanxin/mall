@@ -38,8 +38,7 @@ public class ManagerUser implements Serializable {
     // 下面的字段不与数据库关联, 只做为数据载体进行传输
 
     /** 用户的角色 id, 添加修改时用到 */
-    private List<Long> rids;
-
+    private List<Long> roleIds;
     /** 用户的所有角色下的所有菜单 */
     private List<ManagerMenu> menus;
     /** 用户的所有角色下的所有权限 */
