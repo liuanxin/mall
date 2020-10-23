@@ -27,20 +27,20 @@ import java.util.List;
  */
 public final class Pages {
 
-    /** 在 service 的实现类中调用 --> 在 repository 方法上的参数是 PageBounds, service 上的参数是 Page, 使用此方法进行转换 */
+    /** 在 service 的实现类中调用 --> 当不想查 select count(*) 时用这个 */
     public static <T> Page<T> paramOnlyLimit(long limit) {
         return new Page<>(1, limit, false);
     }
 
-    /** 在 service 的实现类中调用 --> 在 repository 方法上的参数是 PageBounds, service 上的参数是 Page, 使用此方法进行转换 */
+    /** 在 service 的实现类中调用 --> 在 repository 方法上的参数是 mbp 的 Page 对象, service 上的参数是 PageParam, 使用此方法进行转换 */
     public static <T> Page<T> param(PageParam page) {
         return page.isWasMobile()
                 ? paramOnlyLimit(page.getLimit())
                 : new Page<>(page.getPage(), page.getLimit());
     }
 
-    /** 在 service 的实现类中调用 --> 在 repository 方法上的返回类型是 List, service 上的返回类型是 PageInfo, 使用此方法进行转换 */
-    public static <T> PageReturn<T> returnPage(com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> pageObj) {
+    /** 在 service 的实现类中调用 --> 在 repository 方法上的返回类型是 mbp 的 Page 对象, service 上的返回类型是 PageReturn, 使用此方法进行转换 */
+    public static <T> PageReturn<T> returnPage(Page<T> pageObj) {
         if (U.isBlank(pageObj)) {
             return PageReturn.emptyReturn();
         } else {
