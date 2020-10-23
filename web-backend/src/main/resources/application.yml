@@ -23,3 +23,5 @@ spring:
 
 # 连接池数量见: https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing
 
+mybatis-plus:
+  mapper-locations:

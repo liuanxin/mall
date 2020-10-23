@@ -1,6 +1,5 @@
 package com.github.common.util;
 
-import com.github.common.RenderViewResolver;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import java.util.regex.Pattern;
@@ -51,19 +50,7 @@ public final class Render {
         }
         if (U.isNotBlank(path)) {
             path = path.startsWith("/") ? path.substring(1) : path;
-
-            // 版本只在资源文件中添加
-            // path.matches("(?i)^.*\\.(css|js|ico|gif|bmp|png|jpg|jpeg)$")
-            if (RESOURCE_PATTERN.matcher(path).matches()) {
-                path = version(path);
-            }
         }
         return url(U.getNil(path));
-    }
-
-    /** 给 url 加上版本 */
-    public static String version(String path) {
-        String split = path.contains("?") ? "&" : "?";
-        return U.isBlank(path) ? U.EMPTY : (path + split + RenderViewResolver.getVersion());
     }
 }

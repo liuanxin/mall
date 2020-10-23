@@ -1,43 +1,36 @@
 package com.github.user.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.github.common.page.Page;
 import com.github.common.page.PageInfo;
 import com.github.common.page.Pages;
 import com.github.common.util.U;
 import com.github.user.model.UserTest;
-import com.github.user.model.UserTestExample;
 import com.github.user.repository.UserTestMapper;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 /**
  * 用户模块的接口实现类
  */
 @Service
+@AllArgsConstructor
 public class UserTestServiceImpl implements UserTestService {
 
     private final UserTestMapper userTestMapper;
 
-    public UserTestServiceImpl(UserTestMapper userTestMapper) {
-        this.userTestMapper = userTestMapper;
-    }
-
     @Override
     public PageInfo<UserTest> example(UserTest param, Page page) {
-        UserTestExample example = new UserTestExample();
+        LambdaQueryWrapper<UserTest> query = Wrappers.lambdaQuery(UserTest.class)
+                .select(UserTest::getId, UserTest::getNickName, UserTest::getAvatarUrl);
         if (U.isNotBlank(param)) {
-            // 动态生成 sql: where gender = xx and level = yy and nick_name like '%xyz%'
-            UserTestExample.Criteria criteria = example.createCriteria();
-            if (U.isNotBlank(param.getGender())) {
-                criteria.andGenderEqualTo(param.getGender().getCode());
-            }
-            if (U.isNotBlank(param.getLevel())) {
-                criteria.andLevelEqualTo(param.getLevel().getCode());
-            }
-            if (U.isNotBlank(param.getNickName())) {
-                criteria.andNickNameLike(U.like(param.getNickName()));
-            }
+            query.and(i -> i.eq(U.isNotBlank(param.getGender()), UserTest::getGender, param.getGender().getCode())
+                    .eq(U.isNotBlank(param.getLevel()), UserTest::getLevel, param.getLevel().getCode())
+                    .like(U.isNotBlank(param.getNickName()), UserTest::getNickName, U.like(param.getNickName()))
+            );
         }
         // 分页查询并返回
-        return Pages.returnPage(userTestMapper.selectByExample(example, Pages.param(page)));
+        return Pages.returnPage(userTestMapper.selectPage(Pages.param(page), query));
     }
 }

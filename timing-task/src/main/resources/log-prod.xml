@@ -20,9 +20,7 @@
     </appender>
 
 
-    <logger name="zipkin.autoconfigure" level="error"/>
     <logger name="io.undertow" level="error"/>
-    <logger name="freemarker" level="error"/>
 
     <logger name="com.github.order.repository" level="error"/>
     <logger name="com.github.common.mvc" level="error"/>

@@ -1,7 +1,5 @@
 package com.github.web;
 
-import com.github.common.RenderViewResolver;
-import com.github.common.json.JsonResult;
 import com.github.common.util.SecurityCodeUtil;
 import com.github.liuanxin.api.annotation.ApiIgnore;
 import com.github.util.ManagerSessionUtil;
@@ -19,12 +17,7 @@ public class ManagerIndexController {
     @ResponseBody
     @GetMapping("/")
     public String index() {
-        return "api";
-    }
-
-    @GetMapping("/change-version")
-    public JsonResult version() {
-        return JsonResult.success("版本号更改为: " + RenderViewResolver.changeVersion());
+        return "manager-api";
     }
 
     @GetMapping("/code")

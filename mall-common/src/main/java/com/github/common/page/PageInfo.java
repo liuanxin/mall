@@ -41,16 +41,16 @@ public class PageInfo<T> implements Serializable {
     private static final long serialVersionUID = 0L;
 
     @ApiReturn("SELECT COUNT(*) FROM ... 的结果")
-    private int total;
+    private long total;
 
     @ApiReturn("SELECT ... FROM ... LIMIT 0, 10 的结果")
     private List<T> list;
 
     public static <T> PageInfo<T> emptyReturn() {
-        return new PageInfo<T>(0, Collections.emptyList());
+        return new PageInfo<>(0, Collections.emptyList());
     }
-    public static <T> PageInfo<T> returnPage(int total, List<T> list) {
-        return new PageInfo<T>(total, list);
+    public static <T> PageInfo<T> returnPage(long total, List<T> list) {
+        return new PageInfo<>(total, list);
     }
 
     /** 在 Controller 中调用 --> 组装不同的 vo 时使用此方法 */
@@ -59,7 +59,7 @@ public class PageInfo<T> implements Serializable {
             return emptyReturn();
         } else {
             // 只要总条数
-            PageInfo<T> info = new PageInfo<T>();
+            PageInfo<T> info = new PageInfo<>();
             info.setTotal(pageInfo.getTotal());
             return info;
         }

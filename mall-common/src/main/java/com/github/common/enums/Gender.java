@@ -1,5 +1,6 @@
 package com.github.common.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.common.util.U;
@@ -11,6 +12,7 @@ public enum Gender {
 
     Nil(0, "未知"), Male(1, "男"), Female(2, "女");
 
+    @EnumValue
     int code;
     String value;
     Gender(int code, String value) {

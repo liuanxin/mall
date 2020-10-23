@@ -1,5 +1,6 @@
 package com.github.manager.model;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -7,6 +8,7 @@ import java.util.Objects;
 
 /** 权限, 对应每一个后台请求, 跟菜单是 多对一 的关系, 跟角色是 多对多 的关系 --> t_manager_permission */
 @Data
+@TableName("t_manager_permission")
 public class ManagerPermission implements Serializable {
     private static final long serialVersionUID = 1L;
 

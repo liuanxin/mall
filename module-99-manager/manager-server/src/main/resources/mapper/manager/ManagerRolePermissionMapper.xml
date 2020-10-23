@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.manager.repository.ManagerRolePermissionMapper">
+
+    <insert id="batchInsert" keyColumn="id" keyProperty="id" parameterType="map" useGeneratedKeys="true">
+        insert into `t_manager_role_permission`
+        (
+        <foreach collection="list" index="index" item="item">
+            <if test="index == 0">
+                <trim suffixOverrides=",">
+                    <if test="item.roleId != null">
+                        `role_id`,
+                    </if>
+                    <if test="item.permissionId != null">
+                        `permission_id`,
+                    </if>
+                </trim>
+            </if>
+        </foreach>
+        )
+        values
+        <foreach collection="list" item="item" separator=",">
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="item.roleId != null">
+                    #{item.roleId,jdbcType=BIGINT},
+                </if>
+                <if test="item.permissionId != null">
+                    #{item.permissionId,jdbcType=BIGINT},
+                </if>
+            </trim>
+        </foreach>
+    </insert>
+</mapper>

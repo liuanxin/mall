@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS `t_user` (
   `city` varchar(32) NOT NULL DEFAULT '' COMMENT '城市',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '1 表示已禁用',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-	`update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-	`is_deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '1 已删除, 默认是 0 未删除',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `is_deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '1 已删除, 默认是 0 未删除',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户';
 
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS `t_user_auth` (
   `third_refresh` varchar(32) NOT NULL DEFAULT '' COMMENT '第三方授权凭据扩展: refresh_token',
   `third_union_id` varchar(32) NOT NULL DEFAULT '' COMMENT 'union_id',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-	`update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户授权';
 
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS `t_user_login_history` (
   `login_ip` bigint NOT NULL DEFAULT '' COMMENT '登录地址(使用整数存储 ip)',
   `login_user_agent` varchar(128) NOT NULL DEFAULT '' COMMENT '登录时的 user-agent',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-	`update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-	`is_deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '1 已删除, 默认是 0 未删除',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `is_deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '1 已删除, 默认是 0 未删除',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户登录历史';

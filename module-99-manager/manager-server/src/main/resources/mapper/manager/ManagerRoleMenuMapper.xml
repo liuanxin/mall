@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.manager.repository.ManagerRoleMenuMapper">
+
+    <insert id="batchInsert" keyColumn="id" keyProperty="id" parameterType="map" useGeneratedKeys="true">
+        insert into `t_manager_role_menu`
+        (
+        <foreach collection="list" index="index" item="item">
+            <if test="index == 0">
+                <trim suffixOverrides=",">
+                    <if test="item.rid != null">
+                        `rid`,
+                    </if>
+                    <if test="item.mid != null">
+                        `mid`,
+                    </if>
+                </trim>
+            </if>
+        </foreach>
+        )
+        values
+        <foreach collection="list" item="item" separator=",">
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="item.rid != null">
+                    #{item.rid,jdbcType=BIGINT},
+                </if>
+                <if test="item.mid != null">
+                    #{item.mid,jdbcType=BIGINT},
+                </if>
+            </trim>
+        </foreach>
+    </insert>
+</mapper>

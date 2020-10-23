@@ -7,7 +7,6 @@ import com.github.common.json.JsonResult;
 import com.github.common.util.FileUtil;
 import com.github.common.util.U;
 import com.github.config.ManagerConfig;
-import com.github.global.service.CacheService;
 import com.github.liuanxin.api.annotation.ApiGroup;
 import com.github.liuanxin.api.annotation.ApiMethod;
 import com.github.liuanxin.api.annotation.ApiParam;
@@ -16,7 +15,6 @@ import com.github.manager.service.ManagerService;
 import com.github.user.constant.UserConst;
 import com.github.util.ManagerSessionUtil;
 import com.github.vo.ManagerUserVo;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,18 +26,11 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/user")
 public class ManagerUserController {
 
-    private static final int FAIL_LOGIN_COUNT = 3;
-    private static final int FAIL_LOGIN_COUNT_EXPIRE_HOUR = 2;
-
-    @Value("${spring.profiles.active:dev}")
-    private String active;
 
     private final ManagerConfig config;
-    private final CacheService cacheService;
     private final ManagerService adminService;
-    public ManagerUserController(ManagerConfig config, CacheService cacheService, ManagerService adminService) {
+    public ManagerUserController(ManagerConfig config, ManagerService adminService) {
         this.config = config;
-        this.cacheService = cacheService;
         this.adminService = adminService;
     }
 

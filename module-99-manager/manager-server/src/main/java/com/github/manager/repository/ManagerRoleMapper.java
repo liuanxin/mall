@@ -1,32 +1,9 @@
 package com.github.manager.repository;
 
-import com.github.liuanxin.page.model.PageBounds;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.github.manager.model.ManagerRole;
-import com.github.manager.model.ManagerRoleExample;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
-public interface ManagerRoleMapper {
-    long countByExample(ManagerRoleExample example);
-
-    int deleteByExample(ManagerRoleExample example);
-
-    int deleteByPrimaryKey(Long id);
-
-    int insertSelective(ManagerRole record);
-
-    List<ManagerRole> selectByExample(ManagerRoleExample example, PageBounds page);
-
-    List<ManagerRole> selectByExample(ManagerRoleExample example);
-
-    ManagerRole selectByPrimaryKey(Long id);
-
-    int updateByExampleSelective(@Param("record") ManagerRole record, @Param("example") ManagerRoleExample example);
-
-    int updateByPrimaryKeySelective(ManagerRole record);
-
-    int batchInsert(@Param("list") List<ManagerRole> list);
+public interface ManagerRoleMapper extends BaseMapper<ManagerRole> {
 }

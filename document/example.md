@@ -36,23 +36,23 @@ CREATE TABLE IF NOT EXISTS `t_product_test` (
   `user_id` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT '所属用户',
   `name` varchar(64) NOT NULL DEFAULT '' COMMENT '商品名(60 个字以内)',
   `type` int(11) NOT NULL DEFAULT '0' COMMENT '商品类型',
-  `create_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '最近更新时间',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近更新时间',
   `is_delete` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1 表示已删除',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品示例';
 
-INSERT INTO `t_product_test` (`id`, `user_id`, `name`, `type`, `create_time`, `update_time`) VALUES
-  (1, 1, 'iphone', 1, '2018-01-01 16:38:03', '2018-02-01 16:39:09'),
-  (2, 2, 'sunsong', 1, '2018-01-01 16:38:11', '0000-00-00 00:00:00'),
-  (3, 2, 'Nokia', 2, '2018-01-09 16:38:27', '0000-00-00 00:00:00'),
-  (4, 8, 'LG', 2, '2018-01-11 16:39:52', '2018-07-11 16:40:29'),
-  (5, 4, 'mi', 2, '2018-01-12 16:38:27', '0000-00-00 00:00:00'),
-  (6, 2, 'smartisan', 2, '2018-02-14 16:39:52', '2018-05-10 16:40:29'),
-  (7, 1, 'oppo', 2, '2018-02-12 16:38:27', '0000-00-00 00:00:00'),
-  (8, 5, 'vivo', 2, '2018-03-10 16:39:52', '2018-03-18 16:40:29'),
-  (9, 2, '1 plus', 2, '2018-02-11 16:38:27', '0000-00-00 00:00:00'),
-  (10, 2, 'huawei', 2, '2018-03-17 16:39:52', '2018-03-19 16:40:29');
+INSERT INTO `t_product_test` (`id`, `user_id`, `name`, `type`) VALUES
+  (1, 1, 'iphone', 1),
+  (2, 2, 'sunsong', 1),
+  (3, 2, 'Nokia', 2),
+  (4, 8, 'LG', 2),
+  (5, 4, 'mi', 2),
+  (6, 2, 'smartisan', 2),
+  (7, 1, 'oppo', 2),
+  (8, 5, 'vivo', 2),
+  (9, 2, '1 plus', 2),
+  (10, 2, 'huawei', 2);
 ```
 
 在本地 C:/Windows/System32/drivers/etc/hosts 文件中添加下面的配置

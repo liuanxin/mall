@@ -62,30 +62,36 @@ CREATE TABLE IF NOT EXISTS `t_manager_permission` (
   `method` varchar(8) NOT NULL DEFAULT '' COMMENT 'GET 或 POST 等, * 表示通配',
   `url` varchar(64) NOT NULL DEFAULT '' COMMENT '如 /user',
   PRIMARY KEY (`id`),
-	UNIQUE INDEX `method_url` (`method`, `url`)
+  UNIQUE INDEX `method_url` (`method`, `url`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='权限, 对应每一个后台请求, 跟菜单是 多对一 的关系, 跟角色是 多对多 的关系';
 
 /* 下面是关联表 */
 
 DROP TABLE IF EXISTS `t_manager_user_role`;
 CREATE TABLE IF NOT EXISTS `t_manager_user_role` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` bigint(20) unsigned NOT NULL COMMENT '用户 id',
   `role_id` bigint(20) unsigned NOT NULL COMMENT '角色 id',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `uid_rid` (`user_id`,`role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户和角色的中间表';
 
 
 DROP TABLE IF EXISTS `t_manager_role_menu`;
 CREATE TABLE IF NOT EXISTS `t_manager_role_menu` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `role_id` bigint(20) unsigned NOT NULL COMMENT '角色 id',
   `menu_id` bigint(20) unsigned NOT NULL COMMENT '菜单 id',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `rid_mid` (`role_id`,`menu_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色和菜单的中间表';
 
 
 DROP TABLE IF EXISTS `t_manager_role_permission`;
 CREATE TABLE IF NOT EXISTS `t_manager_role_permission` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `role_id` bigint(20) unsigned NOT NULL COMMENT '角色 id',
   `permission_id` bigint(20) unsigned NOT NULL COMMENT '权限 id',
-	UNIQUE INDEX `rid_pid` (`role_id`, `permission_id`)
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `rid_pid` (`role_id`, `permission_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色和权限的中间表';

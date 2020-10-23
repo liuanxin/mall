@@ -25,3 +25,7 @@ spring:
         prepStmtCacheSqlLimit: 128
         cachePrepStmts: true
         useServerPrepStmts: false
+
+mybatis-plus:
+  global-config:
+    banner: false
