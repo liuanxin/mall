@@ -100,9 +100,9 @@ public final class SpringMvc {
             @Override
             public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
                                           NativeWebRequest request, WebDataBinderFactory factory) throws Exception {
-                PageParam page = new PageParam(request.getParameter(PageParam.GLOBAL_PAGE), request.getParameter(PageParam.GLOBAL_LIMIT));
-                page.setWasMobile(RequestUtils.isMobileRequest());
-                return page;
+                // PageParam page = new PageParam(request.getParameter(PageParam.GLOBAL_PAGE), request.getParameter(PageParam.GLOBAL_LIMIT));
+                // page.setWasMobile(RequestUtils.isMobileRequest());
+                return new PageParam(request.getParameter(PageParam.GLOBAL_PAGE), request.getParameter(PageParam.GLOBAL_LIMIT));
             }
         });
         // 参数是 page 名称时
