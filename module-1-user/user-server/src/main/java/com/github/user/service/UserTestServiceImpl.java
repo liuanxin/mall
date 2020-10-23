@@ -2,8 +2,8 @@ package com.github.user.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.github.common.page.PageInfo;
 import com.github.common.page.PageParam;
+import com.github.common.page.PageReturn;
 import com.github.common.page.Pages;
 import com.github.common.util.U;
 import com.github.user.model.UserTest;
@@ -21,7 +21,7 @@ public class UserTestServiceImpl implements UserTestService {
     private final UserTestMapper userTestMapper;
 
     @Override
-    public PageInfo<UserTest> example(UserTest param, PageParam page) {
+    public PageReturn<UserTest> example(UserTest param, PageParam page) {
         LambdaQueryWrapper<UserTest> query = Wrappers.lambdaQuery(UserTest.class)
                 .select(UserTest::getId, UserTest::getNickName, UserTest::getAvatarUrl);
         if (U.isNotBlank(param)) {

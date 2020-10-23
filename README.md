@@ -63,10 +63,10 @@ public class DemoController {
     // 如果不传 page 和 limit, 或者传的是 page=a&limit=-100 这种时 Page 将会有默认值 page=1&limit=10
     // 好的实践是每个接口都有各自的 dto 和 vo, 如果参数不多则不需要构建 dto, 返回只有一个字段也不用新建 vo
     @GetMapping
-    public JsonResult<PageInfo<DemoVo>> demoList(DemoDto dto, Page page) {
+    public JsonResult<PageReturn<DemoVo>> demoList(DemoDto dto, PageParam page) {
         // dto 和 vo 是 controller 层的对象, 在 service 层使用跟数据库对应的 model 实体进行接收和返回
-        PageInfo<Demo> pageInfo = demoService.pageList(dto.demo(), page);
-        return JsonResult.success("用户列表", DemoVo.assemblyData(pageInfo));
+        PageReturn<Demo> pageInfo = demoService.pageList(dto.demo(), page);
+        return JsonResult.success("用户列表", DemoVo.assemblyData(PageReturn));
     }
 }
 ```
@@ -75,7 +75,7 @@ module-model 中的接口
 ```java
 public interface DemoService {
     /** 获取分页数据 */
-    PageInfo<Demo> pageList(Demo param, Page page);
+    PageReturn<Demo> pageList(Demo param, PageParam page);
 }
 ```
 
@@ -88,7 +88,7 @@ public class DemoServiceImpl implements DemoService {
     private final DemoMapper demoMapper;
 
     @Override
-    public PageInfo<Demo> pageList(Demo param, Page page) {
+    public PageReturn<Demo> pageList(Demo param, PageParam page) {
         // select xxx, yyy from demo where name like '%xxxxx%' 其中 name 的条件是动态的(不为空才拼接)
         // 会自动运行 select count(*), 如果结果为 0 则不会去执行 limit 
         return Pages.returnList(demoMapper.selectPage(Pages.param(page), Wrappers.lambdaQuery(Demo.class)

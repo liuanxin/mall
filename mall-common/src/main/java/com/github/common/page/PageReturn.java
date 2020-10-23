@@ -17,15 +17,14 @@ import java.util.List;
  * 此实体类在 Controller 和 Service 中用到分页时使用.
  *
  * &#064;Controller --> request 请求中带过来的参数使用 Page 进行接收(如果前端不传, 此处接收则程序会使用默认值)
- * public JsonResult xx(xxx, Page page) {
- *     PageInfo pageInfo = xxxService.page(xxx, page);
+ * public JsonResult xx(xxx, PageParam page) {
+ *     PageReturn pageInfo = xxxService.page(xxx, page);
  *     return success("xxx", (page.isWasMobile() ? pageInfo.getList() : pageInfo));
  * }
  *
  * &#064;Service --> 调用方法使用 Page 进行传递, 返回 PageInfo
- * public PageInfo page(xxx, Page page) {
- *     PageBounds pageBounds = Pages.param(page);
- *     List&lt;XXX> xxxList = xxxMapper.selectByExample(xxxxx, pageBounds);
+ * public PageReturn page(xxx, PageParam page) {
+ *     List&lt;XXX> xxxList = xxxMapper.selectPage(Pages.param(page), xxxxx);
  *     return Pages.returnPage(xxxList);
  * }
  *
@@ -37,7 +36,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class PageInfo<T> implements Serializable {
+public class PageReturn<T> implements Serializable {
     private static final long serialVersionUID = 0L;
 
     @ApiReturn("SELECT COUNT(*) FROM ... 的结果")
@@ -46,20 +45,20 @@ public class PageInfo<T> implements Serializable {
     @ApiReturn("SELECT ... FROM ... LIMIT 0, 10 的结果")
     private List<T> list;
 
-    public static <T> PageInfo<T> emptyReturn() {
-        return new PageInfo<>(0, Collections.emptyList());
+    public static <T> PageReturn<T> emptyReturn() {
+        return new PageReturn<>(0, Collections.emptyList());
     }
-    public static <T> PageInfo<T> returnPage(long total, List<T> list) {
-        return new PageInfo<>(total, list);
+    public static <T> PageReturn<T> returnPage(long total, List<T> list) {
+        return new PageReturn<>(total, list);
     }
 
     /** 在 Controller 中调用 --> 组装不同的 vo 时使用此方法 */
-    public static <S,T> PageInfo<T> convert(PageInfo<S> pageInfo) {
+    public static <S,T> PageReturn<T> convert(PageReturn<S> pageInfo) {
         if (U.isBlank(pageInfo)) {
             return emptyReturn();
         } else {
             // 只要总条数
-            PageInfo<T> info = new PageInfo<>();
+            PageReturn<T> info = new PageReturn<>();
             info.setTotal(pageInfo.getTotal());
             return info;
         }

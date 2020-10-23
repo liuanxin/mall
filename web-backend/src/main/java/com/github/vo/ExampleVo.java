@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.github.common.enums.Gender;
 import com.github.common.enums.TestEnum;
 import com.github.common.json.JsonUtil;
-import com.github.common.page.PageInfo;
+import com.github.common.page.PageReturn;
 import com.github.common.util.A;
 import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiReturn;
@@ -63,9 +63,9 @@ public class ExampleVo {
 
 
     /** 组装数据 */
-    public static PageInfo<ExampleVo> assemblyData(PageInfo<UserTest> userPageInfo,
-                                                   List<ProductTest> productExampleList) {
-        PageInfo<ExampleVo> returnVo = PageInfo.convert(userPageInfo);
+    public static PageReturn<ExampleVo> assemblyData(PageReturn<UserTest> userPageInfo,
+                                                     List<ProductTest> productExampleList) {
+        PageReturn<ExampleVo> returnVo = PageReturn.convert(userPageInfo);
         if (U.isNotBlank(userPageInfo)) {
             // 把商品数据整理成  userId: List<商品>
             Multimap<Long, ProductTest> multiMap = ArrayListMultimap.create();

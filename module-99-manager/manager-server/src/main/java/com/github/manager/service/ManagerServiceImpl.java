@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.common.encrypt.Encrypt;
-import com.github.common.page.PageInfo;
 import com.github.common.page.PageParam;
+import com.github.common.page.PageReturn;
 import com.github.common.page.Pages;
 import com.github.common.util.A;
 import com.github.common.util.U;
@@ -57,7 +57,7 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     @Transactional
-    public PageInfo<ManagerUser> queryUser(String userName, Boolean status, PageParam page) {
+    public PageReturn<ManagerUser> queryUser(String userName, Boolean status, PageParam page) {
         Wrapper<ManagerUser> query = Wrappers.lambdaQuery(ManagerUser.class)
                 .like(U.isNotBlank(userName), ManagerUser::getUserName, userName)
                 .eq(U.isNotBlank(status), ManagerUser::getStatus, status);

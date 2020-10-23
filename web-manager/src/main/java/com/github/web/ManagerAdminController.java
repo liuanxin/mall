@@ -1,8 +1,8 @@
 package com.github.web;
 
 import com.github.common.json.JsonResult;
-import com.github.common.page.PageInfo;
 import com.github.common.page.PageParam;
+import com.github.common.page.PageReturn;
 import com.github.common.util.FileUtil;
 import com.github.common.util.U;
 import com.github.config.ManagerConfig;
@@ -34,7 +34,7 @@ public class ManagerAdminController {
 
     @ApiMethod(value = "查询用户", index = 10)
     @GetMapping("/user")
-    public JsonResult<PageInfo<ManagerUser>> queryUser(String userName, Boolean status, PageParam page) {
+    public JsonResult<PageReturn<ManagerUser>> queryUser(String userName, Boolean status, PageParam page) {
         return JsonResult.success("查询用户信息", adminService.queryUser(userName, status, page));
     }
 

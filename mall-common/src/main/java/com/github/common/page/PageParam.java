@@ -13,15 +13,14 @@ import java.io.Serializable;
  * 此实体类在 Controller 和 Service 中用到分页时使用.
  *
  * &#064;Controller --> request 请求中带过来的参数使用 Page 进行接收(如果前端不传, 此处接收则程序会使用默认值)
- * public JsonResult xx(xxx, Page page) {
- *     PageInfo pageInfo = xxxService.page(xxx, page);
+ * public JsonResult xx(xxx, PageParam page) {
+ *     PageReturn pageInfo = xxxService.page(xxx, page);
  *     return success("xxx", (page.isWasMobile() ? pageInfo.getList() : pageInfo));
  * }
  *
  * &#064;Service --> 调用方法使用 Page 进行传递, 返回 PageInfo
- * public PageInfo page(xxx, Page page) {
- *     PageBounds pageBounds = Pages.param(page);
- *     List&lt;XXX> xxxList = xxxMapper.selectByExample(xxxxx, pageBounds);
+ * public PageReturn page(xxx, PageParam page) {
+ *     List&lt;XXX> xxxList = xxxMapper.selectPage(Pages.param(page), xxxxx);
  *     return Pages.returnPage(xxxList);
  * }
  *
