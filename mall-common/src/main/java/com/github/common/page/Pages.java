@@ -1,5 +1,6 @@
 package com.github.common.page;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.common.util.A;
 import com.github.common.util.U;
 
@@ -30,15 +31,15 @@ import java.util.List;
 public final class Pages {
 
     /** 在 service 的实现类中调用 --> 在 repository 方法上的参数是 PageBounds, service 上的参数是 Page, 使用此方法进行转换 */
-    public static <T> com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> paramOnlyLimit(long limit) {
-        return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(1, limit, false);
+    public static <T> Page<T> paramOnlyLimit(long limit) {
+        return new Page<>(1, limit, false);
     }
 
     /** 在 service 的实现类中调用 --> 在 repository 方法上的参数是 PageBounds, service 上的参数是 Page, 使用此方法进行转换 */
-    public static <T> com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> param(Page page) {
+    public static <T> Page<T> param(PageParam page) {
         return page.isWasMobile()
                 ? paramOnlyLimit(page.getLimit())
-                : new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(page.getPage(), page.getLimit());
+                : new Page<>(page.getPage(), page.getLimit());
     }
 
     /** 在 service 的实现类中调用 --> 在 repository 方法上的返回类型是 List, service 上的返回类型是 PageInfo, 使用此方法进行转换 */

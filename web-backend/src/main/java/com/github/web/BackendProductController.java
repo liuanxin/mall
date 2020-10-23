@@ -2,8 +2,8 @@ package com.github.web;
 
 import com.github.common.enums.TestEnum;
 import com.github.common.json.JsonResult;
-import com.github.common.page.Page;
 import com.github.common.page.PageInfo;
+import com.github.common.page.PageParam;
 import com.github.common.util.A;
 import com.github.common.util.U;
 import com.github.dto.ExampleDto;
@@ -41,7 +41,7 @@ public class BackendProductController {
     @GetMapping
     public JsonResult<PageInfo<ExampleVo>> enumList(ExampleDto dto,
                                                     @ApiParam(value = "枚举", example = "One") TestEnum enumTest,
-                                                    Page page) {
+                                                    PageParam page) {
         U.assertNil(dto, "缺少必须的参数");
         dto.basicCheck();
 

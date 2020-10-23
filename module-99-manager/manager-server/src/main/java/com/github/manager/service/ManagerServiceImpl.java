@@ -2,9 +2,10 @@ package com.github.manager.service;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.common.encrypt.Encrypt;
-import com.github.common.page.Page;
 import com.github.common.page.PageInfo;
+import com.github.common.page.PageParam;
 import com.github.common.page.Pages;
 import com.github.common.util.A;
 import com.github.common.util.U;
@@ -40,7 +41,7 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     public ManagerUser login(String userName, String password) {
         Wrapper<ManagerUser> query = Wrappers.lambdaQuery(ManagerUser.class).eq(ManagerUser::getUserName, userName);
-        com.baomidou.mybatisplus.extension.plugins.pagination.Page page = userMapper.selectPage(Pages.paramOnlyLimit(1), query);
+        Page<ManagerUser> page = userMapper.selectPage(Pages.paramOnlyLimit(1), query);
         ManagerUser user = U.isNotBlank(page) ? A.first(page.getRecords()) : null;
         U.assertNil(user, "无此用户");
         return user;
@@ -49,7 +50,6 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     public ManagerUser getUser(Long userId) {
         U.assert0(userId, "没有这个用户");
-
         ManagerUser user = userMapper.selectById(userId);
         U.assertNil(user, "无此用户");
         return user;
@@ -57,12 +57,7 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     @Transactional
-    public PageInfo<ManagerUser> queryUser(String userName, Boolean status, Page page) {
-        List<ManagerUserRole> userRoles = Lists.newArrayList();
-        userRoles.add(new ManagerUserRole().setUserId(123L).setRoleId(321L));
-        userRoles.add(new ManagerUserRole().setUserId(1234L).setRoleId(4321L));
-        userRoleMapper.batchInsert(userRoles);
-
+    public PageInfo<ManagerUser> queryUser(String userName, Boolean status, PageParam page) {
         Wrapper<ManagerUser> query = Wrappers.lambdaQuery(ManagerUser.class)
                 .like(U.isNotBlank(userName), ManagerUser::getUserName, userName)
                 .eq(U.isNotBlank(status), ManagerUser::getStatus, status);

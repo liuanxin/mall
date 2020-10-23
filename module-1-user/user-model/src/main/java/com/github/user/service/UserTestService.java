@@ -1,7 +1,7 @@
 package com.github.user.service;
 
-import com.github.common.page.Page;
 import com.github.common.page.PageInfo;
+import com.github.common.page.PageParam;
 import com.github.user.model.UserTest;
 
 /**
@@ -10,5 +10,5 @@ import com.github.user.model.UserTest;
 public interface UserTestService {
 
     /** 示例接口 */
-    PageInfo<UserTest> example(UserTest param, Page page);
+    PageInfo<UserTest> example(UserTest param, PageParam page);
 }

@@ -3,7 +3,7 @@ package com.github.common.mvc;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.common.converter.*;
-import com.github.common.page.Page;
+import com.github.common.page.PageParam;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtils;
 import com.github.common.util.U;
@@ -94,13 +94,13 @@ public final class SpringMvc {
         argumentResolvers.add(new HandlerMethodArgumentResolver() {
             @Override
             public boolean supportsParameter(MethodParameter parameter) {
-                return Page.class.isAssignableFrom(parameter.getParameterType());
+                return PageParam.class.isAssignableFrom(parameter.getParameterType());
             }
 
             @Override
             public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
                                           NativeWebRequest request, WebDataBinderFactory factory) throws Exception {
-                Page page = new Page(request.getParameter(Page.GLOBAL_PAGE), request.getParameter(Page.GLOBAL_LIMIT));
+                PageParam page = new PageParam(request.getParameter(PageParam.GLOBAL_PAGE), request.getParameter(PageParam.GLOBAL_LIMIT));
                 page.setWasMobile(RequestUtils.isMobileRequest());
                 return page;
             }
@@ -109,26 +109,26 @@ public final class SpringMvc {
         argumentResolvers.add(new HandlerMethodArgumentResolver() {
             @Override
             public boolean supportsParameter(MethodParameter parameter) {
-                return Page.GLOBAL_PAGE.equals(parameter.getParameterName());
+                return PageParam.GLOBAL_PAGE.equals(parameter.getParameterName());
             }
 
             @Override
             public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
                                           NativeWebRequest request, WebDataBinderFactory factory) throws Exception {
-                return Page.handlerPage(request.getParameter(Page.GLOBAL_PAGE));
+                return PageParam.handlerPage(request.getParameter(PageParam.GLOBAL_PAGE));
             }
         });
         // 参数是 limit 名称时
         argumentResolvers.add(new HandlerMethodArgumentResolver() {
             @Override
             public boolean supportsParameter(MethodParameter parameter) {
-                return Page.GLOBAL_LIMIT.equals(parameter.getParameterName());
+                return PageParam.GLOBAL_LIMIT.equals(parameter.getParameterName());
             }
 
             @Override
             public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
                                           NativeWebRequest request, WebDataBinderFactory factory) throws Exception {
-                return Page.handlerLimit(request.getParameter(Page.GLOBAL_LIMIT));
+                return PageParam.handlerLimit(request.getParameter(PageParam.GLOBAL_LIMIT));
             }
         });
     }

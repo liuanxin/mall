@@ -30,7 +30,7 @@ import java.io.Serializable;
  */
 @Setter
 @Getter
-public class Page implements Serializable {
+public class PageParam implements Serializable {
     private static final long serialVersionUID = 0L;
 
     /** 前台传递过来的分页参数名 */
@@ -55,17 +55,17 @@ public class Page implements Serializable {
     @ApiParamIgnore
     private boolean wasMobile = false;
 
-    public Page() {
+    public PageParam() {
         this.page = DEFAULT_PAGE_NO;
         this.limit = DEFAULT_LIMIT;
     }
 
-    public Page(String page, String limit) {
+    public PageParam(String page, String limit) {
         this.page = handlerPage(page);
         this.limit = handlerLimit(limit);
     }
 
-    public Page(int page, int limit) {
+    public PageParam(int page, int limit) {
         this.page = handlerPage(page);
         this.limit = handlerLimit(limit);
     }
