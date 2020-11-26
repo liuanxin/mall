@@ -12,8 +12,8 @@ public enum DateFormatType {
     /** yyyy-MM */
     YYYY_MM("yyyy-MM"),
 
-    /** yyyy-MM-dd HH:mm:ss.SSS */
-    YYYY_MM_DD_HH_MM_SS_S("yyyy-MM-dd HH:mm:ss.SSS"),
+    /** yyyy-MM-dd HH:mm:ss,SSS */
+    YYYY_MM_DD_HH_MM_SS_S("yyyy-MM-dd HH:mm:ss,SSS"),
     /** yyyy-MM-dd HH:mm:ss SSS */
     YYYY_MM_DD_HH_MM_SS_SSS("yyyy-MM-dd HH:mm:ss SSS"),
     /** yyyy-MM-dd am/pm --> am/pm 会根据时区自动完成, 也就是如果当前时区是北京的话, 会显示成 上午/下午 */
