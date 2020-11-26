@@ -172,6 +172,7 @@
         <logger name="com.github.common.mvc" level="${thirdLogLevel}"/>
         <root level="${logLevel}">
             <appender-ref ref="ASYNC"/>
+            <appender-ref ref="ASYNC-ERROR"/>
         </root>
     </springProfile>
 </configuration>
