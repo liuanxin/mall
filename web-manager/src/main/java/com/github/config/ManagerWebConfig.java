@@ -7,9 +7,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ import java.util.List;
  * @see org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
  */
 @Configuration
-public class ManagerWebConfig extends WebMvcConfigurationSupport {
+public class ManagerWebConfig extends DelegatingWebMvcConfiguration {
 
     @Value("${online:false}")
     private boolean online;

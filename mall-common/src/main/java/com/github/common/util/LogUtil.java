@@ -29,17 +29,7 @@ public final class LogUtil {
         recordTime();
         MDC.put(REQUEST_INFO, logContextInfo.requestInfo());
     }
-    /**
-     * <pre>
-     * 使用 &#064;RequestBody 注解时, 想要输出请求参数, 需要在 Control 第一行调用此方法
-     *
-     * &#064;XxxMapping("/xxx")
-     * public JsonResult&lt;XXX&gt; xxx(&#064;RequestBody XXX xxx) {
-     *     LogUtil.bindRequestBody(JsonUtil.toJson(xxx));
-     *     ...
-     * }
-     * </pre>
-     */
+    /** 将 RequestBody 的请求内容放进日志 */
     public static void bindRequestBody(String requestBody) {
         if (U.isNotBlank(requestBody)) {
             String requestInfo = MDC.get(REQUEST_INFO);
