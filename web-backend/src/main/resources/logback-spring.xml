@@ -3,7 +3,14 @@
     <!--
     https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-logging
     https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-logback-extensions
+
+    https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#environment-properties
     -->
+
+    <!-- 在 application.yml 中添加 log.level: info 即可 -->
+    <springProperty scope="context" name="logLevel" source="log.level" defaultValue="debug"/>
+    <springProperty scope="context" name="thirdLogLevel" source="log.thirdLevel" defaultValue="warn"/>
+    <springProperty scope="context" name="applicationName" source="spring.application.name" defaultValue="log"/>
 
     <springProfile name="dev">
         <include resource="org/springframework/boot/logging/logback/defaults.xml" />
@@ -11,33 +18,27 @@
         <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
 
-        <logger name="io.undertow" level="warn"/>
+        <logger name="com.baomidou" level="${thirdLogLevel}"/>
+        <logger name="com.netflix" level="${thirdLogLevel}"/>
+        <logger name="com.github" level="${thirdLogLevel}"/>
+        <logger name="com.zaxxer" level="${thirdLogLevel}"/>
+        <logger name="com.sun" level="${thirdLogLevel}"/>
 
-        <logger name="com.github.common.repository" level="warn"/>
-        <logger name="com.github.user.repository" level="warn"/>
-        <logger name="com.github.product.repository" level="warn"/>
-        <logger name="com.github.order.repository" level="warn"/>
-        <logger name="com.github.common.mvc" level="warn"/>
+        <logger name="org.springframework" level="${thirdLogLevel}"/>
+        <logger name="org.hibernate" level="${thirdLogLevel}"/>
+        <logger name="org.mybatis" level="${thirdLogLevel}"/>
+        <logger name="org.apache" level="${thirdLogLevel}"/>
+        <logger name="org.jboss" level="${thirdLogLevel}"/>
+        <logger name="org.xnio" level="${thirdLogLevel}"/>
 
-        <logger name="com.baomidou" level="warn"/>
-        <logger name="com.netflix" level="warn"/>
-        <logger name="com.github" level="warn"/>
-        <logger name="com.zaxxer" level="warn"/>
-        <logger name="com.sun" level="warn"/>
-
-        <logger name="org.springframework" level="warn"/>
-        <logger name="org.hibernate" level="warn"/>
-        <logger name="org.mybatis" level="warn"/>
-        <logger name="org.apache" level="warn"/>
-        <logger name="org.jboss" level="warn"/>
-        <logger name="org.xnio" level="warn"/>
-
-        <logger name="io.lettuce" level="warn"/>
-        <logger name="io.netty" level="warn"/>
-        <logger name="reactor" level="warn"/>
+        <logger name="io.undertow" level="${thirdLogLevel}"/>
+        <logger name="io.lettuce" level="${thirdLogLevel}"/>
+        <logger name="io.netty" level="${thirdLogLevel}"/>
+        <logger name="reactor" level="${thirdLogLevel}"/>
 
 
-        <root level="debug">
+        <logger name="com.github.common.mvc" level="${thirdLogLevel}"/>
+        <root level="${logLevel}">
             <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
@@ -47,7 +48,7 @@
     见: https://docs.spring.io/spring-framework/docs/5.3.1/reference/html/core.html#beans-definition-profiles-java
     -->
     <springProfile name="test">
-        <property name="FILE_PATH" value="${user.home}/logs/web-backend-test"/>
+        <property name="FILE_PATH" value="${user.home}/logs/${applicationName}-test"/>
         <property name="SQL_PATTERN" value="%n[%d] [${PID:- } %t\\(%logger\\) : %p] %class.%method\\(%file:%line\\) %m%n"/>
         <property name="LOG_PATTERN" value="%n[%X{receiveTime}%d] [${PID:- } %t\\(%logger\\) : %p]%X{requestInfo} %class{30}#%method\\(%file:%line\\) %m%n"/>
 
@@ -82,39 +83,33 @@
         </logger>
 
 
-        <logger name="io.undertow" level="warn"/>
+        <logger name="com.baomidou" level="${thirdLogLevel}"/>
+        <logger name="com.netflix" level="${thirdLogLevel}"/>
+        <logger name="com.github" level="${thirdLogLevel}"/>
+        <logger name="com.zaxxer" level="${thirdLogLevel}"/>
+        <logger name="com.sun" level="${thirdLogLevel}"/>
 
-        <logger name="com.github.common.repository" level="warn"/>
-        <logger name="com.github.user.repository" level="warn"/>
-        <logger name="com.github.product.repository" level="warn"/>
-        <logger name="com.github.order.repository" level="warn"/>
-        <logger name="com.github.common.mvc" level="warn"/>
+        <logger name="org.springframework" level="${thirdLogLevel}"/>
+        <logger name="org.hibernate" level="${thirdLogLevel}"/>
+        <logger name="org.mybatis" level="${thirdLogLevel}"/>
+        <logger name="org.apache" level="${thirdLogLevel}"/>
+        <logger name="org.jboss" level="${thirdLogLevel}"/>
+        <logger name="org.xnio" level="${thirdLogLevel}"/>
 
-        <logger name="com.baomidou" level="warn"/>
-        <logger name="com.netflix" level="warn"/>
-        <logger name="com.github" level="warn"/>
-        <logger name="com.zaxxer" level="warn"/>
-        <logger name="com.sun" level="warn"/>
-
-        <logger name="org.springframework" level="warn"/>
-        <logger name="org.hibernate" level="warn"/>
-        <logger name="org.mybatis" level="warn"/>
-        <logger name="org.apache" level="warn"/>
-        <logger name="org.jboss" level="warn"/>
-        <logger name="org.xnio" level="warn"/>
-
-        <logger name="io.lettuce" level="warn"/>
-        <logger name="io.netty" level="warn"/>
-        <logger name="reactor" level="warn"/>
+        <logger name="io.undertow" level="${thirdLogLevel}"/>
+        <logger name="io.lettuce" level="${thirdLogLevel}"/>
+        <logger name="io.netty" level="${thirdLogLevel}"/>
+        <logger name="reactor" level="${thirdLogLevel}"/>
 
 
+        <logger name="com.github.common.mvc" level="${thirdLogLevel}"/>
         <root level="debug">
             <appender-ref ref="PROJECT"/>
         </root>
     </springProfile>
 
     <springProfile name="prod">
-        <property name="FILE_PATH" value="${user.home}/logs/web-backend-prod"/>
+        <property name="FILE_PATH" value="${user.home}/logs/${applicationName}-prod"/>
         <property name="LOG_PATTERN" value="%n[%X{receiveTime}%d] [${PID:- } %t\\(%logger\\) : %p]%X{requestInfo} %class{30}#%method\\(%file:%line\\) %m%n"/>
 
         <appender name="PROJECT" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -134,33 +129,27 @@
         </appender>
 
 
-        <logger name="io.undertow" level="error"/>
+        <logger name="com.baomidou" level="${thirdLogLevel}"/>
+        <logger name="com.netflix" level="${thirdLogLevel}"/>
+        <logger name="com.github" level="${thirdLogLevel}"/>
+        <logger name="com.zaxxer" level="${thirdLogLevel}"/>
+        <logger name="com.sun" level="${thirdLogLevel}"/>
 
-        <logger name="com.github.common.repository" level="error"/>
-        <logger name="com.github.user.repository" level="error"/>
-        <logger name="com.github.product.repository" level="error"/>
-        <logger name="com.github.order.repository" level="error"/>
-        <logger name="com.github.common.mvc" level="error"/>
+        <logger name="org.springframework" level="${thirdLogLevel}"/>
+        <logger name="org.hibernate" level="${thirdLogLevel}"/>
+        <logger name="org.mybatis" level="${thirdLogLevel}"/>
+        <logger name="org.apache" level="${thirdLogLevel}"/>
+        <logger name="org.jboss" level="${thirdLogLevel}"/>
+        <logger name="org.xnio" level="${thirdLogLevel}"/>
 
-        <logger name="com.baomidou" level="error"/>
-        <logger name="com.netflix" level="error"/>
-        <logger name="com.github" level="error"/>
-        <logger name="com.zaxxer" level="error"/>
-        <logger name="com.sun" level="error"/>
-
-        <logger name="org.springframework" level="error"/>
-        <logger name="org.hibernate" level="error"/>
-        <logger name="org.mybatis" level="error"/>
-        <logger name="org.apache" level="error"/>
-        <logger name="org.jboss" level="error"/>
-        <logger name="org.xnio" level="error"/>
-
-        <logger name="io.lettuce" level="error"/>
-        <logger name="io.netty" level="error"/>
-        <logger name="reactor" level="error"/>
+        <logger name="io.undertow" level="${thirdLogLevel}"/>
+        <logger name="io.lettuce" level="${thirdLogLevel}"/>
+        <logger name="io.netty" level="${thirdLogLevel}"/>
+        <logger name="reactor" level="${thirdLogLevel}"/>
 
 
-        <root level="info">
+        <logger name="com.github.common.mvc" level="${thirdLogLevel}"/>
+        <root level="${logLevel}">
             <appender-ref ref="ASYNC"/>
         </root>
     </springProfile>
