@@ -14,30 +14,30 @@
     <springProperty scope="context" name="applicationName" source="spring.application.name" defaultValue="log"/>
     <springProperty scope="context" name="fileMaxHistory" source="log.maxHistory" defaultValue="7"/>
 
+
+    <logger name="com.baomidou" level="${thirdLogLevel}"/>
+    <logger name="com.netflix" level="${thirdLogLevel}"/>
+    <logger name="com.github" level="${thirdLogLevel}"/>
+    <logger name="com.zaxxer" level="${thirdLogLevel}"/>
+    <logger name="com.sun" level="${thirdLogLevel}"/>
+
+    <logger name="org.springframework" level="${thirdLogLevel}"/>
+    <logger name="org.hibernate" level="${thirdLogLevel}"/>
+    <logger name="org.mybatis" level="${thirdLogLevel}"/>
+    <logger name="org.apache" level="${thirdLogLevel}"/>
+    <logger name="org.jboss" level="${thirdLogLevel}"/>
+    <logger name="org.xnio" level="${thirdLogLevel}"/>
+
+    <logger name="io.undertow" level="${thirdLogLevel}"/>
+    <logger name="io.lettuce" level="${thirdLogLevel}"/>
+    <logger name="io.netty" level="${thirdLogLevel}"/>
+    <logger name="reactor" level="${thirdLogLevel}"/>
+
+
     <springProfile name="dev">
         <include resource="org/springframework/boot/logging/logback/defaults.xml" />
         <property name="CONSOLE_LOG_PATTERN" value="%n[%X{receiveTime}%d] [${PID:- } %t\\(%logger\\) : %p]%X{requestInfo}%n%class.%method\\(%file:%line\\)%n%m%n"/>
         <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
-
-
-        <logger name="com.baomidou" level="${thirdLogLevel}"/>
-        <logger name="com.netflix" level="${thirdLogLevel}"/>
-        <logger name="com.github" level="${thirdLogLevel}"/>
-        <logger name="com.zaxxer" level="${thirdLogLevel}"/>
-        <logger name="com.sun" level="${thirdLogLevel}"/>
-
-        <logger name="org.springframework" level="${thirdLogLevel}"/>
-        <logger name="org.hibernate" level="${thirdLogLevel}"/>
-        <logger name="org.mybatis" level="${thirdLogLevel}"/>
-        <logger name="org.apache" level="${thirdLogLevel}"/>
-        <logger name="org.jboss" level="${thirdLogLevel}"/>
-        <logger name="org.xnio" level="${thirdLogLevel}"/>
-
-        <logger name="io.undertow" level="${thirdLogLevel}"/>
-        <logger name="io.lettuce" level="${thirdLogLevel}"/>
-        <logger name="io.netty" level="${thirdLogLevel}"/>
-        <logger name="reactor" level="${thirdLogLevel}"/>
-
 
         <logger name="com.github.common.mvc" level="${thirdLogLevel}"/>
         <root level="${logLevel}">
@@ -84,26 +84,6 @@
             <appender-ref ref="SQL" />
         </logger>
 
-
-        <logger name="com.baomidou" level="${thirdLogLevel}"/>
-        <logger name="com.netflix" level="${thirdLogLevel}"/>
-        <logger name="com.github" level="${thirdLogLevel}"/>
-        <logger name="com.zaxxer" level="${thirdLogLevel}"/>
-        <logger name="com.sun" level="${thirdLogLevel}"/>
-
-        <logger name="org.springframework" level="${thirdLogLevel}"/>
-        <logger name="org.hibernate" level="${thirdLogLevel}"/>
-        <logger name="org.mybatis" level="${thirdLogLevel}"/>
-        <logger name="org.apache" level="${thirdLogLevel}"/>
-        <logger name="org.jboss" level="${thirdLogLevel}"/>
-        <logger name="org.xnio" level="${thirdLogLevel}"/>
-
-        <logger name="io.undertow" level="${thirdLogLevel}"/>
-        <logger name="io.lettuce" level="${thirdLogLevel}"/>
-        <logger name="io.netty" level="${thirdLogLevel}"/>
-        <logger name="reactor" level="${thirdLogLevel}"/>
-
-
         <logger name="com.github.common.mvc" level="${thirdLogLevel}"/>
         <root level="debug">
             <appender-ref ref="PROJECT"/>
@@ -148,26 +128,6 @@
             <includeCallerData>true</includeCallerData>
             <appender-ref ref ="PROJECT-ERROR"/>
         </appender>
-
-
-        <logger name="com.baomidou" level="${thirdLogLevel}"/>
-        <logger name="com.netflix" level="${thirdLogLevel}"/>
-        <logger name="com.github" level="${thirdLogLevel}"/>
-        <logger name="com.zaxxer" level="${thirdLogLevel}"/>
-        <logger name="com.sun" level="${thirdLogLevel}"/>
-
-        <logger name="org.springframework" level="${thirdLogLevel}"/>
-        <logger name="org.hibernate" level="${thirdLogLevel}"/>
-        <logger name="org.mybatis" level="${thirdLogLevel}"/>
-        <logger name="org.apache" level="${thirdLogLevel}"/>
-        <logger name="org.jboss" level="${thirdLogLevel}"/>
-        <logger name="org.xnio" level="${thirdLogLevel}"/>
-
-        <logger name="io.undertow" level="${thirdLogLevel}"/>
-        <logger name="io.lettuce" level="${thirdLogLevel}"/>
-        <logger name="io.netty" level="${thirdLogLevel}"/>
-        <logger name="reactor" level="${thirdLogLevel}"/>
-
 
         <logger name="com.github.common.mvc" level="${thirdLogLevel}"/>
         <root level="${logLevel}">
