@@ -1,6 +1,5 @@
 
 server.port: 8787
-logging.config: classpath:log-test.xml
 
 online: false
 
@@ -27,5 +26,4 @@ spring:
         useServerPrepStmts: false
 
 mybatis-plus:
-  global-config:
-    banner: false
+  global-config.banner: false

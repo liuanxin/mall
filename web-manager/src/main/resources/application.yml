@@ -1,10 +1,10 @@
 
 server.port: 8787
-logging.config: classpath:log-dev.xml
 
 online: false
 
 spring:
+  profiles.active: dev
   application.name: web-manager
   mvc.throw-exception-if-no-handler-found: true
   resources.add-mappings: false
@@ -13,13 +13,12 @@ spring:
     port: 6379
     timeout: 5000
   datasource:
-    url: jdbc:mysql://test-db:3306/installation_assistant?useAffectedRows=true&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&queryInterceptors=com.github.common.sql.ShowSql8Interceptor
-    username: assistant
-    password: l5fxV24^B5hM
+    url: jdbc:mysql://127.0.0.1:3306/mall?useAffectedRows=true&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&queryInterceptors=com.github.common.sql.ShowSql8Interceptor
+    username: root
+    password: root
     hikari:
       minimumIdle: 1
       maximumPoolSize: 1
 
 mybatis-plus:
-  global-config:
-    banner: false
+  global-config.banner: false
