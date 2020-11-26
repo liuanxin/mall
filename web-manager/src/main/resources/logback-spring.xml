@@ -10,6 +10,7 @@
     <!-- 在 application.yml 中添加 log.level: info 即可 -->
     <springProperty scope="context" name="logLevel" source="log.level" defaultValue="debug"/>
     <springProperty scope="context" name="thirdLogLevel" source="log.thirdLevel" defaultValue="warn"/>
+    <springProperty scope="context" name="filePath" source="log.filePath" defaultValue="${user.home}/logs"/>
     <springProperty scope="context" name="applicationName" source="spring.application.name" defaultValue="log"/>
 
     <springProfile name="dev">
@@ -48,7 +49,7 @@
     见: https://docs.spring.io/spring-framework/docs/5.3.1/reference/html/core.html#beans-definition-profiles-java
     -->
     <springProfile name="test">
-        <property name="FILE_PATH" value="${user.home}/logs/${applicationName}-test"/>
+        <property name="FILE_PATH" value="${filePath}/${applicationName}-test"/>
         <property name="SQL_PATTERN" value="%n[%d] [${PID:- } %t\\(%logger\\) : %p] %class.%method\\(%file:%line\\) %m%n"/>
         <property name="LOG_PATTERN" value="%n[%X{receiveTime}%d] [${PID:- } %t\\(%logger\\) : %p]%X{requestInfo} %class{30}#%method\\(%file:%line\\) %m%n"/>
 
@@ -109,7 +110,7 @@
     </springProfile>
 
     <springProfile name="prod">
-        <property name="FILE_PATH" value="${user.home}/logs/${applicationName}-prod"/>
+        <property name="FILE_PATH" value="${filePath}/${applicationName}-prod"/>
         <property name="LOG_PATTERN" value="%n[%X{receiveTime}%d] [${PID:- } %t\\(%logger\\) : %p]%X{requestInfo} %class{30}#%method\\(%file:%line\\) %m%n"/>
 
         <appender name="PROJECT" class="ch.qos.logback.core.rolling.RollingFileAppender">
