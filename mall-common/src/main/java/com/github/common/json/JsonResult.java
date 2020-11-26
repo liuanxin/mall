@@ -15,8 +15,8 @@ public class JsonResult<T> {
     // 只有响应编码就可以了, 当前实体表示处理成功后的返回. 说明: 这里是有争议的, 确定后使用一种即可
     // 如果确定后给所有的接口都返回了 200, 在接口内返回 code
     //  则将下面 和 最下面 public static <T> JsonResult<T> 段解开, 使用 GlobalException2, 去掉 GlobalException
-    // @ApiReturn("返回码")
-    // private JsonCode code;
+    @ApiReturn("返回码")
+    private JsonCode code;
 
     @ApiReturn(value = "返回说明", example = "用户名密码错误 | 收货地址添加成功")
     private String msg;
@@ -33,7 +33,7 @@ public class JsonResult<T> {
     */
 
     private JsonResult(JsonCode code, String msg) {
-        // this.code = code;
+        this.code = code;
         this.msg = msg;
     }
     private JsonResult(JsonCode code, String msg, T data) {
@@ -52,10 +52,9 @@ public class JsonResult<T> {
         return new JsonResult<>(JsonCode.SUCCESS,msg, data);
     }
 
-    /*
+
     public static <T> JsonResult<T> badRequest(String msg) {
-        // return new JsonResult<T>(JsonCode.BAD_REQUEST, msg);
-        return new JsonResult<T>(JsonCode.FAIL, msg);
+        return new JsonResult<T>(JsonCode.BAD_REQUEST, msg);
     }
 
     public static <T> JsonResult<T> needLogin(String msg) {
@@ -63,17 +62,14 @@ public class JsonResult<T> {
     }
 
     public static <T> JsonResult<T> needPermission(String msg) {
-        // return new JsonResult<T>(JsonCode.NOT_PERMISSION, msg);
-        return new JsonResult<T>(JsonCode.FAIL, msg);
+        return new JsonResult<T>(JsonCode.NOT_PERMISSION, msg);
     }
 
     public static <T> JsonResult<T> notFound(String msg) {
-        // return new JsonResult<T>(JsonCode.NOT_FOUND, msg);
-        return new JsonResult<T>(JsonCode.FAIL, msg);
+        return new JsonResult<T>(JsonCode.NOT_FOUND, msg);
     }
 
     public static <T> JsonResult<T> fail(String msg) {
         return new JsonResult<T>(JsonCode.FAIL, msg);
     }
-    */
 }

@@ -7,13 +7,15 @@
     https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#environment-properties
     -->
 
+    <springProperty scope="context" name="applicationName" source="spring.application.name" defaultValue="log"/>
     <!-- 在 application.yml 中添加 log.level: info 即可, 下面的依此类推 -->
     <springProperty scope="context" name="logLevel" source="log.level" defaultValue="debug"/>
     <springProperty scope="context" name="thirdLogLevel" source="log.thirdLevel" defaultValue="warn"/>
     <springProperty scope="context" name="filePath" source="log.filePath" defaultValue="${user.home}/logs"/>
-    <springProperty scope="context" name="applicationName" source="spring.application.name" defaultValue="log"/>
-    <springProperty scope="context" name="fileMaxHistory" source="log.maxHistory" defaultValue="7"/>
+    <springProperty scope="context" name="fileMaxHistory" source="log.maxHistory" defaultValue="15"/>
 
+
+    <logger name="com.github.common.mvc" level="${thirdLogLevel}"/>
 
     <logger name="com.baomidou" level="${thirdLogLevel}"/>
     <logger name="com.netflix" level="${thirdLogLevel}"/>
@@ -34,12 +36,17 @@
     <logger name="reactor" level="${thirdLogLevel}"/>
 
 
-    <springProfile name="dev">
-        <include resource="org/springframework/boot/logging/logback/defaults.xml" />
-        <property name="CONSOLE_LOG_PATTERN" value="%n[%X{receiveTime}%d] [${PID:- } %t\\(%logger\\) : %p]%X{requestInfo}%n%class.%method\\(%file:%line\\)%n%m%n"/>
-        <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+    <property name="CONSOLE_LOG_PATTERN" value="%n[%X{receiveTime}%d] [${PID:- } %t\\(%logger\\) : %p]%X{requestInfo}%n%class.%method\\(%file:%line\\)%n%m%n"/>
+    <property name="LOG_PATTERN" value="%n[%X{receiveTime}%d] [${PID:- } %t\\(%logger\\) : %p]%X{requestInfo} %class{30}#%method\\(%file:%line\\) %m%n"/>
 
-        <logger name="com.github.common.mvc" level="${thirdLogLevel}"/>
+
+    <springProfile name="dev">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            </encoder>
+        </appender>
+
         <root level="${logLevel}">
             <appender-ref ref="CONSOLE"/>
         </root>
@@ -52,7 +59,6 @@
     <springProfile name="test">
         <property name="FILE_PATH" value="${filePath}/${applicationName}-test"/>
         <property name="SQL_PATTERN" value="%n[%d] [${PID:- } %t\\(%logger\\) : %p] %class.%method\\(%file:%line\\) %m%n"/>
-        <property name="LOG_PATTERN" value="%n[%X{receiveTime}%d] [${PID:- } %t\\(%logger\\) : %p]%X{requestInfo} %class{30}#%method\\(%file:%line\\) %m%n"/>
 
         <appender name="PROJECT" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <file>${FILE_PATH}.log</file>
@@ -84,7 +90,6 @@
             <appender-ref ref="SQL" />
         </logger>
 
-        <logger name="com.github.common.mvc" level="${thirdLogLevel}"/>
         <root level="debug">
             <appender-ref ref="PROJECT"/>
         </root>
@@ -92,7 +97,6 @@
 
     <springProfile name="prod">
         <property name="FILE_PATH" value="${filePath}/${applicationName}-prod"/>
-        <property name="LOG_PATTERN" value="%n[%X{receiveTime}%d] [${PID:- } %t\\(%logger\\) : %p]%X{requestInfo} %class{30}#%method\\(%file:%line\\) %m%n"/>
 
         <appender name="PROJECT" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <file>${FILE_PATH}.log</file>
@@ -129,7 +133,6 @@
             <appender-ref ref ="PROJECT-ERROR"/>
         </appender>
 
-        <logger name="com.github.common.mvc" level="${thirdLogLevel}"/>
         <root level="${logLevel}">
             <appender-ref ref="ASYNC"/>
             <appender-ref ref="ASYNC-ERROR"/>
