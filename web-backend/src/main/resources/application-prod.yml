@@ -1,6 +1,5 @@
 
 server.port: 8686
-logging.config: classpath:log-prod.xml
 
 online: true
 
@@ -26,3 +25,6 @@ spring:
         prepStmtCacheSqlLimit: 2048
         cachePrepStmts: true
         useServerPrepStmts: true
+
+mybatis-plus:
+  global-config.banner: false

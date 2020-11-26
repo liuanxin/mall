@@ -1,10 +1,10 @@
 
 server.port: 8686
-logging.config: classpath:log-dev.xml
 
 online: false
 
 spring:
+  profiles.active: dev
   application.name: web-backend
   mvc.throw-exception-if-no-handler-found: true
   resources.add-mappings: false
@@ -24,4 +24,4 @@ spring:
 # 连接池数量见: https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing
 
 mybatis-plus:
-  mapper-locations:
+  global-config.banner: false
