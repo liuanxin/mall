@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 /** <span style="color:red;">!!!此实体类请只在 Controller 中使用, 且只调用其 static 方法!!!</span> */
 @Setter
 @Getter
@@ -21,6 +23,10 @@ public class JsonResult<T> {
     @ApiReturn(value = "返回说明", example = "用户名密码错误 | 收货地址添加成功")
     private String msg;
 
+    @ApiReturn(value = "错误信息", example = "当非生产时返回")
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private List<String> errorMsgListWithDebug;
+
     @ApiReturn("返回数据, 实体 {\"id\":1} | 列表 [{\"id\":1},{\"id\":2}] 看具体的业务")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private T data;
@@ -35,6 +41,10 @@ public class JsonResult<T> {
     private JsonResult(JsonCode code, String msg) {
         this.code = code;
         this.msg = msg;
+    }
+    private JsonResult(JsonCode code, String msg, List<String> errorMsgList) {
+        this(code, msg);
+        this.errorMsgListWithDebug = errorMsgList;
     }
     private JsonResult(JsonCode code, String msg, T data) {
         this(code, msg);
@@ -54,22 +64,25 @@ public class JsonResult<T> {
 
 
     public static <T> JsonResult<T> badRequest(String msg) {
-        return new JsonResult<T>(JsonCode.BAD_REQUEST, msg);
+        return new JsonResult<>(JsonCode.BAD_REQUEST, msg);
     }
 
     public static <T> JsonResult<T> needLogin(String msg) {
-        return new JsonResult<T>(JsonCode.NOT_LOGIN, msg);
+        return new JsonResult<>(JsonCode.NOT_LOGIN, msg);
     }
 
     public static <T> JsonResult<T> needPermission(String msg) {
-        return new JsonResult<T>(JsonCode.NOT_PERMISSION, msg);
+        return new JsonResult<>(JsonCode.NOT_PERMISSION, msg);
     }
 
     public static <T> JsonResult<T> notFound(String msg) {
-        return new JsonResult<T>(JsonCode.NOT_FOUND, msg);
+        return new JsonResult<>(JsonCode.NOT_FOUND, msg);
     }
 
     public static <T> JsonResult<T> fail(String msg) {
-        return new JsonResult<T>(JsonCode.FAIL, msg);
+        return new JsonResult<>(JsonCode.FAIL, msg);
+    }
+    public static <T> JsonResult<T> fail(String msg, List<String> errorMsgList) {
+        return new JsonResult<>(JsonCode.FAIL, msg, errorMsgList);
     }
 }
