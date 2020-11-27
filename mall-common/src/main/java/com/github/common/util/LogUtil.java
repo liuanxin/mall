@@ -24,9 +24,17 @@ public final class LogUtil {
     /** 请求信息: 包括 ip、url, param 等  */
     private static final String REQUEST_INFO = "requestInfo";
 
-    /** 将当前请求的上下文信息放进日志 */
+    /** 将 当前时间 和 请求上下文信息 放进日志的 ThreadLocal 中 */
     public static void bind(RequestLogContext logContextInfo) {
         recordTime();
+        bindContext(logContextInfo);
+    }
+    /** 日志的 ThreadLocal 中没有 请求上下文信息 则返回 true */
+    public static boolean hasNotRequestInfo() {
+        return U.isBlank(MDC.get(REQUEST_INFO));
+    }
+    /** 将 请求上下文信息 放进日志的 ThreadLocal 中 */
+    public static void bindContext(RequestLogContext logContextInfo) {
         MDC.put(REQUEST_INFO, logContextInfo.requestInfo());
     }
     /** 将 RequestBody 的请求内容放进日志 */
@@ -40,9 +48,6 @@ public final class LogUtil {
     }
     public static void unbind() {
         MDC.clear();
-    }
-    public static boolean hasNotRequestInfo() {
-        return U.isBlank(MDC.get(REQUEST_INFO));
     }
 
     public static void recordTime() {

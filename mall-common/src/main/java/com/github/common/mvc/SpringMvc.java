@@ -75,7 +75,7 @@ public final class SpringMvc {
                     boolean notRequestInfo = LogUtil.hasNotRequestInfo();
                     try {
                         if (notRequestInfo) {
-                            LogUtil.bind(RequestUtils.logContextInfo());
+                            LogUtil.bindContext(RequestUtils.logContextInfo());
                         }
                         // 如果在生产环境, 太长就只输出前后, 不全部输出
                         LogUtil.ROOT_LOG.info("return: ({})", (online ? U.toStr(json, 1000, 200) : json));

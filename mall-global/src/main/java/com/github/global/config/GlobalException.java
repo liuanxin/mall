@@ -138,12 +138,17 @@ public class GlobalException {
 
     private void bindAndPrintLog(String msg, Exception e) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            // 当没有进到全局拦截器就抛出的异常, 需要这么处理才能在日志中输出整个上下文信息
-            LogUtil.bind(RequestUtils.logContextInfo());
+            // 一些请求不会进入拦截器
+            boolean notRequestInfo = LogUtil.hasNotRequestInfo();
             try {
+                if (notRequestInfo) {
+                    LogUtil.bindContext(RequestUtils.logContextInfo());
+                }
                 LogUtil.ROOT_LOG.debug(msg, e);
             } finally {
-                LogUtil.unbind();
+                if (notRequestInfo) {
+                    LogUtil.unbind();
+                }
             }
         }
     }
