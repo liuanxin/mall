@@ -21,7 +21,7 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
 
     @Override
     public boolean supports(MethodParameter methodParameter, Type type, Class<? extends HttpMessageConverter<?>> aClass) {
-        return methodParameter.getParameterType() == RequestBody.class;
+        return methodParameter.getParameterAnnotation(RequestBody.class) != null;
     }
 
     @Override
