@@ -36,24 +36,22 @@
     <logger name="reactor" level="${thirdLogLevel}"/>
 
 
-    <property name="CONSOLE_LOG_PATTERN" value="%n[%X{receiveTime}%d] [${PID:- } %t\\(%logger\\) : %p]%X{requestInfo}%n%class.%method\\(%file:%line\\)%n%m%n"/>
-    <property name="LOG_PATTERN" value="%n[%X{receiveTime}%d] [${PID:- } %t\\(%logger\\) : %p]%X{requestInfo} %class{30}#%method\\(%file:%line\\) %m%n"/>
-
-
     <springProfile name="dev">
-        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder>
-                <pattern>${CONSOLE_LOG_PATTERN}</pattern>
-            </encoder>
-        </appender>
+        <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+        <property name="CONSOLE_LOG_PATTERN" value="%n[%X{receiveTime}%d] [${PID:- } %t\\(%logger\\) : %p]%X{requestInfo}%n%class.%method\\(%file:%line\\)%n%m%n"/>
+        <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
         <root level="${logLevel}">
             <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
 
+
+    <!-- 输出到文件时的格式 -->
+    <property name="LOG_PATTERN" value="[%X{receiveTime}%d] [${PID:- } %t\\(%logger\\) : %p]%X{requestInfo} %class{30}#%method\\(%file:%line\\) %m%n"/>
+
     <!--
-    或者用 !(dev | prod) 貌似 & 有问题
+    或者用「!(dev | prod)」, 用 & 貌似有问题
     见: https://docs.spring.io/spring-framework/docs/5.3.1/reference/html/core.html#beans-definition-profiles-java
     -->
     <springProfile name="test">
