@@ -109,14 +109,14 @@ public class GlobalException {
                 : String.format("不支持此请求方式: 当前(%s), 支持(%s)", e.getMethod(), A.toStr(e.getSupportedMethods()));
 
         bindAndPrintLog(msg, e);
-        return JsonResult.fail(msg);
+        return JsonResult.fail(msg, errorTrack(e));
     }
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public JsonResult<Void> uploadSizeExceeded(MaxUploadSizeExceededException e) {
         // 右移 20 位相当于除以两次 1024, 正好表示从字节到 Mb
         String msg = String.format("上传文件太大! 请保持在 %sM 以内", (e.getMaxUploadSize() >> 20));
         bindAndPrintLog(msg, e);
-        return JsonResult.fail(msg);
+        return JsonResult.fail(msg, errorTrack(e));
     }
 
     // 以上是 spring 的内部异常
