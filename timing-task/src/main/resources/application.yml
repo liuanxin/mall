@@ -1,6 +1,4 @@
 
-logging.config: classpath:log-dev.xml
-
 online: false
 
 spring:

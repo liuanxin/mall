@@ -1,6 +1,4 @@
 
-logging.config: classpath:log-prod.xml
-
 online: true
 
 spring:
