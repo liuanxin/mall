@@ -227,10 +227,20 @@ public final class U {
         return obj != null && obj.doubleValue() > 0;
     }
     /** 传入的数为 null 或 小于等于 0 就返回 true */
-    public static boolean less0(Number obj) {
+    public static boolean lessAndEquals0(Number obj) {
         return !greater0(obj);
     }
 
+    /** 传入的数不为 null 且 大于等于 0 就返回 true */
+    public static boolean greaterAndEquals0(Number obj) {
+        return obj != null && obj.doubleValue() >= 0;
+    }
+    /** 传入的数为 null 或 小于 0 就返回 true(等于 0 时返回 false) */
+    public static boolean less0(Number obj) {
+        return !greaterAndEquals0(obj);
+    }
+
+    /** 转换成 int, 非数字则返回 0 */
     public static int toInt(Object obj) {
         if (isBlank(obj)) {
             return 0;
@@ -244,6 +254,8 @@ public final class U {
             return 0;
         }
     }
+
+    /** 转换成 long, 非数字则返回 0L */
     public static long toLong(Object obj) {
         if (isBlank(obj)) {
             return 0L;
@@ -257,6 +269,8 @@ public final class U {
             return 0L;
         }
     }
+
+    /** 转换成 float, 非数字则返回 0F */
     public static float toFloat(Object obj) {
         if (isBlank(obj)) {
             return 0F;
@@ -270,6 +284,8 @@ public final class U {
             return 0F;
         }
     }
+
+    /** 转换成 double, 非数字则返回 0D */
     public static double toDouble(Object obj) {
         if (isBlank(obj)) {
             return 0D;
@@ -283,6 +299,8 @@ public final class U {
             return 0D;
         }
     }
+
+    /** 是数字则返回 true */
     public static boolean isNumber(Object obj) {
         if (isBlank(obj)) {
             return false;
@@ -297,6 +315,8 @@ public final class U {
             return false;
         }
     }
+
+    /** 不是数字则返回 true */
     public static boolean isNotNumber(Object obj) {
         return !isNumber(obj);
     }
@@ -866,7 +886,7 @@ public final class U {
 
     /** 数值为空或小于等于 0 则抛出异常 */
     public static void assert0(Number number, String msg) {
-        if (less0(number)) {
+        if (lessAndEquals0(number)) {
             assertException(msg);
         }
     }
