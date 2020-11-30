@@ -15,11 +15,17 @@
     <springProperty scope="context" name="fileMaxHistory" source="log.maxHistory" defaultValue="15"/>
 
 
+    <logger name="com.github.common.repository" level="${thirdLogLevel}"/>
+    <logger name="com.github.user.repository" level="${thirdLogLevel}"/>
+    <logger name="com.github.product.repository" level="${thirdLogLevel}"/>
+    <logger name="com.github.order.repository" level="${thirdLogLevel}"/>
+    <logger name="com.github.manager.repository" level="${thirdLogLevel}"/>
+
     <logger name="com.github.common.mvc" level="${thirdLogLevel}"/>
 
     <logger name="com.baomidou" level="${thirdLogLevel}"/>
     <logger name="com.netflix" level="${thirdLogLevel}"/>
-    <logger name="com.github" level="${thirdLogLevel}"/>
+    <!--<logger name="com.github" level="${thirdLogLevel}"/>-->
     <logger name="com.zaxxer" level="${thirdLogLevel}"/>
     <logger name="com.sun" level="${thirdLogLevel}"/>
 
