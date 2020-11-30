@@ -55,7 +55,7 @@ public class ShowSql8Interceptor implements QueryInterceptor {
 
             if (U.isNotBlank(realSql)) {
                 if (LogUtil.SQL_LOG.isDebugEnabled()) {
-                    String printSql = SqlFormat.format(realSql);
+                    String printSql = SqlFormat.format(realSql).replaceFirst("^\\s*?\n", "");
                     Long start = TIME_CACHE.getIfPresent(thread);
                     if (start != null) {
                         long time = System.currentTimeMillis() - start;

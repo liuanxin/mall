@@ -62,7 +62,7 @@
 //            if (U.isNotBlank(sql)) {
 //                if (LogUtil.SQL_LOG.isDebugEnabled()) {
 //                    // druid -> SQLUtils.formatMySql
-//                    String formatSql = SqlFormat.format(sql);
+//                    String formatSql = SqlFormat.format(sql).replaceFirst("^\\s*?\n", "");
 //
 //                    Long start = TIME_CACHE.getIfPresent(thread);
 //                    if (start != null) {
