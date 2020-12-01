@@ -15,10 +15,10 @@
       application.name: xxx
 
     log:
-      level: info       # 默认日志级别
-      thirdLevel: warn  # 第三方日志级别
-      filePath: /opt/   # 文件路径
-      maxHistory: 15    # 文件最大保存天数
+      level: info          # 默认日志级别
+      thirdLevel: warn     # 第三方日志级别
+      filePath: /opt/logs  # 文件存放目录
+      maxHistory: 15       # 文件最大保存天数
     -->
     <springProperty scope="context" name="applicationProfile" source="spring.profiles.active" defaultValue="dev"/>
     <springProperty scope="context" name="applicationName" source="spring.application.name" defaultValue="log"/>
