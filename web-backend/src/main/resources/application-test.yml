@@ -2,9 +2,6 @@
 server.port: 8686
 
 online: false
-log:
-  level: debug
-  thirdLevel: warn
 
 spring:
   application.name: web-backend

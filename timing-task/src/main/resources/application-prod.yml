@@ -1,5 +1,8 @@
 
 online: true
+log:
+  level: info
+  thirdLevel: error
 
 spring:
   application.name: task
