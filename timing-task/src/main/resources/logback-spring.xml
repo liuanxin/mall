@@ -48,7 +48,7 @@
     <logger name="com.zaxxer" level="${thirdLogLevel}"/>
     <logger name="com.sun" level="${thirdLogLevel}"/>
 
-    <!--<logger name="org.springframework" level="${thirdLogLevel}"/>-->
+    <logger name="org.springframework" level="${thirdLogLevel}"/>
     <logger name="org.hibernate" level="${thirdLogLevel}"/>
     <logger name="org.mybatis" level="${thirdLogLevel}"/>
     <logger name="org.apache" level="${thirdLogLevel}"/>
