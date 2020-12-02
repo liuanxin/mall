@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,7 +17,7 @@ import java.lang.reflect.Type;
 
 @SuppressWarnings("NullableProblems")
 @ConditionalOnClass({ HttpServletRequest.class, RequestBody.class })
-@ControllerAdvice(annotations = RestController.class)
+@ControllerAdvice(annotations = { Controller.class, RestController.class })
 public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
 
     @Override
