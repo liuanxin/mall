@@ -46,21 +46,23 @@ public class JsonUtil {
         private static final long serialVersionUID = 0L;
         private RenderObjectMapper() {
             super();
-            // 日期不用 utc 方式显示(utc 是一个整数值)
-            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+            // NON_NULL: null 值不序列化, NON_EMPTY: null 空字符串、长度为 0 的 list、map 都不序列化
+            setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
             // 时间格式. 要想自定义在字段上标 @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8") 即可
             SimpleDateFormat dateFormat = new SimpleDateFormat(DateFormatType.YYYY_MM_DD_HH_MM_SS.getValue());
             dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
             setDateFormat(dateFormat);
+
             // 不确定值的枚举返回 null
-            configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true);
-            // 不确定的属性项上不要失败
-            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL);
             // 允许字符串中包含未加引号的控制字符(值小于 32 的 ASCII 字符, 包括制表符和换行字符)
             // json 标准要求所有控制符必须使用引号, 因此默认是 false, 遇到此类字符时会抛出异常
-            // configure(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
-            // NON_NULL: null 值不序列化, NON_EMPTY: null 空字符串、长度为 0 的 list、map 都不序列化
-            setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+            // enable(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS);
+
+            // 日期不用 utc 方式显示(utc 是一个整数值)
+            disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            // 不确定的属性项上不要失败
+            disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         }
     }
 
