@@ -48,7 +48,7 @@
     <logger name="com.zaxxer" level="${thirdLogLevel}"/>
     <logger name="com.sun" level="${thirdLogLevel}"/>
 
-    <logger name="org.springframework" level="${thirdLogLevel}"/>
+    <!--<logger name="org.springframework" level="${thirdLogLevel}"/>-->
     <logger name="org.hibernate" level="${thirdLogLevel}"/>
     <logger name="org.mybatis" level="${thirdLogLevel}"/>
     <logger name="org.apache" level="${thirdLogLevel}"/>
@@ -63,7 +63,7 @@
 
     <springProfile name="dev">
         <include resource="org/springframework/boot/logging/logback/defaults.xml" />
-        <property name="CONSOLE_LOG_PATTERN" value="%n[%X{receiveTime}%d] [${PID:- } : %t : %logger : %p]%X{requestInfo}%n%class.%method\\(%file:%line\\)%n%m%n"/>
+        <property name="CONSOLE_LOG_PATTERN" value="%n[%X{receiveTime}%d] [${PID:- } : \\(%t\\) : \\(%logger\\) : %p]%X{requestInfo}%n%class.%method\\(%file:%line\\)%n%m%n"/>
         <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
         <root level="${logLevel}">
@@ -75,7 +75,7 @@
     <!-- 输出到文件的地址 -->
     <property name="FILE_PATH" value="${filePath}/${applicationName}-${applicationProfile}"/>
     <!-- 输出到文件时的格式 -->
-    <property name="LOG_PATTERN" value="[%X{receiveTime}%d] [${PID:- } : %t : %logger : %p]%X{requestInfo} %class{30}#%method\\(%file:%line\\) %m%n"/>
+    <property name="LOG_PATTERN" value="[%X{receiveTime}%d] [${PID:- } : \\(%t\\) : \\(%logger\\) : %p]%X{requestInfo} %class{30}#%method\\(%file:%line\\) %m%n"/>
 
     <!--
     用 & 貌似有问题. 见:
@@ -101,7 +101,7 @@
                 <maxHistory>${fileMaxHistory}</maxHistory>
             </rollingPolicy>
             <encoder>
-                <pattern>%n[%d{yyyy-MM-dd HH:mm:ss.SSS}] [${PID:- } : %t : %logger : %p] %class.%method\\(%file:%line\\) %m%n</pattern>
+                <pattern>%n[%d{yyyy-MM-dd HH:mm:ss.SSS}] [${PID:- } : \\(%t\\) : \\(%logger\\) : %p] %class.%method\\(%file:%line\\) %m%n</pattern>
             </encoder>
         </appender>
         <logger name="sqlLog" level="debug" additivity="false">
