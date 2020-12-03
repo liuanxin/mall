@@ -47,8 +47,6 @@
 //            }
 //            if (U.isNotBlank(sql)) {
 //                if (LogUtil.SQL_LOG.isDebugEnabled()) {
-//                    // druid -> SQLUtils.formatMySql
-//                    String formatSql = SqlFormat.format(sql).replaceFirst("^\\s*?\n", "");
 //
 //                    StringBuilder sbd = new StringBuilder();
 //                    Long start = TIME_CACHE.getIfPresent(thread);
@@ -67,6 +65,7 @@
 //                        sbd.append("size: ").append(size).append(", ");
 //                    }
 //
+//                    // druid -> SQLUtils.formatMySql
 //                    sbd.append("sql:\n").append(SqlFormat.format(sql).replaceFirst("^\\s*?\n", ""));
 //                    LogUtil.SQL_LOG.debug(sbd.toString());
 //                }
