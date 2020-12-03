@@ -68,9 +68,7 @@ public class ShowSql8Interceptor implements QueryInterceptor {
                     } else {
                         size = 0;
                     }
-                    if (U.greater0(size)) {
-                        sbd.append("size: ").append(size).append(", ");
-                    }
+                    sbd.append("size: ").append(size).append(", ");
 
                     sbd.append("sql:\n").append(SqlFormat.format(realSql).replaceFirst("^\\s*?\n", ""));
                     LogUtil.SQL_LOG.debug(sbd.toString());

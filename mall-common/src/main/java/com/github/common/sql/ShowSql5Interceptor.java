@@ -61,9 +61,7 @@
 //                    } else {
 //                        size = 0;
 //                    }
-//                    if (U.greater0(size)) {
-//                        sbd.append("size: ").append(size).append(", ");
-//                    }
+//                    sbd.append("size: ").append(size).append(", ");
 //
 //                    // druid -> SQLUtils.formatMySql
 //                    sbd.append("sql:\n").append(SqlFormat.format(sql).replaceFirst("^\\s*?\n", ""));
