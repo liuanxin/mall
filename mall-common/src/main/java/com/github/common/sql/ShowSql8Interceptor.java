@@ -55,14 +55,25 @@ public class ShowSql8Interceptor implements QueryInterceptor {
 
             if (U.isNotBlank(realSql)) {
                 if (LogUtil.SQL_LOG.isDebugEnabled()) {
-                    String printSql = SqlFormat.format(realSql).replaceFirst("^\\s*?\n", "");
+                    StringBuilder sbd = new StringBuilder();
+
                     Long start = TIME_CACHE.getIfPresent(thread);
-                    if (start != null) {
-                        long time = System.currentTimeMillis() - start;
-                        LogUtil.SQL_LOG.debug("time: {} ms, sql:\n{}", time, printSql);
-                    } else {
-                        LogUtil.SQL_LOG.debug("sql:\n{}", printSql);
+                    if (U.greater0(start)) {
+                        sbd.append("time: ").append(System.currentTimeMillis() - start).append(" ms, ");
                     }
+
+                    int size;
+                    if (U.isNotBlank(rs) && rs.hasRows()) {
+                        size = rs.getRows().size();
+                    } else {
+                        size = 0;
+                    }
+                    if (U.greater0(size)) {
+                        sbd.append("size: ").append(size).append(", ");
+                    }
+
+                    sbd.append("sql:\n").append(SqlFormat.format(realSql).replaceFirst("^\\s*?\n", ""));
+                    LogUtil.SQL_LOG.debug(sbd.toString());
                 }
             }
         } finally {

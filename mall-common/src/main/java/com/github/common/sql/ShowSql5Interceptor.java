@@ -32,8 +32,7 @@
 //    }
 //
 //    @Override
-//    public ResultSetInternalMethods postProcess(String sql, Statement statement,
-//                                                ResultSetInternalMethods resultSetInternalMethods,
+//    public ResultSetInternalMethods postProcess(String sql, Statement statement, ResultSetInternalMethods resultSet,
 //                                                Connection connection) throws SQLException {
 //        Thread thread = Thread.currentThread();
 //        try {
@@ -46,30 +45,30 @@
 //                    }
 //                }
 //            }
-//            /*
-//            if (statement != null) {
-//                if (statement instanceof PreparedStatement) {
-//                    try {
-//                        sql = ((PreparedStatement) statement).asSql();
-//                    } catch (SQLException sqlEx) {
-//                        if (LogUtil.SQL_LOG.isDebugEnabled()) {
-//                            LogUtil.SQL_LOG.debug("show sql exception", sqlEx);
-//                        }
-//                    }
-//                }
-//            }
-//            */
 //            if (U.isNotBlank(sql)) {
 //                if (LogUtil.SQL_LOG.isDebugEnabled()) {
 //                    // druid -> SQLUtils.formatMySql
 //                    String formatSql = SqlFormat.format(sql).replaceFirst("^\\s*?\n", "");
 //
+//                    StringBuilder sbd = new StringBuilder();
 //                    Long start = TIME_CACHE.getIfPresent(thread);
-//                    if (start != null) {
-//                        LogUtil.SQL_LOG.debug("time: {} ms, sql:\n{}", (System.currentTimeMillis() - start), formatSql);
-//                    } else {
-//                        LogUtil.SQL_LOG.debug("sql:\n{}", formatSql);
+//                    if (U.greater0(start)) {
+//                        sbd.append("time: ").append(System.currentTimeMillis() - start).append(" ms, ");
 //                    }
+//
+//                    int size;
+//                    if (resultSet != null && resultSet.reallyResult() && resultSet.last()) {
+//                        size = resultSet.getRow();
+//                        resultSet.beforeFirst();
+//                    } else {
+//                        size = 0;
+//                    }
+//                    if (U.greater0(size)) {
+//                        sbd.append("size: ").append(size).append(", ");
+//                    }
+//
+//                    sbd.append("sql:\n").append(SqlFormat.format(sql).replaceFirst("^\\s*?\n", ""));
+//                    LogUtil.SQL_LOG.debug(sbd.toString());
 //                }
 //            }
 //        } finally {

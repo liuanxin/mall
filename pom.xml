@@ -56,7 +56,6 @@
 
         <elasticsearch.version>6.3.2</elasticsearch.version>
         <hikaricp.version>3.4.5</hikaricp.version>
-        <mysql.version>5.1.47</mysql.version>
         <mybatis-plus.version>3.4.0</mybatis-plus.version>
         <mybatis-redis-cache.version>1.2.7</mybatis-redis-cache.version>
 
