@@ -70,7 +70,7 @@ public class MybatisPlusUtil {
      * 
      * @param column lambda 表达式对应的字段, 如 User::getId
      * @param <T> 数据库表对应的实体
-     * @return 实体中的属性对应的数据库字段
+     * @return 实体中的属性对应的数据库字段, 如 id
      */
     public static <T> String fieldToColumn(SFunction<T, ?> column) {
         SerializedLambda lambda = LambdaUtils.resolve(column);
@@ -101,7 +101,7 @@ public class MybatisPlusUtil {
      *
      * @param columns lambda 表达式对应的字段数组, 如 [User::getId, User::getUserName]
      * @param <T> 数据库表对应的实体
-     * @return 实体中的属性对应的数据库字段
+     * @return 实体中的属性对应的数据库字段, 如 [id, user_name]
      */
     @SuppressWarnings("unchecked")
     public static <T> String[] fieldsToColumnArray(SFunction<T, ?>... columns) {
