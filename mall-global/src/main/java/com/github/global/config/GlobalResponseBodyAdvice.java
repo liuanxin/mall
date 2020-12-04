@@ -70,7 +70,7 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
                     long time = System.currentTimeMillis() - LogUtil.getStartTimeMillis();
                     // 如果在生产环境, 太长就只输出前后, 不全部输出
                     String print = online ? U.toStr(json, 1000, 200) : json;
-                    LogUtil.ROOT_LOG.info("use time ({}ms), return: ({})", time, print);
+                    LogUtil.ROOT_LOG.info("time ({}ms), return: ({})", time, print);
                 } finally {
                     if (notRequestInfo) {
                         LogUtil.unbind();
