@@ -21,7 +21,13 @@ import java.util.Map;
  *   `user_name` varchar(32) NOT NULL DEFAULT '' COMMENT '用户名',
  *   `password` varchar(64) NOT NULL DEFAULT '' COMMENT '密码',
  *   `nick_name` varchar(16) NOT NULL DEFAULT '' COMMENT '昵称',
- *   PRIMARY KEY (`id`)
+ *   `gender` int NOT NULL DEFAULT '0' COMMENT '性别(0.未知, 1.男, 2.女)',
+ *   `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1.已禁用',
+ *   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+ *   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+ *   `is_deleted` bigint NOT NULL DEFAULT '0' COMMENT '非 0 表示已删除, 删除时将当前值置为主键 id 或时间戳即可',
+ *   PRIMARY KEY (`id`),
+ *   UNIQUE KEY `user_name` (`user_name`, `is_deleted`)
  * ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户';
  *
  * 其对应的实体是
@@ -39,6 +45,21 @@ import java.util.Map;
  *
  *     &#047;&#042;&#042; 昵称 --> nick_name &#042;&#047;
  *     private String nickName;
+ *
+ *     &#047;&#042;&#042; 性别(0.未知, 1.男, 2.女) --> gender &#042;&#047;
+ *     private Gender gender;
+ *
+ *     &#047;&#042;&#042; 1.已禁用 --> status &#042;&#047;
+ *     private Boolean status;
+ *
+ *     &#047;&#042;&#042; 创建时间 --> create_time &#042;&#047;
+ *     private Date createTime;
+ *
+ *     &#047;&#042;&#042; 更新时间 --> update_time &#042;&#047;
+ *     private Date updateTime;
+ *
+ *     &#047;&#042;&#042; 非 0 表示已删除, 删除时将当前值置为主键 id 或时间戳即可 --> is_deleted &#042;&#047;
+ *     private Long isDeleted;
  * }
  * </pre>
  */
