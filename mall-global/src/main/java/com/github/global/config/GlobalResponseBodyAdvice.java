@@ -67,10 +67,10 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
                     if (notRequestInfo) {
                         LogUtil.bindContext(RequestUtils.logContextInfo());
                     }
+                    long time = System.currentTimeMillis() - LogUtil.getStartTimeMillis();
                     // 如果在生产环境, 太长就只输出前后, 不全部输出
-                    long current = System.currentTimeMillis();
-                    LogUtil.ROOT_LOG.info("use time ({}ms), return: ({})", (current - LogUtil.getStartTimeMillis()),
-                            (online ? U.toStr(json, 1000, 200) : json));
+                    String print = online ? U.toStr(json, 1000, 200) : json;
+                    LogUtil.ROOT_LOG.info("use time ({}ms), return: ({})", time, print);
                 } finally {
                     if (notRequestInfo) {
                         LogUtil.unbind();
