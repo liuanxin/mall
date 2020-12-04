@@ -32,8 +32,8 @@ import java.util.Map;
  *
  * 其对应的实体是
  * &#047;&#042;&#042; 用户 --> t_user &#042;&#047;
- * &#064;Setter
- * &#064;Getter
+ * &#064;Data
+ * &#064;TableName("t_user")
  * public class User {
  *     private Long id;
  *
@@ -85,6 +85,8 @@ public class MybatisPlusUtil {
         }
 
         if (returnColumn == null || returnColumn.trim().length() == 0) {
+            // 上面的不成功就简单转换一下: lowerCamel => lower_underscore)
+            // 如果是大写(lowerCamel => UPPER_UNDERSCORE)则用 UPPER_UNDERSCORE
             return CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.LOWER_UNDERSCORE).convert(fieldName);
         } else {
             return returnColumn;
