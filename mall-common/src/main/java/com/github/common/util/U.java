@@ -4,9 +4,11 @@ import com.github.common.Money;
 import com.github.common.date.DateUtil;
 import com.github.common.exception.*;
 import com.github.common.json.JsonUtil;
+import com.google.common.collect.Maps;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -775,6 +777,69 @@ public final class U {
             }
         } else {
             return getNil(value);
+        }
+    }
+
+    /**
+     * 将 source 中字段的值填充到 target 中. target.setName(source.getName()), 如果 target.getName() 有值则忽略 setName
+     *
+     * @param source 源对象
+     * @param target 目标对象
+     */
+    public static <S,T> void fillData(S source, T target) {
+        fillData(source, target, true);
+    }
+
+    /**
+     * 将 source 中字段的值填充到 target 中: target.setName(source.getName())
+     *
+     * @param source 源对象
+     * @param target 目标对象
+     * @param ignoreAlready true 表示忽略已有的数据: 如 target.getName() != null 则不再调用 target.setName(source.getName())
+     */
+    public static <S,T> void fillData(S source, T target, boolean ignoreAlready) {
+        Method[] targetMethods = target.getClass().getMethods();
+
+        Map<String, Method> targetMethodMap = Maps.newHashMap();
+        for (Method method : targetMethods) {
+            targetMethodMap.put(method.getName(), method);
+        }
+
+        Method[] sourceMethods = source.getClass().getMethods();
+        Map<String, Method> sourceMethodMap = Maps.newHashMap();
+        for (Method method : sourceMethods) {
+            sourceMethodMap.put(method.getName(), method);
+        }
+        for (Method method : targetMethods) {
+            String methodName = method.getName();
+            if (methodName.startsWith("set")) {
+                String getMethodName = "get" + methodName.substring(3);
+                if (sourceMethodMap.containsKey(getMethodName)) {
+                    if (ignoreAlready) {
+                        try {
+                            Object oldResult = targetMethodMap.get(getMethodName).invoke(target);
+                            if (oldResult != null) {
+                                continue;
+                            }
+                        } catch (IllegalAccessException | InvocationTargetException ignore) {
+                            continue;
+                        }
+                    }
+
+                    Object dataResult;
+                    try {
+                        dataResult = sourceMethodMap.get(getMethodName).invoke(source);
+                    } catch (IllegalAccessException | InvocationTargetException ignore) {
+                        continue;
+                    }
+                    if (dataResult != null) {
+                        try {
+                            method.invoke(target, dataResult);
+                        } catch (IllegalAccessException | InvocationTargetException ignore) {
+                        }
+                    }
+                }
+            }
         }
     }
 
