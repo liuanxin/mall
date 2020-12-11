@@ -4,7 +4,6 @@ import com.github.common.enums.TestEnum;
 import com.github.common.json.JsonResult;
 import com.github.common.page.PageParam;
 import com.github.common.page.PageReturn;
-import com.github.common.util.A;
 import com.github.common.util.U;
 import com.github.dto.ExampleDto;
 import com.github.global.constant.Develop;
@@ -17,7 +16,6 @@ import com.github.product.service.ProductTestService;
 import com.github.user.model.UserTest;
 import com.github.user.service.UserTestService;
 import com.github.vo.ExampleVo;
-import com.google.common.collect.Lists;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,7 +43,8 @@ public class BackendProductController {
         U.assertNil(dto, "缺少必须的参数");
         dto.basicCheck();
 
-        PageReturn<UserTest> pageUserExampleInfo = userExampleService.example(dto.userParam(), page);
+        PageReturn<UserTest> pageUserExampleInfo = userExampleService.example(dto.userTestParam(), dto.userTestExtendParam(), page);
+        /*
         List<Long> userIdList = Lists.newArrayList();
         if (U.isNotBlank(pageUserExampleInfo)) {
             if (A.isNotEmpty(pageUserExampleInfo.getList())) {
@@ -54,7 +53,8 @@ public class BackendProductController {
                 }
             }
         }
-        List<ProductTest> productExampleList = productExampleService.example(userIdList, dto.productParam());
+        */
+        List<ProductTest> productExampleList = null;// productExampleService.example(userIdList, dto.productParam());
         return JsonResult.success("示例", ExampleVo.assemblyData(pageUserExampleInfo, productExampleList));
     }
 }

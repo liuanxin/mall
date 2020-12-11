@@ -1,6 +1,7 @@
 package com.github.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.common.enums.Gender;
 import com.github.common.enums.TestEnum;
 import com.github.common.json.JsonUtil;
@@ -21,6 +22,7 @@ import java.util.*;
 
 @Data
 @Accessors(chain = true)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ExampleVo {
 
     @ApiReturn("用户 id")
@@ -44,6 +46,7 @@ public class ExampleVo {
 
     @Data
     @Accessors(chain = true)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public static class ExampleProductVo {
 
         @ApiReturn("商品名")

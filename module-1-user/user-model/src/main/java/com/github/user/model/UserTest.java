@@ -1,13 +1,13 @@
 package com.github.user.model;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.github.common.enums.Gender;
 import com.github.user.enums.UserTestLevel;
 import lombok.Data;
 
 import java.io.Serializable;
 
-/** 用户示例表 --> t_user_test */
+/** 用户 --> t_user_test */
 @Data
 @TableName("t_user_test")
 public class UserTest implements Serializable {
@@ -15,15 +15,18 @@ public class UserTest implements Serializable {
 
     private Long id;
 
-    /** 昵称 --> nick_name */
-    private String nickName;
+    /** 用户名 --> user_name */
+    private String userName;
 
-    /** 性别 --> gender */
-    private Gender gender;
+    /** 密码 --> password */
+    private String password;
 
-    /** 等级 --> level */
+    /** 用户等级(0.未知, 1.普通, 2.vip) --> level */
     private UserTestLevel level;
 
-    /** 头像 --> avatar_url */
-    private String avatarUrl;
+
+    // 下面的属性不与数据库关联字段
+
+    @TableField(exist = false)
+    private UserTestExtend extend;
 }

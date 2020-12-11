@@ -8,6 +8,7 @@ import com.github.product.enums.ProductTestType;
 import com.github.product.model.ProductTest;
 import com.github.user.enums.UserTestLevel;
 import com.github.user.model.UserTest;
+import com.github.user.model.UserTestExtend;
 import lombok.Data;
 
 @Data
@@ -47,8 +48,11 @@ public class ExampleDto {
     }
 
     /** 操作用户模块时用到的参数 */
-    public UserTest userParam() {
+    public UserTest userTestParam() {
         return JsonUtil.convert(this, UserTest.class);
+    }
+    public UserTestExtend userTestExtendParam() {
+        return JsonUtil.convert(this, UserTestExtend.class);
     }
     /** 操作商品模块时需要的参数 */
     public ProductTest productParam() {

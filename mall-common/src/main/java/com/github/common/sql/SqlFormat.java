@@ -22,6 +22,7 @@ class SqlFormat {
         BEGIN_CLAUSES.add("outer");
         BEGIN_CLAUSES.add("group");
         BEGIN_CLAUSES.add("order");
+        BEGIN_CLAUSES.add("limit");
 
         END_CLAUSES.add("where");
         END_CLAUSES.add("set");

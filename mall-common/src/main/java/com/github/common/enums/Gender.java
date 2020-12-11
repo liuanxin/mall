@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.common.util.U;
+import lombok.Getter;
 
 import java.util.Map;
 
 /** 性别 */
+@Getter
 public enum Gender {
 
     Nil(0, "未知"), Male(1, "男"), Female(2, "女");
@@ -18,14 +20,6 @@ public enum Gender {
     Gender(int code, String value) {
         this.code = code;
         this.value = value;
-    }
-    /** 显示用 */
-    public String getValue() {
-        return value;
-    }
-    /** 数据关联用 */
-    public int getCode() {
-        return code;
     }
 
     /** 序列化给前端时, 如果只想给前端返回数值, 去掉此方法并把注解挪到 getCode 即可 */

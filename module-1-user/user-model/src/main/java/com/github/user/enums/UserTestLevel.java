@@ -1,29 +1,25 @@
 package com.github.user.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.common.util.U;
+import lombok.Getter;
 
 import java.util.Map;
 
 /** 用户等级 */
+@Getter
 public enum UserTestLevel {
 
-    Normal(0, "普通用户"), Vip(1, "vip 用户"), God(2, "黄金用户");
+    Normal(0, "普通用户"), Vip(1, "vip 用户");
 
-    int code;
-    String value;
+    @EnumValue
+    private final int code;
+    private final String value;
     UserTestLevel(int code, String value) {
         this.code = code;
         this.value = value;
-    }
-    /** 显示用 */
-    public String getValue() {
-        return value;
-    }
-    /** 数据关联用 */
-    public int getCode() {
-        return code;
     }
 
     /** 序列化给前端时, 如果只想给前端返回数值, 去掉此方法并把注解挪到 getCode 即可 */
