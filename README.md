@@ -113,6 +113,6 @@ public class DemoServiceImpl implements DemoService {
 | Boolean       | tinyint(1) not null default '0' comment '1 表示已删除'                                      |
 | String        | varchar(16) not null default '' comment 'xx'  长度为 2 的幂次, 如 32 128 1024 等             |
 | BigDecimal    | decimal(10,2) not null default '0' comment 'xxxx 金额, 可以用 long 即可'                     |
-| Date          | datetime not null default '0000-00-00 00:00:00' comment 'xxxxx 时间'                        |
+| Date          | datetime not null default '1970-01-01 00:00:00' comment 'xxxxx 时间'                        |
 
 ~
