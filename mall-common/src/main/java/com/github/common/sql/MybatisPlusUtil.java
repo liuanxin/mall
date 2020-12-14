@@ -15,17 +15,17 @@ import java.util.Map;
  * <pre>
  * mp 工具类
  *
- * 比如有 t_table 表
+ * 比如有表
  * CREATE TABLE IF NOT EXISTS `t_user` (
  *   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
  *   `user_name` varchar(32) NOT NULL DEFAULT '' COMMENT '用户名',
  *   `password` varchar(64) NOT NULL DEFAULT '' COMMENT '密码',
  *   `nick_name` varchar(16) NOT NULL DEFAULT '' COMMENT '昵称',
- *   `gender` int NOT NULL DEFAULT '0' COMMENT '性别(0.未知, 1.男, 2.女)',
- *   `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1.已禁用',
+ *   `gender` int unsigned NOT NULL DEFAULT '0' COMMENT '性别(0.未知, 1.男, 2.女)',
+ *   `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '1.已禁用',
  *   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
  *   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
- *   `is_deleted` bigint NOT NULL DEFAULT '0' COMMENT '非 0 表示已删除, 删除时将当前值置为主键 id 或时间戳即可',
+ *   `is_deleted` bigint unsigned NOT NULL DEFAULT '0' COMMENT '0 表示未删除, 删除时将当前值置为主键 id 或时间戳',
  *   PRIMARY KEY (`id`),
  *   UNIQUE KEY `user_name` (`user_name`, `is_deleted`)
  * ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户';
@@ -58,7 +58,8 @@ import java.util.Map;
  *     &#047;&#042;&#042; 更新时间 --> update_time &#042;&#047;
  *     private Date updateTime;
  *
- *     &#047;&#042;&#042; 非 0 表示已删除, 删除时将当前值置为主键 id 或时间戳即可 --> is_deleted &#042;&#047;
+ *     &#047;&#042;&#042; 0 表示未删除, 删除时将当前值置为主键 id 或时间戳 --> is_deleted &#042;&#047;
+ *     &#064;TableLogic(value = "0", delval = "unix_timestamp()")
  *     private Long isDeleted;
  * }
  * </pre>
@@ -67,10 +68,10 @@ public class MybatisPlusUtil {
 
     /**
      * java 字段转换成数据库列名, 如: columnToString(User::getUserName) 返回 user_name
-     * 
+     *
      * @param column lambda 表达式对应的字段, 如 User::getId
      * @param <T> 数据库表对应的实体
-     * @return 实体中的属性对应的数据库字段, 如 id
+     * @return 实体中的属性对应的数据库字段名, 如 id
      */
     public static <T> String fieldToColumn(SFunction<T, ?> column) {
         SerializedLambda lambda = LambdaUtils.resolve(column);
@@ -85,8 +86,8 @@ public class MybatisPlusUtil {
         }
 
         if (returnColumn == null || returnColumn.trim().length() == 0) {
-            // 上面的不成功就简单转换一下: lowerCamel => lower_underscore)
-            // 如果是大写(lowerCamel => UPPER_UNDERSCORE)则用 UPPER_UNDERSCORE
+            // 上面的不成功就按驼峰规则转换: lowerCamel => lower_camel)
+            // 如果是大写(lowerCamel => LOWER_CAMEL)则用 UPPER_UNDERSCORE
             return CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.LOWER_UNDERSCORE).convert(fieldName);
         } else {
             return returnColumn;
@@ -101,7 +102,7 @@ public class MybatisPlusUtil {
      *
      * @param columns lambda 表达式对应的字段数组, 如 [User::getId, User::getUserName]
      * @param <T> 数据库表对应的实体
-     * @return 实体中的属性对应的数据库字段, 如 [id, user_name]
+     * @return 实体中的属性对应的数据库字段名, 如 [id, user_name]
      */
     @SuppressWarnings("unchecked")
     public static <T> String[] fieldsToColumnArray(SFunction<T, ?>... columns) {
