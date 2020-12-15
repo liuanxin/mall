@@ -2,7 +2,7 @@
 online: false
 
 spring:
-  profiles.active: local
+  profiles.active: dev
   application.name: task
   redis:
     host: dev-redis

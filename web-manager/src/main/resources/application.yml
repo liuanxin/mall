@@ -4,7 +4,7 @@ server.port: 8787
 online: false
 
 spring:
-  profiles.active: local
+  profiles.active: dev
   application.name: web-manager
   mvc.throw-exception-if-no-handler-found: true
   resources.add-mappings: false
