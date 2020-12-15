@@ -31,3 +31,4 @@ spring:
 
 mybatis-plus:
   global-config.banner: false
+  type-enums-package: com.*.*.enums

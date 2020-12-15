@@ -23,3 +23,7 @@ spring:
         prepStmtCacheSqlLimit: 2048
         cachePrepStmts: true
         useServerPrepStmts: true
+
+mybatis-plus:
+  global-config.banner: false
+  type-enums-package: com.*.*.enums
