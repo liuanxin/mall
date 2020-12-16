@@ -160,7 +160,7 @@ public class DateUtil {
 
         return (day / 365) + " 年" + state;
     }
-    /** 如: toHuman(36212711413L) ==> 1 年 54 天 3 小时 5 分 11 秒 413 毫秒 */
+    /** 如: toHuman(36212711413L) ==> 1 year 54 day 3 hour 5 minute 11 second 413 ms */
     public static String toHuman(long intervalMs) {
         if (intervalMs == 0) {
             return "0";
@@ -189,22 +189,22 @@ public class DateUtil {
             sbd.append("-");
         }
         if (year != 0) {
-            sbd.append(year).append(" 年 ");
+            sbd.append(year).append(" year ");
         }
         if (day != 0) {
-            sbd.append(day).append(" 天 ");
+            sbd.append(day).append(" day ");
         }
         if (hour != 0) {
-            sbd.append(hour).append(" 小时 ");
+            sbd.append(hour).append(" hour ");
         }
         if (minute != 0) {
-            sbd.append(minute).append(" 分 ");
+            sbd.append(minute).append(" minute ");
         }
         if (second != 0) {
-            sbd.append(second).append(" 秒 ");
+            sbd.append(second).append(" second ");
         }
         if (m != 0) {
-            sbd.append(m).append(" 毫秒");
+            sbd.append(m).append(" ms");
         }
         return sbd.toString().trim();
     }

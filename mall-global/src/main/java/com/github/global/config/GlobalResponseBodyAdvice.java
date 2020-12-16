@@ -1,9 +1,11 @@
 package com.github.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.common.date.DateUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtils;
 import com.github.common.util.U;
+import javassist.ClassPool;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.MethodParameter;
@@ -51,7 +53,7 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
     }
 
     @Override
-    protected void beforeBodyWriteInternal(MappingJacksonValue bodyContainer, MediaType contentType, MethodParameter returnType,
+    protected void beforeBodyWriteInternal(MappingJacksonValue bodyContainer, MediaType contentType, MethodParameter parameter,
                                            ServerHttpRequest request, ServerHttpResponse response) {
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
             String json;
@@ -67,10 +69,44 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
                     if (notRequestInfo) {
                         LogUtil.bindContext(RequestUtils.logContextInfo());
                     }
-                    long time = System.currentTimeMillis() - LogUtil.getStartTimeMillis();
-                    // 如果在生产环境, 太长就只输出前后, 不全部输出
-                    String print = online ? U.toStr(json, 1000, 200) : json;
-                    LogUtil.ROOT_LOG.info("time ({}ms), return: ({})", time, print);
+
+                    Class<?> clazz = parameter.getContainingClass();
+                    String className = clazz.getName();
+                    Method method = parameter.getMethod();
+                    String methodName = U.isNotBlank(method) ? method.getName() : U.EMPTY;
+                    int line;
+                    try {
+                        line = ClassPool.getDefault().get(className).getDeclaredMethod(methodName).getMethodInfo().getLineNumber(0);
+                    } catch (Exception e) {
+                        line = 0;
+                    }
+
+                    StringBuilder sbd = new StringBuilder();
+                    sbd.append(className);
+                    if (U.isNotBlank(methodName)) {
+                        sbd.append("#").append(methodName);
+                    }
+                    sbd.append("(").append(clazz.getSimpleName()).append(".java");
+                    if (U.greater0(line)) {
+                        sbd.append(":").append(line);
+                    }
+                    sbd.append(")");
+
+                    sbd.append(", time: (");
+                    sbd.append(DateUtil.toHuman(System.currentTimeMillis() - LogUtil.getStartTimeMillis()));
+                    sbd.append(")");
+
+                    sbd.append(", return: (");
+                    int max = 1000, printLen = 200;
+                    int len = json.length();
+                    if (online && len >= max) {
+                        sbd.append(json, 0, printLen).append(" ... ").append(json, len - printLen, len);
+                    } else {
+                        sbd.append(json);
+                    }
+                    sbd.append(")");
+
+                    LogUtil.ROOT_LOG.info(sbd.toString());
                 } finally {
                     if (notRequestInfo) {
                         LogUtil.unbind();
