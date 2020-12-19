@@ -20,7 +20,7 @@
 // */
 //public class ShowSql5Interceptor implements StatementInterceptor {
 //
-//    private static final Cache<Thread, Long> TIME_CACHE = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).build();
+//    private static final Cache<Thread, Long> TIME_CACHE = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.MINUTES).build();
 //
 //    @Override
 //    public void init(Connection connection, Properties properties) throws SQLException {}

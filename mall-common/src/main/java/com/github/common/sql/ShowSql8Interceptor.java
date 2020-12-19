@@ -24,7 +24,7 @@ import java.util.function.Supplier;
  */
 public class ShowSql8Interceptor implements QueryInterceptor {
 
-    private static final Cache<Thread, Long> TIME_CACHE = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).build();
+    private static final Cache<Thread, Long> TIME_CACHE = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.MINUTES).build();
 
     @Override
     public QueryInterceptor init(MysqlConnection conn, Properties props, Log log) {
