@@ -79,5 +79,7 @@
 //    public boolean executeTopLevelOnly() { return false; }
 //
 //    @Override
-//    public void destroy() {}
+//    public void destroy() {
+//        TIME_CACHE.invalidateAll();
+//    }
 //}
