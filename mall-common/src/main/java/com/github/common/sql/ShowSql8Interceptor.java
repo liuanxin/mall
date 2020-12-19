@@ -1,5 +1,6 @@
 package com.github.common.sql;
 
+import com.github.common.date.DateUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.google.common.cache.Cache;
@@ -59,7 +60,7 @@ public class ShowSql8Interceptor implements QueryInterceptor {
 
                     Long start = TIME_CACHE.getIfPresent(thread);
                     if (U.greater0(start)) {
-                        sbd.append("time: ").append(System.currentTimeMillis() - start).append(" ms, ");
+                        sbd.append("time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start)).append(" ms, ");
                     }
 
                     int size;
