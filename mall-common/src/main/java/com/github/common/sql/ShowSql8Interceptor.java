@@ -83,6 +83,6 @@ public class ShowSql8Interceptor implements QueryInterceptor {
     public boolean executeTopLevelOnly() { return false; }
     @Override
     public void destroy() {
-        TIME_CACHE.cleanUp();
+        TIME_CACHE.invalidateAll();
     }
 }
