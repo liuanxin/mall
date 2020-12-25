@@ -24,6 +24,7 @@ import java.util.function.Supplier;
  */
 public class ShowSql8Interceptor implements QueryInterceptor {
 
+    /** 每条 sql 执行前记录时间戳, 如果使用 ThreadLocal 会有 pre 了但运行时异常不去 post 的情况 */
     private static final Cache<Thread, Long> TIME_CACHE = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.MINUTES).build();
 
     @Override
@@ -62,15 +63,12 @@ public class ShowSql8Interceptor implements QueryInterceptor {
                     if (U.greater0(start)) {
                         sbd.append("time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start)).append(" ms, ");
                     }
-
-                    int size;
                     if (U.isNotBlank(rs) && rs.hasRows()) {
-                        size = rs.getRows().size();
-                    } else {
-                        size = 0;
+                        int size = rs.getRows().size();
+                        if (size > 0) {
+                            sbd.append("size: ").append(size).append(", ");
+                        }
                     }
-                    sbd.append("size: ").append(size).append(", ");
-
                     sbd.append("sql:\n").append(SqlFormat.format(realSql).replaceFirst("^\\s*?\n", ""));
                     LogUtil.SQL_LOG.debug(sbd.toString());
                 }
@@ -84,5 +82,7 @@ public class ShowSql8Interceptor implements QueryInterceptor {
     @Override
     public boolean executeTopLevelOnly() { return false; }
     @Override
-    public void destroy() {}
+    public void destroy() {
+        TIME_CACHE.cleanUp();
+    }
 }

@@ -20,6 +20,7 @@
 // */
 //public class ShowSql5Interceptor implements StatementInterceptor {
 //
+//    /** 每条 sql 执行前记录时间戳, 如果使用 ThreadLocal 会有 pre 了但运行时异常不去 post 的情况 */
 //    private static final Cache<Thread, Long> TIME_CACHE = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.MINUTES).build();
 //
 //    @Override
@@ -55,14 +56,13 @@
 //                        sbd.append("time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start)).append(" ms, ");
 //                    }
 //
-//                    int size;
 //                    if (resultSet != null && resultSet.reallyResult() && resultSet.last()) {
-//                        size = resultSet.getRow();
+//                        int size = resultSet.getRow();
 //                        resultSet.beforeFirst();
-//                    } else {
-//                        size = 0;
+//                        if (size > 0) {
+//                            sbd.append("size: ").append(size).append(", ");
+//                        }
 //                    }
-//                    sbd.append("size: ").append(size).append(", ");
 //
 //                    // druid -> SQLUtils.formatMySql
 //                    sbd.append("sql:\n").append(SqlFormat.format(sql).replaceFirst("^\\s*?\n", ""));
