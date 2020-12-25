@@ -85,8 +85,8 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
                     try {
                         int line = ClassPool.getDefault().get(className)
                                 .getDeclaredMethod(methodName).getMethodInfo().getLineNumber(0);
-                        if (U.greater0(line)) {
-                            sbd.append("(").append(clazz.getSimpleName()).append(".java:").append(line).append(")");
+                        if (line > 1) {
+                            sbd.append("(").append(clazz.getSimpleName()).append(".java:").append(line - 1).append(")");
                         }
                     } catch (Exception ignore) {
                     }
