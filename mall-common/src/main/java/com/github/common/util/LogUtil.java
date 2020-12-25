@@ -1,6 +1,5 @@
 package com.github.common.util;
 
-import com.github.common.date.DateUtil;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,8 +7,6 @@ import lombok.experimental.Accessors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-
-import java.util.Date;
 
 /** 日志管理, 使用此 utils 获取 log, 不要在类中使用 LoggerFactory.getLogger 的方式! */
 public final class LogUtil {
@@ -21,9 +18,8 @@ public final class LogUtil {
     public static final Logger SQL_LOG = LoggerFactory.getLogger("sqlLog");
 
 
-    private static final String RECEIVE_TIME_MILLIS = "receiveTimeMillis";
-    /** 接收到请求的时间. 在 log.xml 中使用 %X{recordTime} 获取  */
-    private static final String RECEIVE_TIME = "receiveTime";
+    /** 接收到请求的时间  */
+    private static final String START_TIME = "startRequestTime";
     /** 请求信息: 包括 ip、url, param 等  */
     private static final String REQUEST_INFO = "requestInfo";
 
@@ -55,11 +51,10 @@ public final class LogUtil {
 
     public static void recordTime() {
         long millis = System.currentTimeMillis();
-        MDC.put(RECEIVE_TIME_MILLIS, U.toStr(millis));
-        MDC.put(RECEIVE_TIME, DateUtil.formatDateTimeMs(new Date(millis)) + " -> ");
+        MDC.put(START_TIME, U.toStr(millis));
     }
     public static long getStartTimeMillis() {
-        return U.toLong(MDC.get(RECEIVE_TIME_MILLIS));
+        return U.toLong(MDC.get(START_TIME));
     }
 
 

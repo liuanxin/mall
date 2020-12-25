@@ -22,6 +22,7 @@ import org.springframework.web.servlet.mvc.method.annotation.AbstractMappingJack
 
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
+import java.util.Date;
 
 @SuppressWarnings({"NullableProblems"})
 @ConditionalOnClass({ HttpServletResponse.class, ResponseBody.class })
@@ -92,7 +93,11 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
                     }
 
                     sbd.append(", time: (");
-                    sbd.append(DateUtil.toHuman(System.currentTimeMillis() - LogUtil.getStartTimeMillis()));
+                    long startTimeMillis = LogUtil.getStartTimeMillis();
+                    long currentTimeMillis = System.currentTimeMillis();
+                    sbd.append(DateUtil.formatDateTimeMs(new Date(startTimeMillis))).append(" -> ");
+                    sbd.append(DateUtil.formatDateTimeMs(new Date(currentTimeMillis)));
+                    sbd.append(DateUtil.toHuman(currentTimeMillis - startTimeMillis));
                     sbd.append(")");
 
                     sbd.append(", return: (");
