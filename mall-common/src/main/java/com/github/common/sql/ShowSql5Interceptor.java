@@ -49,13 +49,12 @@
 //            }
 //            if (U.isNotBlank(sql)) {
 //                if (LogUtil.SQL_LOG.isDebugEnabled()) {
-//
 //                    StringBuilder sbd = new StringBuilder();
+//
 //                    Long start = TIME_CACHE.getIfPresent(thread);
 //                    if (U.greater0(start)) {
 //                        sbd.append("time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start)).append(" ms, ");
 //                    }
-//
 //                    if (resultSet != null && resultSet.reallyResult() && resultSet.last()) {
 //                        int size = resultSet.getRow();
 //                        resultSet.beforeFirst();
@@ -63,9 +62,9 @@
 //                            sbd.append("size: ").append(size).append(", ");
 //                        }
 //                    }
-//
 //                    // druid -> SQLUtils.formatMySql
 //                    sbd.append("sql:\n").append(SqlFormat.format(sql).replaceFirst("^\\s*?\n", ""));
+//
 //                    LogUtil.SQL_LOG.debug(sbd.toString());
 //                }
 //            }

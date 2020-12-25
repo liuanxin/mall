@@ -70,6 +70,7 @@ public class ShowSql8Interceptor implements QueryInterceptor {
                         }
                     }
                     sbd.append("sql:\n").append(SqlFormat.format(realSql).replaceFirst("^\\s*?\n", ""));
+
                     LogUtil.SQL_LOG.debug(sbd.toString());
                 }
             }
