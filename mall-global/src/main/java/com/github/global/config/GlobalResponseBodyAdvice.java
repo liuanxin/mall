@@ -38,16 +38,18 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-        if (!super.supports(returnType, converterType)) {
-            return false;
+        if (super.supports(returnType, converterType)) {
+            return true;
         }
+
         Method method = returnType.getMethod();
         if (method != null) {
             if (method.isAnnotationPresent(ResponseBody.class)) {
                 return true;
+            } else {
+                Class<?> type = method.getDeclaringClass();
+                return type.isAnnotationPresent(ResponseBody.class) || type.isAnnotationPresent(RestController.class);
             }
-            Class<?> type = method.getDeclaringClass();
-            return type.isAnnotationPresent(ResponseBody.class) || type.isAnnotationPresent(RestController.class);
         }
         return false;
     }
@@ -74,23 +76,20 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
                     String className = clazz.getName();
                     Method method = parameter.getMethod();
                     String methodName = U.isNotBlank(method) ? method.getName() : U.EMPTY;
-                    int line;
-                    try {
-                        line = ClassPool.getDefault().get(className).getDeclaredMethod(methodName).getMethodInfo().getLineNumber(0);
-                    } catch (Exception e) {
-                        line = 0;
-                    }
 
                     StringBuilder sbd = new StringBuilder();
                     sbd.append(className);
                     if (U.isNotBlank(methodName)) {
                         sbd.append("#").append(methodName);
                     }
-                    sbd.append("(").append(clazz.getSimpleName()).append(".java");
-                    if (U.greater0(line)) {
-                        sbd.append(":").append(line);
+                    try {
+                        int line = ClassPool.getDefault().get(className)
+                                .getDeclaredMethod(methodName).getMethodInfo().getLineNumber(0);
+                        if (U.greater0(line)) {
+                            sbd.append("(").append(clazz.getSimpleName()).append(".java:").append(line).append(")");
+                        }
+                    } catch (Exception ignore) {
                     }
-                    sbd.append(")");
 
                     sbd.append(", time: (");
                     sbd.append(DateUtil.toHuman(System.currentTimeMillis() - LogUtil.getStartTimeMillis()));
