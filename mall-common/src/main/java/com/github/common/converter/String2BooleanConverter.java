@@ -19,6 +19,7 @@ public class String2BooleanConverter implements Converter<String, Boolean> {
         TRUES.add("1");
         TRUES.add("on");
         TRUES.add("yes");
+        // TRUES.add("✔"); // ✘
     }
 
     @Override
