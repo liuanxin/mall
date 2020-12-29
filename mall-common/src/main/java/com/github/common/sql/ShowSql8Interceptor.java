@@ -61,7 +61,7 @@ public class ShowSql8Interceptor implements QueryInterceptor {
 
                     Long start = TIME_CACHE.getIfPresent(thread);
                     if (U.greater0(start)) {
-                        sbd.append("time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start)).append(" ms, ");
+                        sbd.append("time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start)).append(", ");
                     }
                     if (U.isNotBlank(rs) && rs.hasRows()) {
                         int size = rs.getRows().size();

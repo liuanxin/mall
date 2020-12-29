@@ -53,7 +53,7 @@
 //
 //                    Long start = TIME_CACHE.getIfPresent(thread);
 //                    if (U.greater0(start)) {
-//                        sbd.append("time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start)).append(" ms, ");
+//                        sbd.append("time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start)).append(", ");
 //                    }
 //                    if (resultSet != null && resultSet.reallyResult() && resultSet.last()) {
 //                        int size = resultSet.getRow();
