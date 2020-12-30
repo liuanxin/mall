@@ -76,10 +76,7 @@ public class ShowSql8Interceptor implements QueryInterceptor {
                                 sbd.append(", time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start));
                             }
                             if (U.isNotBlank(rs) && rs.hasRows()) {
-                                int size = rs.getRows().size();
-                                if (size > 0) {
-                                    sbd.append(", size: ").append(size);
-                                }
+                                sbd.append(", size: ").append(rs.getRows().size());
                             }
                             LogUtil.SQL_LOG.debug(sbd.toString());
                         }

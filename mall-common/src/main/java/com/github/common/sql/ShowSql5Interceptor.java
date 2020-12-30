@@ -89,9 +89,8 @@
 //                            if (resultSet != null && resultSet.reallyResult() && resultSet.last()) {
 //                                int size = resultSet.getRow();
 //                                resultSet.beforeFirst();
-//                                if (size > 0) {
-//                                    sbd.append(", size: ").append(size).append(", ");
-//                                }
+//
+//                                sbd.append(", size: ").append(size);
 //                            }
 //                            LogUtil.SQL_LOG.debug(sbd.toString());
 //                        }
