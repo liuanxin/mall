@@ -29,26 +29,28 @@
 //    @Override
 //    public ResultSetInternalMethods preProcess(String sql, Statement statement,
 //                                               Connection connection) throws SQLException {
-//        TIME_CACHE.put(Thread.currentThread(), System.currentTimeMillis());
+//        if (LogUtil.SQL_LOG.isDebugEnabled()) {
+//            TIME_CACHE.put(Thread.currentThread(), System.currentTimeMillis());
+//        }
 //        return null;
 //    }
 //
 //    @Override
 //    public ResultSetInternalMethods postProcess(String sql, Statement statement, ResultSetInternalMethods resultSet,
 //                                                Connection connection) throws SQLException {
-//        Thread thread = Thread.currentThread();
-//        try {
-//            if (U.isBlank(sql) && U.isNotBlank(statement)) {
-//                sql = statement.toString();
-//                if (U.isNotBlank(sql)) {
-//                    int i = sql.indexOf(':');
-//                    if (i > 0 ) {
-//                        sql = sql.substring(i + 1).trim();
+//        if (LogUtil.SQL_LOG.isDebugEnabled()) {
+//            Thread thread = Thread.currentThread();
+//            try {
+//                if (U.isBlank(sql) && U.isNotBlank(statement)) {
+//                    sql = statement.toString();
+//                    if (U.isNotBlank(sql)) {
+//                        int i = sql.indexOf(':');
+//                        if (i > 0) {
+//                            sql = sql.substring(i + 1).trim();
+//                        }
 //                    }
 //                }
-//            }
-//            if (U.isNotBlank(sql)) {
-//                if (LogUtil.SQL_LOG.isDebugEnabled()) {
+//                if (U.isNotBlank(sql)) {
 //                    StringBuilder sbd = new StringBuilder();
 //
 //                    Long start = TIME_CACHE.getIfPresent(thread);
@@ -67,9 +69,9 @@
 //
 //                    LogUtil.SQL_LOG.debug(sbd.toString());
 //                }
+//            } finally {
+//                TIME_CACHE.invalidate(thread);
 //            }
-//        } finally {
-//            TIME_CACHE.invalidate(thread);
 //        }
 //        return null;
 //    }
