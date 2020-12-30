@@ -23,7 +23,7 @@ import java.util.function.Supplier;
  */
 public class ShowSql8Interceptor implements QueryInterceptor {
 
-    private static final String TIME_SPLIT = " + ";
+    private static final String TIME_SPLIT = "~";
     private static final AtomicLong COUNTER = new AtomicLong(0L);
     /** 每条 sql 执行前记录时间戳, 如果使用 ThreadLocal 会有 pre 了但运行时异常不去 post 的情况 */
     private static final Cache<Thread, String> TIME_CACHE = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.MINUTES).build();
@@ -64,23 +64,25 @@ public class ShowSql8Interceptor implements QueryInterceptor {
                 if (U.isNotBlank(counterAndTime)) {
                     try {
                         String[] split = counterAndTime.split(TIME_SPLIT);
-                        long counter = U.toLong(split[0]);
-                        long start = U.toLong(split[1]);
+                        if (split.length == 2) {
+                            long counter = U.toLong(split[0]);
+                            long start = U.toLong(split[1]);
 
-                        StringBuilder sbd = new StringBuilder();
-                        if (U.greater0(counter)) {
-                            sbd.append("counter: ").append(counter);
-                        }
-                        if (U.greater0(start)) {
-                            sbd.append(", time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start));
-                        }
-                        if (U.isNotBlank(rs) && rs.hasRows()) {
-                            int size = rs.getRows().size();
-                            if (size > 0) {
-                                sbd.append(", size: ").append(size);
+                            StringBuilder sbd = new StringBuilder();
+                            if (U.greater0(counter)) {
+                                sbd.append("counter: ").append(counter);
                             }
+                            if (U.greater0(start)) {
+                                sbd.append(", time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start));
+                            }
+                            if (U.isNotBlank(rs) && rs.hasRows()) {
+                                int size = rs.getRows().size();
+                                if (size > 0) {
+                                    sbd.append(", size: ").append(size);
+                                }
+                            }
+                            LogUtil.SQL_LOG.debug(sbd.toString());
                         }
-                        LogUtil.SQL_LOG.debug(sbd.toString());
                     } finally {
                         TIME_CACHE.invalidate(currentThread);
                     }
