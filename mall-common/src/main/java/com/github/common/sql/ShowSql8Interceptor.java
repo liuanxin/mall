@@ -50,8 +50,13 @@ public class ShowSql8Interceptor implements QueryInterceptor {
     }
 
     private String getRealSql(Supplier<String> sql) {
+        if (U.isBlank(sql)) {
+            return null;
+        }
+
         // druid -> SQLUtils.formatMySql
-        return U.isBlank(sql) ? null : SqlFormat.format(sql.get().replaceFirst("^\\s*?\n", ""));
+        String realSql = SqlFormat.format(sql.get().replaceFirst("^\\s*?\n", ""));
+        return realSql.split("\n").length > 1 ? ("\n" + realSql) : realSql;
     }
 
     @Override

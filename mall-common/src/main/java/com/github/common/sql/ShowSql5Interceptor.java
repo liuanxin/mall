@@ -61,7 +61,7 @@
 //            // druid -> SQLUtils.formatMySql
 //            sql = SqlFormat.format(sql.replaceFirst("^\\s*?\n", ""));
 //        }
-//        return sql;
+//        return sql.split("\n").length > 1 ? ("\n" + sql) : sql;
 //    }
 //
 //    @Override
