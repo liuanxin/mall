@@ -5,9 +5,6 @@ import java.net.NetworkInterface;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
@@ -59,7 +56,7 @@ public final class NoUtil {
         int processIdentifier = createProcessIdentifier();
 
         String mp = Integer.toString(Math.abs((machineIdentifier + "" + processIdentifier).hashCode()));
-        MP = (mp.length() > HORIZONTAL_LEN) ? mp.substring(mp.length() - HORIZONTAL_LEN, mp.length()) : mp;
+        MP = (mp.length() > HORIZONTAL_LEN) ? mp.substring(mp.length() - HORIZONTAL_LEN) : mp;
     }
 
     private static int createMachineIdentifier() {
@@ -78,7 +75,7 @@ public final class NoUtil {
                         sb.append(bb.getChar());
                         sb.append(bb.getChar());
                         sb.append(bb.getChar());
-                    } catch (BufferUnderflowException shortHardwareAddressException) { //NOPMD
+                    } catch (BufferUnderflowException ignore) { //NOPMD
                         // mac with less than 6 bytes. continue
                     }
                 }
@@ -110,16 +107,15 @@ public final class NoUtil {
         return processId;
     }
 
-    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("HHyyssMMmmdd");
     private static String unitCode() {
-        String unit = Integer.toString(Math.abs(DATE_FORMAT.format(new Date()).hashCode()));
-        return unit.substring(unit.length() - HORIZONTAL_LEN, unit.length());
+        String unit = Integer.toString(Math.abs(Long.valueOf(System.currentTimeMillis()).hashCode()));
+        return unit.substring(unit.length() - HORIZONTAL_LEN);
     }
 
     /** 生成序列号的类型 */
     private enum Category {
-        /** 订单: 标识, 初始值, 步长, 最大值(只要保证之内, 从初始化值加步长不会超时最大值就不会有重复) */
-        Order("D", 16, 3, 10000000);
+        /**   标识, 初始值, 步长, 最大值(只要保证之内, 从初始化值加步长在一个周期内没有超过最大值就不会有重复) */
+        Order( "1", 16,    3,   10000000);
 
         String behavior;
         int init, step, max;
@@ -146,20 +142,24 @@ public final class NoUtil {
                     lock.unlock();
                 }
             }
-            String no = unitCode() + increment + MP;
-            if (no.length() < MAX_LEN) {
+
+            String no;
+            String beginNo = unitCode() + increment + MP;
+            if (beginNo.length() < MAX_LEN) {
                 StringBuilder sbd = new StringBuilder();
-                for (int i = 0; i < MAX_LEN - no.length(); i++) {
+                for (int i = 0; i < MAX_LEN - beginNo.length(); i++) {
                     sbd.append("0");
                 }
                 no = unitCode() + sbd.toString() + increment + MP;
+            } else {
+                no = beginNo;
             }
             return behavior + no;
         }
     }
 
     /** 生成订单号 */
-    public static String getOrderNo() {
-        return Category.Order.no();
+    public static Long getOrderNo() {
+        return U.toLong(Category.Order.no());
     }
 }

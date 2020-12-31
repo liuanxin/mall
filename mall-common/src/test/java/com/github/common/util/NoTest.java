@@ -21,29 +21,24 @@ public class NoTest {
         long start = System.currentTimeMillis();
         System.out.println("start order:" + DateUtil.format(new Date(start), DateFormatType.YYYY_MM_DD_HH_MM_SS_SSS));
 
-        List<Callable<String>> callList = new ArrayList<>();
+        List<Callable<Long>> callList = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            callList.add(new Callable<String>() {
-                @Override
-                public String call() throws Exception {
-                    return NoUtil.getOrderNo();
-                }
-            });
+            callList.add(NoUtil::getOrderNo);
         }
-        List<Future<String>> futures = threadPool.invokeAll(callList, 1, TimeUnit.MINUTES);
-        Set<String> set = Sets.newConcurrentHashSet();
-        for (Future<String> future : futures) {
+        List<Future<Long>> futures = threadPool.invokeAll(callList, 1, TimeUnit.MINUTES);
+        Set<Long> set = Sets.newConcurrentHashSet();
+        for (Future<Long> future : futures) {
             set.add(future.get());
         }
         threadPool.shutdownNow();
-        System.out.println(String.format("all  : %s\nreal : %s", count, set.size()));
+        System.out.printf("all  : %s\nreal : %s%n", count, set.size());
 
         long end = System.currentTimeMillis();
         System.out.println("end order : " + DateUtil.format(new Date(end), DateFormatType.YYYY_MM_DD_HH_MM_SS_SSS));
         System.out.println("耗时: " + ((end - start) / 1000.0));
 
         int i = 0;
-        for (String s : set) {
+        for (Long s : set) {
             if (i >= 50) {
                 return;
             }
