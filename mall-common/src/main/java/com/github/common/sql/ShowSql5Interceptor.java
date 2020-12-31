@@ -24,7 +24,7 @@
 //    private static final String TIME_SPLIT = "~";
 //    private static final AtomicLong COUNTER = new AtomicLong(0L);
 //    /** 每条 sql 执行前记录时间戳, 如果使用 ThreadLocal 会有 pre 了但运行时异常不去 post 的情况 */
-//    private static final Cache<Thread, String> TIME_CACHE = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.MINUTES).build();
+//    private static final Cache<Thread, String> TIME_CACHE = CacheBuilder.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build();
 //
 //    @Override
 //    public void init(Connection connection, Properties properties) throws SQLException {}
