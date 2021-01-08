@@ -35,8 +35,8 @@ public class BackendInterceptor implements HandlerInterceptor {
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) throws Exception {
         if (ex != null) {
-            if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-                LogUtil.ROOT_LOG.debug("request was over, but have exception: " + ex.getMessage());
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("request was over, but have exception: " + ex.getMessage());
             }
         }
         unbindParam();
