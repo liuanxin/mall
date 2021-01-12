@@ -781,7 +781,18 @@ public final class U {
     }
 
     /**
-     * 将 source 中字段的值填充到 target 中. target.setName(source.getName()), 如果 target.getName() 有值则忽略 setName
+     * <pre>
+     * 将 source 中字段的值填充到 target 中, 如果已经有值了就忽略 set
+     *
+     * if (target.getName() != null) {
+     *     target.setName(source.getName());
+     * }
+     *
+     * PS1: 字段类型如果是基础数据类型, 会有默认值 boolean: false, int, long, double: 0
+     * 判断是否为空将总是返回 true, 因此请使用包装类型
+     *
+     * PS2: 如果 target 有 extends 某个父类且只用 @lombok.Data 进行标注, 此时返回的 target 直接输出是没有父类的属性的
+     * 但实际已经 set 进去了, toJson 或在类上标注 @lombok.ToString(callSuper = true) 才会将父类的属性也输出</pre>
      *
      * @param source 源对象
      * @param target 目标对象
@@ -795,7 +806,7 @@ public final class U {
      *
      * @param source 源对象
      * @param target 目标对象
-     * @param ignoreAlready true 表示忽略已有的数据: 如 target.getName() != null 则不再调用 target.setName(source.getName())
+     * @param ignoreAlready true: target 有值则不操作 set. PS: 基础数据类型将总是返回 true
      */
     public static <S,T> void fillData(S source, T target, boolean ignoreAlready) {
         Method[] targetMethods = target.getClass().getMethods();
@@ -814,6 +825,10 @@ public final class U {
             String methodName = method.getName();
             if (methodName.startsWith("set")) {
                 String getMethodName = "get" + methodName.substring(3);
+                if (!sourceMethodMap.containsKey(getMethodName) &&
+                        (method.getReturnType().isAssignableFrom(boolean.class) || method.getReturnType().isAssignableFrom(Boolean.class))) {
+                    getMethodName = "is" + methodName.substring(2);
+                }
                 if (sourceMethodMap.containsKey(getMethodName)) {
                     if (ignoreAlready) {
                         try {
