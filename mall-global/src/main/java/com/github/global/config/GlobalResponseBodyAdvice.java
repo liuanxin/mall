@@ -6,6 +6,7 @@ import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtils;
 import com.github.common.util.U;
 import javassist.ClassPool;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.MethodParameter;
@@ -25,6 +26,7 @@ import java.lang.reflect.Method;
 import java.util.Date;
 
 @SuppressWarnings({"NullableProblems"})
+@RequiredArgsConstructor
 @ConditionalOnClass({ HttpServletResponse.class, ResponseBody.class })
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
 public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice {
@@ -33,9 +35,6 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
     private boolean online;
 
     private final ObjectMapper objectMapper;
-    public GlobalResponseBodyAdvice(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
