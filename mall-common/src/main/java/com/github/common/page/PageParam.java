@@ -47,7 +47,7 @@ public class PageParam implements Serializable {
     @ApiParam("当前页数. 不传或传入 <= 0 的数 或 非数字 则默认是 " + DEFAULT_PAGE_NO)
     private int page;
 
-    @ApiParam("每页条数. 不传或传入 <= 0 的数 或 非数字 或 大于 " + MAX_LIMIT + " 则默认是 " + DEFAULT_LIMIT)
+    @ApiParam("每页条数. 不传或传入 <= 0 的数 或 非数字 或 > " + MAX_LIMIT + " 则默认是 " + DEFAULT_LIMIT)
     private int limit;
 
     /** 是否是移动端 */
