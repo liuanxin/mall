@@ -69,7 +69,7 @@ public class PageParam implements Serializable {
         this.limit = handlerLimit(limit);
     }
 
-    public int start() {
+    public int getPageStart() {
         return (page - 1) * limit;
     }
 
