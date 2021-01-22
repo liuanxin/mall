@@ -84,13 +84,13 @@
 //                                sbd.append("counter: ").append(counter);
 //                            }
 //                            if (U.greater0(start)) {
-//                                sbd.append(", time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start));
+//                                sbd.append(", use-time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start));
 //                            }
 //                            if (resultSet != null && resultSet.reallyResult() && resultSet.last()) {
 //                                int size = resultSet.getRow();
 //                                resultSet.beforeFirst();
 //
-//                                sbd.append(", size: ").append(size);
+//                                sbd.append(", return-size: ").append(size);
 //                            }
 //                            LogUtil.SQL_LOG.debug(sbd.toString());
 //                        }

@@ -78,10 +78,10 @@ public class ShowSql8Interceptor implements QueryInterceptor {
                                 sbd.append("counter: ").append(counter);
                             }
                             if (U.greater0(start)) {
-                                sbd.append(", time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start));
+                                sbd.append(", use-time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start));
                             }
                             if (U.isNotBlank(rs) && rs.hasRows()) {
-                                sbd.append(", size: ").append(rs.getRows().size());
+                                sbd.append(", return-size: ").append(rs.getRows().size());
                             }
                             LogUtil.SQL_LOG.debug(sbd.toString());
                         }
