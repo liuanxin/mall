@@ -46,13 +46,9 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
                 }
                 @Override
                 public InputStream getBody() throws IOException {
-                    try {
-                        byte[] bytes = ByteStreams.toByteArray(inputMessage.getBody());
-                        handleRequestBody(bytes);
-                        return new ByteArrayInputStream(bytes);
-                    } catch (Exception e) {
-                        return inputMessage.getBody();
-                    }
+                    byte[] bytes = ByteStreams.toByteArray(inputMessage.getBody());
+                    handleRequestBody(bytes);
+                    return new ByteArrayInputStream(bytes);
                 }
             };
         } catch (Exception e) {
@@ -71,6 +67,7 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override
     public Object afterBodyRead(Object body, HttpInputMessage inputMessage, MethodParameter parameter,
                                 Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
+        // body 类跟传入的 inputStream 转换失败将进不到这里面来, 最终将无法打印, 用上面的方式处理
         LogUtil.bindRequestBody(JsonUtil.toJson(body));
         return super.afterBodyRead(body, inputMessage, parameter, targetType, converterType);
     }
