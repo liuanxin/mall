@@ -39,7 +39,7 @@ import java.util.List;
 public class PageReturn<T> implements Serializable {
     private static final long serialVersionUID = 0L;
 
-    @ApiReturn("使用 es 时, 每次分页请求都会返回此值, 请求下一页(仅下一页, 不支持上一页, 也不能跳页)时如果带上即可")
+    @ApiReturn("使用 es 时会返回此值, 请求下一页时这个如果有值, 带上即可")
     private String searchAfter;
 
     @ApiReturn("SELECT COUNT(*) FROM ... 的结果")
