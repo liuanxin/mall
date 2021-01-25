@@ -44,6 +44,9 @@ public class PageParam implements Serializable {
     /** 最大分页条数 */
     private static final int MAX_LIMIT = 1000;
 
+    @ApiParam("使用 es 时, 当 page * limit > 10000 之后需要此值, 接口响应中会返回此值, 请求时上一个请求的响应中有此值, 带上即可")
+    private String searchAfter;
+
     @ApiParam("当前页数. 不传或传入 <= 0 的数 或 非数字 则默认是 " + DEFAULT_PAGE_NO)
     private int page;
 

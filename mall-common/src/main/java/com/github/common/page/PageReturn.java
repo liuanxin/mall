@@ -39,6 +39,9 @@ import java.util.List;
 public class PageReturn<T> implements Serializable {
     private static final long serialVersionUID = 0L;
 
+    @ApiReturn("使用 es 时, 每次分页请求都会返回此值, 请求下一页(仅下一页, 不支持上一页, 也不能跳页)时如果带上即可")
+    private String searchAfter;
+
     @ApiReturn("SELECT COUNT(*) FROM ... 的结果")
     private long total;
 
@@ -46,10 +49,10 @@ public class PageReturn<T> implements Serializable {
     private List<T> list;
 
     public static <T> PageReturn<T> emptyReturn() {
-        return new PageReturn<>(0, Collections.emptyList());
+        return new PageReturn<>(null, 0, Collections.emptyList());
     }
     public static <T> PageReturn<T> returnPage(long total, List<T> list) {
-        return new PageReturn<>(total, list);
+        return new PageReturn<>(null, total, list);
     }
 
     /** 在 Controller 中调用 --> 组装不同的 vo 时使用此方法 */
@@ -60,6 +63,7 @@ public class PageReturn<T> implements Serializable {
             // 只要总条数
             PageReturn<T> info = new PageReturn<>();
             info.setTotal(pageInfo.getTotal());
+            info.setSearchAfter(pageInfo.getSearchAfter());
             return info;
         }
     }
