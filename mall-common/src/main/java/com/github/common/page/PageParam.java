@@ -50,7 +50,7 @@ public class PageParam implements Serializable {
     @ApiParam("每页条数. 不传或传入 <= 0 的数 或 非数字 或 > " + MAX_LIMIT + " 则默认是 " + DEFAULT_LIMIT)
     private int limit;
 
-    @ApiParam("使用 es 时接口会返回此值, 请求下一页时这个如果有值, 带上即可")
+    @ApiParam("使用 es 查询时会返回此值, 请求下一页(仅下一页, 不能跳页, 也不能上一页)时这个如果有值, 带上即可")
     private String searchAfter;
 
     /** 是否是移动端 */
