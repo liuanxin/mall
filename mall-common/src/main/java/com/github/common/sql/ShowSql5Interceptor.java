@@ -39,7 +39,9 @@
 //                long start = System.currentTimeMillis();
 //
 //                TIME_CACHE.put(currentThread, counter + TIME_SPLIT + start);
-//                LogUtil.SQL_LOG.debug("counter: {}, sql: {}", counter, realSql);
+//                String url = connection.getMetaData().getURL();
+//                LogUtil.SQL_LOG.debug("counter: {}, ip:port/db:({}), sql: {}", counter,
+//                        url.substring(url.indexOf("//") + 2, url.indexOf("?")), realSql);
 //            }
 //        }
 //        return null;

@@ -7,6 +7,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.mysql.cj.MysqlConnection;
 import com.mysql.cj.Query;
+import com.mysql.cj.conf.HostInfo;
 import com.mysql.cj.interceptors.QueryInterceptor;
 import com.mysql.cj.log.Log;
 import com.mysql.cj.protocol.Resultset;
@@ -43,7 +44,9 @@ public class ShowSql8Interceptor implements QueryInterceptor {
                 long counter = COUNTER.addAndGet(1);
 
                 TIME_CACHE.put(currentThread, counter + TIME_SPLIT + current);
-                LogUtil.SQL_LOG.debug("counter: {}, sql:\n{}", counter, realSql);
+                HostInfo hostInfo = query.getSession().getHostInfo();
+                String host = hostInfo.getHost() + ":" + hostInfo.getPort() + "/" + hostInfo.getDatabase();
+                LogUtil.SQL_LOG.debug("counter: {}, ip:port/db:({}), sql:\n{}", counter, host, realSql);
             }
         }
         return null;
