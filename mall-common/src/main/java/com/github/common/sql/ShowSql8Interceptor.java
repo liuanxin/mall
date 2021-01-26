@@ -47,8 +47,8 @@ public class ShowSql8Interceptor implements QueryInterceptor {
 
                 TIME_CACHE.put(currentThread, counter + TIME_SPLIT + current);
                 HostInfo hostInfo = query.getSession().getHostInfo();
-                String host = hostInfo.getHost() + ":" + hostInfo.getPort() + "/" + hostInfo.getDatabase();
-                LogUtil.SQL_LOG.debug("counter: {}, url: {}, sql:\n{}", counter, host, realSql);
+                String dataSource = hostInfo.getHost() + ":" + hostInfo.getPort() + "/" + hostInfo.getDatabase();
+                LogUtil.SQL_LOG.debug("counter: {}, data-source: {}, sql:\n{}", counter, dataSource, realSql);
             }
         }
         return null;
