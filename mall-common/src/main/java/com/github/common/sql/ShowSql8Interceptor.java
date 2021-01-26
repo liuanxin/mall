@@ -17,6 +17,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 /**
  * mysql 5 的连接参数是: &statementInterceptors=com.github.common.sql.ShowSql5Interceptor
@@ -28,6 +29,7 @@ public class ShowSql8Interceptor implements QueryInterceptor {
     private static final AtomicLong COUNTER = new AtomicLong(0L);
     /** 每条 sql 执行前记录时间戳, 如果使用 ThreadLocal 会有 pre 了但运行时异常不去 post 的情况 */
     private static final Cache<Thread, String> TIME_CACHE = CacheBuilder.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build();
+    private static final Pattern BLANK_REGEX = Pattern.compile("\\s{2,}");
 
     @Override
     public QueryInterceptor init(MysqlConnection conn, Properties props, Log log) {
@@ -46,7 +48,7 @@ public class ShowSql8Interceptor implements QueryInterceptor {
                 TIME_CACHE.put(currentThread, counter + TIME_SPLIT + current);
                 HostInfo hostInfo = query.getSession().getHostInfo();
                 String host = hostInfo.getHost() + ":" + hostInfo.getPort() + "/" + hostInfo.getDatabase();
-                LogUtil.SQL_LOG.debug("counter: {}, ip:port/db:({}), sql:\n{}", counter, host, realSql);
+                LogUtil.SQL_LOG.debug("counter: {}, url: {}, sql:\n{}", counter, host, realSql);
             }
         }
         return null;
@@ -57,8 +59,9 @@ public class ShowSql8Interceptor implements QueryInterceptor {
             return null;
         }
 
-        // druid -> SQLUtils.formatMySql
-        String realSql = SqlFormat.format(sql.get().replaceFirst("^\\s*?\n", ""));
+        // String realSql = SQLUtils.formatMySql(sql.replaceFirst("^\\s*?\n", ""));
+        // String realSql = SqlFormat.format(sql.get().replaceFirst("^\\s*?\n", ""));
+        String realSql = BLANK_REGEX.matcher(sql.get().replaceFirst("^\\s*?\n", "")).replaceAll(" ");
         return realSql.split("\n").length > 1 ? ("\n" + realSql) : realSql;
     }
 

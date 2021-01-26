@@ -14,6 +14,7 @@
 //import java.util.Properties;
 //import java.util.concurrent.TimeUnit;
 //import java.util.concurrent.atomic.AtomicLong;
+//import java.util.regex.Pattern;
 //
 ///**
 // * mysql 5 的连接参数是: &statementInterceptors=com.github.common.sql.ShowSql5Interceptor
@@ -25,6 +26,7 @@
 //    private static final AtomicLong COUNTER = new AtomicLong(0L);
 //    /** 每条 sql 执行前记录时间戳, 如果使用 ThreadLocal 会有 pre 了但运行时异常不去 post 的情况 */
 //    private static final Cache<Thread, String> TIME_CACHE = CacheBuilder.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build();
+//    private static final Pattern BLANK_REGEX = Pattern.compile("\\s{2,}");
 //
 //    @Override
 //    public void init(Connection connection, Properties properties) throws SQLException {}
@@ -40,7 +42,7 @@
 //
 //                TIME_CACHE.put(currentThread, counter + TIME_SPLIT + start);
 //                String url = connection.getMetaData().getURL();
-//                LogUtil.SQL_LOG.debug("counter: {}, ip:port/db:({}), sql: {}", counter,
+//                LogUtil.SQL_LOG.debug("counter: {}, url: {}, sql: {}", counter,
 //                        url.substring(url.indexOf("//") + 2, url.indexOf("?")), realSql);
 //            }
 //        }
@@ -60,8 +62,9 @@
 //            }
 //        }
 //        if (U.isNotBlank(sql)) {
-//            // druid -> SQLUtils.formatMySql
-//            sql = SqlFormat.format(sql.replaceFirst("^\\s*?\n", ""));
+//            // sql = SQLUtils.formatMySql(sql.replaceFirst("^\\s*?\n", ""));
+//            // sql = SqlFormat.format(sql.replaceFirst("^\\s*?\n", ""));
+//            sql = BLANK_REGEX.matcher(sql.replaceFirst("^\\s*?\n", "")).replaceAll(" ");
 //        }
 //        return sql.split("\n").length > 1 ? ("\n" + sql) : sql;
 //    }
