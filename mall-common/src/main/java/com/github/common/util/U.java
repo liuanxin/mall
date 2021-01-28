@@ -451,8 +451,31 @@ public final class U {
                 : MULTI_SPACE_REGEX.matcher(str.replace("\r", EMPTY).replace("\n", BLANK)).replaceAll(BLANK).trim();
     }
 
-    /** 对象为 null, 或者其字符串形态为 空白符, "null", "undefined" 时返回 true */
+    /** 对象为 null 时返回 true */
+    public static boolean isNull(Object obj) {
+        return obj == null;
+    }
+    /** 对象不为 null 时返回 true */
+    public static boolean isNotNull(Object obj) {
+        return obj != null;
+    }
+
+    /** 对象为空 或 其字符串形态是空字符 时返回 true */
     public static boolean isBlank(Object obj) {
+        if (obj == null) {
+            return true;
+        }
+
+        String str = obj.toString().trim();
+        return EMPTY.equals(str);
+    }
+    /** 对象非空 且 其字符串形态不是空字符 时返回 true */
+    public static boolean isNotBlank(Object obj) {
+        return !isBlank(obj);
+    }
+
+    /** 对象为空 或 其字符串形态为 空白符、null、undefined 时返回 true */
+    public static boolean isEmpty(Object obj) {
         if (obj == null) {
             return true;
         }
@@ -465,9 +488,9 @@ public final class U {
         String lower = str.toLowerCase();
         return "null".equals(lower) || "undefined".equals(lower);
     }
-    /** 对象非空时返回 true */
-    public static boolean isNotBlank(Object obj) {
-        return !isBlank(obj);
+    /** 对象非空 且 其字符串形态不是 空白符、null、undefined 时返回 true */
+    public static boolean isNotEmpty(Object obj) {
+        return !isEmpty(obj);
     }
 
     /** 对象长度在指定的数值以内(不包含边距)就返回 true */
