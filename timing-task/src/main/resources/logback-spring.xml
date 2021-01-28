@@ -110,7 +110,7 @@
             <appender-ref ref="SQL" />
         </logger>
 
-        <root level="debug">
+        <root level="${logLevel}">
             <appender-ref ref="PROJECT"/>
         </root>
     </springProfile>
