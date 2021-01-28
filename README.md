@@ -113,6 +113,13 @@ public class DemoServiceImpl implements DemoService {
 | Boolean       | tinyint(1) not null default '0' comment '1 表示已删除'                                      |
 | String        | varchar(16) not null default '' comment 'xx'  长度为 2 的幂次, 如 32 128 1024 等             |
 | BigDecimal    | decimal(10,2) not null default '0' comment 'xxxx 金额, 可以用 long 即可'                     |
-| Date          | datetime not null default '1970-01-01 00:00:00' comment 'xxxxx 时间'                        |
+| Date          | datetime(3) not null default '1970-01-01 00:00:00' comment 'xxxxx 时间'                     |
+
+注意事项:
+1. 金额尽量用 bigint, 存到最终的单位比如分就行了
+2. 时期加上长度 3 保存毫秒, 不设置默认是 0, 驱动包 >= 5.1.23 时 java 中的 new Date() 存入时, 长度如果是 0, mysql 会将毫秒四舍五入到秒,
+   比如 1999-12-31 23:59:59.499 会存成 1999-12-31 23:59:59, 而 1999-12-31 23:59.59.500 却会存为 2000-01-01 00:00:00
+3. mysql 中没有 boolean, tinyint(1) 和 tinyint(4) 都是存储 -128 ~ 127 的数, 跟 java 实体对应时, 前者用 Boolean 后者用 Integer 就好了
+   不要在 tinyint(1) 字段上存储 0 1 以外的值, 如果是 > 2 个数据, 可以在 java 中用枚举, 在 mysql 中用 tinyint(4), 用 int 传递
 
 ~
