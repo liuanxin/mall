@@ -440,6 +440,20 @@ public final class U {
         return sbd.append(str).toString();
     }
 
+    /** 对象长度: 中文字符的长度为 2, 其他字符的长度为 1 */
+    public static int toLen(Object obj) {
+        if (isNull(obj)) {
+            return 0;
+        }
+
+        int count = 0;
+        String str = obj.toString();
+        for (int i = 0; i < str.length(); i++) {
+            count += (str.substring(i, i + 1).matches(CHINESE) ? 2 : 1);
+        }
+        return count;
+    }
+
     /** 去掉所有的制表符 和 换行符 */
     public static String replaceTabAndWrap(String str) {
         return isBlank(str) ? EMPTY : str.replace("\t", EMPTY).replace("\n", EMPTY);
