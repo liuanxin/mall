@@ -25,7 +25,7 @@ public class JsonResult<T> {
 
     @ApiReturn(value = "错误信息", example = "当非生产时返回")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private List<String> errorMsgListWithDebug;
+    private List<String> errorList;
 
     @ApiReturn("返回数据, 实体 {\"id\":1} | 列表 [{\"id\":1},{\"id\":2}] 看具体的业务")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -42,9 +42,9 @@ public class JsonResult<T> {
         this.code = code;
         this.msg = msg;
     }
-    private JsonResult(JsonCode code, String msg, List<String> errorMsgList) {
+    private JsonResult(JsonCode code, String msg, List<String> errorList) {
         this(code, msg);
-        this.errorMsgListWithDebug = errorMsgList;
+        this.errorList = errorList;
     }
     private JsonResult(JsonCode code, String msg, T data) {
         this(code, msg);
@@ -82,7 +82,7 @@ public class JsonResult<T> {
     public static <T> JsonResult<T> fail(String msg) {
         return new JsonResult<>(JsonCode.FAIL, msg);
     }
-    public static <T> JsonResult<T> fail(String msg, List<String> errorMsgList) {
-        return new JsonResult<>(JsonCode.FAIL, msg, errorMsgList);
+    public static <T> JsonResult<T> fail(String msg, List<String> errorList) {
+        return new JsonResult<>(JsonCode.FAIL, msg, errorList);
     }
 }

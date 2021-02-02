@@ -156,12 +156,12 @@ public class GlobalException {
         if (online) {
             return null;
         } else {
-            List<String> msgList = Lists.newArrayList();
-            msgList.add(e.getMessage());
+            List<String> errorList = Lists.newArrayList();
+            errorList.add(e.getMessage());
             for (StackTraceElement trace : e.getStackTrace()) {
-                msgList.add(trace.toString());
+                errorList.add(trace.toString());
             }
-            return msgList;
+            return errorList;
         }
     }
 }
