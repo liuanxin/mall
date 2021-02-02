@@ -1,5 +1,7 @@
-package com.github.common.export;
+package com.github.common.export.poi;
 
+import com.github.common.export.FileExport;
+import com.github.common.export.WebExport;
 import com.github.common.util.A;
 import com.github.common.util.U;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -10,7 +12,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /** 如果想要将数据导成文件保持, 使用 {@link FileExport} 类, 如果要导出文件在 web 端下载, 使用 {@link WebExport} 类 */
-final class ExportExcel {
+public class ExportExcel {
 
     /** 标题行字体大小 */
     private static final short TITLE_FONT_SIZE = 12;
@@ -63,7 +65,7 @@ final class ExportExcel {
      * | 用户信息-1      |    用户信息-2      |    商品信息        |
      * </pre>
      */
-    static Workbook handle(boolean excel07, Map<String, LinkedHashMap<String, String>> titleMap,
+    public static Workbook handle(boolean excel07, Map<String, LinkedHashMap<String, String>> titleMap,
                            LinkedHashMap<String, List<?>> dataMap) {
         int maxColumn = getMaxColumn(excel07);
         int columnSize = titleMap.size();
@@ -178,6 +180,8 @@ final class ExportExcel {
                                     }
                                     cell.setCellStyle(cellStyle);
 
+                                    // 设置宽度: 左移 8 相当于 * 256
+                                    sheet.setColumnWidth(cellIndex, U.toLen(cellData) << 8);
                                     if (isNumber) {
                                         cell.setCellValue(U.toDouble(cellData));
                                     } else {
@@ -189,22 +193,15 @@ final class ExportExcel {
                         }
                     }
 
+                    /*
                     // 在列上处理宽度
                     cellIndex = 0;
                     for (Map.Entry<String, String> titleMapEntry : titleEntry) {
-                        titleValues = titleMapEntry.getValue().split("\\|");
-                        if (titleValues.length > 2) {
-                            int width = U.toInt(titleValues[2]);
-                            // 默认 12
-                            int w = (width > 0 && width < 256) ? width : 12;
-                            // 左移 8 相当于 * 256
-                            sheet.setColumnWidth(cellIndex, w << 8);
-                        } else {
-                            // 让列的宽度自适应. 缺少中文字体计算宽度时会有问题, 需要复制中文字体文件到操作系统
-                            sheet.autoSizeColumn(cellIndex, true);
-                        }
+                        // 让列的宽度自适应. 缺少中文字体计算宽度时会有问题, 需要复制中文字体文件到操作系统
+                        sheet.autoSizeColumn(cellIndex, true);
                         cellIndex++;
                     }
+                    */
                 }
             }
         } finally {
@@ -228,7 +225,7 @@ final class ExportExcel {
         }
     }
     /** 清除临时文件 */
-    static void dispose(Workbook workbook) {
+    public static void dispose(Workbook workbook) {
         if (U.isNotBlank(workbook) && workbook instanceof SXSSFWorkbook) {
             ((SXSSFWorkbook) workbook).dispose();
         }
