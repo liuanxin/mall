@@ -54,6 +54,8 @@
         <commons-lang3.version>3.11</commons-lang3.version>
         <commons-fileupload.version>1.4</commons-fileupload.version>
         <poi-ooxml.version>4.1.2</poi-ooxml.version>
+        <easyexcel.version>2.2.7</easyexcel.version>
+        <opencsv.version>5.3</opencsv.version>
 
         <elasticsearch.version>6.3.2</elasticsearch.version>
         <hikaricp.version>3.4.5</hikaricp.version>
@@ -192,6 +194,34 @@
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
                 <version>${poi-ooxml.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>easyexcel</artifactId>
+                <version>${easyexcel.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.poi</groupId>
+                        <artifactId>poi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.poi</groupId>
+                        <artifactId>poi-ooxml</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.poi</groupId>
+                        <artifactId>poi-ooxml-schemas</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.opencsv</groupId>
+                <artifactId>opencsv</artifactId>
+                <version>${opencsv.version}</version>
             </dependency>
 
             <dependency>

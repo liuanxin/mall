@@ -12,12 +12,13 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /** 如果想要将数据导成文件保持, 使用 {@link FileExport} 类, 如果要导出文件在 web 端下载, 使用 {@link WebExport} 类 */
+@SuppressWarnings("DuplicatedCode")
 public class ExportExcel {
 
     /** 标题行字体大小 */
-    private static final short TITLE_FONT_SIZE = 12;
+    private static final short TITLE_FONT_SIZE = 14;
     /** 行字体大小 */
-    private static final short FONT_SIZE = 10;
+    private static final short FONT_SIZE = 12;
 
     /** 标题行高 */
     private static final short TITLE_ROW_HEIGHT = 20;
@@ -29,12 +30,12 @@ public class ExportExcel {
     /** 本地线程中缓存的自定义列样式 */
     private static final ThreadLocal<Map<String, CellStyle>> CUSTOMIZE_CELL_STYLE = new ThreadLocal<>();
 
-    static int getMaxColumn(boolean excel07) {
+    private static int getMaxColumn(boolean excel07) {
         return excel07 ? 16384 : 256;
     }
     // 2003(xls)  单个 sheet 最多只能有   65536 行   256 列
     // 2007(xlsx) 及以上的版本最多只能有 1048576 行 16384 列
-    static int getMaxRow(boolean excel07) {
+    private static int getMaxRow(boolean excel07) {
         return excel07 ? 1048576 : 65535;
     }
 
@@ -192,16 +193,6 @@ public class ExportExcel {
                             }
                         }
                     }
-
-                    /*
-                    // 在列上处理宽度
-                    cellIndex = 0;
-                    for (Map.Entry<String, String> titleMapEntry : titleEntry) {
-                        // 让列的宽度自适应. 缺少中文字体计算宽度时会有问题, 需要复制中文字体文件到操作系统
-                        sheet.autoSizeColumn(cellIndex, true);
-                        cellIndex++;
-                    }
-                    */
                 }
             }
         } finally {
@@ -237,6 +228,9 @@ public class ExportExcel {
      * @see org.apache.poi.ss.util.WorkbookUtil#validateSheetName
      */
     private static String handleSheetName(String sheetName, int sheetCount, int sheetIndex) {
+        if (U.isBlank(sheetName)) {
+            sheetName = "sheet";
+        }
         String tmpSn = sheetName.replace("/", " ").replace("\\", " ").replace("?", " ")
                 .replace("*", " ").replace("]", " ").replace("[", " ").replace(":", " ");
         if (tmpSn.startsWith("'")) {
