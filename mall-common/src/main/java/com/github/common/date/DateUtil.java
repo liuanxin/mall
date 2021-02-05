@@ -54,7 +54,7 @@ public class DateUtil {
     }
     /** 格式化日期 yyyy-MM-dd HH:mm:ss SSS */
     public static String formatDateTimeMs(Date date) {
-        return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SS_SSS);
+        return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SSSSS);
     }
 
     /** 格式化日期对象成字符串 */
