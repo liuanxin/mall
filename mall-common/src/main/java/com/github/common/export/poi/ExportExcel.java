@@ -217,7 +217,7 @@ public class ExportExcel {
     }
     /** 清除临时文件 */
     public static void dispose(Workbook workbook) {
-        if (U.isNotBlank(workbook) && workbook instanceof SXSSFWorkbook) {
+        if (U.isNotNull(workbook) && workbook instanceof SXSSFWorkbook) {
             ((SXSSFWorkbook) workbook).dispose();
         }
     }
@@ -296,7 +296,7 @@ public class ExportExcel {
         Map<String, CellStyle> tmpStyleMap = A.isNotEmpty(currentStyleMap) ? currentStyleMap : new HashMap<>();
 
         CellStyle cellStyle = tmpStyleMap.get(style);
-        if (U.isNotBlank(cellStyle)) {
+        if (U.isNotNull(cellStyle)) {
             return cellStyle;
         } else {
             // 将 "数字格式(比如金额用 0.00)~r~b" 转换成具体的样式
