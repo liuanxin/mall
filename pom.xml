@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.4.RELEASE</version>
+        <version>2.4.1</version>
         <relativePath/>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -47,23 +47,24 @@
 
         <!-- 所有的版本都在此处统一控制, 不要在其他地方设置! -->
 
-        <guava.version>30.0-jre</guava.version>
-        <joda.version>2.10.6</joda.version>
+        <guava.version>30.1-jre</guava.version>
+        <joda.version>2.10.9</joda.version>
         <javassist.version>3.27.0-GA</javassist.version>
         <okhttp.version>3.14.9</okhttp.version>
         <commons-lang3.version>3.11</commons-lang3.version>
         <commons-fileupload.version>1.4</commons-fileupload.version>
-        <poi-ooxml.version>4.1.2</poi-ooxml.version>
+        <poi-ooxml.version>5.0.0</poi-ooxml.version>
         <easyexcel.version>2.2.7</easyexcel.version>
         <opencsv.version>5.3</opencsv.version>
 
-        <elasticsearch.version>6.3.2</elasticsearch.version>
-        <hikaricp.version>3.4.5</hikaricp.version>
-        <mybatis-plus.version>3.4.0</mybatis-plus.version>
+        <elasticsearch.version>7.10.2</elasticsearch.version>
+        <hikaricp.version>4.0.1</hikaricp.version>
+        <!--<mysql.version>5.1.49 | 8.0.23</mysql.version>-->
+        <mybatis-plus.version>3.4.2</mybatis-plus.version>
         <mybatis-redis-cache.version>1.2.7</mybatis-redis-cache.version>
 
         <api-document.version>0.8.1</api-document.version>
-        <google-jib.version>2.6.0</google-jib.version>
+        <google-jib.version>2.7.1</google-jib.version>
     </properties>
 
     <dependencyManagement>
@@ -259,6 +260,12 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
 
         <dependency>
             <groupId>org.projectlombok</groupId>
