@@ -9,7 +9,6 @@ import com.github.common.util.A;
 import com.github.common.util.U;
 import org.apache.commons.compress.utils.Lists;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
@@ -23,7 +22,7 @@ public class ExportEasyExcel {
 
     private static final List<WriteHandler> HANDLER_LIST = Arrays.asList(
             new FreezeTitleSheetHandler(),
-            new WidthAndStyleCellHandler()
+            new StyleCellHandler()
     );
 
     private static int getMaxColumn(boolean excel07) {
@@ -82,7 +81,7 @@ public class ExportEasyExcel {
                 List<?> realDataList = A.isEmpty(dataList) ? Collections.emptyList() : dataList.subList(fromIndex, toIndex);
 
                 // 指定头, 并指定只输出指定头相关的列
-                ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(realSheetName).head(headClass);
+                ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(realSheetName).head(headClass).useDefaultStyle(false);
                 for (WriteHandler handler : HANDLER_LIST) {
                     sheetBuilder.registerWriteHandler(handler);
                 }
@@ -168,11 +167,12 @@ public class ExportEasyExcel {
                         fromIndex = 0;
                         toIndex = size;
                     }
-                    List<?> realDataList = A.isEmpty(sheetDataList) ? Collections.emptyList() : sheetDataList.subList(fromIndex, toIndex);
+                    List<?> realDataList = A.isEmpty(sheetDataList) ? Collections.emptyList()
+                            : sheetDataList.subList(fromIndex, toIndex);
 
                     // 指定头, 并指定只输出指定头相关的列
                     ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(realSheetName).head(realTitleList)
-                            .includeColumnFiledNames(sheetTitleMap.keySet());
+                            .useDefaultStyle(false).includeColumnFiledNames(sheetTitleMap.keySet());
                     for (WriteHandler handler : HANDLER_LIST) {
                         sheetBuilder.registerWriteHandler(handler);
                     }
@@ -185,7 +185,6 @@ public class ExportEasyExcel {
             }
         }
     }
-
 
     /**
      * 将特殊字符替换成空格, 最开始及最结尾是单引号则去掉, 多个空格替换成一个, 如果有多个 sheet 就拼在名字后面, 长度超过 31 则截取
@@ -208,36 +207,5 @@ public class ExportEasyExcel {
         String indexSuffix = (sheetCount > 1) ? (" - " + (sheetIndex + 1)) : U.EMPTY;
         int nameLen = 31 - indexSuffix.length();
         return (tmp.length() > nameLen) ? (tmp.substring(0, nameLen) + indexSuffix) : tmp;
-    }
-
-    public static void main(String[] args) throws IOException {
-        HttpServletResponse response = null;
-        List<List<String>> head = new ArrayList<>();
-        head.add(Collections.singletonList("head1"));
-        head.add(Collections.singletonList("head2"));
-        head.add(Collections.singletonList("head3"));
-        head.add(Collections.singletonList("head4"));
-
-        List<List<Object>> data = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            data.add(Arrays.asList("字符串" + i, new Date(), 0.56, (i % 2 == 0)));
-        }
-
-        ExcelWriter excelWriter = null;
-        try {
-            excelWriter = EasyExcel.write("/home/ty/a.xlsx").excelType(ExcelTypeEnum.XLSX).build();
-
-            excelWriter.write(data, EasyExcel.writerSheet("demoData-1").head(head)
-                    .registerWriteHandler(new FreezeTitleSheetHandler())
-                    .registerWriteHandler(new WidthAndStyleCellHandler())
-                    .build());
-            excelWriter.write(data, EasyExcel.writerSheet("demoData-2").head(head).build());
-        } finally {
-            if (excelWriter != null) {
-                excelWriter.finish();
-            }
-        }
-
-        System.out.println("成功");
     }
 }

@@ -12,7 +12,14 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.hssf.usermodel.HSSFPalette;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.DefaultIndexedColorMap;
+import org.apache.poi.xssf.usermodel.IndexedColorMap;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 
 import java.util.List;
 import java.util.Map;
@@ -20,12 +27,15 @@ import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("DuplicatedCode")
 @Slf4j
-public class WidthAndStyleCellHandler implements CellWriteHandler {
+public class StyleCellHandler implements CellWriteHandler {
 
     /** 标题行字体大小 */
-    private static final short TITLE_FONT_SIZE = 14;
+    private static final short TITLE_FONT_SIZE = 12;
     /** 行字体大小 */
-    private static final short FONT_SIZE = 12;
+    private static final short FONT_SIZE = 10;
+
+    private static final int[] TITLE_RGB = new int[] { 155, 195, 230 };
+    // private static final int[] TITLE_RGB = new int[] { 50, 120, 180 };
 
     private static final Cache<Thread, Map<String, CellStyle>> STYLE_CACHE =
             CacheBuilder.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build();
@@ -34,7 +44,6 @@ public class WidthAndStyleCellHandler implements CellWriteHandler {
     @Override
     public void beforeCellCreate(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder,
                                  Row row, Head head, Integer columnIndex, Integer relativeRowIndex, Boolean isHead) {
-
     }
 
     @Override
@@ -48,14 +57,32 @@ public class WidthAndStyleCellHandler implements CellWriteHandler {
         }
     }
 
-    private void settingWidth(Cell cell, Object data) {
-        Sheet sheet = cell.getSheet();
-        int columnIndex = cell.getColumnIndex();
-        int oldWidth = sheet.getColumnWidth(columnIndex);
-        // 设置列宽: 从内容来确定, 中文为 2 个长度, 左移 8 相当于 * 256
-        int currentWidth = (U.toLen(data) << 8);
-        if (currentWidth > oldWidth) {
-            sheet.setColumnWidth(columnIndex, currentWidth);
+    private void settingWidth(Cell cell, String data) {
+        if (U.isNotBlank(data)) {
+            // 内容里面有换行则宽度以最长的行为主, 行高以行数为主
+            int width = 0, lineNum = 0;
+            for (String s : data.split("\n")) {
+                // 列宽: 从内容来确定, 中文为 2 个长度, 左移 8 相当于 * 256
+                int lineWidth = U.toLen(s) << 8;
+                if (lineWidth > width) {
+                    width = lineWidth;
+                }
+                lineNum += 1;
+            }
+
+            Sheet sheet = cell.getSheet();
+            int columnIndex = cell.getColumnIndex();
+            int oldWidth = sheet.getColumnWidth(columnIndex);
+            if (width > oldWidth) {
+                sheet.setColumnWidth(columnIndex, width);
+            }
+
+            if (lineNum > 1) {
+                // 设置为内容换行, 不然显示依然是在一行的, 需要在内容上编辑一下才会显示换行效果
+                cell.getCellStyle().setWrapText(true);
+                Row row = cell.getRow();
+                row.setHeightInPoints(row.getHeightInPoints() * lineNum);
+            }
         }
     }
 
@@ -71,8 +98,8 @@ public class WidthAndStyleCellHandler implements CellWriteHandler {
                     } else if (dataType == CellDataTypeEnum.STRING || dataType == CellDataTypeEnum.DIRECT_STRING) {
                         cell.setCellStyle(contentStyle(cell.getSheet().getWorkbook()));
                     }
+                    settingWidth(cell, cellData.toString());
                 }
-                settingWidth(cell, cellData.toString());
             }
         }
     }
@@ -83,7 +110,7 @@ public class WidthAndStyleCellHandler implements CellWriteHandler {
     }
 
 
-    /** 头样式: 垂直居中, 水平居左, 粗体, 字体大小 12 */
+    /** 头样式: 垂直居中, 水平居左, 粗体, 字体大小 */
     private static CellStyle headStyle(Workbook workbook) {
         String key = "head";
         Thread currentThread = Thread.currentThread();
@@ -98,6 +125,23 @@ public class WidthAndStyleCellHandler implements CellWriteHandler {
         style.setVerticalAlignment(VerticalAlignment.CENTER);
         style.setAlignment(HorizontalAlignment.LEFT);
 
+        // 设置标题行背景
+        int r = TITLE_RGB[0], g = TITLE_RGB[1], b = TITLE_RGB[2];
+        if (style instanceof XSSFCellStyle) {
+            IndexedColorMap colorMap = new DefaultIndexedColorMap();
+            ((XSSFCellStyle) style).setFillForegroundColor(new XSSFColor(new java.awt.Color(r, g, b), colorMap));
+        } else if (workbook instanceof HSSFWorkbook) {
+            HSSFPalette palette = ((HSSFWorkbook) workbook).getCustomPalette();
+            HSSFColor color = palette.findSimilarColor(r, g, b);
+            if (color == null) {
+                short replaceIndex = IndexedColors.LAVENDER.getIndex();
+                palette.setColorAtIndex(replaceIndex, (byte) r, (byte) g, (byte) b);
+                color = palette.getColor(replaceIndex);
+            }
+            style.setFillForegroundColor(color.getIndex());
+        }
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
         Font font = workbook.createFont();
         font.setBold(true);
         font.setFontHeightInPoints(TITLE_FONT_SIZE);
@@ -108,7 +152,7 @@ public class WidthAndStyleCellHandler implements CellWriteHandler {
         return style;
     }
 
-    /** 内容样式: 垂直居中, 水平居左, 字体大小 10 */
+    /** 内容样式: 垂直居中, 水平居左, 字体大小 */
     private static CellStyle contentStyle(Workbook workbook) {
         String key = "content";
         Thread currentThread = Thread.currentThread();
