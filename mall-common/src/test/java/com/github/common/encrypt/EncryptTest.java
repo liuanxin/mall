@@ -134,31 +134,31 @@ public class EncryptTest {
 
         String decode = Encrypt.rc4Decode(encode);
         System.out.println(decode);
-        Assert.assertTrue(SOURCE.equals(decode));
+        Assert.assertEquals(SOURCE, decode);
     }
 
     @Test
     public void digestTest() {
         String encode = Encrypt.to16Md5(SOURCE);
-        Assert.assertTrue(encode.length() == 16);
+        Assert.assertEquals(16, encode.length());
 
         encode = Encrypt.toMd5(SOURCE);
-        Assert.assertTrue(encode.length() == 32);
+        Assert.assertEquals(32, encode.length());
 
         encode = Encrypt.toSha1(SOURCE);
-        Assert.assertTrue(encode.length() == 40);
+        Assert.assertEquals(40, encode.length());
 
         encode = Encrypt.toSha224(SOURCE);
-        Assert.assertTrue(encode.length() == 56);
+        Assert.assertEquals(56, encode.length());
 
         encode = Encrypt.toSha256(SOURCE);
-        Assert.assertTrue(encode.length() == 64);
+        Assert.assertEquals(64, encode.length());
 
         encode = Encrypt.toSha384(SOURCE);
-        Assert.assertTrue(encode.length() == 96);
+        Assert.assertEquals(96, encode.length());
 
         encode = Encrypt.toSha512(SOURCE);
-        Assert.assertTrue(encode.length() == 128);
+        Assert.assertEquals(128, encode.length());
     }
 
     @Test
@@ -168,21 +168,21 @@ public class EncryptTest {
         String str = p + "&key=" + k;
 
         String encode = Encrypt.toHmacMd5(str, k);
-        Assert.assertTrue(encode.length() == 32);
+        Assert.assertEquals(32, encode.length());
 
         encode = Encrypt.toHmacSha1(str, k);
-        Assert.assertTrue(encode.length() == 40);
+        Assert.assertEquals(40, encode.length());
 
         encode = Encrypt.toHmacSha224(str, k);
-        Assert.assertTrue(encode.length() == 56);
+        Assert.assertEquals(56, encode.length());
 
         encode = Encrypt.toHmacSha256(str, k);
-        Assert.assertTrue(encode.length() == 64);
+        Assert.assertEquals(64, encode.length());
 
         encode = Encrypt.toHmacSha384(str, k);
-        Assert.assertTrue(encode.length() == 96);
+        Assert.assertEquals(96, encode.length());
 
         encode = Encrypt.toHmacSha512(str, k);
-        Assert.assertTrue(encode.length() == 128);
+        Assert.assertEquals(128, encode.length());
     }
 }
