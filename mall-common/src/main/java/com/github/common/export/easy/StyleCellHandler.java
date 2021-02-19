@@ -34,11 +34,10 @@ public class StyleCellHandler implements CellWriteHandler {
     /** 行字体大小 */
     private static final short FONT_SIZE = 10;
 
-    private static final int[] TITLE_RGB = new int[] { 155, 195, 230 };
-    // private static final int[] TITLE_RGB = new int[] { 50, 120, 180 };
+    private static final int[] TITLE_RGB = new int[] { 160, 200, 230 };
 
     private static final Cache<Thread, Map<String, CellStyle>> STYLE_CACHE =
-            CacheBuilder.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build();
+            CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).build();
 
 
     @Override
@@ -90,6 +89,11 @@ public class StyleCellHandler implements CellWriteHandler {
     public void afterCellDataConverted(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder,
                                        CellData cellData, Cell cell, Head head, Integer relativeRowIndex, Boolean isHead) {
         if (isHead != null) {
+            // convert 后 head 走不到这里来, 只在 afterCellCreate 处执行了
+            /* if (isHead) {
+                cell.setCellStyle(headStyle(cell.getSheet().getWorkbook()));
+                settingWidth(cell, head.getHeadNameList().get(relativeRowIndex));
+            } else { */
             if (!isHead) {
                 if (U.isNotNull(cellData)) {
                     CellDataTypeEnum dataType = cellData.getType();
