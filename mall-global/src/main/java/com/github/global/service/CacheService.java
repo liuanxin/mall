@@ -4,6 +4,7 @@ import com.github.common.util.U;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -229,6 +230,11 @@ public class CacheService {
     /** 获取一个 hash 的长度: hlen key */
     public long hashSize(String key) {
         return stringRedisTemplate.opsForHash().size(key);
+    }
+    /** 获取一个 hash 的值: hgetall key */
+    public Map<String, String> hashGetAll(String key) {
+        HashOperations<String, String, String> hashOperation = stringRedisTemplate.opsForHash();
+        return hashOperation.entries(key);
     }
     /** 获取一个 hash 中指定 key 的值: hget key field */
     public String hashGet(String key, String hashKey) {
