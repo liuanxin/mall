@@ -9,10 +9,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @AllArgsConstructor
@@ -217,6 +214,10 @@ public class CacheService {
 
     // hash 键值对
 
+    /** 写 hash: hmset key field value [field value ...] */
+    public void hashPutAll(String key, Map<String, String> hashMap) {
+        stringRedisTemplate.opsForHash().putAll(key, hashMap);
+    }
     /** 写一个 hash: hset key field value */
     public void hashPut(String key, String hashKey, String hashValue) {
         stringRedisTemplate.opsForHash().put(key, hashKey, hashValue);
