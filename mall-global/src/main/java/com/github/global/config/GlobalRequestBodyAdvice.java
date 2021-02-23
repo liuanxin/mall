@@ -17,10 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAdapter;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
@@ -46,6 +43,7 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
                 }
                 @Override
                 public InputStream getBody() throws IOException {
+                    // Http Request 的 inputStream 有一个特性是读取过之后再操作就会异常, 且 jdk 没有 stream.clone(), 因此像下面这样处理
                     byte[] bytes = ByteStreams.toByteArray(inputMessage.getBody());
                     handleRequestBody(bytes);
                     return new ByteArrayInputStream(bytes);
@@ -55,12 +53,16 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
             return inputMessage;
         }
     }
-    /** 注意上下两处都是 new ByteArrayInputStream, 如果提取成变量是有问题的 */
-    private static void handleRequestBody(byte[] bytes) throws IOException {
-        InputStream inputStream = new ByteArrayInputStream(bytes);
-        String requestBody = CharStreams.toString(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-        // 去除空白符后放到日志上下文
-        LogUtil.bindRequestBody(JsonUtil.toJson(JsonUtil.toObjectNil(requestBody, Object.class)));
+    /** 注意上下两处都是 new, 在上下文处理的地方用字节再生成新流, 上面的新流返回给请求上下文, 如果提取成变量是有问题的 */
+    private void handleRequestBody(byte[] bytes) throws IOException {
+        try (
+                InputStream input = new ByteArrayInputStream(bytes);
+                Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8);
+        ) {
+            String requestBody = CharStreams.toString(reader);
+            // 去除空白符后放到日志上下文
+            LogUtil.bindRequestBody(JsonUtil.toJson(JsonUtil.toObjectNil(requestBody, Object.class)));
+        }
     }
 
     /*
