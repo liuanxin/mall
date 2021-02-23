@@ -54,24 +54,31 @@
 
 ### 分页示例
 
-在 controller 中这样
+在 controller 中用 dto 做入参, 用 vo 做出参, 调用 service 的入参和返回使用「跟数据库对应的 model 实体」
 ```java
+// 用构造函数来注入 service, 如果下面有用到 @Value 这样的数据就用此注解, 如果没有, 可以用 @AllArgsConstructor 注解
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/demo")
 public class DemoController {
 
-    // 如果不传 page 和 limit, 或者传的是 page=a&limit=-100 这种时 Page 将会有默认值 page=1&limit=10
+    @Value("${xxx:123}")
+    private String xxx;
+
+    private final UserService userService;
+    private final ProductService productService;
+
     // 好的实践是每个接口都有各自的 dto 和 vo, 如果参数不多则不需要构建 dto, 返回只有一个字段也不用新建 vo
     @GetMapping
     public JsonResult<PageReturn<DemoVo>> demoList(DemoDto dto, PageParam page) {
-        // dto 和 vo 是 controller 层的对象, 在 service 层使用跟数据库对应的 model 实体进行接收和返回
-        PageReturn<Demo> pageInfo = demoService.pageList(dto.demo(), page);
-        return JsonResult.success("用户列表", DemoVo.assemblyData(PageReturn));
+       PageInfo<User> userPageInfo = userService.pageList(dto.userParam(), page);
+       List<Product> productList = productService.xxx(dto.productParam());
+       return JsonResult.success("xxx", DemoVo.assemblyData(userPageInfo, productList));
     }
 }
 ```
 
-module-model 中的接口
+service 基于「跟数据库对应的 model 实体」做入参和返回
 ```java
 public interface DemoService {
     /** 获取分页数据 */
@@ -79,20 +86,42 @@ public interface DemoService {
 }
 ```
 
-module-server 中的实现类
+在 dto 中做基础的入参校验, 并返回 service 中用到的「跟数据库对应的 model 实体」
 ```java
-@Service
-@AllArgsConstructor
-public class DemoServiceImpl implements DemoService {
+@Data
+public class DemoDto {
+    
+    private Long userId;
+    private Long productId;
 
-    private final DemoMapper demoMapper;
+    /** 操作用户模块时用到的参数 */
+    public User userParam() {
+        // 数据校验
+        // ...
+        
+        // 返回 service 中用到的实体
+        return new User(userId);
+    }
 
-    @Override
-    public PageReturn<Demo> pageList(Demo param, PageParam page) {
-        // select xxx, yyy from demo where name like '%xxxxx%' 其中 name 的条件是动态的(不为空才拼接)
-        // 会自动运行 select count(*), 如果结果为 0 则不会去执行 limit 
-        return Pages.returnList(demoMapper.selectPage(Pages.param(page), Wrappers.lambdaQuery(Demo.class)
-                  .like(U.isNotBlank(param.getName()), Demo::getName, param.getName())));
+    /** 操作商品模块时需要的参数 */
+    public Product productParam() {
+        // ...
+    }
+}
+```
+
+在 vo 中组装数据
+```java
+@Data
+public class DemoVo {
+    
+    private Long userId;
+    private Long productId;
+    // ...
+    
+    public static PageReturn<ExampleVo> assemblyData(PageInfo<User> userPageInfo, List<Product> productList) {
+        // 组装数据
+        return new DemoVo();
     }
 }
 ```
@@ -106,20 +135,24 @@ public class DemoServiceImpl implements DemoService {
 4. 会用到 text 字段的尽量抽成一个单表
 5. 用这几种类型就可以了, 相关的表字段类型对应如下
 
-| java 类型     | 数据库字段类型                                                                               |
-| ------------- | ------------------------------------------------------------------------------------------ |
-| Long          | 主键或外键或存到分的金额: bigint(20) unsigned not null default '0' comment '商品最低价(存到分)' |
-| Integer、Enum | int not null default '0' comment '1 表示 x, 2 表示 x, 3 表示x'                               |
-| Boolean       | tinyint(1) not null default '0' comment '1 表示已删除'                                      |
-| String        | varchar(16) not null default '' comment 'xx'  长度为 2 的幂次, 如 32 128 1024 等             |
-| BigDecimal    | decimal(10,2) not null default '0' comment 'xxxx 金额, 可以用 long 即可'                     |
-| Date          | datetime(3) not null default '1970-01-01 00:00:00' comment 'xxxxx 时间'                     |
+| java 类型     | 数据库字段类型                                                                                       |
+| ------------- | -------------------------------------------------------------------------------------------------- |
+| Long          | BIGINT(20)    UNSIGNED NOT NULL DEFAULT '0'                            主键或外键                   |
+| Integer、Enum | TINYINT(4)    UNSIGNED NOT NULL DEFAULT '0' COMMENT '1.x, 2.y, 3.z'    无符号的范围在 0~255 之间     |
+| Boolean       | TINYINT(1)    UNSIGNED NOT NULL DEFAULT '0' COMMENT '1 表示已删除'      只需要用 true false 表示     |
+| String        | VARCHAR(16)   NOT NULL DEFAULT '' COMMENT 'XX'                                                    |
+| BigDecimal    | DECIMAL(10,2) NOT NULL DEFAULT '0' COMMENT 'XXXX 金额'                                            |
+| Date          | DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'XXXXX 时间' |
 
 注意事项:
-1. 金额尽量用 bigint, 存到最终的单位比如分就行了
-2. 时期加上长度 3 保存毫秒, 不设置默认是 0, 驱动包 >= 5.1.23 时 java 中的 new Date() 存入时, 长度如果是 0, mysql 会将毫秒四舍五入到秒,
-   比如 1999-12-31 23:59:59.499 会存成 1999-12-31 23:59:59, 而 1999-12-31 23:59.59.500 却会存为 2000-01-01 00:00:00
-3. mysql 中没有 boolean, tinyint(1) 和 tinyint(4) 都是存储 -128 ~ 127 的数, 跟 java 实体对应时, 前者用 Boolean 后者用 Integer 就好了
-   不要在 tinyint(1) 字段上存储 0 1 以外的值, 如果是 > 2 个数据, 可以在 java 中用枚举, 在 mysql 中用 tinyint(4), 用 int 传递
+1. 金额除了可以用 DECIMAL 外, 还可以用 bigint, 存到最终的单位(比如分,「20.50 元」存成「2050」即可)就行了
+2. mysql 中没有 boolean, tinyint(1) 和 tinyint(4) 都是存储 -128 ~ 127 的数(unsigned 则是 0 ~ 255),
+   不要在 tinyint(1) 字段上存储 0 1 以外的值, 对应 Java 的 true 和 false,
+   如果不止用来描述 true false, 在 mysql 中用 tinyint(4), 在 Java 实体中用 Integer 或者枚举相对应
+3. 时期加上长度 3 保存毫秒, 不设置默认是 0, 驱动包 >= 5.1.23 时 mysql 会将毫秒四舍五入到秒,
+   比如 1999-12-31 23:59:59.499 会存成 1999-12-31 23:59:59, 而 1999-12-31 23:59.59.500 却会存为 2000-01-01 00:00:00.
+   创建时间用: DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   更新时间用: DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+   另外, 当时间不确定, 业务上可以为空时, 尽量设置为不能为空且给一个默认值 NOT NULL DEFAULT '1970-01-01 00:00:00' COMMENT 'xxx 时间'
 
 ~
