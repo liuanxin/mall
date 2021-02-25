@@ -140,24 +140,26 @@ public class ExportEasyExcel {
             excelWriter = EasyExcel.write(outputStream).excelType(excelType).build();
 
             List<Map<String, ?>> dataList = Lists.newArrayList();
-            for (Map.Entry<String, List<?>> entry : dataMap.entrySet()) {
+            for (Map.Entry<String, LinkedHashMap<String, String>> entry : titleMap.entrySet()) {
                 String sheetName = entry.getKey();
-                List<?> sheetDataList = entry.getValue();
+                LinkedHashMap<String, String> sheetTitleMap = entry.getValue();
+                // 表头在数据实体中的字段名
+                Set<String> fields = sheetTitleMap.keySet();
+                // 表头在导出时显示的名字
+                List<List<String>> titles = Lists.newArrayList();
+                for (String value : sheetTitleMap.values()) {
+                    titles.add(Collections.singletonList(value));
+                }
 
+                List<?> sheetDataList = dataMap.get(sheetName);
                 int size = A.isEmpty(sheetDataList) ? 0 : sheetDataList.size();
                 // 一个 sheet 数据过多时 excel 处理会出错, 这时候分成多个 sheet 导出
                 int sheetCount = (size % sheetMaxRow == 0) ? (size / sheetMaxRow) : (size / sheetMaxRow + 1);
                 // 如果没有记录也至少构建一个(确保导出的文件有标题头)
                 int realSheetCount = (sheetCount == 0) ? 1 : sheetCount;
 
-                LinkedHashMap<String, String> sheetTitleMap = titleMap.get(sheetName);
                 for (int i = 0; i < realSheetCount; i++) {
                     String realSheetName = handleSheetName(sheetName, realSheetCount, i);
-
-                    List<List<String>> realTitleList = Lists.newArrayList();
-                    for (String value : sheetTitleMap.values()) {
-                        realTitleList.add(Collections.singletonList(value));
-                    }
 
                     int fromIndex, toIndex;
                     if (realSheetCount > 1) {
@@ -171,8 +173,8 @@ public class ExportEasyExcel {
                             : sheetDataList.subList(fromIndex, toIndex);
 
                     // 指定头, 并指定只输出指定头相关的列
-                    ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(realSheetName).head(realTitleList)
-                            .useDefaultStyle(false).includeColumnFiledNames(sheetTitleMap.keySet());
+                    ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(realSheetName).head(titles)
+                            .useDefaultStyle(false).includeColumnFiledNames(fields);
                     for (WriteHandler handler : HANDLER_LIST) {
                         sheetBuilder.registerWriteHandler(handler);
                     }
