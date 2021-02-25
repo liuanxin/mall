@@ -59,21 +59,22 @@ public class StyleCellHandler implements CellWriteHandler {
     private void settingWidth(Cell cell, String data) {
         if (U.isNotBlank(data)) {
             // 内容里面有换行则宽度以最长的行为主, 行高以行数为主
-            int width = 0, lineNum = 0;
-            for (String s : data.split("\n")) {
+            int maxWidth = 0;
+            String[] lines = data.split("\n");
+            for (String s : lines) {
                 // 列宽: 从内容来确定, 中文为 2 个长度, 左移 8 相当于 * 256
                 int lineWidth = U.toLen(s) << 8;
-                if (lineWidth > width) {
-                    width = lineWidth;
+                if (lineWidth > maxWidth) {
+                    maxWidth = lineWidth;
                 }
-                lineNum += 1;
             }
+            int lineNum = lines.length;
 
             Sheet sheet = cell.getSheet();
             int columnIndex = cell.getColumnIndex();
-            int oldWidth = sheet.getColumnWidth(columnIndex);
-            if (width > oldWidth) {
-                sheet.setColumnWidth(columnIndex, width);
+            int currentWidth = sheet.getColumnWidth(columnIndex);
+            if (maxWidth > currentWidth) {
+                sheet.setColumnWidth(columnIndex, maxWidth);
             }
 
             if (lineNum > 1) {
