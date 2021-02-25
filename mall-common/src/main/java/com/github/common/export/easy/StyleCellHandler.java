@@ -51,12 +51,12 @@ public class StyleCellHandler implements CellWriteHandler {
         if (isHead != null) {
             if (isHead) {
                 cell.setCellStyle(headStyle(cell.getSheet().getWorkbook()));
-                settingWidth(cell, head.getHeadNameList().get(relativeRowIndex));
+                setWidthAndHeight(cell, head.getHeadNameList().get(relativeRowIndex));
             }
         }
     }
 
-    private void settingWidth(Cell cell, String data) {
+    private void setWidthAndHeight(Cell cell, String data) {
         if (U.isNotBlank(data)) {
             // 内容里面有换行则宽度以最长的行为主, 行高以行数为主
             int maxWidth = 0;
@@ -103,7 +103,7 @@ public class StyleCellHandler implements CellWriteHandler {
                     } else if (dataType == CellDataTypeEnum.STRING || dataType == CellDataTypeEnum.DIRECT_STRING) {
                         cell.setCellStyle(contentStyle(cell.getSheet().getWorkbook()));
                     }
-                    settingWidth(cell, cellData.toString());
+                    setWidthAndHeight(cell, cellData.toString());
                 }
             }
         }
