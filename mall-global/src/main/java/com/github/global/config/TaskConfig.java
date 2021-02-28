@@ -25,9 +25,10 @@ public class TaskConfig implements AsyncConfigurer {
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(U.PROCESSORS);
-        executor.setMaxPoolSize(U.PROCESSORS << 3);      // 左移三位等同于 * 8
-        executor.setQueueCapacity(U.PROCESSORS << 1);    // 左移一位等同于 * 2
+        // 如果 cpu 核心是 8 的话
+        executor.setCorePoolSize(U.PROCESSORS << 1);     // 8 * 2 = 16
+        executor.setMaxPoolSize(U.PROCESSORS << 3);      // 8 * 8 = 64
+        executor.setQueueCapacity(1000);
         executor.setThreadNamePrefix("task-executor-");  // 线程名字的前缀
         executor.initialize();
         return executor;
