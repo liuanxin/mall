@@ -149,8 +149,8 @@ public class DemoVo {
 2. mysql 中没有 boolean, tinyint(1) 和 tinyint(4) 都是存储 -128 ~ 127 的数(unsigned 则是 0 ~ 255),
    不要在 tinyint(1) 字段上存储 0 1 以外的值, 对应 Java 的 true 和 false,
    如果不止用来描述 true false, 在 mysql 中用 tinyint(4), 在 Java 实体中用 Integer 或者枚举相对应
-3. 时期加上长度 3 保存毫秒, 不设置默认是 0, 驱动包 >= 5.1.23 时 mysql 会将毫秒四舍五入到秒,
-   比如 1999-12-31 23:59:59.499 会存成 1999-12-31 23:59:59, 而 1999-12-31 23:59.59.500 却会存为 2000-01-01 00:00:00.
+3. 日期长度默认是 0, 驱动包 >= 5.1.23 时 mysql 会将毫秒四舍五入到秒, 长度设置为 3 可以避免(但是 CURRENT_TIMESTAMP 将无法生效)
+   比如 1999-12-31 23:59:59.499 会存成 1999-12-31 23:59:59, 而 1999-12-31 23:59.59.500 却会存为 2000-01-01 00:00:00
    创建时间用: DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
    更新时间用: DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
    另外, 当时间不确定, 业务上可以为空时, 尽量设置为不能为空且给一个默认值 NOT NULL DEFAULT '1970-01-01 00:00:00' COMMENT 'xxx 时间'
