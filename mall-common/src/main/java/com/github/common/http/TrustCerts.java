@@ -20,7 +20,7 @@ class TrustCerts {
     /** 请求 https 时无视 ssl 证书 */
     static final SSLContext IGNORE_SSL_CONTEXT = createIgnoreVerifySSL();
     /** 请求 https 时使用本地的 ssl 文件证书 */
-    static final SSLContext FILE_SSL_CONTEXT = createFileVerifySSL();
+    // static final SSLContext FILE_SSL_CONTEXT = createFileVerifySSL();
 
     static class TrustCertsManager implements X509TrustManager {
         @Override
@@ -37,7 +37,7 @@ class TrustCerts {
         }
     }
 
-    private static SSLContext createIgnoreVerifySSL() {
+    static SSLContext createIgnoreVerifySSL() {
         try {
             SSLContext sc = SSLContext.getInstance("SSLv3");
             sc.init(null, new TrustManager[] { INSTANCE }, null);

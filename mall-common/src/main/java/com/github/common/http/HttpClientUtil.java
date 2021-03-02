@@ -197,6 +197,7 @@ public class HttpClientUtil {
         url = handleEmptyScheme(url);
         HttpPost request = new HttpPost(url);
         request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
+        request.addHeader("Content-Type", "application/json");
         return handleRequest(request, json);
     }
     /** 向指定的 url 进行 post 请求. 有参数和头 */
@@ -209,6 +210,19 @@ public class HttpClientUtil {
         HttpPost request = handlePostParams(url, params);
         handleHeader(request, headers);
         return handleRequest(request, U.formatParam(params));
+    }
+    /** 向指定的 url 进行 post 请求. 有参数和头 */
+    public static String postBodyWithHeader(String url, String json, Map<String, Object> headers) {
+        if (U.isBlank(url)) {
+            return null;
+        }
+
+        url = handleEmptyScheme(url);
+        HttpPost request = new HttpPost(url);
+        request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
+        handleHeader(request, headers);
+        request.addHeader("Content-Type", "application/json");
+        return handleRequest(request, json);
     }
 
 
