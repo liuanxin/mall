@@ -22,9 +22,9 @@
       maxHistory: 30       # 文件最大保存天数, 默认是 15
 
     当下的日志策略是:
-      本地(dev)环境:       项目的 debug、第三方包的 warn 输出到控制台
-      非本地也非生产环境:   项目的 debug、第三方包的 warn 输出到一个文件, 项目运行的 sql 输出到另一个文件
-      生产(prod)环境:      项目的 info、warn 异步输出到一个文件, 项目的 error 和 第三方包的 error 异步输出到另一个文件
+      本地(dev)环境:        项目的 debug、第三方包的 warn 和 项目运行的 sql 输出到控制台
+      非本地也非生产环境:    项目的 debug、第三方包的 warn 和 项目运行的 sql 输出到文件
+      生产(prod)环境:       项目的 info、warn 异步输出到一个文件, 项目的 error 和 第三方包的 error 异步输出到另一个文件
     -->
     <springProperty scope="context" name="applicationProfile" source="spring.profiles.active" defaultValue="dev"/>
     <springProperty scope="context" name="applicationName" source="spring.application.name" defaultValue="log"/>
@@ -96,19 +96,7 @@
             </encoder>
         </appender>
 
-        <appender name="SQL" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <file>${FILE_PATH}-sql.log</file>
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>${FILE_PATH}-sql-%d{yyyy-MM-dd}.log</fileNamePattern>
-                <maxHistory>${fileMaxHistory}</maxHistory>
-            </rollingPolicy>
-            <encoder>
-                <pattern>%n[%d{yyyy-MM-dd HH:mm:ss.SSS}] [\\(${PID:- }\\):\\(%t\\):\\(%logger\\):\\(%p\\)] %class.%method\\(%file:%line\\) %m%n</pattern>
-            </encoder>
-        </appender>
-        <logger name="sqlLog" level="${sqlLevel}" additivity="false">
-            <appender-ref ref="SQL" />
-        </logger>
+        <logger name="sqlLog" level="${sqlLevel}"/>
 
         <root level="${logLevel}">
             <appender-ref ref="PROJECT"/>

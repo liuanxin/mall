@@ -167,7 +167,7 @@ public class HttpClientUtil {
 
 
     @SuppressWarnings("unchecked")
-    public static <T> String post(String url, T param) {
+    public static <T> String postBody(String url, T param) {
         if (U.isBlank(url)) {
             return null;
         }
@@ -176,10 +176,10 @@ public class HttpClientUtil {
         if (U.isNotBlank(param)) {
             params = JsonUtil.convert(param, Map.class);
         }
-        return post(url, params);
+        return postBody(url, params);
     }
     /** 向指定的 url 进行 post 请求. 有参数 */
-    public static String post(String url, Map<String, Object> params) {
+    public static String postBody(String url, Map<String, Object> params) {
         if (U.isBlank(url)) {
             return null;
         }
@@ -189,7 +189,7 @@ public class HttpClientUtil {
         return handleRequest(request, U.formatParam(params));
     }
     /** 向指定的 url 进行 post 请求. 参数以 json 的方式一次传递 */
-    public static String post(String url, String json) {
+    public static String postBody(String url, String json) {
         if (U.isBlank(url)) {
             return null;
         }
@@ -364,7 +364,7 @@ public class HttpClientUtil {
         try (CloseableHttpResponse response = createHttpClient().execute(request, HttpClientContext.create())) {
             HttpEntity entity = response.getEntity();
             if (U.isNotBlank(entity)) {
-                entity.writeTo(new FileOutputStream(new File(file)));
+                entity.writeTo(new FileOutputStream(file));
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                     long ms = (System.currentTimeMillis() - start);
                     LogUtil.ROOT_LOG.info("download ({}) to file({}) success, time({}ms)", url, file, ms);

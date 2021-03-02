@@ -22,6 +22,7 @@ import java.util.concurrent.Executor;
 @EnableAsync
 public class TaskConfig implements AsyncConfigurer {
 
+    /** @see org.springframework.boot.autoconfigure.task.TaskExecutionProperties */
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
