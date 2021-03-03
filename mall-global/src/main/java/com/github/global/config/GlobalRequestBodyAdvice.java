@@ -4,7 +4,6 @@ import com.github.common.json.JsonUtil;
 import com.github.common.util.LogUtil;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
-import lombok.AllArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpHeaders;
@@ -21,7 +20,6 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
-@AllArgsConstructor
 @SuppressWarnings("NullableProblems")
 @ConditionalOnClass({ HttpServletRequest.class, RequestBody.class })
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
@@ -57,7 +55,7 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
     private void handleRequestBody(byte[] bytes) throws IOException {
         try (
                 InputStream input = new ByteArrayInputStream(bytes);
-                Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8);
+                Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)
         ) {
             String requestBody = CharStreams.toString(reader);
             // 去除空白符后放到日志上下文
