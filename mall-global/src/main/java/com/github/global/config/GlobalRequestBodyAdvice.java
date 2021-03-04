@@ -53,7 +53,7 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
         }
     }
     /** 注意上下两处都是 new, 在上下文处理的地方用字节再生成新流, 上面的新流返回给请求上下文, 如果提取成变量是有问题的 */
-    private void handleRequestBody(byte[] bytes) throws IOException {
+    private void handleRequestBody(byte[] bytes) {
         if (A.isNotEmpty(bytes)) {
             try (
                     InputStream input = new ByteArrayInputStream(bytes);
@@ -62,6 +62,10 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
                 String requestBody = CharStreams.toString(reader);
                 // 去除空白符后放到日志上下文
                 LogUtil.bindRequestBody(JsonUtil.toJson(JsonUtil.toObjectNil(requestBody, Object.class)));
+            } catch (Exception e) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error("Read @RequestBody bytes to Context exception", e);
+                }
             }
         }
     }
