@@ -64,7 +64,7 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
                 LogUtil.bindRequestBody(JsonUtil.toJson(JsonUtil.toObjectNil(requestBody, Object.class)));
             } catch (Exception e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("Read @RequestBody bytes to Context exception", e);
+                    LogUtil.ROOT_LOG.error("bind @RequestBody bytes to log-context exception", e);
                 }
             }
         }
