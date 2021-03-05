@@ -65,7 +65,7 @@
 
     <springProfile name="dev">
         <include resource="org/springframework/boot/logging/logback/defaults.xml" />
-        <property name="CONSOLE_LOG_PATTERN" value="%n[%d] [%clr(${PID:- }){magenta} - %clr(%t){blue} - %clr(%logger){cyan} - %clr(${LOG_LEVEL_PATTERN:-%p})]%X{requestInfo}%n%class.%method\\(%file:%line\\)%n%m%n"/>
+        <property name="CONSOLE_LOG_PATTERN" value="%n[%d] [%clr(${PID:- }){magenta} - %clr(%t){blue} - %clr(%logger){cyan} - %clr(${LOG_LEVEL_PATTERN:-%p})]%X{requestInfo}%n%class.%method\\(%file:%line\\) %m%X{traceId}%n"/>
         <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
         <root level="${logLevel}">
@@ -77,7 +77,7 @@
     <!-- 输出到文件的地址 -->
     <property name="FILE_PATH" value="${filePath}/${applicationName}-${applicationProfile}"/>
     <!-- 输出到文件时的格式 -->
-    <property name="LOG_PATTERN" value="[%d] [\\(${PID:- }\\):\\(%t\\):\\(%logger\\):\\(%p\\)]%X{requestInfo} %class{30}#%method\\(%file:%line\\) %m%n"/>
+    <property name="LOG_PATTERN" value="[%d] [\\(${PID:- }\\):\\(%t\\):\\(%logger\\):\\(%p\\)]%X{requestInfo} %class{30}#%method\\(%file:%line\\) %m%X{traceId}%n"/>
 
     <!--
     用 & 貌似有问题. 见:

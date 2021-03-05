@@ -707,6 +707,10 @@ public final class U {
     public static String uuid() {
         return UUID.randomUUID().toString().replace("-", EMPTY);
     }
+    /** 生成跟踪 id */
+    public static String generateTraceId() {
+        return uuid().substring(8, 24);
+    }
 
     /** 获取后缀(包含点 .) */
     public static String getSuffix(String file) {

@@ -97,10 +97,14 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
 
                     sbd.append(", time: (");
                     long startTimeMillis = LogUtil.getStartTimeMillis();
+                    if (U.greater0(startTimeMillis)) {
+                        sbd.append(DateUtil.formatDateTimeMs(new Date(startTimeMillis))).append(" -> ");
+                    }
                     long currentTimeMillis = System.currentTimeMillis();
-                    sbd.append(DateUtil.formatDateTimeMs(new Date(startTimeMillis))).append(" -> ");
                     sbd.append(DateUtil.formatDateTimeMs(new Date(currentTimeMillis)));
-                    sbd.append(DateUtil.toHuman(currentTimeMillis - startTimeMillis));
+                    if (U.greater0(startTimeMillis) && currentTimeMillis >= startTimeMillis) {
+                        sbd.append(DateUtil.toHuman(currentTimeMillis - startTimeMillis));
+                    }
                     sbd.append(")");
 
                     sbd.append(", return: (");

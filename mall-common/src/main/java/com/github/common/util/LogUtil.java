@@ -13,30 +13,37 @@ public final class LogUtil {
 
     /** 根日志: 在类里面使用 LoggerFactory.getLogger(XXX.class) 跟这种方式一样! */
     public static final Logger ROOT_LOG = LoggerFactory.getLogger("root");
-
     /** SQL 相关的日志 */
     public static final Logger SQL_LOG = LoggerFactory.getLogger("sqlLog");
 
-
     /** 接收到请求的时间  */
     private static final String START_TIME = "startRequestTime";
-    /** 请求信息: 包括 ip、url, param 等  */
+    /** 在日志上下文中记录的跟踪 id */
+    private static final String TRACE_ID = "traceId";
+    /** 在日志上下文中记录的请求信息: 包括 ip、url, param 等  */
     private static final String REQUEST_INFO = "requestInfo";
 
-    /** 将 当前时间 和 请求上下文信息 放进日志的 ThreadLocal 中 */
-    public static void bind(RequestLogContext logContextInfo) {
-        recordTime();
-        bindContext(logContextInfo);
+    /** 将接收到请求的时间放进日志上下文 */
+    public static void bindRecordTime() {
+        // 生成跟踪号放进日志上下文
+        if (U.isBlank(MDC.get(TRACE_ID))) {
+            MDC.put(TRACE_ID, " " + U.generateTraceId());
+        }
+        if (U.isBlank(MDC.get(START_TIME))) {
+            MDC.put(START_TIME, U.toStr(System.currentTimeMillis()));
+        }
     }
-    /** 日志的 ThreadLocal 中没有 请求上下文信息 则返回 true */
+    /** 日志上下文中没有 请求上下文信息 则返回 true */
     public static boolean hasNotRequestInfo() {
         return U.isBlank(MDC.get(REQUEST_INFO));
     }
-    /** 将 请求上下文信息 放进日志的 ThreadLocal 中 */
+    /** 将 请求上下文信息 放进日志上下文 */
     public static void bindContext(RequestLogContext logContextInfo) {
+        bindRecordTime();
         MDC.put(REQUEST_INFO, logContextInfo.requestInfo());
     }
-    /** 将 RequestBody 的请求内容放进日志 */
+
+    /** 将 RequestBody 的请求内容放进日志上下文 */
     public static void bindRequestBody(String requestBody) {
         if (U.isNotBlank(requestBody)) {
             String requestInfo = MDC.get(REQUEST_INFO);
@@ -45,14 +52,11 @@ public final class LogUtil {
             }
         }
     }
+
     public static void unbind() {
         MDC.clear();
     }
 
-    public static void recordTime() {
-        long millis = System.currentTimeMillis();
-        MDC.put(START_TIME, U.toStr(millis));
-    }
     public static long getStartTimeMillis() {
         return U.toLong(MDC.get(START_TIME));
     }

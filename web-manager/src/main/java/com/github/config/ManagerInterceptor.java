@@ -53,7 +53,7 @@ public class ManagerInterceptor implements HandlerInterceptor {
 
     private void bindParam() {
         // 打印日志上下文中的数据
-        LogUtil.bind(RequestUtils.logContextInfo().setUser(ManagerSessionUtil.getUserInfo()));
+        LogUtil.bindContext(RequestUtils.logContextInfo().setUser(ManagerSessionUtil.getUserInfo()));
     }
 
     private void unbindParam() {

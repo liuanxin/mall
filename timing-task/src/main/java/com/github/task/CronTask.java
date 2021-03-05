@@ -22,7 +22,7 @@ public class CronTask {
     /** 取消下单已经超过了 24 小时的订单 */
     @Scheduled(cron = CRON)
     public void cancelOrder() {
-        LogUtil.recordTime();
+        LogUtil.bindRecordTime();
         try {
             handlerBusiness();
         } catch (Exception e) {

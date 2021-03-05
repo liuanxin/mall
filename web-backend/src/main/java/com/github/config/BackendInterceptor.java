@@ -43,7 +43,7 @@ public class BackendInterceptor implements HandlerInterceptor {
     }
 
     private void bindParam() {
-        LogUtil.bind(RequestUtils.logContextInfo().setUser(BackendSessionUtil.getUserInfo()));
+        LogUtil.bindContext(RequestUtils.logContextInfo().setUser(BackendSessionUtil.getUserInfo()));
     }
 
     private void unbindParam() {

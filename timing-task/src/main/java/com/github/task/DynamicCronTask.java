@@ -34,7 +34,7 @@ public class DynamicCronTask implements SchedulingConfigurer {
         Runnable task = new Runnable() {
             @Override
             public void run() {
-                LogUtil.recordTime();
+                LogUtil.bindRecordTime();
                 try {
                     handlerBusiness();
                 } catch (Exception e) {
