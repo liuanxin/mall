@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.annotation.Annotation;
 
+@SuppressWarnings("NullableProblems")
 public class BackendInterceptor implements HandlerInterceptor {
 
     @Override
@@ -43,7 +44,8 @@ public class BackendInterceptor implements HandlerInterceptor {
     }
 
     private void bindParam() {
-        LogUtil.bindContext(RequestUtils.logContextInfo().setUser(BackendSessionUtil.getUserInfo()));
+        String traceId = RequestUtils.getCookieValue(Const.TRACE);
+        LogUtil.bindContext(traceId, RequestUtils.logContextInfo().setUser(BackendSessionUtil.getUserInfo()));
     }
 
     private void unbindParam() {

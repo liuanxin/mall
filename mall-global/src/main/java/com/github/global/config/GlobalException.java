@@ -1,5 +1,6 @@
 package com.github.global.config;
 
+import com.github.common.Const;
 import com.github.common.exception.*;
 import com.github.common.json.JsonResult;
 import com.github.common.util.A;
@@ -142,7 +143,7 @@ public class GlobalException {
             boolean notRequestInfo = LogUtil.hasNotRequestInfo();
             try {
                 if (notRequestInfo) {
-                    LogUtil.bindContext(RequestUtils.logContextInfo());
+                    LogUtil.bindContext(RequestUtils.getCookieValue(Const.TRACE), RequestUtils.logContextInfo());
                 }
                 LogUtil.ROOT_LOG.debug(msg, e);
             } finally {

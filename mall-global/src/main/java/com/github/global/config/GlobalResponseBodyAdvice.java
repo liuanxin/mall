@@ -1,6 +1,7 @@
 package com.github.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.common.Const;
 import com.github.common.date.DateUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtils;
@@ -69,7 +70,7 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
                 boolean notRequestInfo = LogUtil.hasNotRequestInfo();
                 try {
                     if (notRequestInfo) {
-                        LogUtil.bindContext(RequestUtils.logContextInfo());
+                        LogUtil.bindContext(RequestUtils.getCookieValue(Const.TRACE), RequestUtils.logContextInfo());
                     }
 
                     Class<?> clazz = parameter.getContainingClass();

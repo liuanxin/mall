@@ -4,17 +4,16 @@ import com.github.common.service.CommonService;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.github.product.service.ProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.Trigger;
-import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-
 /** 动态设置运行时间的定时任务 --> 示例 */
 @Component
+@RequiredArgsConstructor
 public class DynamicCronTask implements SchedulingConfigurer {
 
     /** 当前定时任务的业务说明 */
@@ -24,54 +23,44 @@ public class DynamicCronTask implements SchedulingConfigurer {
 
     private final ProductService productService;
     private final CommonService commonService;
-    public DynamicCronTask(ProductService productService, CommonService commonService) {
-        this.productService = productService;
-        this.commonService = commonService;
-    }
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                LogUtil.bindRecordTime();
-                try {
-                    handlerBusiness();
-                } catch (Exception e) {
-                    if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                        LogUtil.ROOT_LOG.error(BUSINESS_DESC + "异常", e);
-                    }
-                } finally {
-                    if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                        LogUtil.ROOT_LOG.info(BUSINESS_DESC + "完成");
-                    }
-                    LogUtil.unbind();
+        Runnable task = () -> {
+            LogUtil.bindBasicInfo(null);
+            try {
+                handlerBusiness();
+            } catch (Exception e) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error(BUSINESS_DESC + "异常", e);
                 }
+            } finally {
+                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                    LogUtil.ROOT_LOG.info(BUSINESS_DESC + "完成");
+                }
+                LogUtil.unbind();
             }
         };
 
-        Trigger trigger = new Trigger() {
-            @Override
-            public Date nextExecutionTime(TriggerContext triggerContext) {
-                // 从数据库读取 cron 表达式
-                String cron = ""; // commonService.getAbcCron();
-                if (U.isBlank(cron)) {
-                    // 如果没有, 给一个默认值.
-                    cron = CRON;
-                }
-
-                // 如果设置的表达式有误也使用默认的
-                CronTrigger cronTrigger;
-                try {
-                    cronTrigger = new CronTrigger(cron);
-                } catch (Exception e) {
-                    if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                        LogUtil.ROOT_LOG.error(String.format("%s的表达式有误, 使用默认值(%s)", BUSINESS_DESC, CRON), e);
-                    }
-                    cronTrigger = new CronTrigger(CRON);
-                }
-                return cronTrigger.nextExecutionTime(triggerContext);
+        Trigger trigger = (triggerContext) -> {
+            // 从数据库读取 cron 表达式
+            String cron = ""; // commonService.getAbcCron();
+            if (U.isBlank(cron)) {
+                // 如果没有, 给一个默认值.
+                cron = CRON;
             }
+
+            // 如果设置的表达式有误也使用默认的
+            CronTrigger cronTrigger;
+            try {
+                cronTrigger = new CronTrigger(cron);
+            } catch (Exception e) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error(String.format("%s的表达式有误, 使用默认值(%s)", BUSINESS_DESC, CRON), e);
+                }
+                cronTrigger = new CronTrigger(CRON);
+            }
+            return cronTrigger.nextExecutionTime(triggerContext);
         };
         taskRegistrar.addTriggerTask(task, trigger);
     }

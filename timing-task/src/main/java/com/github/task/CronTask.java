@@ -2,11 +2,13 @@ package com.github.task;
 
 import com.github.common.util.LogUtil;
 import com.github.order.service.OrderService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /** 定时任务 --> 示例 */
 @Component
+@RequiredArgsConstructor
 public class CronTask {
 
     /** 当前定时任务的业务说明 */
@@ -15,14 +17,11 @@ public class CronTask {
     private static final String CRON = "0/30 * * * * *";
 
     private final OrderService orderService;
-    public CronTask(OrderService orderService) {
-        this.orderService = orderService;
-    }
 
     /** 取消下单已经超过了 24 小时的订单 */
     @Scheduled(cron = CRON)
     public void cancelOrder() {
-        LogUtil.bindRecordTime();
+        LogUtil.bindBasicInfo(null);
         try {
             handlerBusiness();
         } catch (Exception e) {

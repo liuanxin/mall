@@ -23,11 +23,10 @@ public final class LogUtil {
     /** 在日志上下文中记录的请求信息: 包括 ip、url, param 等  */
     private static final String REQUEST_INFO = "requestInfo";
 
-    /** 将接收到请求的时间放进日志上下文 */
-    public static void bindRecordTime() {
-        // 生成跟踪号放进日志上下文
+    /** 将 跟踪号 和 接收到请求的时间 放进日志上下文 */
+    public static void bindBasicInfo(String traceId) {
         if (U.isBlank(MDC.get(TRACE_ID))) {
-            MDC.put(TRACE_ID, " " + U.generateTraceId());
+            MDC.put(TRACE_ID, " " + (U.isBlank(traceId) ? U.generateTraceId() : traceId));
         }
         if (U.isBlank(MDC.get(START_TIME))) {
             MDC.put(START_TIME, U.toStr(System.currentTimeMillis()));
@@ -38,8 +37,8 @@ public final class LogUtil {
         return U.isBlank(MDC.get(REQUEST_INFO));
     }
     /** 将 请求上下文信息 放进日志上下文 */
-    public static void bindContext(RequestLogContext logContextInfo) {
-        bindRecordTime();
+    public static void bindContext(String traceId, RequestLogContext logContextInfo) {
+        bindBasicInfo(traceId);
         MDC.put(REQUEST_INFO, logContextInfo.requestInfo());
     }
 

@@ -1,5 +1,6 @@
 package com.github.config;
 
+import com.github.common.Const;
 import com.github.common.annotation.NotNeedLogin;
 import com.github.common.annotation.NotNeedPermission;
 import com.github.common.util.LogUtil;
@@ -16,16 +17,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.lang.annotation.Annotation;
 import java.util.List;
 
+@SuppressWarnings("NullableProblems")
 public class ManagerInterceptor implements HandlerInterceptor {
 
     private static final List<String> LET_IT_GO = Lists.newArrayList(
             "/error", "/api/project", "/api/info", "/api/example/*"
     );
-
-    private boolean online;
-    public ManagerInterceptor(boolean online) {
-        this.online = online;
-    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
@@ -52,20 +49,16 @@ public class ManagerInterceptor implements HandlerInterceptor {
     }
 
     private void bindParam() {
-        // 打印日志上下文中的数据
-        LogUtil.bindContext(RequestUtils.logContextInfo().setUser(ManagerSessionUtil.getUserInfo()));
+        String traceId = RequestUtils.getCookieValue(Const.TRACE);
+        LogUtil.bindContext(traceId, RequestUtils.logContextInfo().setUser(ManagerSessionUtil.getUserInfo()));
     }
 
     private void unbindParam() {
-        // 删除打印日志上下文中的数据
         LogUtil.unbind();
     }
 
     /** 检查登录及权限 */
     private void checkLoginAndPermission(Object handler) {
-        if (!online) {
-            return;
-        }
         String uri = RequestUtils.getRequest().getRequestURI();
         for (String letItGo : LET_IT_GO) {
             if (letItGo.equals(uri)) {
