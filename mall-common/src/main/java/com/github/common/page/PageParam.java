@@ -42,12 +42,12 @@ public class PageParam implements Serializable {
     /** 分页默认的每页条数 */
     private static final int DEFAULT_LIMIT = 10;
     /** 最大分页条数 */
-    private static final int MAX_LIMIT = 1000;
+    private static final int MAX_LIMIT = 500;
 
-    @ApiParam("当前页数. 不传或传入 <= 0 的数 或 非数字 则默认是 " + DEFAULT_PAGE_NO)
+    @ApiParam("当前页数. 不传 或 传入负数 或 传入非数字 则默认是 " + DEFAULT_PAGE_NO)
     private int page;
 
-    @ApiParam("每页条数. 不传或传入 <= 0 的数 或 非数字 或 > " + MAX_LIMIT + " 则默认是 " + DEFAULT_LIMIT)
+    @ApiParam("每页条数. 不传 或 传入负数 或 传入非数字 或 传入大于 " + MAX_LIMIT + " 的数则默认是 " + DEFAULT_LIMIT)
     private int limit;
 
     @ApiParam("使用 es 查询时会返回此值, 请求下一页(仅下一页, 不能跳页, 也不能上一页)时这个如果有值, 带上即可")
