@@ -3,8 +3,10 @@ package com.github.global.config;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
+import com.github.common.util.U;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
+import lombok.AllArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpHeaders;
@@ -22,6 +24,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
 @SuppressWarnings("NullableProblems")
+@AllArgsConstructor
 @ConditionalOnClass({ HttpServletRequest.class, RequestBody.class })
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
 public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
@@ -55,13 +58,12 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
     /** 注意上下两处都是 new, 在上下文处理的地方用字节再生成新流, 上面的新流返回给请求上下文, 如果提取成变量是有问题的 */
     private void handleRequestBody(byte[] bytes) {
         if (A.isNotEmpty(bytes)) {
-            try (
-                    InputStream input = new ByteArrayInputStream(bytes);
-                    Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)
-            ) {
-                String requestBody = CharStreams.toString(reader);
-                // 去除空白符后放到日志上下文
-                LogUtil.bindRequestBody(JsonUtil.toJson(JsonUtil.toObjectNil(requestBody, Object.class)));
+            try (Reader reader = new InputStreamReader(new ByteArrayInputStream(bytes), StandardCharsets.UTF_8)) {
+                String json = CharStreams.toString(reader);
+                if (U.isNotBlank(json)) {
+                    // 拿 json 转成对象, 再序列化, 去除空白符后再放到日志上下文
+                    LogUtil.bindRequestBody(JsonUtil.toJson(JsonUtil.toObjectNil(json, Object.class)));
+                }
             } catch (Exception e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                     LogUtil.ROOT_LOG.error("bind @RequestBody bytes to log-context exception", e);
