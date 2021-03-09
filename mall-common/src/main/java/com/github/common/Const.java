@@ -57,6 +57,6 @@ public final class Const {
     /** pc 端放在 cookie 中的跟踪号的续时时间, 当过期时间小于这个值时就重新设置过期时间 */
     public static final int TRACE_EXTEND_SECOND = 5 * 60;
 
-    /** cors 支持的所有方法 */
-    public static final String[] SUPPORT_METHODS = new String[] { "HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS" };
+    /** @see org.springframework.http.HttpMethod */
+    public static final String[] SUPPORT_METHODS = new String[] { "GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE" };
 }

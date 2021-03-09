@@ -12,68 +12,56 @@ import java.io.IOException;
 /** 处理跨域 */
 public class CorsFilter implements Filter {
 
-    /** @see org.springframework.http.HttpHeaders */
     private static final String ORIGIN = "Origin";
-    private static final String ACCESS_CONTROL_ALLOW_CREDENTIALS = "Access-Control-Allow-Credentials";
-    private static final String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
-    private static final String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
+    private static final String CREDENTIALS = "true";
+    private static final String METHODS = A.toStr(Const.SUPPORT_METHODS);
+    // 如果有自定义头也都加进去, 避免用 *
+    private static final String HEADERS = "Accept, Accept-Encoding, Accept-Language, Cache-Control, " +
+            "Connection, Cookie, DNT, Host, User-Agent, Content-Type, Authorization, " +
+            "X-Requested-With, Origin, Access-Control-Request-headers";
+
+    /** @see org.springframework.http.HttpHeaders */
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+    private static final String ACCESS_CONTROL_ALLOW_CREDENTIALS = "Access-Control-Allow-Credentials";
+    private static final String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
+    private static final String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
 
     // /** for ie: https://www.lovelucy.info/ie-accept-third-party-cookie.html */
     // private static final String P3P = "P3P";
-
-    private void handlerCors(HttpServletRequest request, HttpServletResponse response) {
-        String origin = request.getHeader(ORIGIN);
-        String domain = getDomain(request);
-
-        if (U.isNotBlank(origin) && !origin.equals(domain)) {
-            if (U.isBlank(response.getHeader(ACCESS_CONTROL_ALLOW_ORIGIN))) {
-                response.addHeader(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
-            }
-            if (U.isBlank(response.getHeader(ACCESS_CONTROL_ALLOW_CREDENTIALS))) {
-                response.addHeader(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
-            }
-            if (U.isBlank(response.getHeader(ACCESS_CONTROL_ALLOW_METHODS))) {
-                response.addHeader(ACCESS_CONTROL_ALLOW_METHODS, A.toStr(Const.SUPPORT_METHODS));
-            }
-            if (U.isBlank(response.getHeader(ACCESS_CONTROL_ALLOW_HEADERS))) {
-                // 如果有自定义头, 附加进去, 避免用 *
-                response.addHeader(ACCESS_CONTROL_ALLOW_HEADERS,
-                        "Accept, Accept-Encoding, Accept-Language, Cache-Control, " +
-                                "Connection, Cookie, DNT, Host, User-Agent, Content-Type, Authorization, " +
-                                "X-Requested-With, Origin, Access-Control-Request-headers");
-            }
-            /*
-            if (RequestUtils.isIeRequest() && U.isBlank(response.getHeader(P3P))) {
-                response.addHeader(P3P, "CP='CAO IDC DSP COR ADM DEVi TAIi PSA PSD IVAi IVDi CONi HIS OUR IND CNT'");
-            }
-            */
-        }
-    }
-    private String getDomain(HttpServletRequest request) {
-        StringBuilder domain = new StringBuilder();
-
-        String scheme = request.getScheme();
-        int port = request.getServerPort();
-        boolean http = ("http".equals(scheme) && port != 80);
-        boolean https = ("https".equals(scheme) && port != 443);
-
-        domain.append(scheme).append("://").append(request.getServerName());
-        if (http || https) {
-            domain.append(':');
-            domain.append(port);
-        }
-        return domain.toString();
-    }
+    // private static final String IEP3P = "CP='CAO IDC DSP COR ADM DEVi TAIi PSA PSD IVAi IVDi CONi HIS OUR IND CNT'";
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
             throws IOException, ServletException {
-        handlerCors((HttpServletRequest) request, (HttpServletResponse) response);
+        HttpServletRequest request = (HttpServletRequest) req;
+        HttpServletResponse response = (HttpServletResponse) res;
+
+        String origin = request.getHeader(ORIGIN);
+        if (U.isNotBlank(origin)) {
+            String scheme = request.getScheme();
+            int port = request.getServerPort();
+            StringBuilder requestDomain = new StringBuilder();
+            requestDomain.append(scheme).append("://").append(request.getServerName());
+            if (("http".equals(scheme) && port != 80) || ("https".equals(scheme) && port != 443)) {
+                requestDomain.append(':');
+                requestDomain.append(port);
+            }
+            if (!origin.equals(requestDomain.toString())) {
+                response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+                response.setHeader(ACCESS_CONTROL_ALLOW_CREDENTIALS, CREDENTIALS);
+                response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, METHODS);
+                response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS, HEADERS);
+                /*
+                if (RequestUtils.isIeRequest() && U.isBlank(response.getHeader(P3P))) {
+                    response.addHeader(P3P, IEP3P);
+                }
+                */
+            }
+        }
         chain.doFilter(request, response);
     }
 
