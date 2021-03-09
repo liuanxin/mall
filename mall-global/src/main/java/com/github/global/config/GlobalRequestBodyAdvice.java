@@ -42,7 +42,7 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
                 }
                 @Override
                 public InputStream getBody() throws IOException {
-                    // Http Request 的 inputStream 有一个特性是读取过之后再操作就会异常, 且 jdk 没有 stream.clone(), 因此像下面这样处理
+                    // Http Request 的 inputStream 读取过后再读取就会异常, 所以这样操作(两处都 new ByteArrayInputStream)
                     byte[] bytes = ByteStreams.toByteArray(inputMessage.getBody());
                     handleRequestBody(bytes);
                     return new ByteArrayInputStream(bytes);
