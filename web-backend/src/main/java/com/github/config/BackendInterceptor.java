@@ -45,6 +45,9 @@ public class BackendInterceptor implements HandlerInterceptor {
 
     private void bindParam() {
         String traceId = RequestUtils.getCookieValue(Const.TRACE);
+        if (U.isBlank(traceId)) {
+            traceId = RequestUtils.getHeaderOrParam(Const.TRACE);
+        }
         LogUtil.bindContext(traceId, RequestUtils.logContextInfo().setUser(BackendSessionUtil.getUserInfo()));
     }
 

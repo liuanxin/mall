@@ -25,11 +25,11 @@ public final class LogUtil {
 
     /** 将 跟踪号 和 接收到请求的时间 放进日志上下文 */
     public static void bindBasicInfo(String traceId) {
-        if (U.isBlank(MDC.get(TRACE_ID))) {
-            MDC.put(TRACE_ID, " " + (U.isBlank(traceId) ? U.generateTraceId() : traceId));
-        }
         if (U.isBlank(MDC.get(START_TIME))) {
             MDC.put(START_TIME, U.toStr(System.currentTimeMillis()));
+        }
+        if (U.isBlank(MDC.get(TRACE_ID))) {
+            MDC.put(TRACE_ID, " " + (U.isBlank(traceId) ? U.generateTraceId() : traceId));
         }
     }
     /** 日志上下文中没有 请求上下文信息 则返回 true */
@@ -58,6 +58,9 @@ public final class LogUtil {
 
     public static long getStartTimeMillis() {
         return U.toLong(MDC.get(START_TIME));
+    }
+    public static String getTraceId() {
+        return MDC.get(TRACE_ID);
     }
 
 

@@ -70,7 +70,11 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
                 boolean notRequestInfo = LogUtil.hasNotRequestInfo();
                 try {
                     if (notRequestInfo) {
-                        LogUtil.bindContext(RequestUtils.getCookieValue(Const.TRACE), RequestUtils.logContextInfo());
+                        String traceId = RequestUtils.getCookieValue(Const.TRACE);
+                        if (U.isBlank(traceId)) {
+                            traceId = RequestUtils.getHeaderOrParam(Const.TRACE);
+                        }
+                        LogUtil.bindContext(traceId, RequestUtils.logContextInfo());
                     }
 
                     Class<?> clazz = parameter.getContainingClass();

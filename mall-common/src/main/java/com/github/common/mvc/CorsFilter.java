@@ -18,7 +18,7 @@ public class CorsFilter implements Filter {
     // 如果有自定义头也都加进去, 避免用 *
     private static final String HEADERS = "Accept, Accept-Encoding, Accept-Language, Cache-Control, " +
             "Connection, Cookie, DNT, Host, User-Agent, Content-Type, Authorization, " +
-            "X-Requested-With, Origin, Access-Control-Request-headers";
+            "X-Requested-With, Origin, Access-Control-Request-headers, " + Const.TOKEN;
 
     /** @see org.springframework.http.HttpHeaders */
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";

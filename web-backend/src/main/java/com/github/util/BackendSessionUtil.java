@@ -1,6 +1,5 @@
 package com.github.util;
 
-import com.github.common.Const;
 import com.github.common.exception.NotLoginException;
 import com.github.common.json.JsonUtil;
 import com.github.common.mvc.AppTokenHandler;
@@ -47,11 +46,6 @@ public class BackendSessionUtil {
             }
         }
         return U.EMPTY;
-    }
-
-    /** 获取跟踪号, 也可以在 controller 的方法参数上用 @CookieValue(Const.TRACE) 来获取 */
-    public static String getTrace() {
-        return RequestUtils.getCookieValue(Const.TRACE);
     }
 
     /** 获取用户信息. 没有则使用默认信息 */

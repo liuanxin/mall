@@ -1,5 +1,6 @@
 package com.github.common.http;
 
+import com.github.common.Const;
 import com.github.common.date.DateUtil;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
@@ -328,6 +329,11 @@ public class HttpClientUtil {
     }
     /** 发起 http 请求 */
     private static String handleRequest(HttpRequestBase request, String params) {
+        String traceId = LogUtil.getTraceId();
+        if (U.isNotBlank(traceId)) {
+            request.addHeader(Const.TRACE, traceId);
+        }
+        request.addHeader("Content-Type", "application/json");
         String method = request.getMethod();
         String url = request.getURI().toString();
 
