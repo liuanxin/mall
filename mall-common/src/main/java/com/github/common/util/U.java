@@ -799,7 +799,11 @@ public final class U {
         if (data instanceof Map) {
             value = ((Map) data).get(split[0]);
         } else {
+            // try {
+            // value = new PropertyDescriptor(field, data.getClass()).getReadMethod().invoke(data);
+            // } catch (Exception e) {
             value = getMethod(data, fieldToMethod(split[0]));
+            // }
         }
 
         if (isBlank(value)) {
@@ -900,6 +904,7 @@ public final class U {
     }
 
     /** 调用对象的公有方法. 异常将被忽略并返回 null */
+    @SuppressWarnings("JavaReflectionInvocation")
     public static Object getMethod(Object obj, String method, Object... param) {
         if (isNotBlank(method)) {
             try {
