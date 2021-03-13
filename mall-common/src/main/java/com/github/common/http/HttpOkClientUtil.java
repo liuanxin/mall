@@ -1,5 +1,6 @@
 package com.github.common.http;
 
+import com.github.common.Const;
 import com.github.common.date.DateUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
@@ -219,6 +220,10 @@ public class HttpOkClientUtil {
     }
 
     private static Request wrapperRequest(Request.Builder builder, String url) {
+        String traceId = LogUtil.getTraceId();
+        if (U.isNotBlank(traceId)) {
+            builder.addHeader(Const.TRACE, traceId);
+        }
         return builder.header("User-Agent", USER_AGENT).url(url).build();
     }
 
