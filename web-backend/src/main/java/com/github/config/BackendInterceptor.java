@@ -21,7 +21,6 @@ public class BackendInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
                              Object handler) throws Exception {
-        RequestUtils.addHttpOnlyCookie(Const.TRACE, U.uuid(), Const.TRACE_EXPIRY_SECOND, Const.TRACE_EXTEND_SECOND);
         bindParam();
         checkLoginAndPermission(handler);
         return true;
