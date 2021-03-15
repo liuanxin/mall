@@ -115,7 +115,7 @@ public final class FileExport {
     /**
      * 导出 excel 文件(多 sheet), 文件将保存到指定目录
      *
-     * @param type 文件类型: xls03、xls07, 默认是 xls07
+     * @param type 文件类型: xls03、xls07, 默认是 xlsx
      * @param name 导出时的文件名
      * @param titleMap 标题(key 为 sheet 名, value 为每个 sheet 的标题头数据)
      * @param dataList key 为 sheet 名, value 为每个 sheet 导出的数据(数据中的字段名 与 标题头数据 对应)
@@ -140,7 +140,7 @@ public final class FileExport {
     /**
      * 导出 excel 文件(多 sheet), 文件将保存到指定目录
      *
-     * @param type 文件类型: xls03、xls07, 默认是 xls07
+     * @param type 文件类型: XLS, XLSX, CSV    分别表示 03 07 格式的文件, 默认是 xlsx
      * @param name 导出时的文件名
      * @param titleMap 标题(key 为 sheet 名, value 为每个 sheet 的标题头数据)
      * @param dataList key 为 sheet 名, value 为每个 sheet 导出的数据(数据中的字段名 与 标题头数据 对应)
