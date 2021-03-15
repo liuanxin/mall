@@ -136,8 +136,7 @@ public class ExportEasyExcel {
         int sheetMaxRow = getMaxRow(excel07) - 1;
         ExcelWriter excelWriter = null;
         try {
-            ExcelTypeEnum excelType = excel07 ? ExcelTypeEnum.XLSX : ExcelTypeEnum.XLS;
-            excelWriter = EasyExcel.write(outputStream).excelType(excelType).build();
+            excelWriter = EasyExcel.write(outputStream).excelType(excel07 ? ExcelTypeEnum.XLSX : ExcelTypeEnum.XLS).build();
 
             List<Map<String, ?>> dataList = Lists.newArrayList();
             for (Map.Entry<String, LinkedHashMap<String, String>> entry : titleMap.entrySet()) {
