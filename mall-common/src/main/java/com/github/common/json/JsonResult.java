@@ -14,9 +14,9 @@ import java.util.List;
 @NoArgsConstructor
 public class JsonResult<T> {
 
-    // 只有响应编码就可以了, 当前实体表示处理成功后的返回. 说明: 这里是有争议的, 确定后使用一种即可
-    // 如果确定后给所有的接口都返回了 200, 在接口内返回 code
-    //  则将下面 和 最下面 public static <T> JsonResult<T> 段解开, 使用 GlobalException2, 去掉 GlobalException
+    // 1. status 返回 200 400 404 500 码, 实体返回 msg
+    // 2. status 全部返回 200, 实体里面返回 json, json 中返回 200 400 500 这些码
+    // 使用上面哪一种方式? 这里是有争议的, 如果使用前者, 需要将下面的 JsonCode code 注起来并使用 GlobalException2, 去掉 GlobalException
     @ApiReturn("返回码")
     private JsonCode code;
 
