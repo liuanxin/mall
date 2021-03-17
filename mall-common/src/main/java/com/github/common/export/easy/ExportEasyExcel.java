@@ -9,7 +9,6 @@ import com.github.common.util.A;
 import com.github.common.util.U;
 import org.apache.commons.compress.utils.Lists;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -42,7 +41,7 @@ public class ExportEasyExcel {
      * @param sheetName sheet 名
      * @param dataList 这个 sheet 的数据, 在具体的字段上标 {@link com.alibaba.excel.annotation.ExcelProperty } 注解
      */
-    public static void handle(boolean excel07, String sheetName, List<?> dataList, OutputStream outputStream) throws IOException {
+    public static void handle(boolean excel07, String sheetName, List<?> dataList, OutputStream outputStream) {
         // 每个 sheet 的最大行, 标题头也是一行
         int sheetMaxRow = getMaxRow(excel07) - 1;
         ExcelWriter excelWriter = null;
@@ -119,7 +118,7 @@ public class ExportEasyExcel {
      * </pre>
      */
     public static void handle(boolean excel07, LinkedHashMap<String, LinkedHashMap<String, String>> titleMap,
-                              LinkedHashMap<String, List<?>> dataMap, OutputStream outputStream) throws IOException {
+                              LinkedHashMap<String, List<?>> dataMap, OutputStream outputStream) {
         // 每个 sheet 的最大列
         int maxColumn = getMaxColumn(excel07);
         for (LinkedHashMap<String, String> sheetTitleMap : titleMap.values()) {
