@@ -1,5 +1,7 @@
-package com.github.common.export;
+package com.github.common.export.csv;
 
+import com.github.common.export.FileExport;
+import com.github.common.export.WebExport;
 import com.github.common.util.A;
 import com.github.common.util.U;
 
@@ -9,7 +11,7 @@ import java.util.List;
 /** 如果想要将数据导成文件保持, 使用 {@link FileExport} 类, 如果要导出文件在 web 端下载, 使用 {@link WebExport} 类 */
 public class ExportCsv {
 
-    static String getContent(LinkedHashMap<String, String> titleMap, List<?> dataList) {
+    public static String getContent(LinkedHashMap<String, String> titleMap, List<?> dataList) {
         if (A.isNotEmpty(titleMap) && A.isNotEmpty(dataList)) {
             // csv 用英文逗号(,)隔开列, 用换行(\n)隔开行, 内容中包含了逗号的需要用双引号包裹, 若内容中包含了双引号则需要用两个双引号表示.
             StringBuilder sbd = new StringBuilder();
