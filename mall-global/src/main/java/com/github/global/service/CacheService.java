@@ -122,6 +122,8 @@ public class CacheService {
                 try {
                     TimeUnit.MILLISECONDS.sleep(sleep);
                 } catch (InterruptedException ignore) {
+                    // noinspection ResultOfMethodCallIgnored
+                    Thread.interrupted();
                 }
             }
         }
