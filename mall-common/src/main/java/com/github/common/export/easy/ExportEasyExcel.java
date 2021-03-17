@@ -43,9 +43,6 @@ public class ExportEasyExcel {
      * @param dataList 这个 sheet 的数据, 在具体的字段上标 {@link com.alibaba.excel.annotation.ExcelProperty } 注解
      */
     public static void handle(boolean excel07, String sheetName, List<?> dataList, OutputStream outputStream) throws IOException {
-        if (A.isEmpty(dataList)) {
-            throw new RuntimeException("");
-        }
         // 每个 sheet 的最大行, 标题头也是一行
         int sheetMaxRow = getMaxRow(excel07) - 1;
         ExcelWriter excelWriter = null;
