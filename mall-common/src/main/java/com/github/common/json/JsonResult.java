@@ -14,9 +14,10 @@ import java.util.List;
 @NoArgsConstructor
 public class JsonResult<T> {
 
-    // 1. status 返回 200 400 404 500 码, 实体返回 msg
-    // 2. status 全部返回 200, 实体里面返回 json, json 中返回 200 400 500 这些码
-    // 使用上面哪一种方式? 这里是有争议的, 如果使用前者, 需要将下面的 JsonCode code 注起来并使用 GlobalException2, 去掉 GlobalException
+    // 1. status 返回 200 400 404 500 码, 200 时返回 json, 非 200 时返回 msg
+    // 2. status 全部返回 200, 返回 json 里的 code 使用 200 400 500 这些码
+    // 使用上面哪一种方式? 这里是有争议的, 如果使用前者则需要将 JsonCode code 注起来,
+    // 并使用 GlobalException2, 去掉 GlobalException
     @ApiReturn("返回码")
     private JsonCode code;
 

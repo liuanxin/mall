@@ -1,5 +1,6 @@
 //package com.github.global.config;
 //
+//import com.github.common.Const;
 //import com.github.common.exception.*;
 //import com.github.common.json.JsonCode;
 //import com.github.common.json.JsonResult;
@@ -140,11 +141,20 @@
 //    private void bindAndPrintLog(String msg, Exception e) {
 //        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
 //            // 当没有进到全局拦截器就抛出的异常, 需要这么处理才能在日志中输出整个上下文信息
-//            LogUtil.bind(RequestUtils.logContextInfo());
+//            boolean notRequestInfo = LogUtil.hasNotRequestInfo();
 //            try {
+//                if (notRequestInfo) {
+//                    String traceId = RequestUtils.getCookieValue(Const.TRACE);
+//                    if (U.isBlank(traceId)) {
+//                        traceId = RequestUtils.getHeaderOrParam(Const.TRACE);
+//                    }
+//                    LogUtil.bindContext(traceId, RequestUtils.logContextInfo());
+//                }
 //                LogUtil.ROOT_LOG.debug(msg, e);
 //            } finally {
-//                LogUtil.unbind();
+//                if (notRequestInfo) {
+//                    LogUtil.unbind();
+//                }
 //            }
 //        }
 //    }
