@@ -130,8 +130,11 @@ public final class FileExport {
                 OutputStream output = new FileOutputStream(U.addSuffix(directory) + fileName);
                 Workbook workbook = ExportExcel.handle(excel07, titleMap, dataList);
         ) {
-            workbook.write(output);
-            ExportExcel.dispose(workbook);
+            try {
+                workbook.write(output);
+            } finally {
+                ExportExcel.dispose(workbook);
+            }
         } catch (IOException e) {
             throw new RuntimeException(String.format("保存文件(%s)到(%s)时异常", fileName, directory), e);
         }

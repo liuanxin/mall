@@ -147,8 +147,11 @@ public final class WebExport {
         typeAndHeader(response, "application/vnd.ms-excel", fileName);
 
         try (Workbook workbook = ExportExcel.handle(excel07, titleMap, dataList)) {
-            workbook.write(response.getOutputStream());
-            ExportExcel.dispose(workbook);
+            try {
+                workbook.write(response.getOutputStream());
+            } finally {
+                ExportExcel.dispose(workbook);
+            }
         }
     }
 
