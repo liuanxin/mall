@@ -144,7 +144,10 @@ public class ExportExcel {
                         // 标题列
                         cell = row.createCell(cellIndex);
                         cell.setCellStyle(headStyle);
-                        cell.setCellValue(U.getNil(titleMapEntry.getValue().split("\\|")[0]));
+
+                        String title = U.getNil(titleMapEntry.getValue().split("\\|")[0]);
+                        cell.setCellValue(title);
+                        setWidthAndHeight(cell, title);
                         cellIndex++;
                     }
                     // 冻结标题
@@ -181,13 +184,12 @@ public class ExportExcel {
                                     }
                                     cell.setCellStyle(cellStyle);
 
-                                    // 设置宽度: 左移 8 相当于 * 256
-                                    sheet.setColumnWidth(cellIndex, U.toLen(cellData) << 8);
                                     if (isNumber) {
                                         cell.setCellValue(U.toDouble(cellData));
                                     } else {
                                         cell.setCellValue(cellData);
                                     }
+                                    setWidthAndHeight(cell, cellData);
                                     cellIndex++;
                                 }
                             }
@@ -243,6 +245,37 @@ public class ExportExcel {
         String indexSuffix = (sheetCount > 1) ? (" - " + (sheetIndex + 1)) : U.EMPTY;
         int nameLen = 31 - indexSuffix.length();
         return (tmp.length() > nameLen) ? (tmp.substring(0, nameLen) + indexSuffix) : tmp;
+    }
+
+    /** 设置列的宽和高 */
+    private static void setWidthAndHeight(Cell cell, String data) {
+        if (data != null && data.trim().length() > 0) {
+            // 内容里面有换行则宽度以最长的行为主, 行高以行数为主
+            int maxWidth = 0;
+            String[] lines = data.split("\n");
+            for (String s : lines) {
+                // 列宽: 从内容来确定, 中文为 2 个长度, 左移 8 相当于 * 256
+                int lineWidth = (U.toLen(s) + 4) << 8;
+                if (lineWidth > maxWidth) {
+                    maxWidth = lineWidth;
+                }
+            }
+            int lineNum = lines.length;
+
+            Sheet sheet = cell.getSheet();
+            int columnIndex = cell.getColumnIndex();
+            int currentWidth = sheet.getColumnWidth(columnIndex);
+            if (maxWidth > currentWidth) {
+                sheet.setColumnWidth(columnIndex, maxWidth);
+            }
+
+            if (lineNum > 1) {
+                // 设置为内容换行, 不然显示依然是在一行的, 需要在内容上编辑一下才会显示换行效果
+                cell.getCellStyle().setWrapText(true);
+                Row row = cell.getRow();
+                row.setHeightInPoints(row.getHeightInPoints() * lineNum);
+            }
+        }
     }
 
     /** 头样式 */
