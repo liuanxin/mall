@@ -85,18 +85,17 @@ public class DateUtil {
     public static Date parse(String source, DateFormatType type) {
         if (U.isNotBlank(source)) {
             source = source.trim();
-            try {
-                Date date;
-                if (type.isCst()) {
+
+            Date date;
+            if (type.isCst()) {
+                try {
                     // cst 单独处理
-                    date = new SimpleDateFormat(type.getValue(), Locale.ENGLISH).parse(source);
-                } else {
-                    date = parse(source, type.getValue());
+                    return new SimpleDateFormat(type.getValue(), Locale.ENGLISH).parse(source);
+                } catch (ParseException | IllegalArgumentException ignore) {
+                    return null;
                 }
-                if (date != null) {
-                    return date;
-                }
-            } catch (ParseException | IllegalArgumentException ignore) {
+            } else {
+                return parse(source, type.getValue());
             }
         }
         return null;
