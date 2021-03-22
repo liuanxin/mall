@@ -133,8 +133,6 @@ public class ExportEasyExcel {
         ExcelWriter excelWriter = null;
         try {
             excelWriter = EasyExcel.write(outputStream).excelType(excel07 ? ExcelTypeEnum.XLSX : ExcelTypeEnum.XLS).build();
-
-            List<Map<String, ?>> dataList = Lists.newArrayList();
             for (Map.Entry<String, LinkedHashMap<String, String>> entry : titleMap.entrySet()) {
                 String sheetName = entry.getKey();
                 LinkedHashMap<String, String> sheetTitleMap = entry.getValue();

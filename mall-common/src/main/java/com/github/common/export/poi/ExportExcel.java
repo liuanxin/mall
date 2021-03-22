@@ -68,16 +68,16 @@ public class ExportExcel {
      */
     public static Workbook handle(boolean excel07, Map<String, LinkedHashMap<String, String>> titleMap,
                            LinkedHashMap<String, List<?>> dataMap) {
-        int maxColumn = getMaxColumn(excel07);
-        int columnSize = titleMap.size();
-        if (columnSize > maxColumn) {
-            throw new RuntimeException("Invalid column number " + columnSize + ", max " + maxColumn);
-        }
-
         Workbook workbook = create(excel07);
         // 没有标题直接返回
         if (A.isEmpty(titleMap)) {
             return workbook;
+        }
+
+        int maxColumn = getMaxColumn(excel07);
+        int columnSize = titleMap.size();
+        if (columnSize > maxColumn) {
+            throw new RuntimeException("Invalid column number " + columnSize + ", max " + maxColumn);
         }
         // 如果数据为空, 构建一个空字典(确保导出的文件有标题头)
         if (dataMap == null) {
