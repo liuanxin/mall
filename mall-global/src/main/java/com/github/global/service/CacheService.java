@@ -87,7 +87,7 @@ public class CacheService {
      *
      * String key = "xxx", value = uuid(); // value 用 uuid 确保每个线程都不一样
      * int time = 3;
-     * if (tryLock(key, value, 10, TimeUnit.SECONDS, time, 10)) {
+     * if (tryLock(key, value, 10, TimeUnit.SECONDS)) {
      *   try {
      *     // 获取到锁之后的业务处理
      *   } finally {
