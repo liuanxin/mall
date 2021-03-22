@@ -79,7 +79,7 @@ public class CacheService {
      * @param value 值
      */
     public boolean tryLock(String key, String value) {
-        return tryLock(key, value, 10, TimeUnit.SECONDS, 1, 1);
+        return tryLock(key, value, 10, TimeUnit.SECONDS);
     }
     /**
      * <pre>
@@ -103,31 +103,14 @@ public class CacheService {
      * @param value 值
      * @param time 锁的超时时间
      * @param unit 锁超时的时间单位
-     * @param retryTime 重试获取锁的次数, 1 ~ 10 之间, 不在此区间则默认是 1
-     * @param sleepTime 每次重试前休眠的毫秒数, 1 ~ 1000 之间, 不在此区间则默认是 10
      * @return 返回 true 则表示获取到了锁
      */
-    public boolean tryLock(String key, String value, long time, TimeUnit unit, int retryTime, long sleepTime) {
-        int retry = (retryTime < 1 || retryTime > 10) ? 1 : retryTime;
-        long sleep = (sleepTime < 1 || sleepTime > 1000) ? 10L : sleepTime;
-
+    public boolean tryLock(String key, String value, long time, TimeUnit unit) {
         String script = "if redis.call('set', KEYS[1], KEYS[2], 'PX', KEYS[3], 'NX') then return 1 else return 0 end";
         RedisScript<Long> redisScript = new DefaultRedisScript<>(script, Long.class);
         List<Object> keys = Arrays.asList(key, value, unit.toMillis(time));
-        for (int i = 0; i < retry; i++) {
-            Long flag = redisTemplate.execute(redisScript, keys);
-            if (flag != null && flag == 1L) {
-                return true;
-            } else {
-                try {
-                    TimeUnit.MILLISECONDS.sleep(sleep);
-                } catch (InterruptedException ignore) {
-                    // noinspection ResultOfMethodCallIgnored
-                    Thread.interrupted();
-                }
-            }
-        }
-        return false;
+        Long flag = redisTemplate.execute(redisScript, keys);
+        return flag != null && flag == 1L;
     }
     /**
      * <pre>
