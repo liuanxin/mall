@@ -1,17 +1,21 @@
 package com.github.common.export.poi;
 
-import com.github.common.export.FileExport;
-import com.github.common.export.WebExport;
 import com.github.common.util.A;
 import com.github.common.util.U;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
-/** 如果想要将数据导成文件保持, 使用 {@link FileExport} 类, 如果要导出文件在 web 端下载, 使用 {@link WebExport} 类 */
+/**
+ * 如果想要将数据导成文件保持, 使用 {@link com.github.common.export.FileExport} 类
+ * 如果要导出文件在 web 端下载, 使用 {@link com.github.common.export.WebExport} 类
+ */
 @SuppressWarnings("DuplicatedCode")
 public class ExportExcel {
 
@@ -20,10 +24,6 @@ public class ExportExcel {
     /** 行字体大小 */
     private static final short FONT_SIZE = 12;
 
-    /** 标题行高 */
-    private static final short TITLE_ROW_HEIGHT = 20;
-    /** 行高 */
-    private static final short ROW_HEIGHT = 18;
     /** 多空白符的正则 */
     private static final Pattern BLANK_REGEX = Pattern.compile("\\s{2,}");
 
@@ -90,8 +90,6 @@ public class ExportExcel {
         CellStyle contentStyle = contentStyle(workbook);
         // 数字样式
         CellStyle numberStyle = numberStyle(workbook);
-        // 每个列用到的样式
-        CellStyle cellStyle;
 
         Sheet sheet;
         //  行
@@ -107,8 +105,6 @@ public class ExportExcel {
 
         // 单个列的数据
         String cellData;
-        // 标题说明|数字格式(比如金额用 0.00)~r~b|宽度(255 以内) : 中间字段的第二部分的 r 表示右对齐, b 表示粗体
-        String[] titleValues;
         // 数字格式
         DataFormat dataFormat = workbook.createDataFormat();
 
@@ -139,7 +135,6 @@ public class ExportExcel {
                     rowIndex = 0;
                     cellIndex = 0;
                     row = sheet.createRow(rowIndex);
-                    row.setHeightInPoints(TITLE_ROW_HEIGHT);
                     for (Map.Entry<String, String> titleMapEntry : titleEntry) {
                         // 标题列
                         cell = row.createCell(cellIndex);
@@ -168,25 +163,16 @@ public class ExportExcel {
                                 rowIndex++;
                                 cellIndex = 0;
                                 row = sheet.createRow(rowIndex);
-                                row.setHeightInPoints(ROW_HEIGHT);
                                 for (Map.Entry<String, String> titleMapEntry : titleEntry) {
                                     // 数据列
                                     cell = row.createCell(cellIndex);
 
                                     cellData = U.getField(data, titleMapEntry.getKey());
-                                    titleValues = titleMapEntry.getValue().split("\\|");
-
-                                    boolean isNumber = U.isNumber(cellData);
-                                    if (titleValues.length > 1) {
-                                        cellStyle = customizeStyle(workbook, titleValues[1], isNumber, dataFormat);
-                                    } else {
-                                        cellStyle = isNumber ? numberStyle : contentStyle;
-                                    }
-                                    cell.setCellStyle(cellStyle);
-
-                                    if (isNumber) {
+                                    if (U.isNumber(cellData)) {
+                                        cell.setCellStyle(numberStyle);
                                         cell.setCellValue(U.toDouble(cellData));
                                     } else {
+                                        cell.setCellStyle(contentStyle);
                                         cell.setCellValue(cellData);
                                     }
                                     setWidthAndHeight(cell, cellData);
@@ -318,60 +304,5 @@ public class ExportExcel {
         font.setFontHeightInPoints(FONT_SIZE);
         style.setFont(font);
         return style;
-    }
-
-    /**
-     * 列如果有自定义样式, 就先从 本地线程的自定义列样式缓存 中取, 有就直接返回, 没有就生成并写进缓存.
-     * 这样当一个 excel 行过多时, 相同 style 标识的自定义样式只需要生成一次, 不需要每个列都生成新的
-     */
-    private static CellStyle customizeStyle(Workbook workbook, String style, boolean isNumber, DataFormat dataFormat) {
-        Map<String, CellStyle> currentStyleMap = CUSTOMIZE_CELL_STYLE.get();
-        Map<String, CellStyle> tmpStyleMap = A.isNotEmpty(currentStyleMap) ? currentStyleMap : new HashMap<>();
-
-        CellStyle cellStyle = tmpStyleMap.get(style);
-        if (U.isNotNull(cellStyle)) {
-            return cellStyle;
-        } else {
-            // 将 "数字格式(比如金额用 0.00)~r~b" 转换成具体的样式
-            CellStyle tmpStyle = isNumber ? numberStyle(workbook) : contentStyle(workbook);
-            if (U.isNotBlank(style)) {
-                String[] format = style.split("~");
-                tmpStyle.setDataFormat(dataFormat.getFormat(format[0].trim()));
-
-                if (format.length > 1) {
-                    String lrc = format[1].trim();
-                    if (U.isNotBlank(lrc)) {
-                        Map<String, HorizontalAlignment> tmpMap = A.maps(
-                                "r", HorizontalAlignment.RIGHT,
-                                "l", HorizontalAlignment.LEFT,
-                                "c", HorizontalAlignment.CENTER
-                        );
-                        HorizontalAlignment alignment = tmpMap.get(lrc.toLowerCase());
-                        if (U.isNotBlank(alignment)) {
-                            tmpStyle.setAlignment(alignment);
-                        }
-                    }
-                }
-
-                if (format.length > 2) {
-                    String f = format[2].trim();
-                    if (U.isNotBlank(f)) {
-                        Font font = workbook.createFont();
-                        if ("b".equalsIgnoreCase(f)) {
-                            font.setBold(true);
-                        } else if ("i".equalsIgnoreCase(f)) {
-                            font.setItalic(true);
-                        } else if ("s".equalsIgnoreCase(f)) {
-                            font.setStrikeout(true);
-                        }
-                        font.setFontHeightInPoints(FONT_SIZE);
-                        tmpStyle.setFont(font);
-                    }
-                }
-                tmpStyleMap.put(style, tmpStyle);
-                CUSTOMIZE_CELL_STYLE.set(tmpStyleMap);
-            }
-            return tmpStyle;
-        }
     }
 }
