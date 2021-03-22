@@ -67,7 +67,7 @@ public class ExportExcel {
      * </pre>
      */
     public static Workbook handle(boolean excel07, Map<String, LinkedHashMap<String, String>> titleMap,
-                           LinkedHashMap<String, List<?>> dataMap) {
+                                  LinkedHashMap<String, List<?>> dataMap) {
         Workbook workbook = create(excel07);
         // 没有标题直接返回
         if (A.isEmpty(titleMap)) {
