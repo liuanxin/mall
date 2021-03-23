@@ -124,7 +124,7 @@ public final class WebExport {
      *   "商品信息": { "name": "商品名称", "image": "图片" }
      * }
      *
-     * dataMap: key 是 sheet name, value 是这个 sheet 的数据, 单条数据的字段名 跟 上面的标题映射 一一对应, 如
+     * dataMap: key 是 sheet name, value 是这个 sheet 的数据(实体 或 Map 都可), 单条数据的字段名 跟 上面的标题映射 一一对应, 如
      * {
      *   "用户信息": [ { "name": "张三", "desc": "三儿" }, { "name": "李四", "desc": "四儿" } ... ],
      *   "商品信息": [ { "name": "苹果", "image": "xxx" }, { "name": "三星", "image": "yyy" } ]
@@ -167,7 +167,7 @@ public final class WebExport {
      *   "商品信息": { "name": "商品名称", "image": "图片" }
      * }
      *
-     * dataMap: key 是 sheet name, value 是这个 sheet 的数据, 单条数据的字段名 跟 上面的标题映射 一一对应, 如
+     * dataMap: key 是 sheet name, value 是这个 sheet 的数据(实体 或 Map 都可), 单条数据的字段名 跟 上面的标题映射 一一对应, 如
      * {
      *   "用户信息": [ { "name": "张三", "desc": "三儿" }, { "name": "李四", "desc": "四儿" } ... ],
      *   "商品信息": [ { "name": "苹果", "image": "xxx" }, { "name": "三星", "image": "yyy" } ]
@@ -205,7 +205,7 @@ public final class WebExport {
      *   "商品信息": { "name": "商品名称", "image": "图片" }
      * }
      *
-     * dataMap: key 是 sheet name, value 是这个 sheet 的数据, 单条数据的字段名 跟 上面的标题映射 一一对应, 如
+     * dataMap: key 是 sheet name, value 是这个 sheet 的数据(实体 或 Map 都可), 单条数据的字段名 跟 上面的标题映射 一一对应, 如
      * {
      *   "用户信息": [ { "name": "张三", "desc": "三儿" }, { "name": "李四", "desc": "四儿" } ... ],
      *   "商品信息": [ { "name": "苹果", "image": "xxx" }, { "name": "三星", "image": "yyy" } ]
