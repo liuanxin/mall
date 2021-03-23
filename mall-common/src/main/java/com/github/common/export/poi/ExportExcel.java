@@ -58,6 +58,34 @@ public class ExportExcel {
      * | 李四    四儿    |    钱六    六儿    |    三星       yyy  |
      * |                |                   |                   |
      * | 用户信息-1      |    用户信息-2      |    商品信息        |
+     *
+     *
+     * 使用 response 直接导出:
+     * try ( Workbook workbook = ExportExcel.handle( ... ) ) {
+     *     try {
+     *         workbook.write(response.getOutputStream());
+     *     } finally {
+     *         ExportExcel.dispose(workbook);
+     *     }
+     * } catch (Exception e) {
+     *     // 导出失败...
+     * }
+     *
+     * 使用字节流:
+     * try (
+     *         ByteArrayOutputStream out = new ByteArrayOutputStream();
+     *         Workbook workbook = ExportExcel.handle( ... )
+     * ) {
+     *     try {
+     *         workbook.write(out);
+     *         byte[] bytes = out.toByteArray();
+     *         // 操作字节流, 比如上传到 oss 等...
+     *     } finally {
+     *         ExportExcel.dispose(workbook);
+     *     }
+     * } catch (Exception e) {
+     *     // 导出失败...
+     * }
      * </pre>
      */
     public static Workbook handle(boolean excel07, Map<String, LinkedHashMap<String, String>> titleMap,
@@ -192,7 +220,34 @@ public class ExportExcel {
             return new HSSFWorkbook();
         }
     }
-    /** 清除临时文件 */
+    /**
+     * <pre>
+     * 清除临时文件
+     *
+     * 使用 response 直接导出:
+     * try ( Workbook workbook = ExportExcel.handle( ... ) ) {
+     *     try {
+     *         workbook.write(response.getOutputStream());
+     *     } finally {
+     *         ExportExcel.dispose(workbook);
+     *     }
+     * }
+     *
+     * 使用字节流:
+     * try (
+     *         ByteArrayOutputStream out = new ByteArrayOutputStream();
+     *         Workbook workbook = ExportExcel.handle( ... )
+     * ) {
+     *     try {
+     *         workbook.write(out);
+     *         byte[] bytes = out.toByteArray();
+     *         // 操作字节流, 比如上传到 oss 等...
+     *     } finally {
+     *         ExportExcel.dispose(workbook);
+     *     }
+     * }
+     * </pre>
+     */
     public static void dispose(Workbook workbook) {
         if (U.isNotNull(workbook) && workbook instanceof SXSSFWorkbook) {
             ((SXSSFWorkbook) workbook).dispose();
