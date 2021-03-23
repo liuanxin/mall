@@ -10,7 +10,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  * 如果想要将数据导成文件保持, 使用 {@link com.github.common.export.FileExport} 类
@@ -24,17 +23,12 @@ public class ExportExcel {
     /** 行字体大小 */
     private static final short FONT_SIZE = 12;
 
-    /** 多空白符的正则 */
-    private static final Pattern BLANK_REGEX = Pattern.compile("\\s{2,}");
-
-    /** 本地线程中缓存的自定义列样式 */
-    private static final ThreadLocal<Map<String, CellStyle>> CUSTOMIZE_CELL_STYLE = new ThreadLocal<>();
-
     private static int getMaxColumn(boolean excel07) {
         return excel07 ? 16384 : 256;
     }
-    // 2003(xls)  单个 sheet 最多只能有   65536 行   256 列
-    // 2007(xlsx) 及以上的版本最多只能有 1048576 行 16384 列
+    // 单 sheet:
+    //   2003(xls)       最多只能有    65,536 行     256 列
+    //   2007(xlsx) 及以上最多只能有 1,048,576 行 16,384 列
     private static int getMaxRow(boolean excel07) {
         return excel07 ? 1048576 : 65535;
     }
@@ -110,82 +104,77 @@ public class ExportExcel {
 
         // 每个 sheet 的最大行, 标题头也是一行
         int sheetMaxRow = getMaxRow(excel07) - 1;
-        try {
-            for (Map.Entry<String, List<?>> entry : dataMap.entrySet()) {
-                String sheetName = entry.getKey();
-                // 标题头, 这里跟数据中的属性相对应
-                Set<Map.Entry<String, String>> titleEntry = titleMap.get(sheetName).entrySet();
+        for (Map.Entry<String, List<?>> entry : dataMap.entrySet()) {
+            String sheetName = entry.getKey();
+            // 标题头, 这里跟数据中的属性相对应
+            Set<Map.Entry<String, String>> titleEntry = titleMap.get(sheetName).entrySet();
 
-                // 当前 sheet 的数据
-                dataList = entry.getValue();
-                size = A.isEmpty(dataList) ? 0 : dataList.size();
+            // 当前 sheet 的数据
+            dataList = entry.getValue();
+            size = A.isEmpty(dataList) ? 0 : dataList.size();
 
-                // 一个 sheet 数据过多 excel 处理会出错, 分多个 sheet
-                sheetCount = (size % sheetMaxRow == 0) ? (size / sheetMaxRow) : (size / sheetMaxRow + 1);
-                if (sheetCount == 0) {
-                    // 如果没有记录时也至少构建一个(确保导出的文件有标题头)
-                    sheetCount = 1;
+            // 一个 sheet 数据过多 excel 处理会出错, 分多个 sheet
+            sheetCount = (size % sheetMaxRow == 0) ? (size / sheetMaxRow) : (size / sheetMaxRow + 1);
+            if (sheetCount == 0) {
+                // 如果没有记录时也至少构建一个(确保导出的文件有标题头)
+                sheetCount = 1;
+            }
+
+            for (int i = 0; i < sheetCount; i++) {
+                // 构建 sheet
+                sheet = workbook.createSheet(handleSheetName(sheetName, sheetCount, i));
+
+                // 每个 sheet 的标题行
+                rowIndex = 0;
+                cellIndex = 0;
+                row = sheet.createRow(rowIndex);
+                for (Map.Entry<String, String> titleMapEntry : titleEntry) {
+                    // 标题列
+                    cell = row.createCell(cellIndex);
+                    cell.setCellStyle(headStyle);
+
+                    String title = U.getNil(titleMapEntry.getValue().split("\\|")[0]);
+                    cell.setCellValue(title);
+                    setWidthAndHeight(cell, title);
+                    cellIndex++;
                 }
+                // 冻结标题
+                sheet.createFreezePane(0, 1, 0, 1);
 
-                for (int i = 0; i < sheetCount; i++) {
-                    // 构建 sheet
-                    sheet = workbook.createSheet(handleSheetName(sheetName, sheetCount, i));
-
-                    // 每个 sheet 的标题行
-                    rowIndex = 0;
-                    cellIndex = 0;
-                    row = sheet.createRow(rowIndex);
-                    for (Map.Entry<String, String> titleMapEntry : titleEntry) {
-                        // 标题列
-                        cell = row.createCell(cellIndex);
-                        cell.setCellStyle(headStyle);
-
-                        String title = U.getNil(titleMapEntry.getValue().split("\\|")[0]);
-                        cell.setCellValue(title);
-                        setWidthAndHeight(cell, title);
-                        cellIndex++;
+                if (size > 0) {
+                    if (sheetCount > 1) {
+                        fromIndex = sheetMaxRow * i;
+                        toIndex = (i + 1 == sheetCount) ? size : (fromIndex + sheetMaxRow);
+                    } else {
+                        fromIndex = 0;
+                        toIndex = size;
                     }
-                    // 冻结标题
-                    sheet.createFreezePane(0, 1, 0, 1);
+                    for (int j = fromIndex; j < toIndex; j++) {
+                        // 每个 sheet 除标题行以外的数据
+                        Object data = dataList.get(j);
+                        if (data != null) {
+                            rowIndex++;
+                            cellIndex = 0;
+                            row = sheet.createRow(rowIndex);
+                            for (Map.Entry<String, String> titleMapEntry : titleEntry) {
+                                // 数据列
+                                cell = row.createCell(cellIndex);
 
-                    if (size > 0) {
-                        if (sheetCount > 1) {
-                            fromIndex = sheetMaxRow * i;
-                            toIndex = (i + 1 == sheetCount) ? size : (fromIndex + sheetMaxRow);
-                        } else {
-                            fromIndex = 0;
-                            toIndex = size;
-                        }
-                        for (int j = fromIndex; j < toIndex; j++) {
-                            // 每个 sheet 除标题行以外的数据
-                            Object data = dataList.get(j);
-                            if (data != null) {
-                                rowIndex++;
-                                cellIndex = 0;
-                                row = sheet.createRow(rowIndex);
-                                for (Map.Entry<String, String> titleMapEntry : titleEntry) {
-                                    // 数据列
-                                    cell = row.createCell(cellIndex);
-
-                                    cellData = U.getField(data, titleMapEntry.getKey());
-                                    if (U.isNumber(cellData)) {
-                                        cell.setCellStyle(numberStyle);
-                                        cell.setCellValue(U.toDouble(cellData));
-                                    } else {
-                                        cell.setCellStyle(contentStyle);
-                                        cell.setCellValue(cellData);
-                                    }
-                                    setWidthAndHeight(cell, cellData);
-                                    cellIndex++;
+                                cellData = U.getField(data, titleMapEntry.getKey());
+                                if (U.isNumber(cellData)) {
+                                    cell.setCellStyle(numberStyle);
+                                    cell.setCellValue(U.toDouble(cellData));
+                                } else {
+                                    cell.setCellStyle(contentStyle);
+                                    cell.setCellValue(cellData);
                                 }
+                                setWidthAndHeight(cell, cellData);
+                                cellIndex++;
                             }
                         }
                     }
                 }
             }
-        } finally {
-            // 把本地线程中缓存的自定义列样式清空
-            CUSTOMIZE_CELL_STYLE.remove();
         }
         return workbook;
     }
@@ -227,7 +216,7 @@ public class ExportExcel {
         if (tmpSn.endsWith("'")) {
             tmpSn = tmpSn.substring(0, tmpSn.length() - 1);
         }
-        String tmp = BLANK_REGEX.matcher(tmpSn).replaceAll(" ");
+        String tmp = tmpSn.replaceAll("\\s{2,}", " ");
         String indexSuffix = (sheetCount > 1) ? (" - " + (sheetIndex + 1)) : U.EMPTY;
         int nameLen = 31 - indexSuffix.length();
         return (tmp.length() > nameLen) ? (tmp.substring(0, nameLen) + indexSuffix) : tmp;
