@@ -248,7 +248,7 @@ public class ExportExcel {
                 // 设置为内容换行, 不然显示依然是在一行的, 需要在内容上编辑一下才会显示换行效果
                 cell.getCellStyle().setWrapText(true);
                 Row row = cell.getRow();
-                row.setHeightInPoints(row.getHeightInPoints() * lineNum);
+                row.setHeightInPoints((row.getHeightInPoints() + 2) * lineNum);
             }
         }
     }
