@@ -39,13 +39,13 @@ public class CacheService {
         }
     }
 
-    public void expire(String key, long time, TimeUnit timeUnit) {
-        redisTemplate.expire(key, time, timeUnit);
+    public void expire(String key, long time, TimeUnit unit) {
+        redisTemplate.expire(key, time, unit);
     }
 
     public long incr(String key) {
         Long inc = redisTemplate.opsForValue().increment(key, 1L);
-        return inc == null ? 0 : inc;
+        return inc == null ? 0L : inc;
     }
 
     /** 从 redis 中取值 */
@@ -169,14 +169,14 @@ public class CacheService {
     // set 的特点是每个元素唯一, 但是不保证排序
 
     /** 获取指定 set 的长度: scard key */
-    public long setSize(String key) {
+    public int setSize(String key) {
         Long size = redisTemplate.opsForSet().size(key);
-        return size != null ? size : 0L;
+        return size != null ? size.intValue() : 0;
     }
     /** 将指定的 set 存进 redis 并返回成功条数: sadd key v1 v2 v3 ... */
-    public <T> long setAdd(String key, T[] set) {
+    public <T> int setAdd(String key, T[] set) {
         Long add = redisTemplate.opsForSet().add(key, set);
-        return add != null ? add : 0L;
+        return add != null ? add.intValue() : 0;
     }
     /** 获取 set: smembers key */
     public <T> Set<T> setGet(String key) {
@@ -191,7 +191,7 @@ public class CacheService {
         return (T) redisTemplate.opsForSet().pop(key);
     }
     /** 从指定的 set 中随机取出一些值: spop key count */
-    public <T> T setPop(String key, long count) {
+    public <T> T setPop(String key, int count) {
         return (T) redisTemplate.opsForSet().pop(key, count);
     }
 
@@ -211,8 +211,8 @@ public class CacheService {
         redisTemplate.opsForHash().putIfAbsent(key, hashKey, hashValue);
     }
     /** 获取一个 hash 的长度: hlen key */
-    public long hashSize(String key) {
-        return redisTemplate.opsForHash().size(key);
+    public int hashSize(String key) {
+        return redisTemplate.opsForHash().size(key).intValue();
     }
     /** 获取一个 hash 的值: hgetall key */
     public <T> Map<String, T> hashGetAll(String key) {
