@@ -90,7 +90,7 @@ public class GlobalException {
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public JsonResult<Void> missParam(MissingServletRequestParameterException e) {
         String msg = online
-                ? "无法响应此请求"
+                ? "缺少必须的参数"
                 : String.format("缺少必须的参数(%s), 类型(%s)", e.getParameterName(), e.getParameterType());
 
         bindAndPrintLog(msg, e);
@@ -98,7 +98,7 @@ public class GlobalException {
     }
     @ExceptionHandler(MissingRequestHeaderException.class)
     public JsonResult<Void> missHeader(MissingRequestHeaderException e) {
-        String msg = online ? "无法响应这个请求" : String.format("缺少头(%s)", e.getHeaderName());
+        String msg = online ? "缺少必须的信息" : String.format("缺少头(%s)", e.getHeaderName());
 
         bindAndPrintLog(msg, e);
         return JsonResult.badRequest(msg);
@@ -106,7 +106,7 @@ public class GlobalException {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public JsonResult<Void> notSupported(HttpRequestMethodNotSupportedException e) {
         String msg = online
-                ? "无法处理此请求"
+                ? "不支持此种方式"
                 : String.format("不支持此请求方式: 当前(%s), 支持(%s)", e.getMethod(), A.toStr(e.getSupportedMethods()));
 
         bindAndPrintLog(msg, e);
