@@ -65,9 +65,8 @@ public class CacheService {
      * String key = "xxx", value = uuid(); // value 用 uuid 确保每个线程都不一样
      * if (tryLock(key, value)) {
      *   try {
-     *     // 获取到锁之后的业务处理
+     *     // 获取到锁之后的业务处理, 此锁会保持 10 秒
      *   } finally {
-     *     // 解锁时 key 和 value 都需要
      *     unlock(key, value);
      *   }
      * } else {
@@ -81,17 +80,19 @@ public class CacheService {
     public boolean tryLock(String key, String value) {
         return tryLock(key, value, 10, TimeUnit.SECONDS);
     }
+
     /**
      * <pre>
      * 用 redis 获取分布式锁, 获取成功则返回 true
      *
      * String key = "xxx", value = uuid(); // value 用 uuid 确保每个线程都不一样
-     * int time = 3;
-     * if (tryLock(key, value, 10, TimeUnit.SECONDS)) {
+     * int lockTime = 5;
+     * TimeUnit unit = TimeUnit.SECONDS;
+     *
+     * if (tryLock(key, value, lockTime, unit)) {
      *   try {
-     *     // 获取到锁之后的业务处理
+     *     // 获取到锁之后的处理, 此锁会保持 5 秒
      *   } finally {
-     *     // 解锁时 key 和 value 都需要
      *     unlock(key, value);
      *   }
      * } else {
@@ -101,38 +102,26 @@ public class CacheService {
      *
      * @param key 键
      * @param value 值
-     * @param time 锁的超时时间
+     * @param lockTime 锁的超时时间
      * @param unit 锁超时的时间单位
      * @return 返回 true 则表示获取到了锁
      */
-    public boolean tryLock(String key, String value, long time, TimeUnit unit) {
+    public boolean tryLock(String key, String value, long lockTime, TimeUnit unit) {
         String script = "if redis.call('set', KEYS[1], KEYS[2], 'PX', KEYS[3], 'NX') then return 1 else return 0 end";
         RedisScript<Long> redisScript = new DefaultRedisScript<>(script, Long.class);
-        List<Object> keys = Arrays.asList(key, value, unit.toMillis(time));
+        List<Object> keys = Arrays.asList(key, value, unit.toMillis(lockTime));
         Long flag = redisTemplate.execute(redisScript, keys);
         return flag != null && flag == 1L;
     }
+
     /**
-     * <pre>
-     * 用 redis 获取分布式锁, 获取成功则返回 true
+     * 解锁, key 和 value 都需要
      *
-     * String key = "xxx", value = uuid(); // value 用 uuid 确保每个线程都不一样
-     * if (tryLock(key, value)) {
-     *   try {
-     *     // 获取到锁之后的业务处理
-     *   } finally {
-     *     // 解锁时 key 和 value 都需要
-     *     unlock(key, value);
-     *   }
-     * } else {
-     *   log.info("未获取到锁", time);
-     * }
-     * </pre>
      * @param key 键
      * @param value 值
      */
     public void unlock(String key, String value) {
-        // 释放锁的时候先去缓存中取, 如果值跟之前存进去的一样才进行删除操作, 避免当前线程执行太长, 超时后其他线程又设置了值在处理
+        // 释放锁的时候先去缓存中取, 如果值跟之前存进去的一样才进行删除操作, 避免当前线程执行太长, 超时后其他线程又设置了值在处理. 之后当前线程又执行此动作
         String script = "if redis.call('get', KEYS[1]) == KEYS[2] then redis.call('del', KEYS[1]); end";
         redisTemplate.execute(new DefaultRedisScript<>(script, Long.class), Arrays.asList(key, value));
     }

@@ -82,20 +82,20 @@ public class CacheRedisSonService {
      * <pre>
      *
      * String key = "xxx";
-     * int time = 10;
+     * int lockTime = 10;
      * TimeUnit unit = TimeUnit.SECONDS;
      *
-     * lock(key, time, unit);
+     * lock(key, lockTime, unit);
      * try {
-     *   // 获取到锁之后的处理
+     *   // 获取到锁之后的处理, 此锁会保持 10 秒
      * } finally {
      *   unlock(key);
      * }
      * </pre>
      * @param key 键
      */
-    public void lock(String key, int time, TimeUnit unit) {
-        redisson.getLock(key).lock(time, unit);
+    public void lock(String key, int lockTime, TimeUnit unit) {
+        redisson.getLock(key).lock(lockTime, unit);
     }
 
     /**
@@ -103,7 +103,6 @@ public class CacheRedisSonService {
      * <pre>
      *
      * String key = "xxx";
-     *
      * if (tryLock(key)) {
      *   try {
      *     // 获取到锁之后的处理
@@ -121,27 +120,60 @@ public class CacheRedisSonService {
     }
 
     /**
-     * 用 redis 获取分布式锁, 获取成功则返回 true, 获取到的锁会占用设置的时间
+     * 用 redis 获取分布式锁, 获取成功则返回 true, 获取到的锁将会在设定的时间后失效
      * <pre>
      *
      * String key = "xxx";
-     * int time = 10;
+     * int waitTime = 5;
      * TimeUnit unit = TimeUnit.SECONDS;
      *
-     * if (tryLock(key, time, unit)) {
-     *   try {
-     *     // 获取到锁之后的处理
-     *   } finally {
-     *     unlock(key);
+     * try {
+     *   if (tryLock(key, waitTime, unit)) {
+     *     try {
+     *       // 在 5 秒之内获取到了锁
+     *     } finally {
+     *       unlock(key);
+     *     }
+     *   } else {
+     *     log.info("未获取到锁");
      *   }
-     * } else {
-     *   log.info("未获取到锁");
+     * } catch (InterruptedException e) {
+     *   log.info("获取锁时线程被中断了");
      * }
      * </pre>
      * @param key 键
      */
-    public boolean tryLock(String key, int time, TimeUnit unit) throws InterruptedException {
-        return redisson.getLock(key).tryLock(time, unit);
+    public boolean tryLock(String key, int waitTime, TimeUnit unit) throws InterruptedException {
+        return redisson.getLock(key).tryLock(waitTime, unit);
+    }
+
+    /**
+     * 用 redis 获取分布式锁, 并指定获取锁的时间, 获取到锁后设置锁的占用时间
+     * <pre>
+     *
+     * String key = "xxx";
+     * int waitTime = 5;
+     * int lockTime = 10;
+     * TimeUnit unit = TimeUnit.SECONDS;
+     *
+     * try {
+     *   if (tryLock(key, getTime, waitTime, unit)) {
+     *     try {
+     *       // 在 5 秒之内获取到了锁, 此锁会保持 10 秒
+     *     } finally {
+     *       unlock(key);
+     *     }
+     *   } else {
+     *     log.info("未获取到锁");
+     *   }
+     * } catch (InterruptedException e) {
+     *   log.info("获取锁时线程被中断了");
+     * }
+     * </pre>
+     * @param key 键
+     */
+    public boolean tryLock(String key, int waitTime, int lockTime, TimeUnit unit) throws InterruptedException {
+        return redisson.getLock(key).tryLock(waitTime, lockTime, unit);
     }
 
     /** 释放 redis 锁 */
