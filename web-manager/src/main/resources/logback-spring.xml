@@ -46,6 +46,8 @@
 
     <logger name="com.baomidou" level="${thirdLogLevel}"/>
     <logger name="com.netflix" level="${thirdLogLevel}"/>
+    <logger name="com.alibaba" level="${thirdLogLevel}"/>
+    <logger name="com.aliyun" level="${thirdLogLevel}"/>
     <logger name="com.github" level="${thirdLogLevel}"/>
     <logger name="com.zaxxer" level="${thirdLogLevel}"/>
     <logger name="com.sun" level="${thirdLogLevel}"/>
