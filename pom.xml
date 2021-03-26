@@ -57,7 +57,8 @@
         <easyexcel.version>2.2.7</easyexcel.version>
         <opencsv.version>5.3</opencsv.version>
 
-        <elasticsearch.version>7.10.2</elasticsearch.version>
+        <elasticsearch.version>7.11.2</elasticsearch.version>
+        <redisson.version>3.15.2</redisson.version>
         <hikaricp.version>4.0.1</hikaricp.version>
         <!--<mysql.version>5.1.49 | 8.0.23</mysql.version>-->
         <mybatis-plus.version>3.4.2</mybatis-plus.version>
@@ -225,6 +226,11 @@
                 <version>${opencsv.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
+                <version>${redisson.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.zaxxer</groupId>
                 <artifactId>HikariCP</artifactId>
