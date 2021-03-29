@@ -137,7 +137,8 @@ public class DemoVo {
 
 | java 类型     | 数据库字段类型                                                                                             |
 | ------------- | -------------------------------------------------------------------------------------------------------- |
-| Long          | BIGINT(20)    UNSIGNED NOT NULL DEFAULT '0'                                  主键或外键                   |
+| Long          | BIGINT        UNSIGNED NOT NULL DEFAULT '0'                                  主键或外键                   |
+| Integer       | INT           UNSIGNED NOT NULL DEFAULT '0' COMMENT '购买数量'                                            |
 | Integer、Enum | TINYINT(4)    UNSIGNED NOT NULL DEFAULT '0' COMMENT '1.x, 2.y, 3.z'          无符号的范围在 0~255 之间     |
 | Boolean       | TINYINT(1)    UNSIGNED NOT NULL DEFAULT '0' COMMENT '1 表示已删除'            只需要用 true false 表示     |
 | String        | VARCHAR(16)   NOT NULL DEFAULT '' COMMENT 'XX'                                                          |

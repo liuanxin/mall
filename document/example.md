@@ -7,11 +7,11 @@ USE `mall`;
 
 DROP TABLE IF EXISTS `t_user_test`;
 CREATE TABLE IF NOT EXISTS `t_user_test` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `nick_name` varchar(32) NOT NULL DEFAULT '' COMMENT '昵称',
-  `gender` int(11) NOT NULL DEFAULT '0' COMMENT '性别',
-  `level` INT(11) NOT NULL DEFAULT '0' COMMENT '等级',
-  `avatar_url` varchar(64) NOT NULL DEFAULT '' COMMENT '头像',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nick_name` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '昵称',
+  `gender` INT NOT NULL DEFAULT '0' COMMENT '性别',
+  `level` INT NOT NULL DEFAULT '0' COMMENT '等级',
+  `avatar_url` VARCHAR(256) NOT NULL DEFAULT '' COMMENT '头像',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户示例';
 
@@ -32,13 +32,13 @@ INSERT INTO `t_user_test` (`id`, `nick_name`, `gender`, `avatar_url`) VALUES
 
 DROP TABLE IF EXISTS `t_product_test`;
 CREATE TABLE IF NOT EXISTS `t_product_test` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT '所属用户',
-  `name` varchar(64) NOT NULL DEFAULT '' COMMENT '商品名(60 个字以内)',
-  `type` int(11) NOT NULL DEFAULT '0' COMMENT '商品类型',
-  `create_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-  `update_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '最近更新时间',
-  `is_delete` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1 表示已删除',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` BIGINT UNSIGNED NOT NULL DEFAULT '0' COMMENT '所属用户',
+  `name` VARCHAR(64) NOT NULL DEFAULT '' COMMENT '商品名(60 个字以内)',
+  `type` INT NOT NULL DEFAULT '0' COMMENT '商品类型',
+  `create_time` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+  `update_time` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '最近更新时间',
+  `is_delete` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '1 表示已删除',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品示例';
 

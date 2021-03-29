@@ -22,13 +22,13 @@ PS: 不需要后端管理的菜单后端不需要, 比如每个人都可以操�
 
 DROP TABLE IF EXISTS `t_manager_user`;
 CREATE TABLE IF NOT EXISTS `t_manager_user` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `user_name` varchar(32) NOT NULL DEFAULT '' COMMENT '用户名',
-  `password` varchar(32) NOT NULL DEFAULT '' COMMENT '密码',
-  `nick_name` varchar(32) NOT NULL DEFAULT '' COMMENT '昵称',
-  `avatar` varchar(256) NOT NULL DEFAULT '' COMMENT '头像',
-  `has_manager` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '1 表示是管理员',
-  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '1 表示已禁用',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_name` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '用户名',
+  `password` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '密码',
+  `nick_name` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '昵称',
+  `avatar` VARCHAR(256) NOT NULL DEFAULT '' COMMENT '头像',
+  `has_manager` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0' COMMENT '1 表示是管理员',
+  `status` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0' COMMENT '1 表示已禁用',
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_name` (`user_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户';
@@ -36,8 +36,8 @@ CREATE TABLE IF NOT EXISTS `t_manager_user` (
 
 DROP TABLE IF EXISTS `t_manager_role`;
 CREATE TABLE IF NOT EXISTS `t_manager_role` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(16) NOT NULL DEFAULT '' COMMENT '角色名',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(16) NOT NULL DEFAULT '' COMMENT '角色名',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色, 与 用户是 多对多 的关系';
@@ -45,10 +45,10 @@ CREATE TABLE IF NOT EXISTS `t_manager_role` (
 
 DROP TABLE IF EXISTS `t_manager_menu`;
 CREATE TABLE IF NOT EXISTS `t_manager_menu` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `parent_id` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT '父菜单, 0 则表示是根菜单',
-  `name` varchar(32) NOT NULL DEFAULT '' COMMENT '菜单说明',
-  `front` varchar(32) NOT NULL DEFAULT '' COMMENT '前端对应的值(如 path 或 name)',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `parent_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '父菜单, 0 则表示是根菜单',
+  `name` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '菜单说明',
+  `front` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '前端对应的值(如 path 或 name)',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='菜单, 需要跟前端对应, 前端每增加一个菜单就需要添加一条记录, 与角色是 多对多 的关系';
@@ -56,11 +56,11 @@ CREATE TABLE IF NOT EXISTS `t_manager_menu` (
 
 DROP TABLE IF EXISTS `t_manager_permission`;
 CREATE TABLE IF NOT EXISTS `t_manager_permission` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `menu_id` bigint(20) unsigned NOT NULL COMMENT '所属菜单',
-  `name` varchar(16) NOT NULL DEFAULT '' COMMENT '权限说明, 如(查询用户)',
-  `method` varchar(8) NOT NULL DEFAULT '' COMMENT 'GET 或 POST 等, * 表示通配',
-  `url` varchar(64) NOT NULL DEFAULT '' COMMENT '如 /user',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `menu_id` BIGINT UNSIGNED NOT NULL COMMENT '所属菜单',
+  `name` VARCHAR(16) NOT NULL DEFAULT '' COMMENT '权限说明, 如(查询用户)',
+  `method` VARCHAR(8) NOT NULL DEFAULT '' COMMENT 'GET 或 POST 等, * 表示通配',
+  `url` VARCHAR(64) NOT NULL DEFAULT '' COMMENT '如 /user',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `method_url` (`method`, `url`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='权限, 对应每一个后台请求, 跟菜单是 多对一 的关系, 跟角色是 多对多 的关系';
@@ -69,9 +69,9 @@ CREATE TABLE IF NOT EXISTS `t_manager_permission` (
 
 DROP TABLE IF EXISTS `t_manager_user_role`;
 CREATE TABLE IF NOT EXISTS `t_manager_user_role` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` bigint(20) unsigned NOT NULL COMMENT '用户 id',
-  `role_id` bigint(20) unsigned NOT NULL COMMENT '角色 id',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户 id',
+  `role_id` BIGINT UNSIGNED NOT NULL COMMENT '角色 id',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uid_rid` (`user_id`,`role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户和角色的中间表';
@@ -79,9 +79,9 @@ CREATE TABLE IF NOT EXISTS `t_manager_user_role` (
 
 DROP TABLE IF EXISTS `t_manager_role_menu`;
 CREATE TABLE IF NOT EXISTS `t_manager_role_menu` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `role_id` bigint(20) unsigned NOT NULL COMMENT '角色 id',
-  `menu_id` bigint(20) unsigned NOT NULL COMMENT '菜单 id',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `role_id` BIGINT UNSIGNED NOT NULL COMMENT '角色 id',
+  `menu_id` BIGINT UNSIGNED NOT NULL COMMENT '菜单 id',
   PRIMARY KEY (`id`),
   UNIQUE KEY `rid_mid` (`role_id`,`menu_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色和菜单的中间表';
@@ -89,9 +89,9 @@ CREATE TABLE IF NOT EXISTS `t_manager_role_menu` (
 
 DROP TABLE IF EXISTS `t_manager_role_permission`;
 CREATE TABLE IF NOT EXISTS `t_manager_role_permission` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `role_id` bigint(20) unsigned NOT NULL COMMENT '角色 id',
-  `permission_id` bigint(20) unsigned NOT NULL COMMENT '权限 id',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `role_id` BIGINT UNSIGNED NOT NULL COMMENT '角色 id',
+  `permission_id` BIGINT UNSIGNED NOT NULL COMMENT '权限 id',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `rid_pid` (`role_id`, `permission_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色和权限的中间表';
