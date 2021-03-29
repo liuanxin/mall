@@ -23,8 +23,8 @@ import java.util.Map;
  *   `nick_name` varchar(16) NOT NULL DEFAULT '' COMMENT '昵称',
  *   `gender` int unsigned NOT NULL DEFAULT '0' COMMENT '性别(0.未知, 1.男, 2.女)',
  *   `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '1.已禁用',
- *   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
- *   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+ *   `create_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+ *   `update_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
  *   `is_deleted` bigint unsigned NOT NULL DEFAULT '0' COMMENT '0 表示未删除, 删除时将当前值置为主键 id 或时间戳',
  *   PRIMARY KEY (`id`),
  *   UNIQUE KEY `user_name` (`user_name`, `is_deleted`)

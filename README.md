@@ -135,24 +135,25 @@ public class DemoVo {
 4. 会用到 text 字段的尽量抽成一个单表
 5. 用这几种类型就可以了, 相关的表字段类型对应如下
 
-| java 类型     | 数据库字段类型                                                                                       |
-| ------------- | -------------------------------------------------------------------------------------------------- |
-| Long          | BIGINT(20)    UNSIGNED NOT NULL DEFAULT '0'                            主键或外键                   |
-| Integer、Enum | TINYINT(4)    UNSIGNED NOT NULL DEFAULT '0' COMMENT '1.x, 2.y, 3.z'    无符号的范围在 0~255 之间     |
-| Boolean       | TINYINT(1)    UNSIGNED NOT NULL DEFAULT '0' COMMENT '1 表示已删除'      只需要用 true false 表示     |
-| String        | VARCHAR(16)   NOT NULL DEFAULT '' COMMENT 'XX'                                                    |
-| BigDecimal    | DECIMAL(10,2) NOT NULL DEFAULT '0' COMMENT 'XXXX 金额'                                            |
-| Date          | DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'XXXXX 时间' |
+| java 类型     | 数据库字段类型                                                                                             |
+| ------------- | -------------------------------------------------------------------------------------------------------- |
+| Long          | BIGINT(20)    UNSIGNED NOT NULL DEFAULT '0'                                  主键或外键                   |
+| Integer、Enum | TINYINT(4)    UNSIGNED NOT NULL DEFAULT '0' COMMENT '1.x, 2.y, 3.z'          无符号的范围在 0~255 之间     |
+| Boolean       | TINYINT(1)    UNSIGNED NOT NULL DEFAULT '0' COMMENT '1 表示已删除'            只需要用 true false 表示     |
+| String        | VARCHAR(16)   NOT NULL DEFAULT '' COMMENT 'XX'                                                          |
+| BigDecimal    | DECIMAL(10,2) NOT NULL DEFAULT '0' COMMENT 'XXXX 金额'                                                  |
+| Date          | DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT 'XXXXX 时间' |
 
 注意事项:
 1. 金额除了可以用 DECIMAL 外, 还可以用 bigint, 存到最终的单位(比如分,「20.50 元」存成「2050」即可)就行了
 2. mysql 中没有 boolean, tinyint(1) 和 tinyint(4) 都是存储 -128 ~ 127 的数(unsigned 则是 0 ~ 255),
    不要在 tinyint(1) 字段上存储 0 1 以外的值, 对应 Java 的 true 和 false,
    如果不止用来描述 true false, 在 mysql 中用 tinyint(4), 在 Java 实体中用 Integer 或者枚举相对应
-3. 日期长度默认是 0, 驱动包 >= 5.1.23 时 mysql 会将毫秒四舍五入到秒, 长度设置为 3 可以避免(但是 CURRENT_TIMESTAMP 将无法生效)
+3. 日期长度默认是 0, 驱动包 >= 5.1.23 时 mysql 会将毫秒四舍五入到秒
    比如 1999-12-31 23:59:59.499 会存成 1999-12-31 23:59:59, 而 1999-12-31 23:59.59.500 却会存为 2000-01-01 00:00:00
-   创建时间用: DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-   更新时间用: DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-   另外, 当时间不确定, 业务上可以为空时, 尽量设置为不能为空且给一个默认值 NOT NULL DEFAULT '1970-01-01 00:00:00' COMMENT 'xxx 时间'
+   将长度设置为 3 可以避免
+     创建时间用: DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+     更新时间用: DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
+   另外, 当时间不确定, 业务上可以为空时, 尽量设置为不能为空且给一个默认值 NOT NULL DEFAULT '1970-01-01 00:00:00.000' COMMENT 'xxx 时间'
 
 ~

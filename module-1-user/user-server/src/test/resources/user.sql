@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS `t_user` (
   `province` varchar(32) NOT NULL DEFAULT '' COMMENT '省份',
   `city` varchar(32) NOT NULL DEFAULT '' COMMENT '城市',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '1 表示已禁用',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+  `update_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
   `is_deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '1 已删除, 默认是 0 未删除',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户';
@@ -40,11 +40,11 @@ CREATE TABLE IF NOT EXISTS `t_user_auth` (
   `auth_type` int NOT NULL DEFAULT '1' COMMENT '1.用户名, 2.邮箱, 3.手机号, 4.weixin, 5.qq, 6.weibo',
   `identifier` varchar(32) NOT NULL COMMENT '标识(用户名, 邮箱地址, 手机号 或 第三方登录的 openId 等)',
   `credential` varchar(32) NOT NULL COMMENT '凭据(密码 或 第三方登录的凭证 access_token 等)',
-  `third_expires` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '第三方登录的凭证超时时间',
+  `third_expires` datetime(3) NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '第三方登录的凭证超时时间',
   `third_refresh` varchar(32) NOT NULL DEFAULT '' COMMENT '第三方授权凭据扩展: refresh_token',
   `third_union_id` varchar(32) NOT NULL DEFAULT '' COMMENT 'union_id',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+  `update_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户授权';
 
@@ -55,11 +55,11 @@ CREATE TABLE IF NOT EXISTS `t_user_login_history` (
   `user_id` bigint unsigned NOT NULL COMMENT '用户 id',
   `auth_type` int NOT NULL DEFAULT '1' COMMENT '1.用户名, 2.邮箱, 3.手机号, 4.weixin, 5.qq, 6.weibo',
   `login_type` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0.站内登录, 1.第三方登录',
-  `login_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '登录时间',
+  `login_time` datetime(3) NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '登录时间',
   `login_ip` bigint NOT NULL DEFAULT '' COMMENT '登录地址(使用整数存储 ip)',
   `login_user_agent` varchar(128) NOT NULL DEFAULT '' COMMENT '登录时的 user-agent',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+  `update_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
   `is_deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '1 已删除, 默认是 0 未删除',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户登录历史';

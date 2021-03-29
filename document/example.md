@@ -36,8 +36,8 @@ CREATE TABLE IF NOT EXISTS `t_product_test` (
   `user_id` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT '所属用户',
   `name` varchar(64) NOT NULL DEFAULT '' COMMENT '商品名(60 个字以内)',
   `type` int(11) NOT NULL DEFAULT '0' COMMENT '商品类型',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近更新时间',
+  `create_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+  `update_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '最近更新时间',
   `is_delete` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1 表示已删除',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品示例';
