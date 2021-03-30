@@ -1,50 +1,60 @@
 package com.github.common.export.csv;
 
-import com.github.common.export.FileExport;
-import com.github.common.export.WebExport;
 import com.github.common.util.A;
 import com.github.common.util.U;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 
-/** 如果想要将数据导成文件保持, 使用 {@link FileExport} 类, 如果要导出文件在 web 端下载, 使用 {@link WebExport} 类 */
 public class ExportCsv {
 
+    // csv 用英文逗号(,)隔开列, 用换行(\n)隔开行, 内容中包含了逗号的需要用双引号包裹, 若内容中包含了双引号则需要用两个双引号表示
+
+    private static final String SPLIT = ",";
+    private static final String WRAP = "\n";
+
+    private static final String QUOTE = "\"";
+    private static final String REPLACE_QUOTE = "\"\"";
+
     public static String getContent(LinkedHashMap<String, String> titleMap, List<?> dataList) {
-        if (A.isNotEmpty(titleMap) && A.isNotEmpty(dataList)) {
-            // csv 用英文逗号(,)隔开列, 用换行(\n)隔开行, 内容中包含了逗号的需要用双引号包裹, 若内容中包含了双引号则需要用两个双引号表示.
-            StringBuilder sbd = new StringBuilder();
+        StringBuilder sbd = new StringBuilder();
+        if (A.isNotEmpty(titleMap)) {
             int i = 0;
             for (String title : titleMap.values()) {
-                sbd.append(handleCsvContent(title.split("\\|")[0]));
+                sbd.append(handleCsvContent(title));
                 i++;
                 if (i != titleMap.size()) {
-                    sbd.append(",");
+                    sbd.append(SPLIT);
                 }
             }
             if (A.isNotEmpty(dataList)) {
+                Set<String> titles = titleMap.keySet();
                 for (Object data : dataList) {
                     if (sbd.length() > 0) {
-                        sbd.append("\n");
+                        sbd.append(WRAP);
                     }
                     i = 0;
-                    for (String title : titleMap.keySet()) {
+                    for (String title : titles) {
                         sbd.append(handleCsvContent(U.getField(data, title)));
                         i++;
                         if (i != titleMap.size()) {
-                            sbd.append(",");
+                            sbd.append(SPLIT);
                         }
                     }
                 }
             }
-            return sbd.toString();
         }
-        // 没有数据或没有标题, 返回一个内容为空的文件
-        return U.EMPTY;
+        return sbd.toString();
     }
 
     private static String handleCsvContent(String content) {
-        return "\"" + content.replace("\"", "\"\"") + "\"";
+        if (content.contains(QUOTE)) {
+            content = content.replace(QUOTE, REPLACE_QUOTE);
+        }
+        if (content.contains(SPLIT)) {
+            content = QUOTE + content + QUOTE;
+        }
+        return content;
     }
 }
