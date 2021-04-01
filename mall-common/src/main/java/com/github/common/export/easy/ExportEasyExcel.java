@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.alibaba.excel.write.builder.ExcelWriterSheetBuilder;
+import com.alibaba.excel.write.handler.WriteHandler;
 import com.github.common.util.A;
 import com.github.common.util.U;
 import org.apache.commons.compress.utils.Lists;
@@ -17,6 +18,8 @@ public class ExportEasyExcel {
 
     /** 多空白符的正则 */
     private static final Pattern BLANK_REGEX = Pattern.compile("\\s{2,}");
+
+    private static final WriteHandler FREEZE_TITLE_HANDLER = new FreezeTitleSheetHandler();
 
     private static int getMaxColumn(boolean excel07) {
         return excel07 ? 16384 : 256;
@@ -53,7 +56,8 @@ public class ExportEasyExcel {
                 size = dataList.size();
                 headClass = dataList.get(0).getClass();
             }
-            boolean hasBigData = size > sheetMaxRow;
+            List<WriteHandler> handlerList = Arrays.asList(FREEZE_TITLE_HANDLER, new StyleCellHandler(size > sheetMaxRow));
+
             // 一个 sheet 数据过多时 excel 处理会出错, 这时候分成多个 sheet 导出
             int sheetCount = (size % sheetMaxRow == 0) ? (size / sheetMaxRow) : (size / sheetMaxRow + 1);
             // 如果没有记录也至少构建一个(确保导出的文件有标题头)
@@ -74,9 +78,10 @@ public class ExportEasyExcel {
 
                 // 指定头, 并指定只输出指定头相关的列
                 ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(realSheetName)
-                        .head(headClass).useDefaultStyle(false)
-                        .registerWriteHandler(new FreezeTitleSheetHandler())
-                        .registerWriteHandler(new StyleCellHandler(hasBigData));
+                        .head(headClass).useDefaultStyle(false);
+                for (WriteHandler handler : handlerList) {
+                    sheetBuilder.registerWriteHandler(handler);
+                }
                 excelWriter.write(realDataList, sheetBuilder.build());
             }
         } finally {
@@ -142,7 +147,8 @@ public class ExportEasyExcel {
 
                 List<?> sheetDataList = dataMap.get(sheetName);
                 int size = A.isEmpty(sheetDataList) ? 0 : sheetDataList.size();
-                boolean hasBigData = size > sheetMaxRow;
+                List<WriteHandler> handlerList = Arrays.asList(FREEZE_TITLE_HANDLER, new StyleCellHandler(size > sheetMaxRow));
+
                 // 一个 sheet 数据过多时 excel 处理会出错, 这时候分成多个 sheet 导出
                 int sheetCount = (size % sheetMaxRow == 0) ? (size / sheetMaxRow) : (size / sheetMaxRow + 1);
                 // 如果没有记录也至少构建一个(确保导出的文件有标题头)
@@ -166,9 +172,10 @@ public class ExportEasyExcel {
 
                     // 指定头, 并指定只输出指定头相关的列
                     ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(realSheetName).head(titles)
-                            .useDefaultStyle(false).includeColumnFiledNames(fields)
-                            .registerWriteHandler(new FreezeTitleSheetHandler())
-                            .registerWriteHandler(new StyleCellHandler(hasBigData));
+                            .useDefaultStyle(false).includeColumnFiledNames(fields);
+                    for (WriteHandler handler : handlerList) {
+                        sheetBuilder.registerWriteHandler(handler);
+                    }
                     excelWriter.write(realDataList, sheetBuilder.build());
                 }
             }
