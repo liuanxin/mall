@@ -67,7 +67,7 @@ public class StyleCellHandler implements CellWriteHandler {
             String[] lines = data.split("\n");
             for (String s : lines) {
                 // 列宽: 从内容来确定, 中文为 2 个长度, 左移 8 相当于 * 256
-                int lineWidth = U.toLen(s) << 8;
+                int lineWidth = (U.toLen(s) + 2) << 8;
                 if (lineWidth > maxWidth) {
                     maxWidth = lineWidth;
                 }
