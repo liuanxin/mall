@@ -15,7 +15,9 @@ public class ExportCsv {
     //   内容中包含了双引号则替换成两个双引号, 内容中包含了逗号、空格或双引号的则用双引号包裹
 
     private static final String SPLIT = ",";
+    private static final String WIN_WRAP = "\r";
     private static final String WRAP = "\n";
+    private static final String BLANK = "";
     private static final String SPACE = " ";
     private static final String QUOTE = "\"";
     private static final String REPLACE_QUOTE = "\"\"";
@@ -52,6 +54,9 @@ public class ExportCsv {
     }
 
     private static String handleCsvContent(String content) {
+        if (content.contains(WIN_WRAP)) {
+            content = content.replace(WIN_WRAP, BLANK);
+        }
         if (content.contains(WRAP)) {
             content = content.replace(WRAP, SPACE);
         }
