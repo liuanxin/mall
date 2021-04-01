@@ -141,6 +141,7 @@ public class ExportExcel {
             // 当前 sheet 的数据
             dataList = entry.getValue();
             size = A.isEmpty(dataList) ? 0 : dataList.size();
+            boolean hasBigData = size > sheetMaxRow;
 
             // 一个 sheet 数据过多 excel 处理会出错, 分多个 sheet
             sheetCount = (size % sheetMaxRow == 0) ? (size / sheetMaxRow) : (size / sheetMaxRow + 1);
@@ -191,10 +192,14 @@ public class ExportExcel {
 
                                 cellData = U.getField(data, titleMapEntry.getKey());
                                 if (U.isNumber(cellData)) {
-                                    cell.setCellStyle(numberStyle);
+                                    if (!hasBigData) {
+                                        cell.setCellStyle(numberStyle);
+                                    }
                                     cell.setCellValue(U.toDouble(cellData));
                                 } else {
-                                    cell.setCellStyle(contentStyle);
+                                    if (!hasBigData) {
+                                        cell.setCellStyle(contentStyle);
+                                    }
                                     cell.setCellValue(cellData);
                                 }
                                 setWidthAndHeight(cell, cellData);
