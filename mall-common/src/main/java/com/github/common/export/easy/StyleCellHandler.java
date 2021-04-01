@@ -11,6 +11,7 @@ import com.github.common.util.U;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFPalette;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -27,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("DuplicatedCode")
 @Slf4j
+@AllArgsConstructor
 public class StyleCellHandler implements CellWriteHandler {
 
     /** 标题行字体大小 */
@@ -38,6 +40,8 @@ public class StyleCellHandler implements CellWriteHandler {
 
     private static final Cache<Thread, Map<String, CellStyle>> STYLE_CACHE =
             CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).build();
+
+    private final boolean hasBigData;
 
 
     @Override
@@ -89,6 +93,9 @@ public class StyleCellHandler implements CellWriteHandler {
     @Override
     public void afterCellDataConverted(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder,
                                        CellData cellData, Cell cell, Head head, Integer relativeRowIndex, Boolean isHead) {
+        if (hasBigData) {
+            return;
+        }
         if (isHead != null) {
             // convert 后 head 走不到这里来, 只在 afterCellCreate 处执行了
             /* if (isHead) {
