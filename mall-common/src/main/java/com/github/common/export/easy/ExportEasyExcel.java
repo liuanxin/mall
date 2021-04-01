@@ -30,7 +30,8 @@ public class ExportEasyExcel {
     // 2003(xls)  单个 sheet 最多只能有   65536 行   256 列
     // 2007(xlsx) 及以上的版本最多只能有 1048576 行 16384 列
     private static int getMaxRow(boolean excel07) {
-        return excel07 ? 1048576 : 65535;
+        // return excel07 ? 1048576 : 65535;
+        return excel07 ? 300_000 : 50_000;
     }
 
 
@@ -201,6 +202,6 @@ public class ExportEasyExcel {
         String tmp = BLANK_REGEX.matcher(tmpSn).replaceAll(" ");
         String indexSuffix = (sheetCount > 1) ? (" - " + (sheetIndex + 1)) : U.EMPTY;
         int nameLen = 31 - indexSuffix.length();
-        return (tmp.length() > nameLen) ? (tmp.substring(0, nameLen) + indexSuffix) : tmp;
+        return ((tmp.length() > nameLen) ? tmp.substring(0, nameLen) : tmp) + indexSuffix;
     }
 }

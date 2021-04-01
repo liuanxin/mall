@@ -6,6 +6,7 @@ import com.github.common.exception.*;
 import com.github.common.json.JsonUtil;
 import com.google.common.collect.Maps;
 
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -799,11 +800,11 @@ public final class U {
         if (data instanceof Map) {
             value = ((Map) data).get(split[0]);
         } else {
-            // try {
-            // value = new PropertyDescriptor(field, data.getClass()).getReadMethod().invoke(data);
-            // } catch (Exception e) {
-            value = getMethod(data, fieldToMethod(split[0]));
-            // }
+            try {
+                value = new PropertyDescriptor(field, data.getClass()).getReadMethod().invoke(data);
+            } catch (Exception e) {
+                value = getMethod(data, fieldToMethod(split[0]));
+            }
         }
 
         if (isBlank(value)) {
