@@ -61,7 +61,7 @@ public class StyleCellHandler implements CellWriteHandler {
     }
 
     private void setWidthAndHeight(Cell cell, String data) {
-        if (U.isNotBlank(data)) {
+        if (U.isNotNull(data)) {
             // 内容里面有换行则宽度以最长的行为主, 行高以行数为主
             int maxWidth = 0;
             String[] lines = data.split("\n");
