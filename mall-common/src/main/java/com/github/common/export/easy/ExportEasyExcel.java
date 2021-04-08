@@ -125,9 +125,11 @@ public class ExportEasyExcel {
         // 每个 sheet 的最大列
         int maxColumn = getMaxColumn(excel07);
         for (LinkedHashMap<String, String> sheetTitleMap : titleMap.values()) {
-            int columnSize = sheetTitleMap.size();
-            if (columnSize > maxColumn) {
-                throw new RuntimeException("Invalid column number " + columnSize + ", max: " + maxColumn);
+            if (A.isNotEmpty(sheetTitleMap)) {
+                int columnSize = sheetTitleMap.size();
+                if (columnSize > maxColumn) {
+                    throw new RuntimeException("Invalid column number " + columnSize + ", max: " + maxColumn);
+                }
             }
         }
 
