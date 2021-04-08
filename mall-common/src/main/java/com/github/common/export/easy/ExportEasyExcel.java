@@ -77,8 +77,10 @@ public class ExportEasyExcel {
                 List<?> realDataList = A.isEmpty(dataList) ? Collections.emptyList() : dataList.subList(fromIndex, toIndex);
 
                 // 指定头, 并指定只输出指定头相关的列
-                ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(realSheetName)
-                        .head(headClass).useDefaultStyle(false);
+                ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(realSheetName).useDefaultStyle(false);
+                if (headClass != Void.class) {
+                    sheetBuilder.head(headClass);
+                }
                 for (WriteHandler handler : handlerList) {
                     sheetBuilder.registerWriteHandler(handler);
                 }
@@ -142,7 +144,9 @@ public class ExportEasyExcel {
                 // 表头在导出时显示的名字
                 List<List<String>> titles = Lists.newArrayList();
                 for (String value : sheetTitleMap.values()) {
-                    titles.add(Collections.singletonList(value));
+                    if (U.isNotBlank(value)) {
+                        titles.add(Collections.singletonList(value));
+                    }
                 }
 
                 List<?> sheetDataList = dataMap.get(sheetName);
@@ -171,8 +175,11 @@ public class ExportEasyExcel {
                     }
 
                     // 指定头, 并指定只输出指定头相关的列
-                    ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(realSheetName).head(titles)
+                    ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(realSheetName)
                             .useDefaultStyle(false).includeColumnFiledNames(fields);
+                    if (A.isNotEmpty(titles)) {
+                        sheetBuilder.head(titles);
+                    }
                     for (WriteHandler handler : handlerList) {
                         sheetBuilder.registerWriteHandler(handler);
                     }
