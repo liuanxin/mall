@@ -32,9 +32,9 @@ import java.util.concurrent.TimeUnit;
 public class StyleCellHandler implements CellWriteHandler {
 
     /** 标题行字体大小 */
-    private static final short TITLE_FONT_SIZE = 12;
+    private static final short TITLE_FONT_SIZE = 14;
     /** 行字体大小 */
-    private static final short FONT_SIZE = 10;
+    private static final short FONT_SIZE = 12;
 
     private static final int[] TITLE_RGB = new int[] { 160, 200, 230 };
 
