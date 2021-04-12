@@ -42,7 +42,7 @@ public class PageParam implements Serializable {
     /** 分页默认的每页条数 */
     private static final int DEFAULT_LIMIT = 10;
     /** 最大分页条数 */
-    private static final int MAX_LIMIT = 500;
+    private static final int MAX_LIMIT = 1000;
 
     @ApiParam("当前页数. 不传 或 传入负数 或 传入非数字 则默认是 " + DEFAULT_PAGE_NO)
     private int page;
