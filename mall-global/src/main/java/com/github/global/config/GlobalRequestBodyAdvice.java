@@ -1,12 +1,11 @@
 package com.github.global.config;
 
-import com.github.common.json.JsonUtil;
-import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpHeaders;
@@ -24,10 +23,16 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
 @SuppressWarnings("NullableProblems")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @ConditionalOnClass({ HttpServletRequest.class, RequestBody.class })
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
 public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
+
+    /** 当前端发过来的 RequestBody 数据跟相关的实体对应上时, 此时想要输出用户的输入流, 将此值设置为 true */
+    @Value("${sufferErrorRequest:false}")
+    private boolean sufferErrorRequest;
+
+    private final DesensitizationParam desensitizationParam;
 
     @Override
     public boolean supports(MethodParameter methodParameter, Type type, Class<? extends HttpMessageConverter<?>> aClass) {
@@ -37,48 +42,42 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override
     public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
                                            Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
-        try {
+        if (sufferErrorRequest) {
             return new HttpInputMessage() {
                 @Override
                 public HttpHeaders getHeaders() {
                     return inputMessage.getHeaders();
                 }
+
                 @Override
                 public InputStream getBody() throws IOException {
                     // Http Request 的 inputStream 读取过后再读取就会异常, 所以这样操作(两处都 new ByteArrayInputStream)
                     byte[] bytes = ByteStreams.toByteArray(inputMessage.getBody());
-                    handleRequestBody(bytes);
+
+                    try (Reader reader = new InputStreamReader(new ByteArrayInputStream(bytes), StandardCharsets.UTF_8)) {
+                        String data = CharStreams.toString(reader);
+                        if (U.isNotBlank(data)) {
+                            LogUtil.bindRequestBody(data);
+                        }
+                    } catch (Exception e) {
+                        if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                            LogUtil.ROOT_LOG.error("bind @RequestBody bytes to log-context exception", e);
+                        }
+                    }
                     return new ByteArrayInputStream(bytes);
                 }
             };
-        } catch (Exception e) {
-            return inputMessage;
         }
-    }
-    /** 注意上下两处都是 new, 在上下文处理的地方用字节再生成新流, 上面的新流返回给请求上下文, 如果提取成变量是有问题的 */
-    private void handleRequestBody(byte[] bytes) {
-        if (A.isNotEmpty(bytes)) {
-            try (Reader reader = new InputStreamReader(new ByteArrayInputStream(bytes), StandardCharsets.UTF_8)) {
-                String json = CharStreams.toString(reader);
-                if (U.isNotBlank(json)) {
-                    // 拿 json 转成对象, 再序列化, 去除空白符后再放到日志上下文
-                    LogUtil.bindRequestBody(JsonUtil.toJson(JsonUtil.toObjectNil(json, Object.class)));
-                }
-            } catch (Exception e) {
-                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("bind @RequestBody bytes to log-context exception", e);
-                }
-            }
-        }
+        return super.beforeBodyRead(inputMessage, parameter, targetType, converterType);
     }
 
-    /*
     @Override
     public Object afterBodyRead(Object body, HttpInputMessage inputMessage, MethodParameter parameter,
                                 Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
-        // body 类跟传入的 inputStream 转换失败将进不到这里面来, 最终将无法打印, 用上面的方式处理
-        LogUtil.bindRequestBody(JsonUtil.toJson(body));
+        // body 类跟传入的 inputStream 转换失败将进不到这里面来
+        if (!sufferErrorRequest) {
+            LogUtil.bindRequestBody(desensitizationParam.handleDesensitization(body));
+        }
         return super.afterBodyRead(body, inputMessage, parameter, targetType, converterType);
     }
-    */
 }

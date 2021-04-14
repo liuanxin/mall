@@ -1,6 +1,5 @@
 package com.github.global.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.common.Const;
 import com.github.common.date.DateUtil;
 import com.github.common.util.LogUtil;
@@ -35,7 +34,7 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
     @Value("${online:false}")
     private boolean online;
 
-    private final ObjectMapper objectMapper;
+    private final DesensitizationParam desensitizationParam;
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
@@ -59,13 +58,7 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
     protected void beforeBodyWriteInternal(MappingJacksonValue bodyContainer, MediaType contentType, MethodParameter parameter,
                                            ServerHttpRequest request, ServerHttpResponse response) {
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-            String json;
-            try {
-                json = objectMapper.writeValueAsString(bodyContainer.getValue());
-            } catch (Exception ignore) {
-                return;
-            }
-
+            String json = desensitizationParam.handleDesensitization(bodyContainer.getValue());
             if (U.isNotBlank(json)) {
                 boolean notRequestInfo = LogUtil.hasNotRequestInfo();
                 try {
@@ -112,16 +105,7 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
                     }
                     sbd.append(")");
 
-                    sbd.append(", return: (");
-                    int max = 1000, printLen = 200;
-                    int len = json.length();
-                    if (online && len >= max) {
-                        sbd.append(json, 0, printLen).append(" ... ").append(json, len - printLen, len);
-                    } else {
-                        sbd.append(json);
-                    }
-                    sbd.append(")");
-
+                    sbd.append(", return: (").append(json).append(")");
                     LogUtil.ROOT_LOG.info(sbd.toString());
                 } finally {
                     if (notRequestInfo) {
