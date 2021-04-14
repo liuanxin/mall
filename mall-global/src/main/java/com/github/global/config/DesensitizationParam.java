@@ -42,7 +42,6 @@ public class DesensitizationParam {
                     return;
                 }
 
-                int max = 1000, leftRight = 200;
                 int len = value.length();
                 if (len >= SINGLE_FIELD_MAX_LENGTH) {
                     String left = value.substring(0, SINGLE_FIELD_LEFT_RIGHT_LENGTH);
