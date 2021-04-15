@@ -8,15 +8,12 @@ import com.github.common.util.A;
 import com.github.common.util.U;
 import org.apache.poi.ss.usermodel.Workbook;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * <pre>
@@ -128,7 +125,7 @@ public final class FileExport {
 
         try (
                 OutputStream output = new FileOutputStream(U.addSuffix(directory) + fileName);
-                Workbook workbook = ExportExcel.handle(excel07, titleMap, dataList);
+                Workbook workbook = ExportExcel.handle(excel07, titleMap, dataList)
         ) {
             try {
                 workbook.write(output);
@@ -158,6 +155,29 @@ public final class FileExport {
             ExportEasyExcel.handle(excel07, titleMap, dataList, output);
         } catch (IOException e) {
             throw new RuntimeException(String.format("保存文件(%s)到(%s)时异常", fileName, directory), e);
+        }
+    }
+
+    /** 将多个文件压缩成一个 zip 文件 */
+    public static void writeZipFile(Set<File> files, File zipFile) {
+        try (
+                FileOutputStream fileStream = new FileOutputStream(zipFile);
+                ZipOutputStream outputStream = new ZipOutputStream(fileStream)
+        ) {
+            for (File file : files) {
+                try (FileInputStream inputStream = new FileInputStream(file)) {
+                    outputStream.putNextEntry(new ZipEntry(file.getName()));
+                    // jdk-9
+                    // inputStream.transferTo(outputStream);
+                    byte[] buf = new byte[8192];
+                    int length;
+                    while ((length = inputStream.read(buf)) > 0) {
+                        outputStream.write(buf, 0, length);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("将多文件(%s)压缩成(%s)时异常", files, zipFile), e);
         }
     }
 
