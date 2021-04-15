@@ -8,13 +8,11 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.google.common.collect.Sets;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Set;
 
-@Slf4j
 @Component
 public class JsonDesensitization {
 
