@@ -56,13 +56,17 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
                     // Http Request 的 inputStream 读取过后再读取就会异常, 所以这样操作(两处都 new ByteArrayInputStream)
                     byte[] bytes = ByteStreams.toByteArray(inputMessage.getBody());
 
+                    String data = null;
                     try (Reader reader = new InputStreamReader(new ByteArrayInputStream(bytes), StandardCharsets.UTF_8)) {
-                        String data = CharStreams.toString(reader);
+                        data = CharStreams.toString(reader);
                         if (U.isNotBlank(data)) {
                             Object obj = mapper.readValue(data, Object.class);
                             LogUtil.bindRequestBody(desensitizationParam.handleDesensitization(obj));
                         }
                     } catch (Exception e) {
+                        if (U.isNotBlank(data)) {
+                            LogUtil.bindRequestBody(data);
+                        }
                         if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                             LogUtil.ROOT_LOG.error("bind @RequestBody bytes to log-context exception", e);
                         }
