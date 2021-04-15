@@ -1,5 +1,6 @@
 package com.github.global.config;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
@@ -56,17 +57,21 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
                     // Http Request 的 inputStream 读取过后再读取就会异常, 所以这样操作(两处都 new ByteArrayInputStream)
                     byte[] bytes = ByteStreams.toByteArray(inputMessage.getBody());
 
-                    String data = null;
                     try (Reader reader = new InputStreamReader(new ByteArrayInputStream(bytes), StandardCharsets.UTF_8)) {
-                        data = CharStreams.toString(reader);
+                        String data = CharStreams.toString(reader);
                         if (U.isNotBlank(data)) {
-                            Object obj = mapper.readValue(data, Object.class);
-                            LogUtil.bindRequestBody(desensitizationParam.handleDesensitization(obj));
+                            try {
+                                // 先转换成对象, 再输出成 string, 这样可以去掉空白符
+                                Object obj = mapper.readValue(data, Object.class);
+                                LogUtil.bindRequestBody(desensitizationParam.handleDesensitization(obj));
+                            } catch (JsonProcessingException e) {
+                                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                                    LogUtil.ROOT_LOG.error(String.format("@RequestBody(%s) has not json data", data), e);
+                                }
+                                LogUtil.bindRequestBody(data);
+                            }
                         }
                     } catch (Exception e) {
-                        if (U.isNotBlank(data)) {
-                            LogUtil.bindRequestBody(data);
-                        }
                         if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                             LogUtil.ROOT_LOG.error("bind @RequestBody bytes to log-context exception", e);
                         }
