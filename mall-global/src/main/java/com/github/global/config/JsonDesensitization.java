@@ -37,7 +37,13 @@ public class JsonDesensitization {
         this.desensitizationMapper.registerModule(new SimpleModule().addSerializer(String.class, new JsonSerializer<String>() {
             @Override
             public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+                // null 不序列化
                 if (U.isNull(value)) {
+                    return;
+                }
+                // 空字符直接返回
+                if ("".equals(value)) {
+                    gen.writeString("");
                     return;
                 }
                 // 脱敏字段
