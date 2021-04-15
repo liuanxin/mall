@@ -39,9 +39,9 @@ public class JsonDesensitization {
                 if (U.isNull(value)) {
                     return;
                 }
-                // 空字符直接返回
-                if ("".equals(value)) {
-                    gen.writeString("");
+                // 空白符直接返回
+                if ("".equals(value.trim())) {
+                    gen.writeString(value);
                     return;
                 }
                 // 脱敏字段
