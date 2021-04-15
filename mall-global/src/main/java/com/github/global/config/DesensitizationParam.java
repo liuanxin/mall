@@ -59,6 +59,9 @@ public class DesensitizationParam {
     }
 
     public String handleDesensitization(Object data) {
+        if (U.isNull(data)) {
+            return null;
+        }
         try {
             String json = desensitizationMapper.writeValueAsString(data);
             if (U.isNotBlank(json)) {
