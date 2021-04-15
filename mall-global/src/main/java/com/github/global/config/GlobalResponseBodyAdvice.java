@@ -34,7 +34,7 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
     @Value("${online:false}")
     private boolean online;
 
-    private final DesensitizationParam desensitizationParam;
+    private final JsonDesensitization jsonDesensitization;
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
@@ -58,7 +58,7 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
     protected void beforeBodyWriteInternal(MappingJacksonValue bodyContainer, MediaType contentType, MethodParameter parameter,
                                            ServerHttpRequest request, ServerHttpResponse response) {
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-            String json = desensitizationParam.handleDesensitization(bodyContainer.getValue());
+            String json = jsonDesensitization.handle(bodyContainer.getValue());
             if (U.isNotBlank(json)) {
                 boolean notRequestInfo = LogUtil.hasNotRequestInfo();
                 try {

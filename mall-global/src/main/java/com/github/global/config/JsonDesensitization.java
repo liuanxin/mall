@@ -16,7 +16,7 @@ import java.util.Set;
 
 @Slf4j
 @Component
-public class DesensitizationParam {
+public class JsonDesensitization {
 
     /** 需要脱敏的字段, 比如用户传入 password 将输出成 *** */
     private static final Set<String> DESENSITIZATION_FIELD_SET = Sets.newHashSet("password");
@@ -32,7 +32,7 @@ public class DesensitizationParam {
 
     private final ObjectMapper desensitizationMapper;
 
-    public DesensitizationParam(ObjectMapper objectMapper) {
+    public JsonDesensitization(ObjectMapper objectMapper) {
         this.desensitizationMapper = objectMapper.copy();
         this.desensitizationMapper.registerModule(new SimpleModule().addSerializer(String.class, new JsonSerializer<String>() {
             @Override
@@ -58,7 +58,7 @@ public class DesensitizationParam {
         }));
     }
 
-    public String handleDesensitization(Object data) {
+    public String handle(Object data) {
         if (U.isNull(data)) {
             return null;
         }

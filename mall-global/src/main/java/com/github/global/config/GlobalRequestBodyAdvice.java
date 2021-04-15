@@ -34,7 +34,7 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Value("${sufferErrorRequest:false}")
     private boolean sufferErrorRequest;
 
-    private final DesensitizationParam desensitizationParam;
+    private final JsonDesensitization jsonDesensitization;
     private final ObjectMapper mapper;
 
     @Override
@@ -63,7 +63,7 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
                             try {
                                 // 先转换成对象, 再输出成 string, 这样可以去掉空白符
                                 Object obj = mapper.readValue(data, Object.class);
-                                LogUtil.bindRequestBody(desensitizationParam.handleDesensitization(obj));
+                                LogUtil.bindRequestBody(jsonDesensitization.handle(obj));
                             } catch (JsonProcessingException e) {
                                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                                     LogUtil.ROOT_LOG.error(String.format("@RequestBody(%s) has not json data", data), e);
@@ -88,7 +88,7 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
                                 Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
         // body 类跟传入的 inputStream 转换失败将进不到这里面来
         if (!sufferErrorRequest) {
-            LogUtil.bindRequestBody(desensitizationParam.handleDesensitization(body));
+            LogUtil.bindRequestBody(jsonDesensitization.handle(body));
         }
         return super.afterBodyRead(body, inputMessage, parameter, targetType, converterType);
     }
