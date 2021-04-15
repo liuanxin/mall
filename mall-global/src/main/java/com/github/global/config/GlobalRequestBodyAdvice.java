@@ -1,5 +1,6 @@
 package com.github.global.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.google.common.io.ByteStreams;
@@ -33,6 +34,7 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
     private boolean sufferErrorRequest;
 
     private final DesensitizationParam desensitizationParam;
+    private final ObjectMapper mapper;
 
     @Override
     public boolean supports(MethodParameter methodParameter, Type type, Class<? extends HttpMessageConverter<?>> aClass) {
@@ -57,7 +59,8 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
                     try (Reader reader = new InputStreamReader(new ByteArrayInputStream(bytes), StandardCharsets.UTF_8)) {
                         String data = CharStreams.toString(reader);
                         if (U.isNotBlank(data)) {
-                            LogUtil.bindRequestBody(data);
+                            Object obj = mapper.readValue(data, Object.class);
+                            LogUtil.bindRequestBody(desensitizationParam.handleDesensitization(obj));
                         }
                     } catch (Exception e) {
                         if (LogUtil.ROOT_LOG.isErrorEnabled()) {
