@@ -79,7 +79,7 @@ public class JsonDesensitization {
             return json;
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("desensitization data data exception", e);
+                LogUtil.ROOT_LOG.error("data desensitization exception", e);
             }
             return null;
         }
