@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.common.util.LogUtil;
+import com.github.common.util.U;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,28 +21,31 @@ public class DesensitizationParam {
     /** 需要脱敏的字段, 比如用户传入 password 将输出成 *** */
     private static final Set<String> DESENSITIZATION_FIELD_SET = Sets.newHashSet("password");
     /** 单个字符串的长度超出此值则进行脱敏, 只输出前后. 如 max 是 5, left_right 是 1, 当输入「abcde」将输出成「a ... e」 */
-    private static final int SINGLE_FIELD_MAX_LENGTH = 1000;
-    /** 单个字符串的长度脱敏时, 只输出前后的长度. 如 max 是 5, left_right 是 1, 当输入「abcde」将输出成「a ... e」 */
-    private static final int SINGLE_FIELD_LEFT_RIGHT_LENGTH = 200;
+    private static final int SINGLE_FIELD_MAX_LENGTH = 500;
+    /** 单个字符串只输出前后的长度. 如 max 是 5, left_right 是 1, 当输入「abcde」将输出成「a ... e」 */
+    private static final int SINGLE_FIELD_LEFT_RIGHT_LENGTH = 100;
+
+    /** 总字符串的长度超出此值则进行脱敏, 只输出前后 */
+    private static final int STRING_MAX_LENGTH = 2000;
+    /** 总字符串只输出前后的长度 */
+    private static final int STRING_LEFT_RIGHT_LENGTH = 400;
 
     private final ObjectMapper desensitizationMapper;
 
     public DesensitizationParam(ObjectMapper objectMapper) {
         this.desensitizationMapper = objectMapper.copy();
         this.desensitizationMapper.registerModule(new SimpleModule().addSerializer(String.class, new JsonSerializer<String>() {
-            @SuppressWarnings("ConstantConditions")
             @Override
             public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-                if (value == null) {
-                    gen.writeString(value);
+                if (U.isNull(value)) {
                     return;
                 }
-
+                // 脱敏字段
                 if (DESENSITIZATION_FIELD_SET.contains(gen.getOutputContext().getCurrentName().toLowerCase())) {
                     gen.writeString("***");
                     return;
                 }
-
+                // 过长的字段只输出前后字符
                 int len = value.length();
                 if (len >= SINGLE_FIELD_MAX_LENGTH) {
                     String left = value.substring(0, SINGLE_FIELD_LEFT_RIGHT_LENGTH);
@@ -54,12 +58,21 @@ public class DesensitizationParam {
         }));
     }
 
-    public String handleDesensitization(Object json) {
+    public String handleDesensitization(Object data) {
         try {
-            return desensitizationMapper.writeValueAsString(json);
+            String json = desensitizationMapper.writeValueAsString(data);
+            if (U.isNotBlank(json)) {
+                int len = json.length();
+                if (len >= STRING_MAX_LENGTH) {
+                    String left = json.substring(0, STRING_LEFT_RIGHT_LENGTH);
+                    String right = json.substring(len - STRING_LEFT_RIGHT_LENGTH, len);
+                    json = left + " ... " + right;
+                }
+            }
+            return json;
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("desensitization json data exception", e);
+                LogUtil.ROOT_LOG.error("desensitization data data exception", e);
             }
             return null;
         }
