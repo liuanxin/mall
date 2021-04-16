@@ -41,7 +41,7 @@ public class StyleCellHandler implements CellWriteHandler {
     private static final Cache<Thread, Map<String, CellStyle>> STYLE_CACHE =
             CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).build();
 
-    private final boolean hasBigData;
+    private final boolean hasCellStyle;
 
 
     @Override
@@ -93,7 +93,7 @@ public class StyleCellHandler implements CellWriteHandler {
     @Override
     public void afterCellDataConverted(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder,
                                        CellData cellData, Cell cell, Head head, Integer relativeRowIndex, Boolean isHead) {
-        if (hasBigData) {
+        if (hasCellStyle) {
             return;
         }
         if (isHead != null) {

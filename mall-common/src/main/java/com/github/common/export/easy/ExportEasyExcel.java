@@ -19,6 +19,9 @@ public class ExportEasyExcel {
     /** 多空白符的正则 */
     private static final Pattern BLANK_REGEX = Pattern.compile("\\s{2,}");
 
+    /** 总条数超出这个值后 cell 就不再设置样式 */
+    private static final int CELL_STYLE_CROSSOVER = 5_000;
+
     private static final WriteHandler FREEZE_TITLE_HANDLER = new FreezeTitleSheetHandler();
 
     private static int getMaxColumn(boolean excel07) {
@@ -56,7 +59,10 @@ public class ExportEasyExcel {
                 size = dataList.size();
                 headClass = dataList.get(0).getClass();
             }
-            List<WriteHandler> handlerList = Arrays.asList(FREEZE_TITLE_HANDLER, new StyleCellHandler(size > sheetMaxRow));
+            List<WriteHandler> handlerList = Arrays.asList(
+                    FREEZE_TITLE_HANDLER,
+                    new StyleCellHandler(size <= CELL_STYLE_CROSSOVER)
+            );
 
             // 一个 sheet 数据过多时 excel 处理会出错, 这时候分成多个 sheet 导出
             int sheetCount = (size % sheetMaxRow == 0) ? (size / sheetMaxRow) : (size / sheetMaxRow + 1);
@@ -153,7 +159,10 @@ public class ExportEasyExcel {
 
                 List<?> sheetDataList = dataMap.get(sheetName);
                 int size = A.isEmpty(sheetDataList) ? 0 : sheetDataList.size();
-                List<WriteHandler> handlerList = Arrays.asList(FREEZE_TITLE_HANDLER, new StyleCellHandler(size > sheetMaxRow));
+                List<WriteHandler> handlerList = Arrays.asList(
+                        FREEZE_TITLE_HANDLER,
+                        new StyleCellHandler(size <= CELL_STYLE_CROSSOVER)
+                );
 
                 // 一个 sheet 数据过多时 excel 处理会出错, 这时候分成多个 sheet 导出
                 int sheetCount = (size % sheetMaxRow == 0) ? (size / sheetMaxRow) : (size / sheetMaxRow + 1);
