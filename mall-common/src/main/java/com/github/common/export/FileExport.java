@@ -177,7 +177,7 @@ public final class FileExport {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(String.format("将多文件(%s)压缩成(%s)时异常", files, zipFile), e);
+            throw new RuntimeException(String.format("文件(%s)压缩成(%s)时异常", files, zipFile), e);
         }
     }
 
