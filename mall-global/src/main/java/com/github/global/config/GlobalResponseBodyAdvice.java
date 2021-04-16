@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -35,24 +34,6 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
     private boolean online;
 
     private final JsonDesensitization jsonDesensitization;
-
-    @Override
-    public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-        if (super.supports(returnType, converterType)) {
-            return true;
-        }
-
-        Method method = returnType.getMethod();
-        if (method != null) {
-            if (method.isAnnotationPresent(ResponseBody.class)) {
-                return true;
-            } else {
-                Class<?> type = method.getDeclaringClass();
-                return type.isAnnotationPresent(ResponseBody.class) || type.isAnnotationPresent(RestController.class);
-            }
-        }
-        return false;
-    }
 
     @Override
     protected void beforeBodyWriteInternal(MappingJacksonValue bodyContainer, MediaType contentType, MethodParameter parameter,
