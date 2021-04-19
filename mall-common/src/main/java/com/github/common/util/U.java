@@ -905,7 +905,6 @@ public final class U {
     }
 
     /** 调用对象的公有方法. 异常将被忽略并返回 null */
-    @SuppressWarnings("JavaReflectionInvocation")
     public static Object getMethod(Object obj, String method, Object... param) {
         if (isNotBlank(method)) {
             try {
