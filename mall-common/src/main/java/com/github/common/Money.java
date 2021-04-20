@@ -129,7 +129,7 @@ public class Money implements Serializable {
         if (cent == 0) {
             return "0";
         }
-        String yuan = (cent > 0 ? U.EMPTY : "-") + BigDecimal.valueOf(Math.abs(cent)).movePointLeft(SCALE).toString();
+        String yuan = (cent > 0 ? U.EMPTY : "-") + BigDecimal.valueOf(Math.abs(cent)).movePointLeft(SCALE);
         if (yuan.endsWith("0")) {
             yuan = yuan.substring(0, yuan.length() - 1);
             if (yuan.endsWith("0")) {
