@@ -18,6 +18,8 @@ import java.util.concurrent.TimeUnit;
 @ConditionalOnClass({ RedissonClient.class })
 public class CacheRedisSonService {
 
+    // https://github.com/redisson/redisson/wiki/11.-Redis-commands-mapping
+
     /** @see org.redisson.spring.starter.RedissonAutoConfiguration */
     private final RedissonClient redisson;
 
