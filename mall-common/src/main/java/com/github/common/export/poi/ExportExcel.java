@@ -119,7 +119,7 @@ public class ExportExcel {
         Row row;
         //   列
         Cell cell;
-        //  表格数       行索引      列索引
+        //  表格数       行索引     列索引
         int sheetCount, rowIndex, cellIndex;
         //  数据总条数  数据起始索引  数据结束索引
         int size, fromIndex, toIndex;
@@ -128,8 +128,6 @@ public class ExportExcel {
 
         // 单个列的数据
         String cellData;
-        // 数字格式
-        DataFormat dataFormat = workbook.createDataFormat();
 
         // 每个 sheet 的最大行, 标题头也是一行
         int sheetMaxRow = getMaxRow(excel07) - 1;
