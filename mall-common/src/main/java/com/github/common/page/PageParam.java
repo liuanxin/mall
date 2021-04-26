@@ -72,7 +72,8 @@ public class PageParam implements Serializable {
         this.limit = handlerLimit(limit);
     }
 
-    public int getPageStart() {
+    /** 分页语句  LIMIT x, xx  中  x  的值 */
+    public int pageStart() {
         return (page - 1) * limit;
     }
 
