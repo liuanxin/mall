@@ -11,8 +11,8 @@ public class ExportCsv {
 
     // 见: https://zh.wikipedia.org/wiki/%E9%80%97%E5%8F%B7%E5%88%86%E9%9A%94%E5%80%BC
     // 用英文逗号(,)隔开列, 用换行(\n)隔开行
-    //   为避免换行处理出问题: 内容中包含了换行的替换成空格
     //   内容中包含了双引号则替换成两个双引号, 内容中包含了逗号、空格或双引号的则用双引号包裹
+    //   为避免处理换行时出问题: 内容中包含了换行的替换成空格
 
     private static final String SPLIT = ",";
     private static final String WIN_WRAP = "\r";

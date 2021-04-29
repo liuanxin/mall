@@ -68,15 +68,15 @@ public class JsonUtil {
 
     /** 对象转换, 失败将会返回 null */
     public static <S,T> T convert(S source, Class<T> clazz) {
-        return U.isBlank(source) ? null : toObjectNil(toJson(source), clazz);
+        return U.isBlank(source) ? null : toObjectNil(toJsonNil(source), clazz);
     }
     /** 集合转换, 失败将会返回 null */
     public static <S,T> List<T> convertList(Collection<S> sourceList, Class<T> clazz) {
-        return A.isEmpty(sourceList) ? Collections.emptyList() : toListNil(toJson(sourceList), clazz);
+        return A.isEmpty(sourceList) ? Collections.emptyList() : toListNil(toJsonNil(sourceList), clazz);
     }
 
     public static <T,S> T convert(S source, TypeReference<T> type) {
-        return U.isBlank(source) ? null : toObjectNil(toJson(source), type);
+        return U.isBlank(source) ? null : toObjectNil(toJsonNil(source), type);
     }
 
     /** 对象转换成 json 字符串 */
