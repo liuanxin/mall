@@ -7,12 +7,19 @@ import com.github.common.json.JsonUtil;
 import com.google.common.collect.Maps;
 
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
@@ -979,6 +986,48 @@ public final class U {
             }
         }
         return null;
+    }
+
+    public static void inputToOutput(InputStream input, OutputStream output) {
+        try {
+            // jdk-9
+            // inputStream.transferTo(outputStream);
+            byte[] buf = new byte[8192];
+            int length;
+            while ((length = input.read(buf)) > 0) {
+                output.write(buf, 0, length);
+            }
+            // guava
+            // ByteStreams.copy(inputStream, outputStream);
+        } catch (IOException e) {
+            throw new RuntimeException("input to output exception", e);
+        }
+    }
+
+    public static void inputToOutputWithChannel(InputStream input, OutputStream output) {
+        try (
+                ReadableByteChannel in = Channels.newChannel(input);
+                WritableByteChannel out = Channels.newChannel(output);
+        ) {
+            // FileOutputStream ...getChannel().transferFrom(in, 0, Long.MAX_VALUE);
+            ByteBuffer buffer = ByteBuffer.allocateDirect(8192);
+            while (in.read(buffer) != -1) {
+                // prepare the buffer to be drained
+                buffer.flip();
+                // write to the channel, may block
+                out.write(buffer);
+                // If partial transfer, shift remainder down. If buffer is empty, same as doing clear()
+                buffer.compact();
+            }
+            // EOF will leave buffer in fill state
+            buffer.flip();
+            // make sure the buffer is fully drained
+            while (buffer.hasRemaining()) {
+                out.write(buffer);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("input to file output exception", e);
+        }
     }
 
 
