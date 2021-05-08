@@ -4,6 +4,7 @@ import com.github.common.util.A;
 import com.github.common.util.U;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -46,6 +47,40 @@ public class ExportCsv {
                         if (i != titleMap.size()) {
                             sbd.append(SPLIT);
                         }
+                    }
+                }
+            }
+        }
+        return sbd.toString();
+    }
+
+    public static String writeCsvHead(LinkedHashMap<String, String> titleMap) {
+        StringBuilder sbd = new StringBuilder();
+        if (titleMap != null && titleMap.size() > 0) {
+            int i = 0;
+            for (String title : titleMap.values()) {
+                sbd.append(handleCsvContent(title));
+                i++;
+                if (i != titleMap.size()) {
+                    sbd.append(SPLIT);
+                }
+            }
+        }
+        return sbd.toString();
+    }
+
+    public static String writeCsvContent(LinkedHashSet<String> titles, List<?> dataList) {
+        StringBuilder sbd = new StringBuilder();
+        if (titles != null && titles.size() > 0 && dataList != null && dataList.size() > 0) {
+            for (Object data : dataList) {
+                sbd.append(WRAP);
+
+                int i = 0;
+                for (String title : titles) {
+                    sbd.append(handleCsvContent(U.getField(data, title)));
+                    i++;
+                    if (i != titles.size()) {
+                        sbd.append(SPLIT);
                     }
                 }
             }

@@ -10,6 +10,8 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -97,13 +99,17 @@ public final class FileExport {
      */
     private static void saveCsv(String name, LinkedHashMap<String, String> titleMap,
                                 List<?> dataList, String directory) {
-        String fileName = encodeName(name) + ".csv";
+        File dir = new File(directory);
+        if (!dir.exists()) {
+            // noinspection ResultOfMethodCallIgnored
+            dir.mkdirs();
+        }
 
         // 没有数据或没有标题, 返回一个内容为空的文件
-        String content = ExportCsv.getContent(titleMap, dataList);
-
-        try (OutputStream output = new FileOutputStream(U.addSuffix(directory) + fileName)) {
-            output.write(content.getBytes(StandardCharsets.UTF_8));
+        byte[] content = ExportCsv.getContent(titleMap, dataList).getBytes(StandardCharsets.UTF_8);
+        String fileName = encodeName(name) + ".csv";
+        try {
+            Files.write(new File(dir, fileName).toPath(), content, StandardOpenOption.APPEND);
         } catch (IOException e) {
             throw new RuntimeException(String.format("保存文件(%s)到(%s)时异常", fileName, directory), e);
         }

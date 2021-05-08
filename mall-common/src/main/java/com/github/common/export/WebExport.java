@@ -108,8 +108,8 @@ public final class WebExport {
         typeAndHeader(response, "text/csv", fileName);
 
         // 没有数据或没有标题, 返回一个内容为空的文件
-        String content = ExportCsv.getContent(titleMap, dataList);
-        response.getOutputStream().write(content.getBytes(StandardCharsets.UTF_8));
+        byte[] content = ExportCsv.getContent(titleMap, dataList).getBytes(StandardCharsets.UTF_8);
+        response.getOutputStream().write(content);
     }
 
     /**
