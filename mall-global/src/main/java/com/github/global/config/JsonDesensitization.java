@@ -7,17 +7,13 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
-import com.google.common.collect.Sets;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Set;
 
 @Component
 public class JsonDesensitization {
 
-    /** 需要脱敏的字段, 比如用户传入 password 将输出成 *** */
-    private static final Set<String> DESENSITIZATION_FIELD_SET = Sets.newHashSet("password");
     /** 单个字符串的长度超出此值则进行脱敏, 只输出前后. 如 max 是 5, left_right 是 1, 当输入「abcde」将输出成「a ... e」 */
     private static final int SINGLE_FIELD_MAX_LENGTH = 500;
     /** 单个字符串只输出前后的长度. 如 max 是 5, left_right 是 1, 当输入「abcde」将输出成「a ... e」 */
@@ -44,11 +40,23 @@ public class JsonDesensitization {
                     gen.writeString(value);
                     return;
                 }
+
                 // 脱敏字段
-                if (DESENSITIZATION_FIELD_SET.contains(gen.getOutputContext().getCurrentName().toLowerCase())) {
-                    gen.writeString("***");
-                    return;
+                String key = gen.getOutputContext().getCurrentName().toLowerCase();
+                switch (key) {
+                    case "password":
+                        gen.writeString("***");
+                        return;
+                    case "phone":
+                        gen.writeString(U.foggyPhone(value));
+                        return;
+                    case "id_card":
+                    case "id-card":
+                    case "idcard":
+                        gen.writeString(U.foggyIdCard(value));
+                        return;
                 }
+
                 // 过长的字段只输出前后字符
                 int len = value.length();
                 if (len >= SINGLE_FIELD_MAX_LENGTH) {

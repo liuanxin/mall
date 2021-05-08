@@ -30,7 +30,7 @@ import java.nio.charset.StandardCharsets;
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
 public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
 
-    /** 当前端发过来的 RequestBody 数据跟相关的实体对应上时, 此时想要输出用户的输入流, 将此值设置为 true */
+    /** 当前端发过来的 RequestBody 数据跟相关的实体对应上时, 此时想要输出用户的输入流, 将此值设置为 true(因为复制了一遍字节码, 内存消耗会比 false 时多) */
     @Value("${sufferErrorRequest:false}")
     private boolean sufferErrorRequest;
 

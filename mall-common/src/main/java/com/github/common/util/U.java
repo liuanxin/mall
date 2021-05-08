@@ -544,11 +544,11 @@ public final class U {
         return checkPhone(phone) ? phone.substring(0, 3) + " **** " + phone.substring(phone.length() - 4) : phone;
     }
     public static String foggyIdCard(String idCard) {
-        // 是标准的 15 或 18 位身份证就返回「前面 6 位 + 后面 4 位」. 只有 6 位尾数则只返回「后面 2 位」
+        // 是标准的 15 或 18 位身份证就返回「前面 3 位 + 后面 2 位」. 只有 6 位尾数则只返回「后面 2 位」
         if (isBlank(idCard)) {
             return idCard;
         } else if (isIdCard(idCard)) {
-            return idCard.substring(0, 6) + " **** " + idCard.substring(idCard.length() - 4);
+            return idCard.substring(0, 3) + " **** " + idCard.substring(idCard.length() - 2);
         } else if (idCard.length() == 6) {
             return "**** " + idCard.substring(2);
         } else {
@@ -990,15 +990,16 @@ public final class U {
 
     public static void inputToOutput(InputStream input, OutputStream output) {
         try {
-            // jdk-9
-            // inputStream.transferTo(outputStream);
+            // guava
+            // ByteStreams.copy(inputStream, outputStream);
+            // jdk-8
             byte[] buf = new byte[8192];
             int length;
             while ((length = input.read(buf)) > 0) {
                 output.write(buf, 0, length);
             }
-            // guava
-            // ByteStreams.copy(inputStream, outputStream);
+            // jdk-9
+            // inputStream.transferTo(outputStream);
         } catch (IOException e) {
             throw new RuntimeException("input to output exception", e);
         }
