@@ -7,11 +7,16 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
 
-@Component
+@Configuration
+@ConditionalOnClass(ObjectMapper.class)
+@AutoConfigureAfter(JacksonAutoConfiguration.class)
 public class JsonDesensitization {
 
     /** 单个字符串的长度超出此值则进行脱敏, 只输出前后. 如 max 是 5, left_right 是 1, 当输入「abcde」将输出成「a ... e」 */
