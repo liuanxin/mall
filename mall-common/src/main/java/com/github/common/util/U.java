@@ -995,7 +995,7 @@ public final class U {
             // jdk-8
             byte[] buf = new byte[8192];
             int length;
-            while ((length = input.read(buf)) > 0) {
+            while ((length = input.read(buf)) != -1) {
                 output.write(buf, 0, length);
             }
             // jdk-9
@@ -1011,20 +1011,12 @@ public final class U {
                 WritableByteChannel out = Channels.newChannel(output);
         ) {
             // FileOutputStream ...getChannel().transferFrom(in, 0, Long.MAX_VALUE);
+
             ByteBuffer buffer = ByteBuffer.allocateDirect(8192);
             while (in.read(buffer) != -1) {
-                // prepare the buffer to be drained
                 buffer.flip();
-                // write to the channel, may block
                 out.write(buffer);
-                // If partial transfer, shift remainder down. If buffer is empty, same as doing clear()
-                buffer.compact();
-            }
-            // EOF will leave buffer in fill state
-            buffer.flip();
-            // make sure the buffer is fully drained
-            while (buffer.hasRemaining()) {
-                out.write(buffer);
+                buffer.clear();
             }
         } catch (IOException e) {
             throw new RuntimeException("input to file output exception", e);
