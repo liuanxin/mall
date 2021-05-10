@@ -17,7 +17,6 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
@@ -988,6 +987,16 @@ public final class U {
         return null;
     }
 
+    /**
+     * <pre>
+     * try (
+     *     InputStream input = ...;
+     *     OutputStream output = ...;
+     * ) {
+     *     inputToOutput(input, output);
+     * }
+     * </pre>
+     */
     public static void inputToOutput(InputStream input, OutputStream output) {
         try {
             // guava
@@ -1005,21 +1014,29 @@ public final class U {
         }
     }
 
-    public static void inputToOutputWithChannel(InputStream input, OutputStream output) {
-        try (
-                ReadableByteChannel in = Channels.newChannel(input);
-                WritableByteChannel out = Channels.newChannel(output);
-        ) {
-            // FileOutputStream ...getChannel().transferFrom(in, 0, Long.MAX_VALUE);
-
+    /**
+     * <pre>
+     * try (
+     *         InputStream inputStream = ...;
+     *         OutputStream outputStream = ...;
+     *
+     *         ReadableByteChannel input = Channels.newChannel(inputStream);
+     *         WritableByteChannel output = Channels.newChannel(outputStream);
+     * ) {
+     *     inputToOutputWithChannel(input, output);
+     * }
+     * </pre>
+     */
+    public static void inputToOutputWithChannel(ReadableByteChannel input, WritableByteChannel output) {
+        try {
             ByteBuffer buffer = ByteBuffer.allocateDirect(8192);
-            while (in.read(buffer) != -1) {
+            while (input.read(buffer) != -1) {
                 buffer.flip();
-                out.write(buffer);
+                output.write(buffer);
                 buffer.clear();
             }
         } catch (IOException e) {
-            throw new RuntimeException("input to file output exception", e);
+            throw new RuntimeException("input to output with channel exception", e);
         }
     }
 
