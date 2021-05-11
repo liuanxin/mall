@@ -47,11 +47,11 @@ public final class Const {
     public static final String REDIRECT_PREFIX = "redirect:";
 
     /** pc 端传过来的 token 的 key */
-    public static final String TOKEN = "x-token";
+    public static final String TOKEN = "X-Token";
     /** pc 端传过来的 version 的 key */
-    public static final String VERSION = "x-version";
+    public static final String VERSION = "X-Version";
     /** pc 端放在 cookie 中的跟踪号 */
-    public static final String TRACE = "x-trace";
+    public static final String TRACE = "X-Trace";
     /** pc 端放在 cookie 中的跟踪号的过期时间, 负数表示浏览器关闭就没了, 0 表示删除 cookie, 单位: 秒 */
     public static final int TRACE_EXPIRY_SECOND = 30 * 24 * 60 * 60;
     /** pc 端放在 cookie 中的跟踪号的续时时间, 当过期时间小于这个值时就重新设置过期时间 */
