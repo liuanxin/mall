@@ -29,7 +29,7 @@ public final class LogUtil {
             MDC.put(START_TIME, U.toStr(System.currentTimeMillis()));
         }
         if (U.isBlank(MDC.get(TRACE_ID))) {
-            MDC.put(TRACE_ID, " " + (U.isBlank(traceId) ? U.generateTraceId() : traceId));
+            MDC.put(TRACE_ID, " " + (U.isBlank(traceId) ? U.uuid16() : traceId));
         }
     }
     /** 日志上下文中没有 请求上下文信息 则返回 true */

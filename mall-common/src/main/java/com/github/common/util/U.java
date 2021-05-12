@@ -714,8 +714,8 @@ public final class U {
     public static String uuid() {
         return UUID.randomUUID().toString().replace("-", EMPTY);
     }
-    /** 生成跟踪 id */
-    public static String generateTraceId() {
+    /** 生成 16 的 uuid */
+    public static String uuid16() {
         return uuid().substring(8, 24);
     }
 
