@@ -29,6 +29,7 @@ public final class LogUtil {
             MDC.put(START_TIME, U.toStr(System.currentTimeMillis()));
         }
         if (U.isBlank(MDC.get(TRACE_ID))) {
+            // xml 中没有加空格, 在值的前面加一个空格
             MDC.put(TRACE_ID, " " + (U.isBlank(traceId) ? U.uuid16() : traceId));
         }
     }
