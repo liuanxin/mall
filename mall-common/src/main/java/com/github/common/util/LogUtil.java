@@ -17,16 +17,16 @@ public final class LogUtil {
     public static final Logger SQL_LOG = LoggerFactory.getLogger("sqlLog");
 
     /** 接收到请求的时间  */
-    private static final String START_TIME = "startRequestTime";
+    private static final String START_REQUEST_TIME = "Start_Request_Time";
     /** 在日志上下文中记录的跟踪 id */
-    private static final String TRACE_ID = "traceId";
+    private static final String TRACE_ID = "Trace_Id";
     /** 在日志上下文中记录的请求信息: 包括 ip、url, param 等  */
-    private static final String REQUEST_INFO = "requestInfo";
+    private static final String REQUEST_INFO = "Request_Info";
 
     /** 将 跟踪号 和 接收到请求的时间 放进日志上下文 */
     public static void bindBasicInfo(String traceId) {
-        if (U.isBlank(MDC.get(START_TIME))) {
-            MDC.put(START_TIME, U.toStr(System.currentTimeMillis()));
+        if (U.isBlank(MDC.get(START_REQUEST_TIME))) {
+            MDC.put(START_REQUEST_TIME, U.toStr(System.currentTimeMillis()));
         }
         if (U.isBlank(MDC.get(TRACE_ID))) {
             // xml 中没有加空格, 在值的前面加一个空格
@@ -58,7 +58,7 @@ public final class LogUtil {
     }
 
     public static long getStartTimeMillis() {
-        return U.toLong(MDC.get(START_TIME));
+        return U.toLong(MDC.get(START_REQUEST_TIME));
     }
     public static String getTraceId() {
         return MDC.get(TRACE_ID);
