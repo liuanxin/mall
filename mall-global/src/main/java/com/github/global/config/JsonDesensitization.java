@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
@@ -20,14 +21,19 @@ import java.io.IOException;
 public class JsonDesensitization {
 
     /** 单个字符串的长度超出此值则进行脱敏, 只输出前后. 如 max 是 5, left_right 是 1, 当输入「abcde」将输出成「a ... e」 */
-    private static final int SINGLE_FIELD_MAX_LENGTH = 500;
+    @Value("${json.singleFieldMaxLength:500}")
+    private int singleFieldMaxLength;
     /** 单个字符串只输出前后的长度. 如 max 是 5, left_right 是 1, 当输入「abcde」将输出成「a ... e」 */
-    private static final int SINGLE_FIELD_LEFT_RIGHT_LENGTH = 100;
+    @Value("${json.singleFieldLeftRightLength:100}")
+    private int singleFieldLeftRightLength;
 
     /** 总字符串的长度超出此值则进行脱敏, 只输出前后 */
-    private static final int STRING_MAX_LENGTH = 2000;
+    @Value("${json.stringMaxLength:2000}")
+    private int stringMaxLength;
     /** 总字符串只输出前后的长度 */
-    private static final int STRING_LEFT_RIGHT_LENGTH = 400;
+    @Value("${json.stringLeftRightLength:400}")
+    private int stringLeftRightLength;
+
 
     private final ObjectMapper desensitizationMapper;
 
@@ -64,9 +70,9 @@ public class JsonDesensitization {
 
                 // 过长的字段只输出前后字符
                 int len = value.length();
-                if (len >= SINGLE_FIELD_MAX_LENGTH) {
-                    String left = value.substring(0, SINGLE_FIELD_LEFT_RIGHT_LENGTH);
-                    String right = value.substring(len - SINGLE_FIELD_LEFT_RIGHT_LENGTH, len);
+                if (len >= singleFieldMaxLength) {
+                    String left = value.substring(0, singleFieldLeftRightLength);
+                    String right = value.substring(len - singleFieldLeftRightLength, len);
                     gen.writeString(left + " ... " + right);
                     return;
                 }
@@ -77,15 +83,15 @@ public class JsonDesensitization {
 
     public String handle(Object data) {
         if (U.isNull(data)) {
-            return null;
+            return U.EMPTY;
         }
         try {
             String json = desensitizationMapper.writeValueAsString(data);
             if (U.isNotBlank(json)) {
                 int len = json.length();
-                if (len >= STRING_MAX_LENGTH) {
-                    String left = json.substring(0, STRING_LEFT_RIGHT_LENGTH);
-                    String right = json.substring(len - STRING_LEFT_RIGHT_LENGTH, len);
+                if (len >= stringMaxLength) {
+                    String left = json.substring(0, stringLeftRightLength);
+                    String right = json.substring(len - stringLeftRightLength, len);
                     json = left + " ... " + right;
                 }
             }
@@ -94,7 +100,7 @@ public class JsonDesensitization {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("data desensitization exception", e);
             }
-            return null;
+            return U.EMPTY;
         }
     }
 }
