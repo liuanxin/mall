@@ -1,6 +1,8 @@
 package com.github.common.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.github.common.util.LogUtil;
+import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiReturn;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,16 +34,17 @@ public class JsonResult<T> {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private T data;
 
-    /*
-    // 这里只在登录接口那里返回
-    @ApiReturn("需要 app 保存到本地的值(pc 无视), 每次请求都带上, key 是" + Const.TOKEN + ", header 或 param 都可")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private String token;
-    */
+    private String traceId;
 
     private JsonResult(JsonCode code, String msg) {
         this.code = code;
         this.msg = msg;
+
+        String traceId = LogUtil.getTraceId();
+        if (U.isNotBlank(traceId)) {
+            this.traceId = traceId;
+        }
     }
     private JsonResult(JsonCode code, String msg, List<String> errorList) {
         this(code, msg);
