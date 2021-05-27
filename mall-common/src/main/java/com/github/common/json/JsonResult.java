@@ -2,7 +2,6 @@ package com.github.common.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiReturn;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,17 +33,9 @@ public class JsonResult<T> {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private T data;
 
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private String traceId;
-
     private JsonResult(JsonCode code, String msg) {
         this.code = code;
         this.msg = msg;
-
-        String traceId = LogUtil.getTraceId();
-        if (U.isNotBlank(traceId)) {
-            this.traceId = traceId;
-        }
     }
     private JsonResult(JsonCode code, String msg, List<String> errorList) {
         this(code, msg);
@@ -53,6 +44,12 @@ public class JsonResult<T> {
     private JsonResult(JsonCode code, String msg, T data) {
         this(code, msg);
         this.data = data;
+    }
+
+    /** 跟踪号 */
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public String getTraceId() {
+        return LogUtil.getTraceId();
     }
 
 
