@@ -5,7 +5,6 @@ import com.github.common.annotation.NotNeedLogin;
 import com.github.common.annotation.NotNeedPermission;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtils;
-import com.github.common.util.U;
 import com.github.util.ManagerSessionUtil;
 import com.google.common.collect.Lists;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -50,10 +49,7 @@ public class ManagerInterceptor implements HandlerInterceptor {
     }
 
     private void bindParam() {
-        String traceId = RequestUtils.getCookieValue(Const.TRACE);
-        if (U.isBlank(traceId)) {
-            traceId = RequestUtils.getHeaderOrParam(Const.TRACE);
-        }
+        String traceId = RequestUtils.getCookieOrHeaderOrParam(Const.TRACE);
         LogUtil.bindContext(traceId, RequestUtils.logContextInfo().setUser(ManagerSessionUtil.getUserInfo()));
     }
 

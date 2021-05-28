@@ -18,9 +18,9 @@ public final class RequestUtils {
     private static final String USER_AGENT = "user-agent";
     private static final String REFERRER = "referer";
 
-    private static final String HTTP = "http://";
-    private static final String HTTPS = "https://";
     private static final String SCHEME = "//";
+    private static final String HTTP = "http:" + SCHEME;
+    private static final String HTTPS = "https:" + SCHEME;
     private static final String URL_SPLIT = "/";
     private static final String WWW = "www.";
 
@@ -189,6 +189,12 @@ public final class RequestUtils {
         return upload ? "uploading file" : U.formatParam(request.getParameterMap());
     }
 
+    /** 从 cookie 中获取值, 为空就从请求头中取, 为空再从参数中取 */
+    public static String getCookieOrHeaderOrParam(String name) {
+        String value = getCookieValue(name);
+        return U.isBlank(value) ? getHeaderOrParam(name) : value;
+    }
+
     /** 先从请求头中查, 为空再从参数中查 */
     public static String getHeaderOrParam(String param) {
         HttpServletRequest request = getRequest();
@@ -202,7 +208,7 @@ public final class RequestUtils {
     /** 从 cookie 中获取值 */
     public static String getCookieValue(String name) {
         Cookie cookie = getCookie(name);
-        return U.isBlank(cookie) ? U.EMPTY : cookie.getValue();
+        return U.isNull(cookie) ? U.EMPTY : cookie.getValue();
     }
     private static Cookie getCookie(String name) {
         HttpServletRequest request = getRequest();
