@@ -2,12 +2,16 @@
 server.port: 8787
 
 online: false
+log:
+  level: debug
+  sqlLevel: debug
+  thirdLevel: warn
 
 spring:
   profiles.active: dev
   application.name: web-manager
   mvc.throw-exception-if-no-handler-found: true
-  resources.add-mappings: false
+  web.resources.add-mappings: false
   redis:
     host: dev-redis
     port: 6379
