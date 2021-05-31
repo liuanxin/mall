@@ -16,10 +16,14 @@ import javax.mail.internet.InternetAddress;
 import java.io.File;
 import java.util.List;
 
+/**
+ * @see org.springframework.boot.autoconfigure.mail.MailProperties
+ * @see org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Configuration
-@ConditionalOnClass({ Message.class, JavaMailSenderImpl.class })
+@ConditionalOnClass({ Message.class, JavaMailSender.class })
 public class MailSender {
 
     private final JavaMailSender mailSender;
