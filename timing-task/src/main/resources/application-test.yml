@@ -1,5 +1,9 @@
 
 online: false
+log:
+  level: debug
+  sqlLevel: debug
+  thirdLevel: warn
 
 spring:
   application.name: task

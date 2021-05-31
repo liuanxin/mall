@@ -2,6 +2,7 @@
 online: true
 log:
   level: info
+  sqlLevel: info
   thirdLevel: error
 
 spring:
