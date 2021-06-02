@@ -54,7 +54,7 @@
         <commons-lang3.version>3.11</commons-lang3.version>
         <commons-fileupload.version>1.4</commons-fileupload.version>
         <poi-ooxml.version>5.0.0</poi-ooxml.version>
-        <easyexcel.version>2.2.7</easyexcel.version>
+        <easyexcel.version>2.2.10</easyexcel.version>
         <opencsv.version>5.3</opencsv.version>
 
         <elasticsearch.version>7.11.2</elasticsearch.version>
@@ -196,6 +196,36 @@
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
                 <version>${poi-ooxml.version}</version>
+                <exclusions>
+                    <exclusion> <!-- 压缩 -->
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-compress</artifactId>
+                    </exclusion>
+                    <exclusion> <!-- 数学曲线 -->
+                        <groupId>com.github.virtuald</groupId>
+                        <artifactId>curvesapi</artifactId>
+                    </exclusion>
+                    <exclusion> <!-- hash 算法, csr 证书 -->
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcpkix-jdk15on</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcprov-jdk15on</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.santuario</groupId>
+                        <artifactId>xmlsec</artifactId>
+                    </exclusion>
+                    <exclusion> <!-- svg -->
+                        <groupId>org.apache.xmlgraphics</groupId>
+                        <artifactId>batik-all</artifactId>
+                    </exclusion>
+                    <exclusion> <!-- pdf -->
+                        <groupId>de.rototor.pdfbox</groupId>
+                        <artifactId>graphics2d</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.alibaba</groupId>
