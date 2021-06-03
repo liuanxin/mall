@@ -47,25 +47,25 @@
 
         <!-- 所有的版本都在此处统一控制, 不要在其他地方设置! -->
 
-        <guava.version>30.1-jre</guava.version>
-        <joda.version>2.10.9</joda.version>
-        <javassist.version>3.27.0-GA</javassist.version>
+        <guava.version>30.1.1-jre</guava.version>
+        <joda.version>2.10.10</joda.version>
+        <javassist.version>3.28.0-GA</javassist.version>
         <okhttp.version>3.14.9</okhttp.version>
-        <commons-lang3.version>3.11</commons-lang3.version>
+        <commons-lang3.version>3.12.0</commons-lang3.version>
         <commons-fileupload.version>1.4</commons-fileupload.version>
         <poi-ooxml.version>5.0.0</poi-ooxml.version>
         <easyexcel.version>2.2.10</easyexcel.version>
         <opencsv.version>5.3</opencsv.version>
 
         <elasticsearch.version>7.11.2</elasticsearch.version>
-        <redisson.version>3.15.2</redisson.version>
-        <hikaricp.version>4.0.1</hikaricp.version>
+        <redisson.version>3.15.5</redisson.version>
+        <hikaricp.version>4.0.3</hikaricp.version>
         <!--<mysql.version>5.1.49 | 8.0.23</mysql.version>-->
-        <mybatis-plus.version>3.4.2</mybatis-plus.version>
+        <mybatis-plus.version>3.4.3</mybatis-plus.version>
         <mybatis-redis-cache.version>1.2.7</mybatis-redis-cache.version>
 
         <api-document.version>0.8.1</api-document.version>
-        <google-jib.version>2.7.1</google-jib.version>
+        <google-jib.version>3.0.0</google-jib.version>
     </properties>
 
     <dependencyManagement>

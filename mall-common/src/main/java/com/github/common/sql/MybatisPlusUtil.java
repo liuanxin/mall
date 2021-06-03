@@ -2,8 +2,8 @@ package com.github.common.sql;
 
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
+import com.baomidou.mybatisplus.core.toolkit.support.LambdaMeta;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import com.baomidou.mybatisplus.core.toolkit.support.SerializedLambda;
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.Lists;
 import org.apache.ibatis.reflection.property.PropertyNamer;
@@ -74,9 +74,9 @@ public class MybatisPlusUtil {
      * @return 实体中的属性对应的数据库字段名, 如 id
      */
     public static <T> String fieldToColumn(SFunction<T, ?> column) {
-        SerializedLambda lambda = LambdaUtils.resolve(column);
+        LambdaMeta lambda = LambdaUtils.extract(column);
         String fieldName = PropertyNamer.methodToProperty(lambda.getImplMethodName());
-        Map<String, ColumnCache> columnMap = LambdaUtils.getColumnMap(lambda.getInstantiatedType());
+        Map<String, ColumnCache> columnMap = LambdaUtils.getColumnMap(lambda.getInstantiatedClass());
 
         String returnColumn;
         if (columnMap != null && columnMap.size() > 0) {
