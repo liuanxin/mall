@@ -5,6 +5,7 @@ import com.github.common.date.DateUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtils;
 import com.github.common.util.U;
+import com.github.global.constant.GlobalConst;
 import javassist.ClassPool;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +39,8 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
     @Override
     protected void beforeBodyWriteInternal(MappingJacksonValue bodyContainer, MediaType contentType, MethodParameter parameter,
                                            ServerHttpRequest request, ServerHttpResponse response) {
-        if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+        String uri = RequestUtils.getRequestUri();
+        if (LogUtil.ROOT_LOG.isInfoEnabled() && !GlobalConst.EXCLUDE_PATH_SET.contains(uri)) {
             String json = jsonDesensitization.handle(bodyContainer.getValue());
             if (U.isNotBlank(json)) {
                 boolean notRequestInfo = LogUtil.hasNotRequestInfo();

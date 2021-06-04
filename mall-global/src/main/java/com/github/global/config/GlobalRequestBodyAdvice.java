@@ -2,8 +2,11 @@ package com.github.global.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.common.util.A;
 import com.github.common.util.LogUtil;
+import com.github.common.util.RequestUtils;
 import com.github.common.util.U;
+import com.github.global.constant.GlobalConst;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +48,8 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override
     public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
                                            Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
-        if (sufferErrorRequest) {
+        String uri = RequestUtils.getRequestUri();
+        if (sufferErrorRequest && !GlobalConst.EXCLUDE_PATH_SET.contains(uri)) {
             return new HttpInputMessage() {
                 @Override
                 public HttpHeaders getHeaders() {
@@ -73,7 +77,7 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
                         }
                     } catch (Exception e) {
                         if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                            LogUtil.ROOT_LOG.error("bind @RequestBody bytes to log-context exception", e);
+                            LogUtil.ROOT_LOG.error(String.format("@RequestBody bytes(%s) read exception", A.toString(bytes)), e);
                         }
                     }
                     return new ByteArrayInputStream(bytes);
@@ -86,8 +90,9 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override
     public Object afterBodyRead(Object body, HttpInputMessage inputMessage, MethodParameter parameter,
                                 Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
+        String uri = RequestUtils.getRequestUri();
         // body 类跟传入的 inputStream 转换失败将进不到这里面来
-        if (!sufferErrorRequest) {
+        if (!sufferErrorRequest && !GlobalConst.EXCLUDE_PATH_SET.contains(uri)) {
             LogUtil.bindRequestBody(jsonDesensitization.handle(body));
         }
         return super.afterBodyRead(body, inputMessage, parameter, targetType, converterType);
