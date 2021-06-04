@@ -771,11 +771,6 @@ public final class U {
         return url.substring(url.lastIndexOf("/") + 1, last);
     }
 
-    /** 当值为 null, 空白符, "null" 时, 返回空字符串 */
-    public static String getNil(Object obj) {
-        return isBlank(obj) ? EMPTY : obj.toString().trim();
-    }
-
     /** 属性转换成方法, 加上 get 并首字母大写 */
     public static String fieldToMethod(String field) {
         if (isBlank(field)) {
@@ -819,16 +814,16 @@ public final class U {
         } else if (value.getClass().isEnum()) {
             // 如果是枚举, 则调用其 getValue 方法, getValue 没有值则使用枚举的 name
             Object enumValue = getMethod(value, "getValue");
-            return getNil(enumValue != null ? enumValue : value);
+            return toStr(enumValue != null ? enumValue : value);
         } else if (value instanceof Date) {
             // 如果是日期, 则格式化
             if (split.length > 1 && isNotBlank(split[1])) {
-                return getNil(DateUtil.format((Date) value, split[1]));
+                return toStr(DateUtil.format((Date) value, split[1]));
             } else {
-                return getNil(DateUtil.formatDateTime((Date) value));
+                return toStr(DateUtil.formatDateTime((Date) value));
             }
         } else {
-            return getNil(value);
+            return toStr(value);
         }
     }
 

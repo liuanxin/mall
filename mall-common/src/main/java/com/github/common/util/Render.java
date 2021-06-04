@@ -51,6 +51,6 @@ public final class Render {
         if (U.isNotBlank(path)) {
             path = path.startsWith("/") ? path.substring(1) : path;
         }
-        return url(U.getNil(path));
+        return url(U.toStr(path));
     }
 }

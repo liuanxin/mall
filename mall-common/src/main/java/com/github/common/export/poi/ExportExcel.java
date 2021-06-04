@@ -161,7 +161,7 @@ public class ExportExcel {
                     cell = row.createCell(cellIndex);
                     cell.setCellStyle(headStyle);
 
-                    String title = U.getNil(titleMapEntry.getValue().split("\\|")[0]);
+                    String title = U.toStr(titleMapEntry.getValue().split("\\|")[0]);
                     cell.setCellValue(title);
                     setWidthAndHeight(cell, title);
                     cellIndex++;
