@@ -53,19 +53,21 @@ public class JsonDesensitization {
                 }
 
                 // 脱敏字段
-                String key = gen.getOutputContext().getCurrentName().toLowerCase();
-                switch (key) {
-                    case "password":
-                        gen.writeString("***");
-                        return;
-                    case "phone":
-                        gen.writeString(U.foggyPhone(value));
-                        return;
-                    case "id_card":
-                    case "id-card":
-                    case "idcard":
-                        gen.writeString(U.foggyIdCard(value));
-                        return;
+                String key = gen.getOutputContext().getCurrentName();
+                if (U.isNotBlank(key)) {
+                    switch (key.toLowerCase()) {
+                        case "password":
+                            gen.writeString("***");
+                            return;
+                        case "phone":
+                            gen.writeString(U.foggyPhone(value));
+                            return;
+                        case "id_card":
+                        case "id-card":
+                        case "idcard":
+                            gen.writeString(U.foggyIdCard(value));
+                            return;
+                    }
                 }
 
                 // 过长的字段只输出前后字符
