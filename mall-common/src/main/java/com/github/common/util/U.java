@@ -923,21 +923,27 @@ public final class U {
 
     public static Class<?> getFieldType(Object obj, String field) {
         if (isNotBlank(field)) {
+            Class<?> clazz = obj.getClass();
             try {
-                Field f = obj.getClass().getDeclaredField(field);
+                Field f = clazz.getDeclaredField(field);
                 if (isNotBlank(f)) {
                     return f.getType();
                 }
             } catch (NoSuchFieldException ignore) {
             }
-            // getMethod 会将从父类继承过来的 public 方法也查询出来
             try {
-                Field f = obj.getClass().getField(field);
+                Field f = clazz.getField(field);
                 if (isNotBlank(f)) {
                     return f.getType();
                 }
             } catch (NoSuchFieldException ignore) {
             }
+
+            Class<?> superclass = clazz.getSuperclass();
+            if (superclass == Object.class) {
+                return null;
+            }
+            return getFieldType(superclass, field);
         }
         return null;
     }
