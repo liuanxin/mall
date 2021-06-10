@@ -20,6 +20,10 @@ import java.io.IOException;
 @AutoConfigureAfter(JacksonAutoConfiguration.class)
 public class JsonDesensitization {
 
+    /** 是否进行脱敏 */
+    @Value("${json.desensitization:true}")
+    private boolean desensitization;
+
     /** 单个字符串的长度超出此值则进行脱敏, 只输出前后. 如 max 是 5, left_right 是 1, 当输入「abcde」将输出成「a ... e」 */
     @Value("${json.singleFieldMaxLength:500}")
     private int singleFieldMaxLength;
@@ -35,9 +39,11 @@ public class JsonDesensitization {
     private int stringLeftRightLength;
 
 
+    private final ObjectMapper objectMapper;
     private final ObjectMapper desensitizationMapper;
 
     public JsonDesensitization(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
         this.desensitizationMapper = objectMapper.copy();
         this.desensitizationMapper.registerModule(new SimpleModule().addSerializer(String.class, new JsonSerializer<String>() {
             @Override
@@ -87,15 +93,21 @@ public class JsonDesensitization {
         if (U.isNull(data)) {
             return U.EMPTY;
         }
+
         try {
-            String json = desensitizationMapper.writeValueAsString(data);
-            if (U.isNotBlank(json)) {
-                int len = json.length();
-                if (len >= stringMaxLength) {
-                    String left = json.substring(0, stringLeftRightLength);
-                    String right = json.substring(len - stringLeftRightLength, len);
-                    json = left + " ... " + right;
+            String json;
+            if (desensitization) {
+                json = desensitizationMapper.writeValueAsString(data);
+                if (U.isNotBlank(json)) {
+                    int len = json.length();
+                    if (len >= stringMaxLength) {
+                        String left = json.substring(0, stringLeftRightLength);
+                        String right = json.substring(len - stringLeftRightLength, len);
+                        json = left + " ... " + right;
+                    }
                 }
+            } else {
+                json = objectMapper.writeValueAsString(data);
             }
             return json;
         } catch (Exception e) {
