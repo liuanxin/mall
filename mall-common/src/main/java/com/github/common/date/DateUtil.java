@@ -1,9 +1,7 @@
 package com.github.common.date;
 
 import com.github.common.util.U;
-import org.joda.time.DateTime;
-import org.joda.time.Days;
-import org.joda.time.Seconds;
+import org.joda.time.*;
 import org.joda.time.format.DateTimeFormat;
 
 import java.text.ParseException;
@@ -416,6 +414,22 @@ public class DateUtil {
         DateTime dt = DateTime.now();
         DateTime dateTime = new DateTime(date);
         return dt.getMonthOfYear() == dateTime.getMonthOfYear() && dt.getDayOfMonth() == dateTime.getDayOfMonth();
+    }
+
+    /** 计算两个日期之间相差的年数. 如果 start 比 end 大将会返回负数 */
+    public static int betweenYear(Date start, Date end) {
+        if (U.isBlank(start) || U.isBlank(end)) {
+            return 0;
+        }
+        return Years.yearsBetween(new DateTime(start), new DateTime(end)).getYears();
+    }
+
+    /** 计算两个日期之间相差的月数. 如果 start 比 end 大将会返回负数 */
+    public static int betweenMonth(Date start, Date end) {
+        if (U.isBlank(start) || U.isBlank(end)) {
+            return 0;
+        }
+        return Months.monthsBetween(new DateTime(start), new DateTime(end)).getMonths();
     }
 
     /** 计算两个日期之间相差的天数. 如果 start 比 end 大将会返回负数 */
