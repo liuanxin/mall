@@ -35,7 +35,7 @@ public class TaskConfig implements AsyncConfigurer {
         executor.setThreadNamePrefix("task-executor-");  // 线程名字的前缀
         executor.setTaskDecorator(runnable -> {
             Map<String, String> contextMap = MDC.getCopyOfContextMap();
-            // 把主线程运行时的日志上下文放到异步任务的日志上下文里面去
+            // 把主线程运行时的日志上下文放到异步任务的日志上下文去
             return () -> {
                 try {
                     MDC.setContextMap(contextMap);
