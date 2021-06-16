@@ -76,7 +76,10 @@ public class JsonUtil {
     }
 
     public static <T,S> T convert(S source, TypeReference<T> type) {
-        return U.isBlank(source) ? null : toObjectNil(toJsonNil(source), type);
+        if (U.isBlank(source)) {
+            return null;
+        }
+        return toObjectNil((source instanceof String) ? source.toString() : toJsonNil(source), type);
     }
 
     /** 对象转换成 json 字符串 */
