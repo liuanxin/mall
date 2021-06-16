@@ -1,6 +1,7 @@
 package com.github.global.config;
 
 import com.github.common.util.U;
+import org.slf4j.MDC;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +9,7 @@ import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 /**
@@ -31,6 +33,18 @@ public class TaskConfig implements AsyncConfigurer {
         executor.setMaxPoolSize(U.PROCESSORS << 3);      // 8 * 8 = 64
         executor.setQueueCapacity((U.PROCESSORS << 8) - (U.PROCESSORS << 3)); // (8 * 256) - (8 * 8) = 1984
         executor.setThreadNamePrefix("task-executor-");  // 线程名字的前缀
+        executor.setTaskDecorator(runnable -> {
+            Map<String, String> contextMap = MDC.getCopyOfContextMap();
+            // 把主线程运行时的日志上下文放到异步任务的日志上下文里面去
+            return () -> {
+                try {
+                    MDC.setContextMap(contextMap);
+                    runnable.run();
+                } finally {
+                    MDC.clear();
+                }
+            };
+        });
         executor.initialize();
         return executor;
     }
