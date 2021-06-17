@@ -3,12 +3,11 @@ package com.github.global.config;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.common.date.DateUtil;
 import com.github.common.util.ApplicationContexts;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -28,7 +27,17 @@ public class GlobalConfig {
     @ConditionalOnClass(ObjectMapper.class)
     public static class JsonModule {
 
-        @Bean
+        @JsonComponent
+        public static class DataJsonModule {
+            public static class Serializer extends JsonDeserializer<Date> {
+                @Override
+                public Date deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+                    return DateUtil.parse(p.getText().trim());
+                }
+            }
+        }
+
+        /*@Bean
         public Module customModule() {
             SimpleModule module = new SimpleModule();
             module.addDeserializer(Date.class, new JsonDeserializer<Date>() {
@@ -38,6 +47,6 @@ public class GlobalConfig {
                 }
             });
             return module;
-        }
+        }*/
     }
 }
