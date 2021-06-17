@@ -33,7 +33,7 @@ public class GlobalConfig {
             SimpleModule module = new SimpleModule();
             module.addDeserializer(Date.class, new JsonDeserializer<Date>() {
                 @Override
-                public Date deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+                public Date deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
                     return DateUtil.parse(p.getText().trim());
                 }
             });
