@@ -33,6 +33,7 @@ public class TaskConfig implements AsyncConfigurer {
         executor.setMaxPoolSize(U.PROCESSORS << 3);      // 8 * 8 = 64
         executor.setQueueCapacity((U.PROCESSORS << 8) - (U.PROCESSORS << 3)); // (8 * 256) - (8 * 8) = 1984
         executor.setThreadNamePrefix("task-executor-");  // 线程名字的前缀
+        // 见: https://moelholm.com/blog/2017/07/24/spring-43-using-a-taskdecorator-to-copy-mdc-data-to-async-threads
         executor.setTaskDecorator(runnable -> {
             Map<String, String> contextMap = MDC.getCopyOfContextMap();
             // 把主线程运行时的日志上下文放到异步任务的日志上下文去

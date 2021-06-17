@@ -21,37 +21,37 @@ public enum DateFormatType {
     /** yyyy-MM-dd am/pm --> am/pm 会根据时区自动完成, 也就是如果当前时区是北京的话, 会显示成 上午/下午 */
     YYYY_MM_DD_AP("yyyy-MM-dd a"),
 
-    /** yyyyMMddHHmmssSSS */
-    YYYYMMDDHHMMSSSSS("yyyyMMddHHmmssSSS"),
-    /** yyyyMMddHHmmss */
-    YYYYMMDDHHMMSS("yyyyMMddHHmmss"),
-    /** yyMMddHHmmss */
-    YYMMDDHHMMSS("yyMMddHHmmss"),
-    /** yyyyMMddHHmm */
-    YYYYMMDDHHMM("yyyyMMddHHmm"),
-    /** yyMMddHHmm */
-    YYMMDDHHMM("yyMMddHHmm"),
-    /** yyyyMMdd */
-    YYYYMMDD("yyyyMMdd"),
-    /** yyMMdd */
-    YYMMDD("yyMMdd"),
-    /** yyyyMM */
-    YYYYMM("yyyyMM"),
+    /** 到秒: yyyy-MM-ddTHH:mm:ssZ */
+    TZ("yyyy-MM-dd'T'HH:mm:ss'Z'"),
+    /** 到秒: yyyy-MM-ddTHH:mm:ss */
+    T("yyyy-MM-dd'T'HH:mm:ss"),
+    /** 到毫秒: yyyy-MM-ddTHH:mm:ss.SSSZ */
+    TSZ("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"),
+    /** 到毫秒: yyyy-MM-ddTHH:mm:ss.SSS */
+    TS("yyyy-MM-dd'T'HH:mm:ss.SSS"),
+
+    // 转换时如果处理了时间戳的情况, 以下的格式就不好再用了, 会有岐义
+//    /** yyyyMMddHHmmssSSS */
+//    YYYYMMDDHHMMSSSSS("yyyyMMddHHmmssSSS"),
+//    /** yyyyMMddHHmmss */
+//    YYYYMMDDHHMMSS("yyyyMMddHHmmss"),
+//    /** yyMMddHHmmss */
+//    YYMMDDHHMMSS("yyMMddHHmmss"),
+//    /** yyyyMMddHHmm */
+//    YYYYMMDDHHMM("yyyyMMddHHmm"),
+//    /** yyMMddHHmm */
+//    YYMMDDHHMM("yyMMddHHmm"),
+//    /** yyyyMMdd */
+//    YYYYMMDD("yyyyMMdd"),
+//    /** yyMMdd */
+//    YYMMDD("yyMMdd"),
+//    /** yyyyMM */
+//    YYYYMM("yyyyMM"),
 
     /** HH:mm:ss */
     HH_MM_SS("HH:mm:ss"),
     /** HH:mm */
     HH_MM("HH:mm"),
-
-    /** 到毫秒: yyyy-MM-ddTHH:mm:ss.SSSZ */
-    TSZ("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"),
-    /** 到毫秒: yyyy-MM-ddTHH:mm:ss.SSS */
-    TS("yyyy-MM-dd'T'HH:mm:ss.SSS"),
-    /** 到秒: yyyy-MM-ddTHH:mm:ssZ */
-    TZ("yyyy-MM-dd'T'HH:mm:ss'Z'"),
-    /** 到秒: yyyy-MM-ddTHH:mm:ss */
-    T("yyyy-MM-dd'T'HH:mm:ss"),
-
     /** yyyy/MM/dd */
     USA_YYYY_MM_DD("yyyy/MM/dd"),
     /** yyyy/MM/dd */

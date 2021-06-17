@@ -82,9 +82,12 @@ public class DateUtil {
     }
     public static Date parse(String source, DateFormatType type) {
         if (U.isNotBlank(source)) {
-            source = source.trim();
+            long ms = U.toLong(source);
+            if (ms > 0) {
+                // 时间戳如果只到秒(比如 php)就乘以 1000
+                return new Date((String.valueOf(ms).length() < 13) ? (ms * 1000) : ms);
+            }
 
-            Date date;
             if (type.isCst()) {
                 try {
                     // cst 单独处理
@@ -92,9 +95,9 @@ public class DateUtil {
                 } catch (ParseException | IllegalArgumentException ignore) {
                     return null;
                 }
-            } else {
-                return parse(source, type.getValue());
             }
+
+            return parse(source, type.getValue());
         }
         return null;
     }
