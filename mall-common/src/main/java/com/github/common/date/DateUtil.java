@@ -65,12 +65,18 @@ public class DateUtil {
     }
 
     /**
-     * 将字符串转换成 Date 对象. 类型基于 DateFormatType 一个一个试. cst 格式麻烦一点
+     * 将字符串转换成 Date 对象
      *
      * @see DateFormatType
      */
     public static Date parse(String source) {
         if (U.isNotBlank(source)) {
+            long ms = U.toLong(source);
+            if (ms > 0) {
+                // 时间戳如果只到秒(比如 php)就乘以 1000
+                return new Date((String.valueOf(ms).length() < 13) ? (ms * 1000) : ms);
+            }
+
             for (DateFormatType type : DateFormatType.values()) {
                 Date date = parse(source, type);
                 if (U.isNotBlank(date)) {
@@ -82,12 +88,6 @@ public class DateUtil {
     }
     public static Date parse(String source, DateFormatType type) {
         if (U.isNotBlank(source)) {
-            long ms = U.toLong(source);
-            if (ms > 0) {
-                // 时间戳如果只到秒(比如 php)就乘以 1000
-                return new Date((String.valueOf(ms).length() < 13) ? (ms * 1000) : ms);
-            }
-
             if (type.isCst()) {
                 try {
                     // cst 单独处理
@@ -96,7 +96,6 @@ public class DateUtil {
                     return null;
                 }
             }
-
             return parse(source, type.getValue());
         }
         return null;
