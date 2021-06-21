@@ -4,6 +4,9 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import java.util.Map;
+
+@SuppressWarnings("NullableProblems")
 public class ApplicationContexts implements ApplicationContextAware {
 
     private static ApplicationContext context;
@@ -21,5 +24,9 @@ public class ApplicationContexts implements ApplicationContextAware {
     @SuppressWarnings("unchecked")
     public static <T> T getBean(String name) {
         return (T) context.getBean(name);
+    }
+
+    public static <T> Map<String, T> getBeanWithType(Class<T> clazz) {
+        return context.getBeansOfType(clazz);
     }
 }
