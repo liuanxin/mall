@@ -21,6 +21,7 @@ public class BackendInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
                              Object handler) throws Exception {
         bindParam();
+        // RequestUtils.handleLocal("lang");
         checkLoginAndPermission(handler);
         return true;
     }
@@ -45,7 +46,6 @@ public class BackendInterceptor implements HandlerInterceptor {
         String traceId = RequestUtils.getCookieOrHeaderOrParam(Const.TRACE);
         LogUtil.bindContext(traceId, RequestUtils.logContextInfo().setUser(BackendSessionUtil.getUserInfo()));
     }
-
     private void unbindParam() {
         LogUtil.unbind();
     }
