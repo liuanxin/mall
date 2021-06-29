@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class DateUtil {
 
@@ -74,7 +75,7 @@ public class DateUtil {
             long ms = U.toLong(source);
             if (ms > 0) {
                 // 时间戳如果只到秒(比如 php)就乘以 1000
-                return new Date((String.valueOf(ms).length() < 13) ? (ms * 1000) : ms);
+                return new Date((String.valueOf(ms).length() < 13) ? TimeUnit.SECONDS.toMillis(ms) : ms);
             }
 
             for (DateFormatType type : DateFormatType.values()) {

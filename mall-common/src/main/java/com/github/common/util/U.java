@@ -5,6 +5,9 @@ import com.github.common.date.DateUtil;
 import com.github.common.exception.*;
 import com.github.common.json.JsonUtil;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
@@ -28,6 +31,9 @@ import java.util.regex.Pattern;
 /** 工具类 */
 public final class U {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(U.class);
+    private static final Pattern MULTI_SPACE_REGEX = Pattern.compile("\\s{2,}");
+
     public static final Random RANDOM = new Random();
 
     /** 本机的 cpu 核心数 */
@@ -35,8 +41,6 @@ public final class U {
 
     public static final String EMPTY = "";
     public static final String BLANK = " ";
-    private static final Pattern MULTI_SPACE_REGEX = Pattern.compile("\\s{2,}");
-
     private static final String LIKE = "%";
 
     /** 手机号. 见: https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%86%85%E5%9C%B0%E7%A7%BB%E5%8A%A8%E7%BB%88%E7%AB%AF%E9%80%9A%E8%AE%AF%E5%8F%B7%E6%AE%B5 */
@@ -827,19 +831,41 @@ public final class U {
         }
     }
 
+    /** 获取类的所有方法(包括父类) */
+    public static Set<Method> getAllMethod(Class<?> clazz) {
+        if (clazz.getName().equals(Object.class.getName())) {
+            return Collections.emptySet();
+        }
+
+        Set<Method> methodSet = Sets.newLinkedHashSet();
+        methodSet.addAll(Arrays.asList(clazz.getMethods()));
+
+        Class<?> superclass = clazz.getSuperclass();
+        if (superclass.getName().equals(Object.class.getName())) {
+            return methodSet;
+        }
+
+        Set<Method> tmpSet = getAllMethod(superclass);
+        if (tmpSet.size() > 0) {
+            methodSet.addAll(tmpSet);
+        }
+        return methodSet;
+    }
+
     /**
      * <pre>
      * 将 source 中字段的值填充到 target 中, 如果已经有值了就忽略 set
      *
-     * if (target.getName() != null) {
-     *     target.setName(source.getName());
+     * if (target.getXyz() != null) {
+     *     Object xyz = source.getXyz();
+     *     if (xyz != null) {
+     *         target.setXyz(xyz);
+     *     }
      * }
      *
-     * PS1: 字段类型如果是基础数据类型, 会有默认值 boolean: false, int, long, double: 0
-     * 判断是否为空将总是返回 true, 因此请使用包装类型
-     *
-     * PS2: 如果 target 有 extends 某个父类且只用 @lombok.Data 进行标注, 此时返回的 target 直接输出是没有父类的属性的
-     * 但实际已经 set 进去了, toJson 或在类上标注 @lombok.ToString(callSuper = true) 才会将父类的属性也输出</pre>
+     * PS: 字段类型如果是基础数据类型, 会有默认值: boolean 是 false, int、long、float、double 是 0
+     * 因此这时候判断不是空(上面的 target.getXyz() != null)时将总是返回 true, 因此请使用包装类型
+     * </pre>
      *
      * @param source 源对象
      * @param target 目标对象
@@ -849,21 +875,37 @@ public final class U {
     }
 
     /**
-     * 将 source 中字段的值填充到 target 中: target.setName(source.getName())
+     * 将 source 中字段的值填充到 target 中
+     *
+     * if (ignoreAlready) {
+     *     if (target.getXyz() != null) {
+     *         Object xyz = source.getXyz();
+     *         if (xyz != null) {
+     *             target.setXyz(xyz);
+     *         }
+     *     }
+     * } else {
+     *     Object xyz = source.getXyz();
+     *     if (xyz != null) {
+     *         target.setXyz(xyz);
+     *     }
+     * }
      *
      * @param source 源对象
      * @param target 目标对象
-     * @param ignoreAlready true: target 有值则不操作 set. PS: 基础数据类型将总是返回 true
+     * @param ignoreAlready true: 实体字段是有值的则不进行 set 操作
      */
     public static <S,T> void fillData(S source, T target, boolean ignoreAlready) {
-        Method[] targetMethods = target.getClass().getMethods();
+        Class<?> tc = target.getClass();
+        Method[] targetMethods = tc.getMethods();
 
         Map<String, Method> targetMethodMap = Maps.newHashMap();
         for (Method method : targetMethods) {
             targetMethodMap.put(method.getName(), method);
         }
 
-        Method[] sourceMethods = source.getClass().getMethods();
+        Class<?> sc = source.getClass();
+        Method[] sourceMethods = sc.getMethods();
         Map<String, Method> sourceMethodMap = Maps.newHashMap();
         for (Method method : sourceMethods) {
             sourceMethodMap.put(method.getName(), method);
@@ -871,11 +913,9 @@ public final class U {
         for (Method method : targetMethods) {
             String methodName = method.getName();
             if (methodName.startsWith("set")) {
-                String getMethodName = "get" + methodName.substring(3);
-                if (!sourceMethodMap.containsKey(getMethodName) &&
-                        (method.getReturnType().isAssignableFrom(boolean.class) || method.getReturnType().isAssignableFrom(Boolean.class))) {
-                    getMethodName = "is" + methodName.substring(2);
-                }
+                // boolean 的 get 方法是 isXxx(), 其他(包括 Boolean)都是 getXxx()
+                String getMethodName = method.getReturnType().getName().equals(boolean.class.getName())
+                        ? ("is" + methodName.substring(2)) : ("get" + methodName.substring(3));
                 if (sourceMethodMap.containsKey(getMethodName)) {
                     if (ignoreAlready) {
                         try {
@@ -883,21 +923,30 @@ public final class U {
                             if (oldResult != null) {
                                 continue;
                             }
-                        } catch (IllegalAccessException | InvocationTargetException ignore) {
+                        } catch (IllegalAccessException | InvocationTargetException e) {
+                            if (LOGGER.isDebugEnabled()) {
+                                LOGGER.debug(String.format("%s invoke %s exception", tc.getName(), getMethodName), e);
+                            }
                             continue;
                         }
                     }
 
-                    Object dataResult;
+                    Object targetObj;
                     try {
-                        dataResult = sourceMethodMap.get(getMethodName).invoke(source);
-                    } catch (IllegalAccessException | InvocationTargetException ignore) {
+                        targetObj = sourceMethodMap.get(getMethodName).invoke(source);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug(String.format("%s invoke %s exception", sc.getName(), getMethodName), e);
+                        }
                         continue;
                     }
-                    if (dataResult != null) {
+                    if (targetObj != null) {
                         try {
-                            method.invoke(target, dataResult);
-                        } catch (IllegalAccessException | InvocationTargetException ignore) {
+                            method.invoke(target, targetObj);
+                        } catch (IllegalAccessException | InvocationTargetException e) {
+                            if (LOGGER.isDebugEnabled()) {
+                                LOGGER.debug(String.format("%s invoke %s exception", tc.getName(), getMethodName), e);
+                            }
                         }
                     }
                 }
