@@ -89,17 +89,22 @@ public class ExportCsv {
     }
 
     private static String handleCsvContent(String content) {
-        if (content.contains(WIN_WRAP)) {
-            content = content.replace(WIN_WRAP, BLANK);
+        if (U.isNull(content)) {
+            return U.EMPTY;
         }
-        if (content.contains(WRAP)) {
-            content = content.replace(WRAP, SPACE);
-        }
-        if (content.contains(QUOTE)) {
-            content = content.replace(QUOTE, REPLACE_QUOTE);
-        }
-        if (content.contains(SPLIT) || content.contains(SPACE) || content.contains(QUOTE)) {
-            content = QUOTE + content + QUOTE;
+        if (U.isNotEmpty(content)) {
+            if (content.contains(WIN_WRAP)) {
+                content = content.replace(WIN_WRAP, BLANK);
+            }
+            if (content.contains(WRAP)) {
+                content = content.replace(WRAP, SPACE);
+            }
+            if (content.contains(QUOTE)) {
+                content = content.replace(QUOTE, REPLACE_QUOTE);
+            }
+            if (content.contains(SPLIT) || content.contains(SPACE) || content.contains(QUOTE)) {
+                content = QUOTE + content + QUOTE;
+            }
         }
         return content;
     }
