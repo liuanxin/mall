@@ -17,6 +17,8 @@ spring:
   redis:
     host: dev-redis
     port: 6379
+  jackson:
+    property-naming-strategy: com.fasterxml.jackson.databind.PropertyNamingStrategy.SnakeCaseStrategy  # 将驼峰(userName)转成下划线(user_name)返回
   datasource:
     url: jdbc:mysql://127.0.0.1:3306/test?useAffectedRows=true&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&statementInterceptors=com.github.common.sql.ShowSql5Interceptor
     driverClassName: com.mysql.jdbc.Driver
