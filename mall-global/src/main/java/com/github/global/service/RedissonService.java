@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 @AllArgsConstructor
 @Configuration
 @ConditionalOnClass({ RedissonClient.class })
-public class CacheRedisSonService {
+public class RedissonService {
 
     // https://github.com/redisson/redisson/wiki/11.-Redis-commands-mapping
 

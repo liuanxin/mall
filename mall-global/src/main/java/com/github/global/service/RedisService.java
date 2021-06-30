@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 @AllArgsConstructor
 @Configuration
 @ConditionalOnClass({ RedisTemplate.class })
-public class CacheService {
+public class RedisService {
 
     /** @see org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration */
     private final RedisTemplate<Object, Object> redisTemplate;
