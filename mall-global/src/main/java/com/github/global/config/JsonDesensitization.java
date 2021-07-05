@@ -89,7 +89,7 @@ public class JsonDesensitization {
         }));
     }
 
-    public String handle(Object data) {
+    public String toJson(Object data) {
         if (U.isNull(data)) {
             return U.EMPTY;
         }

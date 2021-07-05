@@ -41,7 +41,7 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
                                            ServerHttpRequest request, ServerHttpResponse response) {
         String uri = RequestUtils.getRequestUri();
         if (LogUtil.ROOT_LOG.isInfoEnabled() && !GlobalConst.EXCLUDE_PATH_SET.contains(uri)) {
-            String json = jsonDesensitization.handle(bodyContainer.getValue());
+            String json = jsonDesensitization.toJson(bodyContainer.getValue());
             if (U.isNotBlank(json)) {
                 boolean notRequestInfo = LogUtil.hasNotRequestInfo();
                 try {

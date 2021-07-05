@@ -327,14 +327,14 @@ public final class RequestUtils {
             }
 
             Locale locale = null;
-            if (U.isBlank(lan)) {
+            if (U.isNotBlank(lan)) {
                 locale = StringUtils.parseLocale(lan);
             }
-            if (U.isNull(locale)) {
+            if (U.isNull(locale) || U.isEmpty(locale.getCountry())) {
                 locale = request.getLocale();
-            }
-            if (U.isNull(locale)) {
-                locale = Locale.SIMPLIFIED_CHINESE;
+                if (U.isNull(locale) || U.isEmpty(locale.getCountry())) {
+                    locale = Locale.SIMPLIFIED_CHINESE;
+                }
             }
             LocaleContextHolder.setLocale(locale);
             LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
