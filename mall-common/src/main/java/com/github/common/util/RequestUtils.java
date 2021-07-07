@@ -38,6 +38,9 @@ public final class RequestUtils {
      */
     public static String getRealIp() {
         HttpServletRequest request = getRequest();
+        if (U.isNull(request)) {
+            return null;
+        }
 
         String ip = request.getHeader("X-Forwarded-For");
         if (U.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
@@ -77,12 +80,14 @@ public final class RequestUtils {
     }
 
     public static String userAgent() {
-        return getRequest().getHeader(USER_AGENT);
+        HttpServletRequest request = getRequest();
+        return U.isNull(request) ? U.EMPTY : request.getHeader(USER_AGENT);
     }
 
     /** 如果是 ie 请求就返回 true */
     public static boolean isIeRequest() {
-        return userAgent().toUpperCase().contains("MSIE");
+        String userAgent = userAgent();
+        return U.isNotNull(userAgent) && userAgent.toUpperCase().contains("MSIE");
     }
 
     /** 判断当前请求是否来自移动端, 来自移动端则返回 true */
@@ -93,6 +98,9 @@ public final class RequestUtils {
     /** 判断当前请求是否是 ajax 请求, 是 ajax 则返回 true */
     public static boolean isAjaxRequest() {
         HttpServletRequest request = getRequest();
+        if (U.isNull(request)) {
+            return false;
+        }
 
         String requestedWith = request.getHeader("X-Requested-With");
         if (U.isNotBlank(requestedWith) && "XMLHttpRequest".equals(requestedWith)) {
@@ -107,12 +115,14 @@ public final class RequestUtils {
 
     /** 请求头里的 referer 这个单词拼写是错误的, 应该是 referrer, 历史遗留问题 */
     public static String getReferrer() {
-        return getRequest().getHeader(REFERRER);
+        HttpServletRequest request = getRequest();
+        return U.isNull(request) ? U.EMPTY : request.getHeader(REFERRER);
     }
 
     /** 获取请求地址, 比如请求的是 http://www.abc.com/x/y 将返回 /x/y */
     public static String getRequestUri() {
-        return getRequest().getRequestURI();
+        HttpServletRequest request = getRequest();
+        return U.isNull(request) ? U.EMPTY : request.getRequestURI();
     }
     /** 获取请求地址, 如 http://www.abc.com/x/y */
     public static String getRequestUrl() {
@@ -121,9 +131,12 @@ public final class RequestUtils {
 
     /** 返回当前访问的域. 是 request.getRequestURL().toString() 中域的部分, 默认的 scheme 不会返回 https */
     public static String getDomain() {
-        StringBuilder sbd = new StringBuilder();
-
         HttpServletRequest request = getRequest();
+        if (U.isNull(request)) {
+            return U.EMPTY;
+        }
+
+        StringBuilder sbd = new StringBuilder();
         String proxyScheme = request.getHeader("X-Forwarded-Proto");
         String scheme = U.isNotBlank(proxyScheme) ? proxyScheme : request.getScheme();
 
@@ -189,6 +202,10 @@ public final class RequestUtils {
      */
     public static String formatParam() {
         HttpServletRequest request = getRequest();
+        if (U.isNull(request)) {
+            return U.EMPTY;
+        }
+
         String contentType = request.getContentType();
         boolean upload = U.isNotBlank(contentType) && contentType.startsWith("multipart/");
         return upload ? "uploading file" : U.formatParam(request.getParameterMap());
@@ -203,6 +220,10 @@ public final class RequestUtils {
     /** 先从请求头中查, 为空再从参数中查 */
     public static String getHeaderOrParam(String param) {
         HttpServletRequest request = getRequest();
+        if (U.isNull(request)) {
+            return U.EMPTY;
+        }
+
         String value = request.getHeader(param);
         if (U.isBlank(value)) {
             value = request.getParameter(param);
@@ -217,6 +238,10 @@ public final class RequestUtils {
     }
     private static Cookie getCookie(String name) {
         HttpServletRequest request = getRequest();
+        if (U.isNull(request)) {
+            return null;
+        }
+
         Cookie[] cookies = request.getCookies();
         if (A.isNotEmpty(cookies)) {
             for (Cookie cookie : cookies) {
@@ -230,6 +255,10 @@ public final class RequestUtils {
     /** 添加一个 http-only 的 cookie(浏览器环境中 js 用 document.cookie 获取时将会忽略) */
     public static void addHttpOnlyCookie(String name, String value, int second, int extendSecond) {
         HttpServletResponse response = getResponse();
+        if (U.isNull(response)) {
+            return;
+        }
+
         Cookie cookie = getCookie(name);
         if (U.isBlank(cookie)) {
             Cookie add = new Cookie(name, value);
@@ -237,19 +266,23 @@ public final class RequestUtils {
             add.setHttpOnly(true);
             add.setMaxAge(second);
             response.addCookie(add);
-        } else {
-            int maxAge = cookie.getMaxAge();
-            // 如果 cookie 中已经有值且过期时间在延长时间以内了, 则把 cookie 的过期时间延长到指定时间
-            if (maxAge > 0 && maxAge < extendSecond && second > extendSecond) {
-                cookie.setMaxAge(second);
-                response.addCookie(cookie);
-            }
+            return;
+        }
+
+        int maxAge = cookie.getMaxAge();
+        // 如果 cookie 中已经有值且过期时间在延长时间以内了, 则把 cookie 的过期时间延长到指定时间
+        if (maxAge > 0 && maxAge < extendSecond && second > extendSecond) {
+            cookie.setMaxAge(second);
+            response.addCookie(cookie);
         }
     }
 
     /** 格式化头里的参数: 键值以冒号分隔 */
     public static String formatHeadParam() {
         HttpServletRequest request = getRequest();
+        if (U.isNull(request)) {
+            return null;
+        }
 
         StringBuilder sbd = new StringBuilder();
         Enumeration<String> headers = request.getHeaderNames();
@@ -266,12 +299,16 @@ public final class RequestUtils {
         render("application/json", jsonResult);
     }
     private static <T> void render(String type, T jsonResult) {
+        HttpServletResponse response = getResponse();
+        if (U.isNull(response)) {
+            return;
+        }
+
         String result = JsonUtil.toJson(jsonResult);
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
             LogUtil.ROOT_LOG.debug("return json: " + result);
         }
         try {
-            HttpServletResponse response = getResponse();
             response.setCharacterEncoding("utf-8");
             response.setContentType(type + ";charset=utf-8;");
             response.getWriter().write(U.toStr(result));
@@ -294,6 +331,9 @@ public final class RequestUtils {
     /** 基于请求上下文生成一个日志需要的上下文信息对象 */
     public static LogUtil.RequestLogContext logContextInfo() {
         HttpServletRequest request = getRequest();
+        if (U.isNull(request)) {
+            return null;
+        }
 
         String ip = getRealIp();
         String method = request.getMethod();
@@ -313,11 +353,15 @@ public final class RequestUtils {
      * 在需要手动处理国际化的地方使用 {@link LocaleContextHolder#getLocale } 或 {@link RequestContextUtils#getLocale}
      */
     public static void handleLocal(String langParamName) {
+        HttpServletRequest request = getRequest();
+        if (U.isNull(request)) {
+            return;
+        }
+
         if (U.isBlank(langParamName)) {
             langParamName = "lang";
         }
         try {
-            HttpServletRequest request = getRequest();
             String lan = request.getHeader(langParamName);
             if (U.isBlank(lan)) {
                 lan = request.getParameter(langParamName);
@@ -350,15 +394,18 @@ public final class RequestUtils {
 
 
     public static HttpServletRequest getRequest() {
-        return getRequestAttributes().getRequest();
+        ServletRequestAttributes requestAttributes = getRequestAttributes();
+        return U.isNull(requestAttributes) ? null : requestAttributes.getRequest();
     }
 
     public static HttpSession getSession() {
-        return getRequest().getSession();
+        HttpServletRequest request = getRequest();
+        return U.isNull(request) ? null : request.getSession();
     }
 
     public static HttpServletResponse getResponse() {
-        return getRequestAttributes().getResponse();
+        ServletRequestAttributes requestAttributes = getRequestAttributes();
+        return U.isNull(requestAttributes) ? null : requestAttributes.getResponse();
     }
 
     private static ServletRequestAttributes getRequestAttributes() {
