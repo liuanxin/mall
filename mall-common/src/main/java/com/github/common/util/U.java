@@ -10,12 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.beans.PropertyDescriptor;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -27,6 +26,8 @@ import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /** 工具类 */
 public final class U {
@@ -68,6 +69,14 @@ public final class U {
     private static final String PC = "(?i)AppleWebKit|Mozilla|Chrome|Safari|MSIE|Windows NT";
     /** 是否是本地 ip */
     private static final String LOCAL = "(?i)127.0.0.1|localhost|::1|0:0:0:0:0:0:0:1";
+
+    /** 大于这个值, 才进行字符串压缩 */
+    private static final int COMPRESS_MIN_LEN = 1000;
+    /**
+     * 字符串压缩时, 将字符串的 byte[] 基于 gzip 进行压缩, 将压缩后的 byte[] 转换成这个进制的字符串
+     * 解压字符串时, 将字符串由这个进制转换成 byte[], 检查魔数是否是 gzip 处理过, 再基于 gzip 解压
+     */
+    private static final int COMPRESS_RADIX = 36;
 
     /** 生成指定位数的随机数: 纯数字 */
     public static String random(int length) {
@@ -1087,6 +1096,66 @@ public final class U {
             }
         } catch (IOException e) {
             throw new RuntimeException("input to output with channel exception", e);
+        }
+    }
+
+    /** 将长字符串进行压缩 */
+    public static String compress(String str) throws IOException {
+        if (str == null) {
+            return null;
+        }
+        String trim = str.trim();
+        if ("".equals(trim) || trim.length() < COMPRESS_MIN_LEN) {
+            return trim;
+        }
+
+        try (
+                ByteArrayOutputStream output = new ByteArrayOutputStream();
+                GZIPOutputStream gzip = new GZIPOutputStream(output)
+        ) {
+            gzip.write(trim.getBytes(StandardCharsets.UTF_8));
+            gzip.finish();
+            return new BigInteger(output.toByteArray()).toString(COMPRESS_RADIX);
+        }
+    }
+
+    /** 将压缩的字符串解压 */
+    public static String decompress(String str) throws IOException {
+        if (str == null) {
+            return null;
+        }
+        String trim = str.trim();
+        if ("".equals(trim)) {
+            return trim;
+        }
+        // 如果字符串以 { 开头且以 } 结尾, 或者以 [ 开头以 ] 结尾(json)则不解压, 直接返回
+        if ((str.startsWith("{") && str.endsWith("}")) || (str.startsWith("[") && str.endsWith("]"))) {
+            return trim;
+        }
+
+        byte[] bytes = new BigInteger(trim, COMPRESS_RADIX).toByteArray();
+        if (bytes.length == 0) {
+            return trim;
+        }
+        // 检查魔数
+        boolean hasCompress = (bytes[0] == (byte) GZIPInputStream.GZIP_MAGIC) && (bytes[1] == (byte) GZIPInputStream.GZIP_MAGIC >> 8);
+        if (!hasCompress) {
+            return trim;
+        }
+
+        try (
+                ByteArrayInputStream input = new ByteArrayInputStream(bytes);
+                GZIPInputStream gis = new GZIPInputStream(input);
+
+                InputStreamReader in = new InputStreamReader(gis, StandardCharsets.UTF_8);
+                final BufferedReader bufferedReader = new BufferedReader(in)
+        ) {
+            StringBuilder sbd = new StringBuilder();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                sbd.append(line);
+            }
+            return sbd.toString();
         }
     }
 
