@@ -105,8 +105,7 @@ public class GlobalException {
     }
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<JsonResult<Void>> missParam(MissingServletRequestParameterException e) {
-        String msg = online
-                ? "无法响应此请求"
+        String msg = online ? "缺少必须的参数"
                 : String.format("缺少必须的参数(%s), 类型(%s)", e.getParameterName(), e.getParameterType());
 
         bindAndPrintLog(msg, e);
@@ -115,7 +114,7 @@ public class GlobalException {
     }
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<JsonResult<Void>> missHeader(MissingRequestHeaderException e) {
-        String msg = online ? "无法响应这个请求" : String.format("缺少头(%s)", e.getHeaderName());
+        String msg = online ? "缺少必须的信息" : String.format("缺少头(%s)", e.getHeaderName());
 
         bindAndPrintLog(msg, e);
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
@@ -123,9 +122,8 @@ public class GlobalException {
     }
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<JsonResult<Void>> notSupported(HttpRequestMethodNotSupportedException e) {
-        String msg = online
-                ? "无法处理此请求"
-                : String.format("不支持此请求方式: 当前(%s), 支持(%s)", e.getMethod(), A.toStr(e.getSupportedMethods()));
+        String msg = online ? "不支持此种方式"
+                : String.format("不支持此种方式: 当前(%s), 支持(%s)", e.getMethod(), A.toStr(e.getSupportedMethods()));
 
         bindAndPrintLog(msg, e);
         int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
@@ -181,13 +179,13 @@ public class GlobalException {
     private List<String> errorTrack(Throwable e) {
         if (online) {
             return null;
-        } else {
-            List<String> msgList = Lists.newArrayList();
-            msgList.add(e.getMessage());
-            for (StackTraceElement trace : e.getStackTrace()) {
-                msgList.add(trace.toString());
-            }
-            return msgList;
         }
+
+        List<String> errorList = Lists.newArrayList();
+        errorList.add(e.getMessage());
+        for (StackTraceElement trace : e.getStackTrace()) {
+            errorList.add(trace.toString());
+        }
+        return errorList;
     }
 }
