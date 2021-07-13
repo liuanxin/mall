@@ -39,7 +39,7 @@ public final class RequestUtils {
     public static String getRealIp() {
         HttpServletRequest request = getRequest();
         if (U.isNull(request)) {
-            return null;
+            return U.EMPTY;
         }
 
         String ip = request.getHeader("X-Forwarded-For");
@@ -281,7 +281,7 @@ public final class RequestUtils {
     public static String formatHeadParam() {
         HttpServletRequest request = getRequest();
         if (U.isNull(request)) {
-            return null;
+            return U.EMPTY;
         }
 
         StringBuilder sbd = new StringBuilder();
@@ -331,12 +331,8 @@ public final class RequestUtils {
     /** 基于请求上下文生成一个日志需要的上下文信息对象 */
     public static LogUtil.RequestLogContext logContextInfo() {
         HttpServletRequest request = getRequest();
-        if (U.isNull(request)) {
-            return null;
-        }
-
         String ip = getRealIp();
-        String method = request.getMethod();
+        String method = U.isNull(request) ? U.EMPTY : request.getMethod();
         String url = getRequestUrl();
         String param = formatParam();
         String headParam = formatHeadParam();
