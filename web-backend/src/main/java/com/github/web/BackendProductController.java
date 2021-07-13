@@ -5,7 +5,6 @@ import com.github.common.json.JsonResult;
 import com.github.common.page.PageParam;
 import com.github.common.page.PageReturn;
 import com.github.common.util.U;
-import com.github.dto.ExampleDto;
 import com.github.global.constant.Develop;
 import com.github.liuanxin.api.annotation.ApiGroup;
 import com.github.liuanxin.api.annotation.ApiMethod;
@@ -13,9 +12,10 @@ import com.github.liuanxin.api.annotation.ApiParam;
 import com.github.product.constant.ProductConst;
 import com.github.product.model.ProductTest;
 import com.github.product.service.ProductTestService;
+import com.github.req.ExampleReq;
+import com.github.res.ExampleRes;
 import com.github.user.model.UserTest;
 import com.github.user.service.UserTestService;
-import com.github.vo.ExampleVo;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,13 +37,13 @@ public class BackendProductController {
 
     @ApiMethod(value = "分页查询", develop = Develop.PRODUCT)
     @GetMapping
-    public JsonResult<PageReturn<ExampleVo>> enumList(ExampleDto dto,
-                                                      @ApiParam(value = "枚举", example = "One") TestEnum enumTest,
-                                                      PageParam page) {
-        U.assertNil(dto, "缺少必须的参数");
-        dto.basicCheck();
+    public JsonResult<PageReturn<ExampleRes>> enumList(ExampleReq req,
+                                                       @ApiParam(value = "枚举", example = "One") TestEnum enumTest,
+                                                       PageParam page) {
+        U.assertNil(req, "缺少必须的参数");
+        req.basicCheck();
 
-        PageReturn<UserTest> pageUserExampleInfo = userExampleService.example(dto.userTestParam(), dto.userTestExtendParam(), page);
+        PageReturn<UserTest> pageUserExampleInfo = userExampleService.example(req.userTestParam(), req.userTestExtendParam(), page);
         /*
         List<Long> userIdList = Lists.newArrayList();
         if (U.isNotBlank(pageUserExampleInfo)) {
@@ -54,7 +54,7 @@ public class BackendProductController {
             }
         }
         */
-        List<ProductTest> productExampleList = null;// productExampleService.example(userIdList, dto.productParam());
-        return JsonResult.success("示例", ExampleVo.assemblyData(pageUserExampleInfo, productExampleList));
+        List<ProductTest> productExampleList = null;// productExampleService.example(userIdList, req.productParam());
+        return JsonResult.success("示例", ExampleRes.assemblyData(pageUserExampleInfo, productExampleList));
     }
 }

@@ -5,7 +5,7 @@ import org.junit.Test;
 public class ConvertTest {
 
     @Test
-    public void toDto() {
+    public void toReq() {
         String model = "private Long id;\n" +
                 "\n" +
                 "    /** 用户名 --> user_name */\n" +

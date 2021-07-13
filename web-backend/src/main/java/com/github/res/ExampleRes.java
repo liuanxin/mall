@@ -1,4 +1,4 @@
-package com.github.vo;
+package com.github.res;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -23,7 +23,7 @@ import java.util.*;
 @Data
 @Accessors(chain = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ExampleVo {
+public class ExampleRes {
 
     @ApiReturn("用户 id")
     private Long id;
@@ -41,13 +41,13 @@ public class ExampleVo {
     private String avatarUrl;
 
     @ApiReturn("用户的商品")
-    private List<ExampleProductVo> exampleProductList;
+    private List<ExampleProductRes> exampleProductList;
 
 
     @Data
     @Accessors(chain = true)
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public static class ExampleProductVo {
+    public static class ExampleProductRes {
 
         @ApiReturn("商品名")
         private String name;
@@ -66,9 +66,9 @@ public class ExampleVo {
 
 
     /** 组装数据 */
-    public static PageReturn<ExampleVo> assemblyData(PageReturn<UserTest> userPageInfo,
-                                                     List<ProductTest> productExampleList) {
-        PageReturn<ExampleVo> returnVo = PageReturn.convert(userPageInfo);
+    public static PageReturn<ExampleRes> assemblyData(PageReturn<UserTest> userPageInfo,
+                                                      List<ProductTest> productExampleList) {
+        PageReturn<ExampleRes> returnRes = PageReturn.convert(userPageInfo);
         if (U.isNotBlank(userPageInfo)) {
             // 把商品数据整理成  userId: List<商品>
             Multimap<Long, ProductTest> multiMap = ArrayListMultimap.create();
@@ -79,25 +79,25 @@ public class ExampleVo {
             }
             Map<Long, Collection<ProductTest>> userIdMap = multiMap.asMap();
 
-            List<ExampleVo> exampleVoList = Lists.newArrayList();
+            List<ExampleRes> exampleVoList = Lists.newArrayList();
             for (UserTest userExample : userPageInfo.getList()) {
-                ExampleVo vo = JsonUtil.convert(userExample, ExampleVo.class);
-                if (U.isNotBlank(vo)) {
+                ExampleRes res = JsonUtil.convert(userExample, ExampleRes.class);
+                if (U.isNotBlank(res)) {
                     // 从上面的 map 中获取当前用户对应的商品列表
                     Collection<ProductTest> productExamples = userIdMap.get(userExample.getId());
                     if (A.isNotEmpty(productExamples)) {
                         List<ProductTest> examples = Lists.newArrayList(productExamples);
                         // 把用户商品数据转换成前端需要的数据
-                        vo.setExampleProductList(JsonUtil.convertList(examples, ExampleProductVo.class));
+                        res.setExampleProductList(JsonUtil.convertList(examples, ExampleProductRes.class));
                     } else {
                         // 如果没有商品数据也返回一个长度为 0 的数组
-                        vo.setExampleProductList(Collections.emptyList());
+                        res.setExampleProductList(Collections.emptyList());
                     }
-                    exampleVoList.add(vo);
+                    exampleVoList.add(res);
                 }
             }
-            returnVo.setList(exampleVoList);
+            returnRes.setList(exampleVoList);
         }
-        return returnVo;
+        return returnRes;
     }
 }

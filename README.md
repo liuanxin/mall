@@ -54,7 +54,7 @@
 
 ### 分页示例
 
-在 controller 中用 dto 做入参, 用 vo 做出参, 调用 service 的入参和返回使用「跟数据库对应的 model 实体」
+在 controller 中用 req 做入参, 用 res 做出参, 调用 service 的入参和返回使用「跟数据库对应的 model 实体」
 ```java
 // 用构造函数来注入 service, 如果下面有用到 @Value 这样的数据就用此注解, 如果没有, 可以用 @AllArgsConstructor 注解
 @RequiredArgsConstructor
@@ -68,12 +68,12 @@ public class DemoController {
     private final UserService userService;
     private final ProductService productService;
 
-    // 好的实践是每个接口都有各自的 dto 和 vo, 如果参数不多则不需要构建 dto, 返回只有一个字段也不用新建 vo
+    // 好的实践是每个接口都有各自的 req 和 res, 如果参数不多则不需要构建 req, 返回只有一个字段也不用新建 res
     @GetMapping
-    public JsonResult<PageReturn<DemoVo>> demoList(DemoDto dto, PageParam page) {
-       PageInfo<User> userPageInfo = userService.pageList(dto.userParam(), page);
-       List<Product> productList = productService.xxx(dto.productParam());
-       return JsonResult.success("xxx", DemoVo.assemblyData(userPageInfo, productList));
+    public JsonResult<PageReturn<DemoRes>> demoList(DemoReq req, PageParam page) {
+       PageInfo<User> userPageInfo = userService.pageList(req.userParam(), page);
+       List<Product> productList = productService.xxx(req.productParam());
+       return JsonResult.success("xxx", DemoRes.assemblyData(userPageInfo, productList));
     }
 }
 ```
@@ -86,10 +86,10 @@ public interface DemoService {
 }
 ```
 
-在 dto 中做基础的入参校验, 并返回 service 中用到的「跟数据库对应的 model 实体」
+在 req 中做基础的入参校验, 并返回 service 中用到的「跟数据库对应的 model 实体」
 ```java
 @Data
-public class DemoDto {
+public class DemoReq {
     
     private Long userId;
     private Long productId;
@@ -110,18 +110,18 @@ public class DemoDto {
 }
 ```
 
-在 vo 中组装数据
+在 res 中组装数据
 ```java
 @Data
-public class DemoVo {
-    
+public class DemoRes {
+
     private Long userId;
     private Long productId;
     // ...
     
-    public static PageReturn<ExampleVo> assemblyData(PageInfo<User> userPageInfo, List<Product> productList) {
+    public static PageReturn<ExampleRes> assemblyData(PageInfo<User> userPageInfo, List<Product> productList) {
         // 组装数据
-        return new DemoVo();
+        return new DemoRes();
     }
 }
 ```

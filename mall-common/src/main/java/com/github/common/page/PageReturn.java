@@ -33,7 +33,7 @@ public class PageReturn<T> implements Serializable {
         return new PageReturn<>(total, list);
     }
 
-    /** 在 Controller 中调用 --> 组装不同的 vo 时使用此方法 */
+    /** 在 Controller 中调用 --> 组装不同的 res 时使用此方法 */
     public static <S,T> PageReturn<T> convert(PageReturn<S> pageInfo) {
         if (U.isBlank(pageInfo)) {
             return emptyReturn();

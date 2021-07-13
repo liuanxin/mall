@@ -1,4 +1,4 @@
-package com.github.dto;
+package com.github.req;
 
 import com.github.common.enums.Gender;
 import com.github.common.json.JsonUtil;
@@ -12,7 +12,7 @@ import com.github.user.model.UserTestExtend;
 import lombok.Data;
 
 @Data
-public class ExampleDto {
+public class ExampleReq {
 
     @ApiParam("昵称")
     private String nickName;

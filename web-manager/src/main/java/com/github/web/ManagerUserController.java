@@ -12,9 +12,9 @@ import com.github.liuanxin.api.annotation.ApiMethod;
 import com.github.liuanxin.api.annotation.ApiParam;
 import com.github.manager.model.ManagerUser;
 import com.github.manager.service.ManagerService;
+import com.github.res.ManagerUserRes;
 import com.github.user.constant.UserConst;
 import com.github.util.ManagerSessionUtil;
-import com.github.vo.ManagerUserVo;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,7 +37,7 @@ public class ManagerUserController {
     @NotNeedLogin
     @ApiMethod(value = "登录", index = 0)
     @PostMapping("/login")
-    public JsonResult<ManagerUserVo> login(@ApiParam("用户名") String userName, @ApiParam("密码") String password) {
+    public JsonResult<ManagerUserRes> login(@ApiParam("用户名") String userName, @ApiParam("密码") String password) {
         U.assertException(U.isBlank(userName) || U.isBlank(password), "请输入用户名或密码");
 
         ManagerUser user = adminService.login(userName, password);
@@ -48,17 +48,17 @@ public class ManagerUserController {
         // 登录成功后填充菜单和权限, 平级放到用户上
         user.assignmentData(adminService.getUserRole(user.getId(), !user.getHasManager(), true)); // 管理员不加载菜单
         ManagerSessionUtil.whenLogin(user, user.getPermissions());
-        return JsonResult.success("登录成功并返回用户及菜单信息", ManagerUserVo.assemblyData(user, user.getMenus()));
+        return JsonResult.success("登录成功并返回用户及菜单信息", ManagerUserRes.assemblyData(user, user.getMenus()));
     }
 
     @NotNeedPermission
     @ApiMethod(value = "获取用户及菜单信息", index = 1)
     @GetMapping("/info")
-    public JsonResult<ManagerUserVo> info() {
+    public JsonResult<ManagerUserRes> info() {
         Long userId = ManagerSessionUtil.getUserId();
         ManagerUser user = adminService.getUser(userId);
         user.assignmentData(adminService.getUserRole(userId, true, false));
-        return JsonResult.success("获取用户及菜单信息", ManagerUserVo.assemblyData(user, user.getMenus()));
+        return JsonResult.success("获取用户及菜单信息", ManagerUserRes.assemblyData(user, user.getMenus()));
     }
 
     @NotNeedPermission

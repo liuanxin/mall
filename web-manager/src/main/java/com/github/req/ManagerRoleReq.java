@@ -1,4 +1,4 @@
-package com.github.dto;
+package com.github.req;
 
 import com.github.common.json.JsonUtil;
 import com.github.common.util.U;
@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @Accessors(chain = true)
-public class ManagerRoleDto {
+public class ManagerRoleReq {
 
     @ApiParam("角色 id, 更新时需要, 添加不需要")
     private Long id;

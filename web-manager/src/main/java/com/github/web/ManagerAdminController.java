@@ -6,8 +6,6 @@ import com.github.common.page.PageReturn;
 import com.github.common.util.FileUtil;
 import com.github.common.util.U;
 import com.github.config.ManagerConfig;
-import com.github.dto.ManagerRoleDto;
-import com.github.dto.ManagerUserDto;
 import com.github.liuanxin.api.annotation.ApiGroup;
 import com.github.liuanxin.api.annotation.ApiMethod;
 import com.github.liuanxin.api.annotation.ApiParam;
@@ -15,6 +13,8 @@ import com.github.manager.constant.ManagerConst;
 import com.github.manager.model.ManagerRole;
 import com.github.manager.model.ManagerUser;
 import com.github.manager.service.ManagerService;
+import com.github.req.ManagerRoleReq;
+import com.github.req.ManagerUserReq;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,15 +40,15 @@ public class ManagerAdminController {
 
     @ApiMethod(value = "添加或修改用户", index = 11)
     @PostMapping("/user")
-    public JsonResult<Void> addOrUpdateUser(ManagerUserDto userDto, @ApiParam("头像") MultipartFile image) {
-        userDto.basicCheck();
+    public JsonResult<Void> addOrUpdateUser(ManagerUserReq req, @ApiParam("头像") MultipartFile image) {
+        req.basicCheck();
 
-        ManagerUser managerUser = userDto.operateParam();
+        ManagerUser managerUser = req.operateParam();
         if (U.isNotBlank(managerUser) && U.greater0(image.getSize())) {
             managerUser.setAvatar(FileUtil.save(image, config.getFilePath(), config.getFileUrl(), false));
         }
         adminService.addOrUpdateUser(managerUser);
-        return JsonResult.success(String.format("用户%s成功", (userDto.hasUpdate() ? "修改" : "添加")));
+        return JsonResult.success(String.format("用户%s成功", (req.hasUpdate() ? "修改" : "添加")));
     }
 
     @ApiMethod(value = "删除用户", index = 12)
@@ -66,7 +66,7 @@ public class ManagerAdminController {
 
     @ApiMethod(value = "添加或更新角色", index = 21)
     @PostMapping("/role")
-    public JsonResult<Void> addOrUpdateRole(ManagerRoleDto role) {
+    public JsonResult<Void> addOrUpdateRole(ManagerRoleReq role) {
         role.basicCheck();
 
         adminService.addOrUpdateRole(role.operateParam());

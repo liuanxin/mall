@@ -1,4 +1,4 @@
-package com.github.vo;
+package com.github.res;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.common.Const;
@@ -10,7 +10,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class UserLoginVo {
+public class UserLoginRes {
 
     private Long id;
 
@@ -22,11 +22,11 @@ public class UserLoginVo {
     private String token;
 
     /** 将 service 查询之后的数据组装成前端需要的 */
-    public static <T> UserLoginVo assemblyData(T user, String token) {
-        UserLoginVo returnVo = JsonUtil.convert(user, UserLoginVo.class);
-        if (U.isNotBlank(returnVo)) {
-            returnVo.setToken(token);
+    public static <T> UserLoginRes assemblyData(T user, String token) {
+        UserLoginRes res = JsonUtil.convert(user, UserLoginRes.class);
+        if (U.isNotBlank(res)) {
+            res.setToken(token);
         }
-        return returnVo;
+        return res;
     }
 }
