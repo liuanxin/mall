@@ -69,7 +69,12 @@ public final class U {
     /** 是否是本地 ip */
     private static final String LOCAL = "(?i)127.0.0.1|localhost|::1|0:0:0:0:0:0:0:1";
 
-    /** 大于这个值, 才进行字符串压缩 */
+    /**
+     * 大于这个值, 才进行字符串压缩.
+     *
+     * 字符串压缩时, 将字符串的 byte[] 基于 gzip 进行压缩, 将压缩后的 byte[] 编码成 base64 字符串
+     * 解压字符串时, 将字符串解码 base64 转换成 byte[], 再基于 gzip 解压
+     */
     private static final int COMPRESS_MIN_LEN = 1000;
 
     private static final String TMP = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
