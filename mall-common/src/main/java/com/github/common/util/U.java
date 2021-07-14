@@ -14,7 +14,6 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -72,11 +71,8 @@ public final class U {
 
     /** 大于这个值, 才进行字符串压缩 */
     private static final int COMPRESS_MIN_LEN = 1000;
-    /**
-     * 字符串压缩时, 将字符串的 byte[] 基于 gzip 进行压缩, 将压缩后的 byte[] 转换成这个进制的字符串
-     * 解压字符串时, 将字符串由这个进制转换成 byte[], 检查魔数是否是 gzip 处理过, 再基于 gzip 解压
-     */
-    private static final int COMPRESS_RADIX = 36;
+
+    private static final String TMP = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     /** 生成指定位数的随机数: 纯数字 */
     public static String random(int length) {
@@ -90,8 +86,6 @@ public final class U {
         }
         return sbd.toString();
     }
-
-    private static final String TMP = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     /** 生成指定位数的随机数: 数字和字母 */
     public static String randomLetterAndNumber(int length) {
         if (length <= 0) {
@@ -1099,33 +1093,34 @@ public final class U {
         }
     }
 
-    /** 将长字符串进行压缩 */
-    public static String compress(String str) throws IOException {
-        if (str == null) {
+    /** 将长字符串进行 gzip 压缩后再转成 base64 编码返回 */
+    public static String compress(final String str) {
+        if (str == null || EMPTY.equals(str.trim()) || str.length() < COMPRESS_MIN_LEN) {
             return null;
-        }
-        String trim = str.trim();
-        if ("".equals(trim) || trim.length() < COMPRESS_MIN_LEN) {
-            return trim;
         }
 
         try (
                 ByteArrayOutputStream output = new ByteArrayOutputStream();
                 GZIPOutputStream gzip = new GZIPOutputStream(output)
         ) {
-            gzip.write(trim.getBytes(StandardCharsets.UTF_8));
+            gzip.write(str.trim().getBytes(StandardCharsets.UTF_8));
             gzip.finish();
-            return new BigInteger(output.toByteArray()).toString(COMPRESS_RADIX);
+            return new String(Base64.getEncoder().encode(output.toByteArray()), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error("压缩字符串异常", e);
+            }
+            return str;
         }
     }
 
-    /** 将压缩的字符串解压 */
-    public static String decompress(String str) throws IOException {
-        if (str == null) {
+    /** 将压缩的字符串用 base64 解码再进行 gzip 解压 */
+    public static String decompress(String str) {
+        if (isNull(str)) {
             return null;
         }
         String trim = str.trim();
-        if ("".equals(trim)) {
+        if (EMPTY.equals(trim)) {
             return trim;
         }
         // 如果字符串以 { 开头且以 } 结尾, 或者以 [ 开头以 ] 结尾(json)则不解压, 直接返回
@@ -1133,13 +1128,16 @@ public final class U {
             return trim;
         }
 
-        byte[] bytes = new BigInteger(trim, COMPRESS_RADIX).toByteArray();
-        if (bytes.length == 0) {
+        byte[] bytes;
+        try {
+            bytes = Base64.getDecoder().decode(str.getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("字符串解码异常", e);
+            }
             return trim;
         }
-        // 检查魔数
-        boolean hasCompress = (bytes[0] == (byte) GZIPInputStream.GZIP_MAGIC) && (bytes[1] == (byte) GZIPInputStream.GZIP_MAGIC >> 8);
-        if (!hasCompress) {
+        if (bytes.length == 0) {
             return trim;
         }
 
@@ -1156,6 +1154,11 @@ public final class U {
                 sbd.append(line);
             }
             return sbd.toString();
+        } catch (Exception e) {
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error("解压字符串异常", e);
+            }
+            return trim;
         }
     }
 
