@@ -70,10 +70,10 @@ public final class U {
     private static final String LOCAL = "(?i)127.0.0.1|localhost|::1|0:0:0:0:0:0:0:1";
 
     /**
-     * 大于这个值, 才进行字符串压缩.
+     * 字符串长度 >= 这个值, 才进行压缩
      *
-     * 字符串压缩时, 将字符串的 byte[] 基于 gzip 进行压缩, 将压缩后的 byte[] 编码成 base64 字符串
-     * 解压字符串时, 将字符串解码 base64 成 byte[], 再基于 gzip 解压, 将解压后的 byte[] 返回
+     * 字符串压缩时, 将字符串先操作 gzip 再编码成 base64 字符串
+     * 解压字符串时, 将字符串先解码 base64 再操作 gzip 解压
      */
     private static final int COMPRESS_MIN_LEN = 1000;
 
