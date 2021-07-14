@@ -1100,22 +1100,26 @@ public final class U {
 
     /** 将长字符串进行 gzip 压缩后再转成 base64 编码返回 */
     public static String compress(final String str) {
-        if (str == null || EMPTY.equals(str.trim()) || str.length() < COMPRESS_MIN_LEN) {
+        if (str == null) {
             return null;
+        }
+        String trim = str.trim();
+        if (EMPTY.equals(trim) || trim.length() < COMPRESS_MIN_LEN) {
+            return trim;
         }
 
         try (
                 ByteArrayOutputStream output = new ByteArrayOutputStream();
                 GZIPOutputStream gzip = new GZIPOutputStream(output)
         ) {
-            gzip.write(str.trim().getBytes(StandardCharsets.UTF_8));
+            gzip.write(trim.getBytes(StandardCharsets.UTF_8));
             gzip.finish();
             return new String(Base64.getEncoder().encode(output.toByteArray()), StandardCharsets.UTF_8);
         } catch (Exception e) {
             if (LOGGER.isErrorEnabled()) {
                 LOGGER.error("压缩字符串异常", e);
             }
-            return str;
+            return trim;
         }
     }
 
