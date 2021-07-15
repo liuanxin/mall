@@ -340,13 +340,13 @@ public final class RequestUtils {
     }
 
     /**
-     * 基于下面的优先级依次获取语言, 都没有就使用 简体中文 做为默认语言<br>
-     * 1. 头里的 langParamName(默认是 lang)<br>
-     * 2. 参数里的 langParamName(默认是 lang)<br>
-     * 3. 头里的 Accept-Language<br>
-     * 4. request.getLocale()<br><br>
+     * 基于下面的优先级依次获取语言
+     * 1. 头里的 langParamName(默认是 lang)
+     * 2. 参数里的 langParamName(默认是 lang)
+     * 3. request.getLocale() 头里的 Accept-Language
+     * 4. 简体中文
      *
-     * 在需要手动处理国际化的地方使用 {@link LocaleContextHolder#getLocale } 或 {@link RequestContextUtils#getLocale}
+     * 手动处理时使用 {@link LocaleContextHolder#getLocale()} 或 {@link RequestContextUtils#getLocale(HttpServletRequest)}
      */
     public static void handleLocal(String langParamName) {
         HttpServletRequest request = getRequest();
@@ -358,13 +358,7 @@ public final class RequestUtils {
             langParamName = "lang";
         }
         try {
-            String lan = request.getHeader(langParamName);
-            if (U.isBlank(lan)) {
-                lan = request.getParameter(langParamName);
-            }
-            if (U.isBlank(lan)) {
-                lan = request.getHeader("Accept-Language");
-            }
+            String lan = getHeaderOrParam(langParamName);
 
             Locale locale = null;
             if (U.isNotBlank(lan)) {
@@ -372,9 +366,9 @@ public final class RequestUtils {
             }
             if (U.isNull(locale) || U.isEmpty(locale.getCountry())) {
                 locale = request.getLocale();
-                if (U.isNull(locale) || U.isEmpty(locale.getCountry())) {
-                    locale = Locale.SIMPLIFIED_CHINESE;
-                }
+            }
+            if (U.isNull(locale) || U.isEmpty(locale.getCountry())) {
+                locale = Locale.SIMPLIFIED_CHINESE;
             }
             LocaleContextHolder.setLocale(locale);
             LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
