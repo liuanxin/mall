@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Map;
 
 /** <span style="color:red;">!!!此实体类请只在 Controller 中使用, 且只调用其 static 方法!!!</span> */
 @Setter
@@ -25,9 +26,13 @@ public class JsonResult<T> {
     @ApiReturn(value = "返回说明", example = "用户名密码错误 | 收货地址添加成功")
     private String msg;
 
-    @ApiReturn(value = "错误信息", example = "当非生产时返回")
+    @ApiReturn(value = "错误信息, 只在非生产时返回")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private List<String> errorList;
+    private List<String> error;
+
+    @ApiReturn(value = "验证失败信息, 返回 { 入参 1 : 错误信息 1, 入参 2 : 错误信息 2 }")
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private Map<String, String> validate;
 
     @ApiReturn("返回数据, 实体 {\"id\":1} | 列表 [{\"id\":1},{\"id\":2}] 看具体的业务")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -39,7 +44,7 @@ public class JsonResult<T> {
     }
     private JsonResult(JsonCode code, String msg, List<String> errorList) {
         this(code, msg);
-        this.errorList = errorList;
+        this.error = errorList;
     }
     private JsonResult(JsonCode code, String msg, T data) {
         this(code, msg);
