@@ -27,14 +27,14 @@ public class JsonDesensitization {
     /** 单个字符串的长度超出此值则进行脱敏, 只输出前后. 如 max 是 5, left_right 是 1, 当输入「abcde」将输出成「a ... e」 */
     @Value("${json.singleFieldMaxLength:500}")
     private int singleFieldMaxLength;
-    /** 单个字符串只输出前后的长度. 如 max 是 5, left_right 是 1, 当输入「abcde」将输出成「a ... e」 */
+    /** 单个字符串只输出前后的长度. 其值 * 2 要小于上面的值. 如 max 是 5, left_right 是 1, 当输入「abcde」将输出成「a ... e」 */
     @Value("${json.singleFieldLeftRightLength:100}")
     private int singleFieldLeftRightLength;
 
     /** 总字符串的长度超出此值则进行脱敏, 只输出前后 */
     @Value("${json.stringMaxLength:2000}")
     private int stringMaxLength;
-    /** 总字符串只输出前后的长度 */
+    /** 总字符串只输出前后的长度. 其值 * 2 要小于上面的值 */
     @Value("${json.stringLeftRightLength:400}")
     private int stringLeftRightLength;
 
@@ -78,7 +78,7 @@ public class JsonDesensitization {
 
                 // 过长的字段只输出前后字符
                 int len = value.length();
-                if (len >= singleFieldMaxLength) {
+                if (len > singleFieldMaxLength && singleFieldMaxLength > (singleFieldLeftRightLength << 1)) {
                     String left = value.substring(0, singleFieldLeftRightLength);
                     String right = value.substring(len - singleFieldLeftRightLength, len);
                     gen.writeString(left + " ... " + right);
@@ -100,7 +100,7 @@ public class JsonDesensitization {
                 json = desensitizationMapper.writeValueAsString(data);
                 if (U.isNotBlank(json)) {
                     int len = json.length();
-                    if (len >= stringMaxLength) {
+                    if (len > stringMaxLength && stringMaxLength > (stringLeftRightLength << 1)) {
                         String left = json.substring(0, stringLeftRightLength);
                         String right = json.substring(len - stringLeftRightLength, len);
                         json = left + " ... " + right;
@@ -108,6 +108,10 @@ public class JsonDesensitization {
                 }
             } else {
                 json = objectMapper.writeValueAsString(data);
+            }
+            // 如果长度还是很大, 就压缩一下
+            if (U.isNotBlank(json) && json.length() > stringLeftRightLength) {
+                json = U.compress(json);
             }
             return json;
         } catch (Exception e) {
