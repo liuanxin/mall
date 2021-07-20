@@ -110,7 +110,7 @@ public class JsonDesensitization {
                 json = objectMapper.writeValueAsString(data);
             }
             // 如果长度还是很大, 就压缩一下
-            if (U.isNotBlank(json) && json.length() > stringLeftRightLength) {
+            if (U.isNotBlank(json) && json.length() > stringMaxLength) {
                 json = U.compress(json);
             }
             return json;
