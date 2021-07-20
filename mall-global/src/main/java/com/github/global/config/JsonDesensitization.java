@@ -24,6 +24,10 @@ public class JsonDesensitization {
     @Value("${json.desensitization:true}")
     private boolean desensitization;
 
+    /** 是否进行数据压缩 */
+    @Value("${json.compress:false}")
+    private boolean compress;
+
     /** 单个字符串的长度超出此值则进行脱敏, 只输出前后. 如 max 是 5, left_right 是 1, 当输入「abcde」将输出成「a ... e」 */
     @Value("${json.singleFieldMaxLength:500}")
     private int singleFieldMaxLength;
@@ -110,7 +114,7 @@ public class JsonDesensitization {
                 json = objectMapper.writeValueAsString(data);
             }
             // 如果长度还是很大, 就压缩一下
-            if (U.isNotBlank(json) && json.length() > stringMaxLength) {
+            if (compress && U.isNotBlank(json) && json.length() > stringMaxLength) {
                 json = U.compress(json);
             }
             return json;
