@@ -20,27 +20,13 @@ import java.io.IOException;
 @AutoConfigureAfter(JacksonAutoConfiguration.class)
 public class JsonDesensitization {
 
-    /** 是否进行脱敏 */
+    /** 是否进行脱敏, 默认进行脱敏 */
     @Value("${json.desensitization:true}")
     private boolean desensitization;
 
-    /** 是否进行数据压缩 */
+    /** 是否进行数据压缩, 默认不压缩 */
     @Value("${json.compress:false}")
     private boolean compress;
-
-    /** 单个字符串的长度超出此值则进行脱敏, 只输出前后. 如 max 是 5, left_right 是 1, 当输入「abcde」将输出成「a ... e」 */
-    @Value("${json.singleFieldMaxLength:500}")
-    private int singleFieldMaxLength;
-    /** 单个字符串只输出前后的长度. 其值 * 2 要小于上面的值. 如 max 是 5, left_right 是 1, 当输入「abcde」将输出成「a ... e」 */
-    @Value("${json.singleFieldLeftRightLength:100}")
-    private int singleFieldLeftRightLength;
-
-    /** 总字符串的长度超出此值则进行脱敏, 只输出前后 */
-    @Value("${json.stringMaxLength:2000}")
-    private int stringMaxLength;
-    /** 总字符串只输出前后的长度. 其值 * 2 要小于上面的值 */
-    @Value("${json.stringLeftRightLength:400}")
-    private int stringLeftRightLength;
 
 
     private final ObjectMapper objectMapper;
@@ -79,15 +65,6 @@ public class JsonDesensitization {
                             return;
                     }
                 }
-
-                // 过长的字段只输出前后字符
-                int len = value.length();
-                if (len > singleFieldMaxLength && singleFieldMaxLength > (singleFieldLeftRightLength << 1)) {
-                    String left = value.substring(0, singleFieldLeftRightLength);
-                    String right = value.substring(len - singleFieldLeftRightLength, len);
-                    gen.writeString(left + " ... " + right);
-                    return;
-                }
                 gen.writeString(value);
             }
         }));
@@ -99,22 +76,8 @@ public class JsonDesensitization {
         }
 
         try {
-            String json;
-            if (desensitization) {
-                json = desensitizationMapper.writeValueAsString(data);
-                if (U.isNotBlank(json)) {
-                    int len = json.length();
-                    if (len > stringMaxLength && stringMaxLength > (stringLeftRightLength << 1)) {
-                        String left = json.substring(0, stringLeftRightLength);
-                        String right = json.substring(len - stringLeftRightLength, len);
-                        json = left + " ... " + right;
-                    }
-                }
-            } else {
-                json = objectMapper.writeValueAsString(data);
-            }
-            // 如果长度还是很大, 就压缩一下
-            if (compress && U.isNotBlank(json) && json.length() > stringMaxLength) {
+            String json = desensitization ? desensitizationMapper.writeValueAsString(data) : objectMapper.writeValueAsString(data);
+            if (compress && U.isNotBlank(json)) {
                 json = U.compress(json);
             }
             return json;
