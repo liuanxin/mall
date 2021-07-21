@@ -167,11 +167,9 @@ public class HttpOkClientUtil {
         sbd.append("OkHttp3 => (")
                 .append(DateUtil.formatDateTimeMs(start)).append(" -> ").append(DateUtil.nowDateTimeMs())
                 .append("] (").append(method).append(" ").append(url).append(")");
-        // 太长就只输出前后, 不全部输出
-        int maxLen = 1000, headTail = 200;
 
         if (U.isNotBlank(params)) {
-            sbd.append(" params(").append(U.toStr(params, maxLen, headTail)).append(")");
+            sbd.append(" params(").append(U.compress(params)).append(")");
         }
         if (U.isNotBlank(requestHeaders)) {
             sbd.append(" request headers(");
@@ -190,7 +188,7 @@ public class HttpOkClientUtil {
             }
             sbd.append(")");
         }
-        sbd.append(" return(").append(U.toStr(U.replaceBlank(result), maxLen, headTail)).append(")");
+        sbd.append(" return(").append(U.compress(result)).append(")");
         return sbd.toString();
     }
     /** 发起 http 请求 */

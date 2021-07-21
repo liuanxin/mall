@@ -289,11 +289,9 @@ public class HttpClientUtil {
         sbd.append("HttpClient4 => [")
                 .append(DateUtil.formatDateTimeMs(new Date(start))).append(" -> ").append(DateUtil.nowDateTimeMs())
                 .append("] (").append(method).append(" ").append(url).append(")");
-        // 太长就只输出前后, 不全部输出
-        int maxLen = 1000, headTail = 200;
 
         if (U.isNotBlank(params)) {
-            sbd.append(" param(").append(U.toStr(params, maxLen, headTail)).append(") ");
+            sbd.append(" param(").append(U.compress(params)).append(") ");
         }
         if (A.isNotEmpty(requestHeaders)) {
             sbd.append(" request headers(");
@@ -312,7 +310,7 @@ public class HttpClientUtil {
             }
             sbd.append(")");
         }
-        sbd.append(" return(").append(U.toStr(U.replaceBlank(result), maxLen, headTail)).append(")");
+        sbd.append(" return(").append(U.compress(result)).append(")");
         return sbd.toString();
     }
     /** 发起 http 请求 */
