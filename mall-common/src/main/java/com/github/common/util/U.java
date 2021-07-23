@@ -864,7 +864,7 @@ public final class U {
 
 
     /** 对象转换, 当实体里面有 JsonProperties 这种注解时使用 JsonUtil.convertList 会转换不成功 */
-    public static <S,T> T convertWithoutJson(S source, Class<T> clazz) {
+    public static <S,T> T convert(S source, Class<T> clazz) {
         if (U.isNull(source)) {
             return null;
         }
@@ -889,7 +889,7 @@ public final class U {
 
         List<T> list = Lists.newArrayList();
         for (S s : sourceList) {
-            T obj = convertWithoutJson(s, clazz);
+            T obj = convert(s, clazz);
             if (U.isNotNull(obj)) {
                 list.add(obj);
             }
