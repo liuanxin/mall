@@ -4,10 +4,12 @@ import com.github.common.Money;
 import com.github.common.date.DateUtil;
 import com.github.common.exception.*;
 import com.github.common.json.JsonUtil;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 
 import java.beans.PropertyDescriptor;
 import java.io.*;
@@ -860,6 +862,41 @@ public final class U {
         return methodSet;
     }
 
+
+    /** 对象转换, 当实体里面有 JsonProperties 这种注解时使用 JsonUtil.convertList 会转换不成功 */
+    public static <S,T> T convertWithoutJson(S source, Class<T> clazz) {
+        if (U.isNull(source)) {
+            return null;
+        }
+
+        try {
+            T obj = clazz.newInstance();
+            BeanUtils.copyProperties(source, obj);
+            return obj;
+        } catch (Exception e) {
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("Object(" + source + ") to " + clazz.getName() + " exception", e);
+            }
+            return null;
+        }
+    }
+
+    /** 集合转换, 当实体里面有 JsonProperties 这种注解时使用 JsonUtil.convertList 会转换不成功 */
+    public static <S,T> List<T> convertList(Collection<S> sourceList, Class<T> clazz) {
+        if (A.isEmpty(sourceList)) {
+            return Collections.emptyList();
+        }
+
+        List<T> list = Lists.newArrayList();
+        for (S s : sourceList) {
+            T obj = convertWithoutJson(s, clazz);
+            if (U.isNotNull(obj)) {
+                list.add(obj);
+            }
+        }
+        return list;
+    }
+
     /**
      * <pre>
      * 将 source 中字段的值填充到 target 中, 如果已经有值了就忽略 set
@@ -901,7 +938,7 @@ public final class U {
      *
      * @param source 源对象
      * @param target 目标对象
-     * @param ignoreAlready true: 实体字段是有值的则不进行 set 操作
+     * @param ignoreAlready true: target 中的字段有值则不进行 set 操作
      */
     public static <S,T> void fillData(S source, T target, boolean ignoreAlready) {
         Class<?> tc = target.getClass();
@@ -931,7 +968,7 @@ public final class U {
                             if (oldResult != null) {
                                 continue;
                             }
-                        } catch (IllegalAccessException | InvocationTargetException e) {
+                        } catch (Exception e) {
                             if (LOGGER.isDebugEnabled()) {
                                 LOGGER.debug(String.format("%s invoke %s exception", tc.getName(), getMethodName), e);
                             }
@@ -942,7 +979,7 @@ public final class U {
                     Object targetObj;
                     try {
                         targetObj = sourceMethodMap.get(getMethodName).invoke(source);
-                    } catch (IllegalAccessException | InvocationTargetException e) {
+                    } catch (Exception e) {
                         if (LOGGER.isDebugEnabled()) {
                             LOGGER.debug(String.format("%s invoke %s exception", sc.getName(), getMethodName), e);
                         }
@@ -951,7 +988,7 @@ public final class U {
                     if (targetObj != null) {
                         try {
                             method.invoke(target, targetObj);
-                        } catch (IllegalAccessException | InvocationTargetException e) {
+                        } catch (Exception e) {
                             if (LOGGER.isDebugEnabled()) {
                                 LOGGER.debug(String.format("%s invoke %s exception", tc.getName(), getMethodName), e);
                             }

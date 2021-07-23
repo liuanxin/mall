@@ -10,8 +10,6 @@ import com.github.common.date.DateUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
-import com.google.common.collect.Lists;
-import org.springframework.beans.BeanUtils;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -80,39 +78,6 @@ public class JsonUtil {
     /** 集合转换, 失败将会返回 null */
     public static <S,T> List<T> convertList(Collection<S> sourceList, Class<T> clazz) {
         return A.isEmpty(sourceList) ? Collections.emptyList() : toListNil(toJsonNil(sourceList), clazz);
-    }
-
-    /** 对象转换, 不使用 json, 当实体里面有 JsonProperties 这种注解时使用 */
-    public static <S,T> T convertWithoutJson(S source, Class<T> clazz) {
-        if (U.isNull(source)) {
-            return null;
-        }
-
-        try {
-            T obj = clazz.newInstance();
-            BeanUtils.copyProperties(source, obj);
-            return obj;
-        } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("Object(" + source + ") to " + clazz.getName() + " exception", e);
-            }
-            return null;
-        }
-    }
-    /** 集合转换, 不使用 json, 当实体里面有 JsonProperties 这种注解时使用 */
-    public static <S,T> List<T> convertListWithoutJson(Collection<S> sourceList, Class<T> clazz) {
-        if (A.isEmpty(sourceList)) {
-            return Collections.emptyList();
-        }
-
-        List<T> list = Lists.newArrayList();
-        for (S s : sourceList) {
-            T obj = convertWithoutJson(s, clazz);
-            if (U.isNotNull(obj)) {
-                list.add(obj);
-            }
-        }
-        return list;
     }
 
     public static <T,S> T convert(S source, TypeReference<T> type) {
