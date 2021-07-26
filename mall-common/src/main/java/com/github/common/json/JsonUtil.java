@@ -1,9 +1,12 @@
 package com.github.common.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.introspect.Annotated;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.common.date.DateFormatType;
 import com.github.common.date.DateUtil;
@@ -35,10 +38,20 @@ public class JsonUtil {
     </dependency>
     */
 
-    private static final int MAX_LEN = 500;
-    private static final int LEFT_RIGHT_LEN = 100;
-
     public static final ObjectMapper RENDER = new RenderObjectMapper();
+    public static final ObjectMapper IGNORE_PROPERTY_RENDER = RENDER.copy();
+    static {
+        IGNORE_PROPERTY_RENDER.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
+            @Override
+            public JsonProperty.Access findPropertyAccess(Annotated m) {
+                JsonProperty.Access access = super.findPropertyAccess(m);
+                if (access == JsonProperty.Access.WRITE_ONLY) {
+                    return JsonProperty.Access.AUTO;
+                }
+                return access;
+            }
+        });
+    }
 
     private static class RenderObjectMapper extends ObjectMapper {
         private static final long serialVersionUID = 0L;
@@ -80,11 +93,72 @@ public class JsonUtil {
         return A.isEmpty(sourceList) ? Collections.emptyList() : toListNil(toJsonNil(sourceList), clazz);
     }
 
+    /** 对象转换, 失败将会返回 null(忽略属性上的 @JsonProperty 注解) */
+    public static <S,T> T convertIgnoreJsonProperty(S source, Class<T> clazz) {
+        if (U.isBlank(source)) {
+            return null;
+        }
+
+        String json;
+        if (source instanceof String) {
+            json = (String) source;
+        } else {
+            try {
+                json = IGNORE_PROPERTY_RENDER.writeValueAsString(source);
+            } catch (Exception e) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error(String.format("Object(%s) to json exception", U.compress(source.toString())), e);
+                }
+                return null;
+            }
+        }
+
+        if (U.isBlank(json)) {
+            return null;
+        }
+        try {
+            return IGNORE_PROPERTY_RENDER.readValue(json, clazz);
+        } catch (Exception e) {
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error(String.format("json(%s) to Object(%s) exception", U.compress(json), clazz.getName()), e);
+            }
+            return null;
+        }
+    }
+    /** 集合转换, 失败将会返回 null(忽略属性上的 @JsonProperty 注解) */
+    public static <S,T> List<T> convertListIgnoreJsonProperty(Collection<S> sourceList, Class<T> clazz) {
+        if (A.isEmpty(sourceList)) {
+            return Collections.emptyList();
+        }
+
+        String json;
+        try {
+            json = IGNORE_PROPERTY_RENDER.writeValueAsString(sourceList);
+        } catch (Exception e) {
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error(String.format("List(%s) to json exception", U.compress(sourceList.toString())), e);
+            }
+            return null;
+        }
+
+        if (U.isBlank(json)) {
+            return null;
+        }
+        try {
+            return IGNORE_PROPERTY_RENDER.readValue(json, IGNORE_PROPERTY_RENDER.getTypeFactory().constructCollectionType(List.class, clazz));
+        } catch (Exception e) {
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error(String.format("List(%s) to List<%s> exception", U.compress(json), clazz.getName()), e);
+            }
+            return null;
+        }
+    }
+
     public static <T,S> T convert(S source, TypeReference<T> type) {
         if (U.isBlank(source)) {
             return null;
         }
-        return toObjectNil((source instanceof String) ? source.toString() : toJsonNil(source), type);
+        return toObjectNil((source instanceof String) ? ((String) source) : toJsonNil(source), type);
     }
 
     /** 对象转换成 json 字符串 */
@@ -95,7 +169,7 @@ public class JsonUtil {
         try {
             return RENDER.writeValueAsString(obj);
         } catch (Exception e) {
-            throw new RuntimeException("object(" + U.toStr(obj, MAX_LEN, LEFT_RIGHT_LEN) + ") to json exception.", e);
+            throw new RuntimeException("object(" + U.compress(obj.toString()) + ") to json exception.", e);
         }
     }
     /** 对象转换成 json 字符串 */
@@ -103,11 +177,14 @@ public class JsonUtil {
         if (U.isBlank(obj)) {
             return null;
         }
+        if (obj instanceof String) {
+            return (String) obj;
+        }
         try {
             return RENDER.writeValueAsString(obj);
         } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info("Object(" + U.toStr(obj, MAX_LEN, LEFT_RIGHT_LEN) + ") to json exception", e);
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("Object(" + U.compress(obj.toString()) + ") to json exception", e);
             }
             return null;
         }
@@ -121,8 +198,7 @@ public class JsonUtil {
         try {
             return RENDER.readValue(json, clazz);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("json(%s) to Object(%s) exception",
-                    U.toStr(json, MAX_LEN, LEFT_RIGHT_LEN), clazz.getName()), e);
+            throw new RuntimeException(String.format("json(%s) to Object(%s) exception", U.compress(json), clazz.getName()), e);
         }
     }
     /** 将 json 字符串转换为对象, 当转换异常时, 返回 null */
@@ -133,9 +209,8 @@ public class JsonUtil {
         try {
             return RENDER.readValue(json, clazz);
         } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info(String.format("json(%s) to Object(%s) exception",
-                        U.toStr(json, MAX_LEN, LEFT_RIGHT_LEN), clazz.getName()), e);
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error(String.format("json(%s) to Object(%s) exception", U.compress(json), clazz.getName()), e);
             }
             return null;
         }
@@ -148,9 +223,8 @@ public class JsonUtil {
         try {
             return RENDER.readValue(json, type);
         } catch (IOException e) {
-            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info(String.format("json(%s) to Object(%s) exception",
-                        U.toStr(json, MAX_LEN, LEFT_RIGHT_LEN), type.getClass().getName()), e);
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error(String.format("json(%s) to Object(%s) exception", U.compress(json), type.getClass().getName()), e);
             }
             return null;
         }
@@ -164,8 +238,7 @@ public class JsonUtil {
         try {
             return RENDER.readValue(json, RENDER.getTypeFactory().constructCollectionType(List.class, clazz));
         } catch (Exception e) {
-            throw new RuntimeException(String.format("json(%s) to List<%s> exception",
-                    U.toStr(json, MAX_LEN, LEFT_RIGHT_LEN), clazz.getName()), e);
+            throw new RuntimeException(String.format("json(%s) to List<%s> exception", U.compress(json), clazz.getName()), e);
         }
     }
     /** 将 json 字符串转换为指定的数组列表 */
@@ -177,8 +250,7 @@ public class JsonUtil {
             return RENDER.readValue(json, RENDER.getTypeFactory().constructCollectionType(List.class, clazz));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(String.format("json(%s) to List<%s> exception",
-                        U.toStr(json, MAX_LEN, LEFT_RIGHT_LEN), clazz.getName()), e);
+                LogUtil.ROOT_LOG.error(String.format("json(%s) to List<%s> exception", U.compress(json), clazz.getName()), e);
             }
             return null;
         }

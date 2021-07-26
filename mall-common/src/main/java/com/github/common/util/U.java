@@ -4,12 +4,10 @@ import com.github.common.Money;
 import com.github.common.date.DateUtil;
 import com.github.common.exception.*;
 import com.github.common.json.JsonUtil;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 
 import java.beans.PropertyDescriptor;
 import java.io.*;
@@ -860,41 +858,6 @@ public final class U {
             methodSet.addAll(tmpSet);
         }
         return methodSet;
-    }
-
-
-    /** 对象转换, 当实体里面有 JsonProperties 这种注解时使用 JsonUtil.convertList 会转换不成功 */
-    public static <S,T> T convert(S source, Class<T> clazz) {
-        if (U.isNull(source)) {
-            return null;
-        }
-
-        try {
-            T obj = clazz.newInstance();
-            BeanUtils.copyProperties(source, obj);
-            return obj;
-        } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("Object(" + source + ") to " + clazz.getName() + " exception", e);
-            }
-            return null;
-        }
-    }
-
-    /** 集合转换, 当实体里面有 JsonProperties 这种注解时使用 JsonUtil.convertList 会转换不成功 */
-    public static <S,T> List<T> convertList(Collection<S> sourceList, Class<T> clazz) {
-        if (A.isEmpty(sourceList)) {
-            return Collections.emptyList();
-        }
-
-        List<T> list = Lists.newArrayList();
-        for (S s : sourceList) {
-            T obj = convert(s, clazz);
-            if (U.isNotNull(obj)) {
-                list.add(obj);
-            }
-        }
-        return list;
     }
 
     /**
