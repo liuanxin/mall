@@ -85,16 +85,16 @@ public class JsonUtil {
     }
 
     /** 对象转换, 失败将会返回 null */
-    public static <S,T> T convert(S source, Class<T> clazz) {
+    public static <S,T> T convertBasic(S source, Class<T> clazz) {
         return U.isBlank(source) ? null : toObjectNil(toJsonNil(source), clazz);
     }
     /** 集合转换, 失败将会返回 null */
-    public static <S,T> List<T> convertList(Collection<S> sourceList, Class<T> clazz) {
+    public static <S,T> List<T> convertListBasic(Collection<S> sourceList, Class<T> clazz) {
         return A.isEmpty(sourceList) ? Collections.emptyList() : toListNil(toJsonNil(sourceList), clazz);
     }
 
     /** 对象转换, 失败将会返回 null(忽略属性上的 @JsonProperty 注解) */
-    public static <S,T> T convertIgnoreJsonProperty(S source, Class<T> clazz) {
+    public static <S,T> T convert(S source, Class<T> clazz) {
         if (U.isBlank(source)) {
             return null;
         }
@@ -126,7 +126,7 @@ public class JsonUtil {
         }
     }
     /** 集合转换, 失败将会返回 null(忽略属性上的 @JsonProperty 注解) */
-    public static <S,T> List<T> convertListIgnoreJsonProperty(Collection<S> sourceList, Class<T> clazz) {
+    public static <S,T> List<T> convertList(Collection<S> sourceList, Class<T> clazz) {
         if (A.isEmpty(sourceList)) {
             return Collections.emptyList();
         }
@@ -138,11 +138,11 @@ public class JsonUtil {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error(String.format("List(%s) to json exception", U.compress(sourceList.toString())), e);
             }
-            return null;
+            return Collections.emptyList();
         }
 
         if (U.isBlank(json)) {
-            return null;
+            return Collections.emptyList();
         }
         try {
             return IGNORE_PROPERTY_RENDER.readValue(json, IGNORE_PROPERTY_RENDER.getTypeFactory().constructCollectionType(List.class, clazz));
@@ -150,11 +150,11 @@ public class JsonUtil {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error(String.format("List(%s) to List<%s> exception", U.compress(json), clazz.getName()), e);
             }
-            return null;
+            return Collections.emptyList();
         }
     }
 
-    public static <T,S> T convert(S source, TypeReference<T> type) {
+    public static <T,S> T convertType(S source, TypeReference<T> type) {
         if (U.isBlank(source)) {
             return null;
         }
@@ -233,7 +233,7 @@ public class JsonUtil {
     /** 将 json 字符串转换为指定的数组列表 */
     public static <T> List<T> toList(String json, Class<T> clazz) {
         if (U.isBlank(json)) {
-            return null;
+            return Collections.emptyList();
         }
         try {
             return RENDER.readValue(json, RENDER.getTypeFactory().constructCollectionType(List.class, clazz));
@@ -244,7 +244,7 @@ public class JsonUtil {
     /** 将 json 字符串转换为指定的数组列表 */
     public static <T> List<T> toListNil(String json, Class<T> clazz) {
         if (U.isBlank(json)) {
-            return null;
+            return Collections.emptyList();
         }
         try {
             return RENDER.readValue(json, RENDER.getTypeFactory().constructCollectionType(List.class, clazz));
@@ -252,7 +252,7 @@ public class JsonUtil {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error(String.format("json(%s) to List<%s> exception", U.compress(json), clazz.getName()), e);
             }
-            return null;
+            return Collections.emptyList();
         }
     }
 }
