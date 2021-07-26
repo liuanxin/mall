@@ -1,12 +1,9 @@
 package com.github.common.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.introspect.Annotated;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.common.date.DateFormatType;
 import com.github.common.date.DateUtil;
@@ -39,18 +36,9 @@ public class JsonUtil {
     */
 
     public static final ObjectMapper RENDER = new RenderObjectMapper();
-    public static final ObjectMapper IGNORE_PROPERTY_RENDER = RENDER.copy();
+    public static final ObjectMapper IGNORE_PROPERTY_RENDER = new RenderObjectMapper();
     static {
-        IGNORE_PROPERTY_RENDER.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
-            @Override
-            public JsonProperty.Access findPropertyAccess(Annotated m) {
-                JsonProperty.Access access = super.findPropertyAccess(m);
-                if (access == JsonProperty.Access.WRITE_ONLY) {
-                    return JsonProperty.Access.AUTO;
-                }
-                return access;
-            }
-        });
+        IGNORE_PROPERTY_RENDER.configure(MapperFeature.USE_ANNOTATIONS, false);
     }
 
     private static class RenderObjectMapper extends ObjectMapper {
@@ -93,7 +81,7 @@ public class JsonUtil {
         return A.isEmpty(sourceList) ? Collections.emptyList() : toListNil(toJsonNil(sourceList), clazz);
     }
 
-    /** 对象转换, 失败将会返回 null(忽略属性上的 @JsonProperty 注解) */
+    /** 对象转换, 失败将会返回 null(忽略 class 类属性上的 @Json... 注解) */
     public static <S,T> T convert(S source, Class<T> clazz) {
         if (U.isBlank(source)) {
             return null;
@@ -125,7 +113,7 @@ public class JsonUtil {
             return null;
         }
     }
-    /** 集合转换, 失败将会返回 null(忽略属性上的 @JsonProperty 注解) */
+    /** 集合转换, 失败将会返回 null(忽略 class 类属性上的 @Json... 注解) */
     public static <S,T> List<T> convertList(Collection<S> sourceList, Class<T> clazz) {
         if (A.isEmpty(sourceList)) {
             return Collections.emptyList();
