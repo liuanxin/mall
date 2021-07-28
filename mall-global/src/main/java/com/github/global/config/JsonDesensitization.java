@@ -75,17 +75,20 @@ public class JsonDesensitization {
             return U.EMPTY;
         }
 
+        String json;
         try {
-            String json = (hasDesensitization ? desObjectMapper : objectMapper).writeValueAsString(data);
-            if (hasCompress && U.isNotBlank(json)) {
-                json = U.compress(json);
+            if (data instanceof String) {
+                json = (String) data;
+            } else {
+                json = (hasDesensitization ? desObjectMapper : objectMapper).writeValueAsString(data);
             }
-            return json;
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("data desensitization exception", e);
             }
             return U.EMPTY;
         }
+
+        return (hasCompress && U.isNotBlank(json)) ? U.compress(json) : json;
     }
 }
