@@ -35,7 +35,7 @@ public class JsonModule {
         });
     }
 
-    /** 字符串做脱敏 */
+    /** 字符串脱敏 */
     public static SimpleModule stringDesensitization() {
         return new SimpleModule().addSerializer(String.class, new JsonSerializer<String>() {
             @Override
