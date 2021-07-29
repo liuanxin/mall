@@ -1,19 +1,22 @@
 package com.github.common.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.common.date.DateFormatType;
-import com.github.common.date.DateUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.TimeZone;
 
 public class JsonUtil {
 
@@ -63,12 +66,8 @@ public class JsonUtil {
             // 不确定的属性项上不要失败
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-            registerModule(new SimpleModule().addDeserializer(Date.class, new JsonDeserializer<Date>() {
-                @Override
-                public Date deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-                    return DateUtil.parse(p.getText().trim());
-                }
-            }));
+            registerModule(JsonModule.dateDeserializer());
+            registerModule(JsonModule.bigDecimalSerializer());
         }
     }
 

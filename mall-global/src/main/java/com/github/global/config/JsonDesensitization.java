@@ -1,10 +1,7 @@
 package com.github.global.config;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.github.common.json.JsonModule;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,8 +9,6 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
-
-import java.io.IOException;
 
 @Configuration
 @ConditionalOnClass(ObjectMapper.class)
@@ -35,39 +30,7 @@ public class JsonDesensitization {
     public JsonDesensitization(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
         this.desObjectMapper = objectMapper.copy();
-        this.desObjectMapper.registerModule(new SimpleModule().addSerializer(String.class, new JsonSerializer<String>() {
-            @Override
-            public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-                // null 不序列化
-                if (U.isNull(value)) {
-                    return;
-                }
-                // 空白符直接返回
-                if (U.EMPTY.equals(value.trim())) {
-                    gen.writeString(value);
-                    return;
-                }
-
-                // 脱敏字段
-                String key = gen.getOutputContext().getCurrentName();
-                if (U.isNotBlank(key)) {
-                    switch (key.toLowerCase()) {
-                        case "password":
-                            gen.writeString("***");
-                            return;
-                        case "phone":
-                            gen.writeString(U.foggyPhone(value));
-                            return;
-                        case "id_card":
-                        case "id-card":
-                        case "idcard":
-                            gen.writeString(U.foggyIdCard(value));
-                            return;
-                    }
-                }
-                gen.writeString(value);
-            }
-        }));
+        this.desObjectMapper.registerModule(JsonModule.stringDesensitization());
     }
 
     public String toJson(Object data) {
@@ -76,19 +39,19 @@ public class JsonDesensitization {
         }
 
         String json;
-        try {
-            if (data instanceof String) {
-                json = (String) data;
-            } else {
+        if (data instanceof String) {
+            json = (String) data;
+        } else {
+            try {
                 json = (hasDesensitization ? desObjectMapper : objectMapper).writeValueAsString(data);
+            } catch (Exception e) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error("data desensitization exception", e);
+                }
+                return U.EMPTY;
             }
-        } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("data desensitization exception", e);
-            }
-            return U.EMPTY;
         }
 
-        return (hasCompress && U.isNotBlank(json)) ? U.compress(json) : json;
+        return (hasCompress && U.isNotEmpty(json)) ? U.compress(json) : json;
     }
 }
