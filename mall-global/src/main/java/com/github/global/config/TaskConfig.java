@@ -1,5 +1,6 @@
 package com.github.global.config;
 
+import com.github.common.util.A;
 import com.github.common.util.U;
 import org.slf4j.MDC;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
@@ -36,6 +37,9 @@ public class TaskConfig implements AsyncConfigurer {
         // 见: https://moelholm.com/blog/2017/07/24/spring-43-using-a-taskdecorator-to-copy-mdc-data-to-async-threads
         executor.setTaskDecorator(runnable -> {
             Map<String, String> contextMap = MDC.getCopyOfContextMap();
+            if (A.isEmpty(contextMap)) {
+                return runnable;
+            }
             // 把主线程运行时的日志上下文放到异步任务的日志上下文去
             return () -> {
                 try {
