@@ -19,6 +19,11 @@ public class JsonDesensitization {
     @Value("${json.hasDesensitization:true}")
     private boolean hasDesensitization;
 
+    @Value("${json.desensitizationStrLen:1000}")
+    private int desStrLen;
+    @Value("${json.desensitizationLeftRightLen:200}")
+    private int desLeftRightLen;
+
     /** 是否进行数据压缩, 默认不压缩 */
     @Value("${json.hasCompress:false}")
     private boolean hasCompress;
@@ -30,7 +35,7 @@ public class JsonDesensitization {
     public JsonDesensitization(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
         this.desObjectMapper = objectMapper.copy();
-        this.desObjectMapper.registerModule(JsonModule.stringDesensitization());
+        this.desObjectMapper.registerModule(JsonModule.stringDesensitization(desStrLen, desLeftRightLen));
     }
 
     public String toJson(Object data) {

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.github.common.Const;
 import com.github.common.date.DateUtil;
 import com.github.common.util.U;
 
@@ -36,7 +37,7 @@ public class JsonModule {
     }
 
     /** 字符串脱敏 */
-    public static SimpleModule stringDesensitization() {
+    public static SimpleModule stringDesensitization(int max, int len) {
         return new SimpleModule().addSerializer(String.class, new JsonSerializer<String>() {
             @Override
             public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
@@ -47,25 +48,33 @@ public class JsonModule {
                     gen.writeString(value);
                     return;
                 }
-
-                // 脱敏字段
                 String key = gen.getOutputContext().getCurrentName();
-                if (U.isNotBlank(key)) {
-                    switch (key.toLowerCase()) {
-                        case "password":
-                            gen.writeString("***");
-                            return;
-                        case "phone":
-                            gen.writeString(U.foggyPhone(value));
-                            return;
-                        case "id_card":
-                        case "id-card":
-                        case "idcard":
-                            gen.writeString(U.foggyIdCard(value));
-                            return;
-                    }
+                if (U.isEmpty(key)) {
+                    gen.writeString(value);
+                    return;
                 }
-                gen.writeString(value);
+
+                String data;
+                switch (key.toLowerCase()) {
+                    // 脱敏字段
+                    case "password":
+                    case "authorization":
+                    case Const.TOKEN:
+                        data = "***";
+                        break;
+                    case "phone":
+                        data = U.foggyPhone(value);
+                        break;
+                    case "id_card":
+                    case "id-card":
+                    case "idcard":
+                        data = U.foggyIdCard(value);
+                        break;
+                    default:
+                        int length = value.length();
+                        data = (length <= max) ? value : (value.substring(0, len) + " *** " + value.substring(length - len));
+                }
+                gen.writeString(data);
             }
         });
     }
