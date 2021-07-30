@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Locale;
 
 /** <span style="color:red;">!!!此工具类请只在 Controller 中调用!!!</span> */
-public final class RequestUtils {
+public final class RequestUtil {
 
     private static final String USER_AGENT = "user-agent";
     private static final String REFERRER = "referer";

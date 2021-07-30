@@ -4,7 +4,7 @@ import com.github.common.exception.NotLoginException;
 import com.github.common.json.JsonUtil;
 import com.github.common.mvc.AppTokenHandler;
 import com.github.common.util.LogUtil;
-import com.github.common.util.RequestUtils;
+import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 
 /** !!! 操作 session 都基于此, 其他地方不允许操作! 避免 session 被滥用 !!! */
@@ -17,9 +17,9 @@ public class BackendSessionUtil {
 
     /** 将图片验证码的值放入 session */
     public static void putImageCode(String code) {
-        RequestUtils.getSession().setAttribute(CODE, code);
+        RequestUtil.getSession().setAttribute(CODE, code);
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("put image code({}) in session({})", code, RequestUtils.getSession().getId());
+            LogUtil.ROOT_LOG.debug("put image code({}) in session({})", code, RequestUtil.getSession().getId());
         }
     }
     /** 验证图片验证码 */
@@ -28,7 +28,7 @@ public class BackendSessionUtil {
             return false;
         }
 
-        Object securityCode = RequestUtils.getSession().getAttribute(CODE);
+        Object securityCode = RequestUtil.getSession().getAttribute(CODE);
         return securityCode != null && code.equalsIgnoreCase(securityCode.toString());
     }
 
@@ -39,9 +39,9 @@ public class BackendSessionUtil {
             if (U.isNotBlank(sessionModel)) {
                 if (LogUtil.ROOT_LOG.isDebugEnabled()) {
                     LogUtil.ROOT_LOG.debug("put ({}) in session({})",
-                            JsonUtil.toJson(sessionModel), RequestUtils.getSession().getId());
+                            JsonUtil.toJson(sessionModel), RequestUtil.getSession().getId());
                 }
-                RequestUtils.getSession().setAttribute(USER, sessionModel);
+                RequestUtil.getSession().setAttribute(USER, sessionModel);
                 return AppTokenHandler.generateToken(sessionModel);
             }
         }
@@ -53,7 +53,7 @@ public class BackendSessionUtil {
         // 从 token 中读, 为空再从 session 中读
         BackendSessionModel sessionModel = AppTokenHandler.getSessionInfoWithToken(BackendSessionModel.class);
         if (U.isBlank(sessionModel)) {
-            sessionModel = (BackendSessionModel) RequestUtils.getSession().getAttribute(USER);
+            sessionModel = (BackendSessionModel) RequestUtil.getSession().getAttribute(USER);
         }
         // 为空则使用默认值
         return sessionModel == null ? BackendSessionModel.defaultUser() : sessionModel;
@@ -82,6 +82,6 @@ public class BackendSessionUtil {
 
     /** 退出登录时调用. 清空 session */
     public static void signOut() {
-        RequestUtils.getSession().invalidate();
+        RequestUtil.getSession().invalidate();
     }
 }

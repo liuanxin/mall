@@ -4,7 +4,7 @@ import com.github.common.Const;
 import com.github.common.annotation.NotNeedLogin;
 import com.github.common.annotation.NotNeedPermission;
 import com.github.common.util.LogUtil;
-import com.github.common.util.RequestUtils;
+import com.github.common.util.RequestUtil;
 import com.github.util.ManagerSessionUtil;
 import com.google.common.collect.Lists;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -49,8 +49,8 @@ public class ManagerInterceptor implements HandlerInterceptor {
     }
 
     private void bindParam() {
-        String traceId = RequestUtils.getCookieOrHeaderOrParam(Const.TRACE);
-        LogUtil.bindContext(traceId, RequestUtils.logContextInfo().setUser(ManagerSessionUtil.getUserInfo()));
+        String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
+        LogUtil.bindContext(traceId, RequestUtil.logContextInfo().setUser(ManagerSessionUtil.getUserInfo()));
     }
 
     private void unbindParam() {
@@ -59,7 +59,7 @@ public class ManagerInterceptor implements HandlerInterceptor {
 
     /** 检查登录及权限 */
     private void checkLoginAndPermission(Object handler) {
-        String uri = RequestUtils.getRequest().getRequestURI();
+        String uri = RequestUtil.getRequest().getRequestURI();
         for (String letItGo : LET_IT_GO) {
             if (letItGo.equals(uri)) {
                 return;

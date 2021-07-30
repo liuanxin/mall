@@ -5,7 +5,7 @@ import com.github.common.export.easy.ExportEasyExcel;
 import com.github.common.export.poi.ExportColumnHandler;
 import com.github.common.export.poi.ExportExcel;
 import com.github.common.util.A;
-import com.github.common.util.RequestUtils;
+import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 import org.apache.poi.ss.usermodel.Workbook;
 
@@ -239,7 +239,7 @@ public final class WebExport {
 
     private static String encodeName(String name) {
         String fileName = name + "-" + (new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
-        String userAgent = RequestUtils.userAgent();
+        String userAgent = RequestUtil.userAgent();
         if (U.isNotBlank(userAgent) && userAgent.contains("Mozilla")) {
             // Chrome, Firefox, Safari etc...
             return new String(fileName.getBytes(), StandardCharsets.ISO_8859_1);

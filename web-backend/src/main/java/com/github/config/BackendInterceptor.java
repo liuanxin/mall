@@ -3,7 +3,7 @@ package com.github.config;
 import com.github.common.Const;
 import com.github.common.annotation.NeedLogin;
 import com.github.common.util.LogUtil;
-import com.github.common.util.RequestUtils;
+import com.github.common.util.RequestUtil;
 import com.github.util.BackendSessionUtil;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.method.HandlerMethod;
@@ -43,8 +43,8 @@ public class BackendInterceptor implements HandlerInterceptor {
     }
 
     private void bindParam() {
-        String traceId = RequestUtils.getCookieOrHeaderOrParam(Const.TRACE);
-        LogUtil.bindContext(traceId, RequestUtils.logContextInfo().setUser(BackendSessionUtil.getUserInfo()));
+        String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
+        LogUtil.bindContext(traceId, RequestUtil.logContextInfo().setUser(BackendSessionUtil.getUserInfo()));
     }
     private void unbindParam() {
         LogUtil.unbind();

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
-import com.github.common.util.RequestUtils;
+import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 import com.github.global.constant.GlobalConst;
 import com.google.common.io.ByteStreams;
@@ -48,7 +48,7 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override
     public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
                                            Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
-        String uri = RequestUtils.getRequestUri();
+        String uri = RequestUtil.getRequestUri();
         if (sufferErrorRequest && !GlobalConst.EXCLUDE_PATH_SET.contains(uri)) {
             return new HttpInputMessage() {
                 @Override
@@ -90,7 +90,7 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override
     public Object afterBodyRead(Object body, HttpInputMessage inputMessage, MethodParameter parameter,
                                 Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
-        String uri = RequestUtils.getRequestUri();
+        String uri = RequestUtil.getRequestUri();
         // body 类跟传入的 inputStream 转换失败将进不到这里面来
         if (!sufferErrorRequest && !GlobalConst.EXCLUDE_PATH_SET.contains(uri)) {
             LogUtil.bindRequestBody(jsonDesensitization.toJson(body));

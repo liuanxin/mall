@@ -6,7 +6,7 @@ import com.github.common.json.JsonCode;
 import com.github.common.json.JsonResult;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
-import com.github.common.util.RequestUtils;
+import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Value;
@@ -162,11 +162,11 @@ public class GlobalException {
             boolean notRequestInfo = LogUtil.hasNotRequestInfo();
             try {
                 if (notRequestInfo) {
-                    String traceId = RequestUtils.getCookieValue(Const.TRACE);
+                    String traceId = RequestUtil.getCookieValue(Const.TRACE);
                     if (U.isBlank(traceId)) {
-                        traceId = RequestUtils.getHeaderOrParam(Const.TRACE);
+                        traceId = RequestUtil.getHeaderOrParam(Const.TRACE);
                     }
-                    LogUtil.bindContext(traceId, RequestUtils.logContextInfo());
+                    LogUtil.bindContext(traceId, RequestUtil.logContextInfo());
                 }
                 LogUtil.ROOT_LOG.debug(msg, e);
             } finally {

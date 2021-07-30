@@ -3,7 +3,7 @@ package com.github.global.config;
 import com.github.common.Const;
 import com.github.common.date.DateUtil;
 import com.github.common.util.LogUtil;
-import com.github.common.util.RequestUtils;
+import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 import com.github.global.constant.GlobalConst;
 import javassist.ClassPool;
@@ -39,15 +39,15 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
     @Override
     protected void beforeBodyWriteInternal(MappingJacksonValue bodyContainer, MediaType contentType, MethodParameter parameter,
                                            ServerHttpRequest request, ServerHttpResponse response) {
-        String uri = RequestUtils.getRequestUri();
+        String uri = RequestUtil.getRequestUri();
         if (LogUtil.ROOT_LOG.isInfoEnabled() && !GlobalConst.EXCLUDE_PATH_SET.contains(uri)) {
             String json = jsonDesensitization.toJson(bodyContainer.getValue());
             if (U.isNotBlank(json)) {
                 boolean notRequestInfo = LogUtil.hasNotRequestInfo();
                 try {
                     if (notRequestInfo) {
-                        String traceId = RequestUtils.getCookieOrHeaderOrParam(Const.TRACE);
-                        LogUtil.bindContext(traceId, RequestUtils.logContextInfo());
+                        String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
+                        LogUtil.bindContext(traceId, RequestUtil.logContextInfo());
                     }
 
                     Class<?> clazz = parameter.getContainingClass();

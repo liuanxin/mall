@@ -4,7 +4,7 @@ import com.github.common.exception.ForbiddenException;
 import com.github.common.exception.NotLoginException;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.LogUtil;
-import com.github.common.util.RequestUtils;
+import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,14 +24,14 @@ public class ManagerSessionUtil {
             return false;
         }
 
-        Object securityCode = RequestUtils.getSession().getAttribute(CODE);
+        Object securityCode = RequestUtil.getSession().getAttribute(CODE);
         return securityCode != null && code.equalsIgnoreCase(securityCode.toString());
     }
     /** 将图片验证码的值放入 session */
     public static void putImageCode(String code) {
-        RequestUtils.getSession().setAttribute(CODE, code);
+        RequestUtil.getSession().setAttribute(CODE, code);
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("put image code ({}) in session ({})", code, RequestUtils.getSession().getId());
+            LogUtil.ROOT_LOG.debug("put image code ({}) in session ({})", code, RequestUtil.getSession().getId());
         }
     }
 
@@ -41,15 +41,15 @@ public class ManagerSessionUtil {
         if (U.isNotBlank(sessionModel)) {
             if (LogUtil.ROOT_LOG.isDebugEnabled()) {
                 LogUtil.ROOT_LOG.debug("put ({}) in session({})",
-                        JsonUtil.toJson(sessionModel), RequestUtils.getSession().getId());
+                        JsonUtil.toJson(sessionModel), RequestUtil.getSession().getId());
             }
-            RequestUtils.getSession().setAttribute(USER, sessionModel);
+            RequestUtil.getSession().setAttribute(USER, sessionModel);
         }
     }
 
     /** 获取用户信息, 从 token 中获取, 没有则从 session 中获取 */
     private static ManagerSessionModel getSessionInfo() {
-        ManagerSessionModel sessionModel = (ManagerSessionModel) RequestUtils.getSession().getAttribute(USER);
+        ManagerSessionModel sessionModel = (ManagerSessionModel) RequestUtil.getSession().getAttribute(USER);
         return sessionModel == null ? ManagerSessionModel.defaultUser() : sessionModel;
     }
 
@@ -83,7 +83,7 @@ public class ManagerSessionUtil {
         ManagerSessionModel sessionModel = getSessionInfo();
         // 非超级管理员才验证权限
         if (sessionModel.notAdmin()) {
-            HttpServletRequest request = RequestUtils.getRequest();
+            HttpServletRequest request = RequestUtil.getRequest();
             String url = request.getRequestURI();
             String method = request.getMethod();
 
@@ -95,6 +95,6 @@ public class ManagerSessionUtil {
 
     /** 退出登录时调用. 清空 session */
     public static void signOut() {
-        RequestUtils.getSession().invalidate();
+        RequestUtil.getSession().invalidate();
     }
 }

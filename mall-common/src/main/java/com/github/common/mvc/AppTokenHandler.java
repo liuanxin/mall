@@ -5,7 +5,7 @@ import com.github.common.encrypt.Encrypt;
 import com.github.common.exception.NotLoginException;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
-import com.github.common.util.RequestUtils;
+import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 
 import java.util.Map;
@@ -58,7 +58,7 @@ public final class AppTokenHandler {
 
     /** 从请求中获取 token 数据 */
     private static String getToken() {
-        return RequestUtils.getHeaderOrParam(Const.TOKEN);
+        return RequestUtil.getHeaderOrParam(Const.TOKEN);
     }
 
     /** 从 token 中读 session 信息, 如果登录已过期或解密失败将返回 null */
