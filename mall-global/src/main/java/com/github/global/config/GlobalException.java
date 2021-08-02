@@ -162,10 +162,7 @@ public class GlobalException {
             boolean notRequestInfo = LogUtil.hasNotRequestInfo();
             try {
                 if (notRequestInfo) {
-                    String traceId = RequestUtil.getCookieValue(Const.TRACE);
-                    if (U.isBlank(traceId)) {
-                        traceId = RequestUtil.getHeaderOrParam(Const.TRACE);
-                    }
+                    String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
                     LogUtil.bindContext(traceId, RequestUtil.logContextInfo());
                 }
                 LogUtil.ROOT_LOG.debug(msg, e);

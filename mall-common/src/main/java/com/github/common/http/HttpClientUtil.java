@@ -296,7 +296,7 @@ public class HttpClientUtil {
         if (A.isNotEmpty(requestHeaders)) {
             sbd.append(" request headers(");
             for (Header header : requestHeaders) {
-                sbd.append("<").append(header.getName()).append(" : ").append(header.getValue()).append(">");
+                sbd.append("<").append(header.getName()).append(": ").append(header.getValue()).append(">");
             }
             sbd.append(")");
         }
@@ -306,7 +306,7 @@ public class HttpClientUtil {
         if (A.isNotEmpty(responseHeaders)) {
             sbd.append(" response headers(");
             for (Header header : responseHeaders) {
-                sbd.append("<").append(header.getName()).append(" : ").append(header.getValue()).append(">");
+                sbd.append("<").append(header.getName()).append(": ").append(header.getValue()).append(">");
             }
             sbd.append(")");
         }

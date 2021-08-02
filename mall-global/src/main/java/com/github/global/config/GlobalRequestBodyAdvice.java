@@ -34,8 +34,11 @@ import java.nio.charset.StandardCharsets;
 public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
 
     /** 当前端发过来的 RequestBody 数据跟相关的实体对应上时, 此时想要输出用户的输入流, 将此值设置为 true(因为复制了一遍字节码, 内存消耗会比 false 时多) */
-    @Value("${sufferErrorRequest:false}")
+    @Value("${json.sufferErrorRequest:false}")
     private boolean sufferErrorRequest;
+
+    @Value("${json.logPrintHeader:false}")
+    private boolean printHeader;
 
     private final JsonDesensitization jsonDesensitization;
     private final ObjectMapper mapper;
@@ -96,5 +99,9 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
             LogUtil.bindRequestBody(jsonDesensitization.toJson(body));
         }
         return super.afterBodyRead(body, inputMessage, parameter, targetType, converterType);
+    }
+
+    private String formatHeader() {
+        return printHeader ? String.format(" header(%s)", jsonDesensitization.toJson(RequestUtil.formatHeader())) : U.EMPTY;
     }
 }

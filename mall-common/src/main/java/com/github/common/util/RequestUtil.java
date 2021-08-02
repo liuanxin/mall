@@ -278,7 +278,7 @@ public final class RequestUtil {
     }
 
     /** 格式化头里的参数: 键值以冒号分隔 */
-    public static String formatHeadParam() {
+    public static String formatHeader() {
         HttpServletRequest request = getRequest();
         if (U.isNull(request)) {
             return U.EMPTY;
@@ -288,7 +288,7 @@ public final class RequestUtil {
         Enumeration<String> headers = request.getHeaderNames();
         while (headers.hasMoreElements()) {
             String headName = headers.nextElement();
-            sbd.append("<").append(headName).append(" : ").append(request.getHeader(headName)).append(">");
+            sbd.append("<").append(headName).append(": ").append(request.getHeader(headName)).append(">");
         }
         return sbd.toString();
     }
@@ -335,7 +335,7 @@ public final class RequestUtil {
         String method = U.isNull(request) ? U.EMPTY : request.getMethod();
         String url = getRequestUrl();
         String param = formatParam();
-        String headParam = formatHeadParam();
+        String headParam = formatHeader();
         return new LogUtil.RequestLogContext(ip, method, url, param, headParam);
     }
 

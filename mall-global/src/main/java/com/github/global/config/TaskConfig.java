@@ -6,10 +6,15 @@ import org.slf4j.MDC;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -36,16 +41,25 @@ public class TaskConfig implements AsyncConfigurer {
         executor.setThreadNamePrefix("task-executor-");  // 线程名字的前缀
         // 见: https://moelholm.com/blog/2017/07/24/spring-43-using-a-taskdecorator-to-copy-mdc-data-to-async-threads
         executor.setTaskDecorator(runnable -> {
+            RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+            boolean hasRequest = (attributes instanceof ServletRequestAttributes);
+
             Map<String, String> contextMap = MDC.getCopyOfContextMap();
-            if (A.isEmpty(contextMap)) {
-                return runnable;
-            }
-            // 把主线程运行时的日志上下文放到异步任务的日志上下文去
+
+            // 把主线程运行时的日志上下文放到 feign 的日志上下文去
             return () -> {
                 try {
-                    MDC.setContextMap(contextMap);
+                    if (hasRequest) {
+                        LocaleContextHolder.setLocale(((ServletRequestAttributes) attributes).getRequest().getLocale());
+                        RequestContextHolder.setRequestAttributes(attributes);
+                    }
+                    MDC.setContextMap(A.isEmpty(contextMap) ? Collections.emptyMap() : contextMap);
                     runnable.run();
                 } finally {
+                    if (hasRequest) {
+                        LocaleContextHolder.resetLocaleContext();
+                        RequestContextHolder.resetRequestAttributes();
+                    }
                     MDC.clear();
                 }
             };

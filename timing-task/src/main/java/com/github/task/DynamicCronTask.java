@@ -27,7 +27,7 @@ public class DynamicCronTask implements SchedulingConfigurer {
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         Runnable task = () -> {
-            LogUtil.bindBasicInfo(null);
+            LogUtil.bindBasicInfo(U.uuid16());
             try {
                 handlerBusiness();
             } catch (Exception e) {

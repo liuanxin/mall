@@ -1,6 +1,7 @@
 package com.github.task;
 
 import com.github.common.util.LogUtil;
+import com.github.common.util.U;
 import com.github.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,7 +22,7 @@ public class CronTask {
     /** 取消下单已经超过了 24 小时的订单 */
     @Scheduled(cron = CRON)
     public void cancelOrder() {
-        LogUtil.bindBasicInfo(null);
+        LogUtil.bindBasicInfo(U.uuid16());
         try {
             handlerBusiness();
         } catch (Exception e) {
