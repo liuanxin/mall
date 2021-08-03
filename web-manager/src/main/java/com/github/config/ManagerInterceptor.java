@@ -25,10 +25,9 @@ public class ManagerInterceptor implements HandlerInterceptor {
     );
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
-                             Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         bindParam();
-        checkLoginAndPermission(handler);
+        checkLoginAndPermission(request.getRequestURI(), handler);
         return true;
     }
 
@@ -58,8 +57,7 @@ public class ManagerInterceptor implements HandlerInterceptor {
     }
 
     /** 检查登录及权限 */
-    private void checkLoginAndPermission(Object handler) {
-        String uri = RequestUtil.getRequest().getRequestURI();
+    private void checkLoginAndPermission(String uri, Object handler) {
         for (String letItGo : LET_IT_GO) {
             if (letItGo.equals(uri)) {
                 return;
