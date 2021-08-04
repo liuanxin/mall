@@ -62,7 +62,14 @@ public class ShowSql8Interceptor implements QueryInterceptor {
         // String realSql = SQLUtils.formatMySql(sql.replaceFirst("^\\s*?\n", ""));
         // String realSql = SqlFormat.format(sql.get().replaceFirst("^\\s*?\n", ""));
         String realSql = BLANK_REGEX.matcher(sql.get().replaceFirst("^\\s*?\n", "")).replaceAll(" ");
-        return realSql.split("\n").length > 1 ? ("\n" + realSql) : realSql;
+        realSql = realSql.split("\n").length > 1 ? ("\n" + realSql) : realSql;
+
+        int len = realSql.length(), max = 2000;
+        if (len > max) {
+            int leftRight = 300;
+            return realSql.substring(0, leftRight) + " ... " + realSql.substring(len - leftRight, len);
+        }
+        return realSql;
     }
 
     @Override
