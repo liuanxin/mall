@@ -21,7 +21,13 @@ public class HttpOkClientUtil {
 
     private static final String USER_AGENT = "Mozilla/5.0 (okhttp3; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36";
 
-    private static final int TIME_OUT = 30;
+    /** 建立连接的超时时间, 单位: 秒 */
+    private static final int CONNECT_TIME_OUT = 5;
+    /** 数据交互的时间, 单位: 秒 */
+    private static final int READ_TIME_OUT = 60;
+
+    /** 连接池最大数量 */
+    private static final int MAX_CONNECTIONS = 200;
 
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
@@ -29,12 +35,11 @@ public class HttpOkClientUtil {
     static {
         HTTP_CLIENT = new OkHttpClient().newBuilder()
                 // 连接超时时间
-                .connectTimeout(TIME_OUT, TimeUnit.SECONDS)
+                .connectTimeout(CONNECT_TIME_OUT, TimeUnit.SECONDS)
                 // 响应超时时间
-                .readTimeout(TIME_OUT, TimeUnit.SECONDS)
-                // 连接池中的最大连接数默认是 5 且每个连接保持 5 分钟
-                // .connectionPool(new ConnectionPool(20, 5, TimeUnit.MINUTES));
-                .connectionPool(new ConnectionPool())
+                .readTimeout(READ_TIME_OUT, TimeUnit.SECONDS)
+                // 连接池中的最大连接数(默认是 5 且每个连接保持 5 分钟)
+                .connectionPool(new ConnectionPool(MAX_CONNECTIONS, 5, TimeUnit.MINUTES))
                 .build();
     }
 

@@ -43,12 +43,24 @@ import java.util.*;
 
 public class HttpClientUtil {
 
-    private static final int TIME_OUT = 30 * 1000;
     private static final String USER_AGENT = "Mozilla/5.0 (httpclient4.5; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36";
+
+    /** 重试次数 */
+    private static final int RETRY_COUNT = 3;
+    /** 连接池最大数量 */
+    private static final int MAX_CONNECTIONS = 200;
+    /** 每个连接的最大连接数 */
+    private static final int MAX_CONNECTIONS_PER_ROUTE = 50;
+
+    /** 从连接池获取到连接的超时时间, 单位: 毫秒 */
+    private static final int CONNECTION_REQUEST_TIME_OUT = 3000;
+    /** 建立连接的超时时间, 单位: 毫秒 */
+    private static final int CONNECT_TIME_OUT = 5000;
+    /** 数据交互的时间, 单位: 毫秒 */
+    private static final int SOCKET_TIME_OUT = 60000;
 
     private static final PoolingHttpClientConnectionManager CONNECTION_MANAGER;
     private static final HttpRequestRetryHandler HTTP_REQUEST_RETRY_HANDLER;
-    private static final int RETRY_COUNT = 3;
     static {
         SSLConnectionSocketFactory sslConnectionSocketFactory;
         SSLContext ignoreVerifySSL = TrustCerts.IGNORE_SSL_CONTEXT;
@@ -64,9 +76,8 @@ public class HttpClientUtil {
                 .build();
 
         CONNECTION_MANAGER = new PoolingHttpClientConnectionManager(registry);
-        // CONNECTION_MANAGER.setDefaultMaxPerRoute(200);
-        // 连接池中的最大连接数默认是 20
-        // CONNECTION_MANAGER.setMaxTotal(20);
+        CONNECTION_MANAGER.setMaxTotal(MAX_CONNECTIONS);
+        CONNECTION_MANAGER.setDefaultMaxPerRoute(MAX_CONNECTIONS_PER_ROUTE);
 
         // 重试策略
         HTTP_REQUEST_RETRY_HANDLER = (exception, executionCount, context) -> {
@@ -114,9 +125,10 @@ public class HttpClientUtil {
     private static void config(HttpRequestBase request) {
         // 配置请求的超时设置
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(TIME_OUT)
-                .setConnectTimeout(TIME_OUT)
-                .setSocketTimeout(TIME_OUT).build();
+                .setConnectionRequestTimeout(CONNECTION_REQUEST_TIME_OUT)
+                .setConnectTimeout(CONNECT_TIME_OUT)
+                .setSocketTimeout(SOCKET_TIME_OUT)
+                .build();
         request.setConfig(requestConfig);
     }
 
