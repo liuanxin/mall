@@ -41,15 +41,11 @@ public class JsonModule {
         return new SimpleModule().addSerializer(String.class, new JsonSerializer<String>() {
             @Override
             public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-                if (U.isNull(value)) {
-                    return;
-                }
-                if (U.EMPTY.equals(value.trim())) {
-                    gen.writeString(value);
+                if (U.isBlank(value)) {
                     return;
                 }
                 String key = gen.getOutputContext().getCurrentName();
-                if (U.isEmpty(key)) {
+                if (U.isBlank(key)) {
                     gen.writeString(value);
                     return;
                 }
