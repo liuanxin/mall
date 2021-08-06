@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.github.common.Const;
 import com.github.common.date.DateUtil;
 import com.github.common.util.U;
 
@@ -56,24 +55,11 @@ public class JsonModule {
                 }
 
                 String data;
-                switch (key.toLowerCase()) {
-                    // 脱敏字段
-                    case "password":
-                    case "authorization":
-                    case Const.TOKEN:
-                        data = "***";
-                        break;
-                    case "phone":
-                        data = U.foggyPhone(value);
-                        break;
-                    case "id_card":
-                    case "id-card":
-                    case "idcard":
-                        data = U.foggyIdCard(value);
-                        break;
-                    default:
-                        int length = value.length();
-                        data = (length <= max) ? value : (value.substring(0, len) + " *** " + value.substring(length - len));
+                if ("password".equalsIgnoreCase(key)) {
+                    data = "***";
+                } else {
+                    int length = value.length();
+                    data = (length <= max) ? value : (value.substring(0, len) + " *** " + value.substring(length - len));
                 }
                 gen.writeString(data);
             }
