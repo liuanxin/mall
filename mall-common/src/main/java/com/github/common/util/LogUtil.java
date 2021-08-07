@@ -43,16 +43,6 @@ public final class LogUtil {
         MDC.put(REQUEST_INFO, logContextInfo.requestInfo());
     }
 
-    /** 将 RequestBody 的请求内容放进日志上下文 */
-    public static void bindRequestBody(String requestBody) {
-        if (U.isNotBlank(requestBody)) {
-            String requestInfo = MDC.get(REQUEST_INFO);
-            if (U.isNotBlank(requestInfo)) {
-                MDC.put(REQUEST_INFO, requestInfo.replace("]", " request(" + requestBody + ")]"));
-            }
-        }
-    }
-
     public static void unbind() {
         MDC.clear();
     }

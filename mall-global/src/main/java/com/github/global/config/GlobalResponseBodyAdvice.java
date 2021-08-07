@@ -39,27 +39,32 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
     @Override
     protected void beforeBodyWriteInternal(MappingJacksonValue bodyContainer, MediaType contentType, MethodParameter parameter,
                                            ServerHttpRequest request, ServerHttpResponse response) {
-        String uri = RequestUtil.getRequestUri();
-        if (LogUtil.ROOT_LOG.isInfoEnabled() && !GlobalConst.EXCLUDE_PATH_SET.contains(uri)) {
+        if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+            String uri = RequestUtil.getRequestUri();
+            if (GlobalConst.EXCLUDE_PATH_SET.contains(uri)) {
+                return;
+            }
             String json = jsonDesensitization.toJson(bodyContainer.getValue());
-            if (U.isNotBlank(json)) {
-                boolean notRequestInfo = LogUtil.hasNotRequestInfo();
-                try {
-                    if (notRequestInfo) {
-                        String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
-                        LogUtil.bindContext(traceId, RequestUtil.logContextInfo());
-                    }
+            if (U.isBlank(json)) {
+                return;
+            }
 
-                    Class<?> clazz = parameter.getContainingClass();
-                    String className = clazz.getName();
-                    Method method = parameter.getMethod();
-                    String methodName = U.isNotBlank(method) ? method.getName() : U.EMPTY;
+            boolean notRequestInfo = LogUtil.hasNotRequestInfo();
+            try {
+                if (notRequestInfo) {
+                    String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
+                    LogUtil.bindContext(traceId, RequestUtil.logContextInfo());
+                }
+                StringBuilder sbd = new StringBuilder();
 
-                    StringBuilder sbd = new StringBuilder();
-                    sbd.append(className);
-                    if (U.isNotBlank(methodName)) {
-                        sbd.append("#").append(methodName);
-                    }
+                Class<?> clazz = parameter.getContainingClass();
+                String className = clazz.getName();
+                sbd.append(className);
+
+                Method method = parameter.getMethod();
+                String methodName = U.isNotBlank(method) ? method.getName() : U.EMPTY;
+                if (U.isNotBlank(methodName)) {
+                    sbd.append("#").append(methodName);
                     try {
                         ClassPool classPool = new ClassPool(ClassPool.getDefault());
                         String classInFile = U.getClassInFile(clazz);
@@ -70,27 +75,30 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
                         if (line > 1) {
                             sbd.append("(").append(clazz.getSimpleName()).append(".java:").append(line - 1).append(")");
                         }
-                    } catch (Exception ignore) {
+                    } catch (Exception e) {
+                        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+                            LogUtil.ROOT_LOG.debug(String.format("get %s#%s line-number exception", className, methodName), e);
+                        }
                     }
+                }
 
-                    sbd.append(", time: (");
-                    long startTimeMillis = LogUtil.getStartTimeMillis();
-                    if (U.greater0(startTimeMillis)) {
-                        sbd.append(DateUtil.formatDateTimeMs(new Date(startTimeMillis))).append(" -> ");
-                    }
+                long startTimeMillis = LogUtil.getStartTimeMillis();
+                if (U.greater0(startTimeMillis)) {
+                    sbd.append(" time(");
+                    sbd.append(DateUtil.formatDateTimeMs(new Date(startTimeMillis))).append(" -> ");
                     long currentTimeMillis = System.currentTimeMillis();
                     sbd.append(DateUtil.formatDateTimeMs(new Date(currentTimeMillis)));
-                    if (U.greater0(startTimeMillis) && currentTimeMillis >= startTimeMillis) {
+                    if (currentTimeMillis >= startTimeMillis) {
                         sbd.append(DateUtil.toHuman(currentTimeMillis - startTimeMillis));
                     }
                     sbd.append(")");
+                }
 
-                    sbd.append(", return: (").append(json).append(")");
-                    LogUtil.ROOT_LOG.info(sbd.toString());
-                } finally {
-                    if (notRequestInfo) {
-                        LogUtil.unbind();
-                    }
+                sbd.append(" return(").append(json).append(")");
+                LogUtil.ROOT_LOG.info(sbd.toString());
+            } finally {
+                if (notRequestInfo) {
+                    LogUtil.unbind();
                 }
             }
         }

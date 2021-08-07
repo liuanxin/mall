@@ -2,13 +2,11 @@ package com.github.global.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 import com.github.global.constant.GlobalConst;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.CharStreams;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -23,7 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAdapter;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
@@ -51,41 +51,37 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override
     public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
                                            Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
-        String uri = RequestUtil.getRequestUri();
-        if (sufferErrorRequest && !GlobalConst.EXCLUDE_PATH_SET.contains(uri)) {
-            return new HttpInputMessage() {
-                @Override
-                public HttpHeaders getHeaders() {
-                    return inputMessage.getHeaders();
-                }
+        if (!GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
+            if (sufferErrorRequest) {
+                return new HttpInputMessage() {
+                    @Override
+                    public HttpHeaders getHeaders() {
+                        return inputMessage.getHeaders();
+                    }
 
-                @Override
-                public InputStream getBody() throws IOException {
-                    // Http Request 的 inputStream 读取过后再读取就会异常, 所以这样操作(两处都 new ByteArrayInputStream)
-                    byte[] bytes = ByteStreams.toByteArray(inputMessage.getBody());
+                    @Override
+                    public InputStream getBody() throws IOException {
+                        // Http Request 的 inputStream 读取过后再读取就会异常, 所以这样操作(两处都 new ByteArrayInputStream)
+                        byte[] bytes = ByteStreams.toByteArray(inputMessage.getBody());
 
-                    try (Reader reader = new InputStreamReader(new ByteArrayInputStream(bytes), StandardCharsets.UTF_8)) {
-                        String data = CharStreams.toString(reader);
+                        String data = new String(bytes, StandardCharsets.UTF_8);
                         if (U.isNotBlank(data)) {
                             try {
                                 // 先转换成对象, 再输出成 string, 这样可以去掉空白符
                                 Object obj = mapper.readValue(data, Object.class);
-                                LogUtil.bindRequestBody(jsonDesensitization.toJson(obj));
+                                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                                    LogUtil.ROOT_LOG.info("before body({})", jsonDesensitization.toJson(obj));
+                                }
                             } catch (JsonProcessingException e) {
                                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                                     LogUtil.ROOT_LOG.error(String.format("@RequestBody(%s) has not json data", data), e);
                                 }
-                                LogUtil.bindRequestBody(data);
                             }
                         }
-                    } catch (Exception e) {
-                        if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                            LogUtil.ROOT_LOG.error(String.format("@RequestBody bytes(%s) read exception", A.toString(bytes)), e);
-                        }
+                        return new ByteArrayInputStream(bytes);
                     }
-                    return new ByteArrayInputStream(bytes);
-                }
-            };
+                };
+            }
         }
         return super.beforeBodyRead(inputMessage, parameter, targetType, converterType);
     }
@@ -93,15 +89,17 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override
     public Object afterBodyRead(Object body, HttpInputMessage inputMessage, MethodParameter parameter,
                                 Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
-        String uri = RequestUtil.getRequestUri();
-        // body 类跟传入的 inputStream 转换失败将进不到这里面来
-        if (!sufferErrorRequest && !GlobalConst.EXCLUDE_PATH_SET.contains(uri)) {
-            LogUtil.bindRequestBody(jsonDesensitization.toJson(body));
+        if (!GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
+            if (!sufferErrorRequest) {
+                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                    LogUtil.ROOT_LOG.info("after body({})", jsonDesensitization.toJson(body));
+                }
+            }
         }
         return super.afterBodyRead(body, inputMessage, parameter, targetType, converterType);
     }
 
     private String formatHeader() {
-        return printHeader ? String.format(" header(%s)", jsonDesensitization.toJson(RequestUtil.formatHeader())) : U.EMPTY;
+        return printHeader ? String.format(" header(%s)", RequestUtil.formatHeader()) : U.EMPTY;
     }
 }

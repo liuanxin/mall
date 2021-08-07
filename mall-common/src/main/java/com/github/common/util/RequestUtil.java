@@ -335,8 +335,8 @@ public final class RequestUtil {
         String method = U.isNull(request) ? U.EMPTY : request.getMethod();
         String url = getRequestUrl();
         String param = formatParam();
-        String headParam = formatHeader();
-        return new LogUtil.RequestLogContext(ip, method, url, param, headParam);
+        String head = formatHeader();
+        return new LogUtil.RequestLogContext(ip, method, url, param, head);
     }
 
     /**
