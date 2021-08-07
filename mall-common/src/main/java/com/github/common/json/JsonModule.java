@@ -31,11 +31,12 @@ public class JsonModule {
                 BigDecimal num = value.stripTrailingZeros();
                 if (num.scale() == 0) {
                     gen.writeString(num.toString());
-                    return;
+                } else if (value.scale() < 2) {
+                    // 不足 2 位则输出 2 位小数
+                    gen.writeString(value.setScale(2, RoundingMode.UNNECESSARY).toString());
+                } else {
+                    gen.writeString(value.toString());
                 }
-
-                // 只要有小数位, 则只保留 2 位小数, 多的直接舍掉, 少的会补 0
-                gen.writeString(value.setScale(2, RoundingMode.HALF_DOWN).toString());
             }
         });
     }
