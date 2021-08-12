@@ -80,7 +80,7 @@ public class JsonUtil {
         return A.isEmpty(sourceList) ? Collections.emptyList() : toListNil(toJsonNil(sourceList), clazz);
     }
 
-    /** 对象转换, 失败将会返回 null(忽略 class 类属性上的 @Json... 注解) */
+    /** 对象转换(忽略 class 类属性上的 @Json... 注解), 失败将会返回 null */
     public static <S,T> T convert(S source, Class<T> clazz) {
         if (U.isBlank(source)) {
             return null;
@@ -112,7 +112,7 @@ public class JsonUtil {
             return null;
         }
     }
-    /** 集合转换, 失败将会返回 null(忽略 class 类属性上的 @Json... 注解) */
+    /** 集合转换(忽略 class 类属性上的 @Json... 注解), 失败将会返回 null */
     public static <S,T> List<T> convertList(Collection<S> sourceList, Class<T> clazz) {
         if (A.isEmpty(sourceList)) {
             return Collections.emptyList();
