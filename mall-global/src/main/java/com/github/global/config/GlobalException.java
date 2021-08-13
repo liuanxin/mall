@@ -38,12 +38,12 @@ public class GlobalException {
     private boolean online;
 
     /**
-     * 响应错误时, 错误码是否以 ResponseStatus 返回, 默认是 false
+     * 响应错误时, 错误码是否以 ResponseStatus 返回
      *
-     * true:  响应状态返回 500, 返回 json 的 code 是 500
-     * false: 响应状态返回 200, 返回 json 的 code 是 500
+     * true:  ResponseStatus 返回 400 | 500, 返回 json 是 { "code": 400 | 500 ... }
+     * false: ResponseStatus 返回 200,       返回 json 是 { "code": 400 | 500 ... }
      */
-    @Value("${request.returnStatusCode:false}")
+    @Value("${res.returnStatusCode:false}")
     private boolean returnStatusCode;
 
     /** 业务异常 */
