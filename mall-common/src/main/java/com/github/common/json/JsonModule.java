@@ -27,12 +27,8 @@ public class JsonModule {
                     return;
                 }
 
-                BigDecimal num = value.stripTrailingZeros();
-                if (num.scale() == 0) {
-                    // 去掉尾数上的 0, 如果是整数则只输出整数
-                    gen.writeString(num.toString());
-                } else if (value.scale() < 2) {
-                    // 不足 2 位则输出 2 位小数
+                // 不足 2 位则输出 2 位小数
+                if (value.scale() < 2) {
                     gen.writeString(value.setScale(2, RoundingMode.UNNECESSARY).toString());
                 } else {
                     gen.writeString(value.toString());
