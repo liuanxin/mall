@@ -42,7 +42,7 @@ public class JsonModule {
         return new SimpleModule().addSerializer(String.class, new JsonSerializer<String>() {
             @Override
             public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-                if (U.isBlank(value)) {
+                if (U.isNull(value)) {
                     gen.writeString("");
                     return;
                 }
