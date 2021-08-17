@@ -43,6 +43,7 @@ public class JsonModule {
             @Override
             public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
                 if (U.isBlank(value)) {
+                    gen.writeString("");
                     return;
                 }
                 String key = gen.getOutputContext().getCurrentName();
