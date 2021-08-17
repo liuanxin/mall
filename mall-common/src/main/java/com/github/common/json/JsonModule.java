@@ -26,7 +26,7 @@ public class JsonModule {
             @Override
             public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
                 if (U.isNull(value)) {
-                    gen.writeString("");
+                    gen.writeNull();
                     return;
                 }
                 String key = gen.getOutputContext().getCurrentName();
