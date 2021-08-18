@@ -18,7 +18,7 @@
 //
 ///**
 // * mysql 5 的连接参数是: &statementInterceptors=com.github.common.sql.ShowSql5Interceptor
-// * mysql 8 的连接参数是: &queryInterceptors=com.github.common.sql.ShowSql8Interceptor
+// * mysql 8 的连接参数是: &queryInterceptors=com.github.common.sql.ShowSqlInterceptor
 // */
 //public class ShowSql5Interceptor implements StatementInterceptor {
 //
@@ -67,9 +67,7 @@
 //            // sql = SqlFormat.format(sql.replaceFirst("^\\s*?\n", ""));
 //            sql = BLANK_REGEX.matcher(sql.replaceFirst("^\\s*?\n", "")).replaceAll(" ");
 //        }
-//        sql = sql.split("\n").length > 1 ? ("\n" + sql) : sql;
-//
-//        int len = sql.length(), max = 2000, leftRight = 300;
+//        int len = sql.length(), max = 2000, leftRight = 400;
 //        return len > max ? (sql.substring(0, leftRight) + " ... " + sql.substring(len - leftRight, len)) : sql;
 //    }
 //

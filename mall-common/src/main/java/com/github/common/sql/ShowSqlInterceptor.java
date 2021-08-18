@@ -21,9 +21,9 @@ import java.util.regex.Pattern;
 
 /**
  * mysql 5 的连接参数是: &statementInterceptors=com.github.common.sql.ShowSql5Interceptor
- * mysql 8 的连接参数是: &queryInterceptors=com.github.common.sql.ShowSql8Interceptor
+ * mysql 8 的连接参数是: &queryInterceptors=com.github.common.sql.ShowSqlInterceptor
  */
-public class ShowSql8Interceptor implements QueryInterceptor {
+public class ShowSqlInterceptor implements QueryInterceptor {
 
     private static final String TIME_SPLIT = "~";
     private static final AtomicLong COUNTER = new AtomicLong(0L);
@@ -48,7 +48,7 @@ public class ShowSql8Interceptor implements QueryInterceptor {
                 TIME_CACHE.put(currentThread, counter + TIME_SPLIT + current);
                 HostInfo hostInfo = query.getSession().getHostInfo();
                 String dataSource = hostInfo.getHost() + ":" + hostInfo.getPort() + "/" + hostInfo.getDatabase();
-                LogUtil.SQL_LOG.debug("counter: {}, data-source: {}, sql:\n{}", counter, dataSource, realSql);
+                LogUtil.SQL_LOG.debug("计数: {}, 数据源: {}, sql:\n{}", counter, dataSource, realSql);
             }
         }
         return null;
@@ -62,14 +62,8 @@ public class ShowSql8Interceptor implements QueryInterceptor {
         // String realSql = SQLUtils.formatMySql(sql.replaceFirst("^\\s*?\n", ""));
         // String realSql = SqlFormat.format(sql.get().replaceFirst("^\\s*?\n", ""));
         String realSql = BLANK_REGEX.matcher(sql.get().replaceFirst("^\\s*?\n", "")).replaceAll(" ");
-        realSql = realSql.split("\n").length > 1 ? ("\n" + realSql) : realSql;
-
-        int len = realSql.length(), max = 2000;
-        if (len > max) {
-            int leftRight = 300;
-            return realSql.substring(0, leftRight) + " ... " + realSql.substring(len - leftRight, len);
-        }
-        return realSql;
+        int len = realSql.length(), max = 2000, leftRight = 400;
+        return len > max ? (realSql.substring(0, leftRight) + " ... " + realSql.substring(len - leftRight, len)) : realSql;
     }
 
     @Override
@@ -88,13 +82,13 @@ public class ShowSql8Interceptor implements QueryInterceptor {
 
                             StringBuilder sbd = new StringBuilder();
                             if (U.greater0(counter)) {
-                                sbd.append("counter: ").append(counter);
+                                sbd.append("计数: ").append(counter);
                             }
                             if (U.greater0(start)) {
-                                sbd.append(", use-time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start));
+                                sbd.append(", 用时: ").append(DateUtil.toHuman(System.currentTimeMillis() - start));
                             }
                             if (U.isNotBlank(rs) && rs.hasRows()) {
-                                sbd.append(", return-size: ").append(rs.getRows().size());
+                                sbd.append(", 返回行数: ").append(rs.getRows().size());
                             }
                             LogUtil.SQL_LOG.debug(sbd.toString());
                         }
