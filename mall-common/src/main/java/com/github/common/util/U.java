@@ -484,6 +484,10 @@ public final class U {
                 : MULTI_SPACE_REGEX.matcher(str.replace("\r", EMPTY).replace("\n", BLANK)).replaceAll(BLANK).trim();
     }
 
+    public static <T> T defaultIfNull(T obj, T defaultValue) {
+        return isNull(obj) ? defaultValue : obj;
+    }
+
     /** 对象为 null 时返回 true */
     public static boolean isNull(Object obj) {
         return obj == null;
