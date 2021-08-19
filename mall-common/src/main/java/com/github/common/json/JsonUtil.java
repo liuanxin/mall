@@ -145,7 +145,7 @@ public class JsonUtil {
         if (U.isNull(source)) {
             return null;
         }
-        return toObjectNil((source instanceof String) ? ((String) source) : toJsonNil(source), type);
+        return toObjectType((source instanceof String) ? ((String) source) : toJsonNil(source), type);
     }
 
     /** 对象转换成 json 字符串 */
@@ -203,7 +203,7 @@ public class JsonUtil {
         }
     }
     /** 将 json 字符串转换为泛型对象 */
-    public static <T> T toObjectNil(String json, TypeReference<T> type) {
+    public static <T> T toObjectType(String json, TypeReference<T> type) {
         if (U.isBlank(json)) {
             return null;
         }
