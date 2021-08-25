@@ -151,14 +151,10 @@ public final class U {
      *
      * public enum Gender {
      *   Male(0, "男"), Female(1, "女");
-     *   int code;
-     *   String value;
      *
-     *   Gender(int code, String value) {
-     *     this.code = code;
-     *     this.value = value;
-     *   }
-     *   // get etc...
+     *   &#064;EnumValue
+     *   private final int code;
+     *   private final String value;
      *
      *   &#064;JsonValue
      *   public Map<String, String> serializer() {
@@ -183,22 +179,18 @@ public final class U {
      *
      * public enum Gender {
      *   Male(0, "男"), Female(1, "女");
-     *   int code;
-     *   String value;
      *
-     *   Gender(int code, String value) {
-     *     this.code = code;
-     *     this.value = value;
-     *   }
-     *   // get etc...
+     *   &#064;EnumValue
+     *   private final int code;
+     *   private final String value;
      *
      *   &#064;JsonValue
      *   public Map<String, String> serializer() {
-     *     return serializerEnum(code, value);
+     *     return <span style="color:red">serializerEnum(code, value);</span>
      *   }
      *   &#064;JsonCreator
      *   public static Gender deserializer(Object obj) {
-     *     return <span style="color:red">enumDeserializer(obj, Gender.class);</span>
+     *     return enumDeserializer(obj, Gender.class);
      *   }
      * }
      *
