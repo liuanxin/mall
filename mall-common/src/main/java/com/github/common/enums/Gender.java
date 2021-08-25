@@ -4,23 +4,22 @@ import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.common.util.U;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Map;
 
 /** 性别 */
 @Getter
+@AllArgsConstructor
 public enum Gender {
 
     Nil(0, "未知"), Male(1, "男"), Female(2, "女");
 
     @EnumValue
-    int code;
-    String value;
-    Gender(int code, String value) {
-        this.code = code;
-        this.value = value;
-    }
+    private final int code;
+
+    private final String value;
 
     /** 序列化给前端时, 如果只想给前端返回数值, 去掉此方法并把注解挪到 getCode 即可 */
     @JsonValue

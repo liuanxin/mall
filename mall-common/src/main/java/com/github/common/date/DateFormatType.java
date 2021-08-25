@@ -1,6 +1,11 @@
 package com.github.common.date;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 /** 日期的格式化类型 */
+@Getter
+@AllArgsConstructor
 public enum DateFormatType {
 
     /** yyyy-MM-dd HH:mm:ss */
@@ -76,8 +81,6 @@ public enum DateFormatType {
     CST("EEE MMM dd HH:mm:ss zzz yyyy");
 
     private final String value;
-    DateFormatType(String value) { this.value = value; }
-    public String getValue() { return value; }
 
     public boolean isCst() {
         return this == CST;
