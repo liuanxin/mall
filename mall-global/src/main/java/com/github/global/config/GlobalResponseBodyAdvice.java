@@ -23,7 +23,6 @@ import org.springframework.web.servlet.mvc.method.annotation.AbstractMappingJack
 
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
-import java.util.Date;
 
 @SuppressWarnings({"NullableProblems"})
 @RequiredArgsConstructor
@@ -84,16 +83,8 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
 
                 long startTimeMillis = LogUtil.getStartTimeMillis();
                 if (U.greater0(startTimeMillis)) {
-                    sbd.append(" time(");
-                    sbd.append(DateUtil.formatDateTimeMs(new Date(startTimeMillis))).append(" -> ");
-                    long currentTimeMillis = System.currentTimeMillis();
-                    sbd.append(DateUtil.formatDateTimeMs(new Date(currentTimeMillis)));
-                    if (currentTimeMillis >= startTimeMillis) {
-                        sbd.append(DateUtil.toHuman(currentTimeMillis - startTimeMillis));
-                    }
-                    sbd.append(")");
+                    sbd.append(" time(").append(DateUtil.toHuman(System.currentTimeMillis() - startTimeMillis)).append(")");
                 }
-
                 sbd.append(" return(").append(json).append(")");
                 LogUtil.ROOT_LOG.info(sbd.toString());
             } finally {
