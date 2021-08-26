@@ -8,7 +8,6 @@ import com.github.common.util.U;
 import com.github.global.constant.GlobalConst;
 import javassist.ClassPool;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
@@ -29,9 +28,6 @@ import java.lang.reflect.Method;
 @ConditionalOnClass({ HttpServletResponse.class, ResponseBody.class })
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
 public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice {
-
-    @Value("${online:false}")
-    private boolean online;
 
     private final JsonDesensitization jsonDesensitization;
 
