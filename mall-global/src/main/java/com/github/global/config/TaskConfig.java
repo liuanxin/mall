@@ -43,9 +43,7 @@ public class TaskConfig implements AsyncConfigurer {
         executor.setTaskDecorator(runnable -> {
             RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
             boolean hasRequest = (attributes instanceof ServletRequestAttributes);
-
             Map<String, String> contextMap = MDC.getCopyOfContextMap();
-
             // 把主线程运行时的请求和日志上下文放到 异步任务的请求和日志上下文去
             return () -> {
                 try {
