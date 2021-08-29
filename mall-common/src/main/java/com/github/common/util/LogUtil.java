@@ -51,7 +51,7 @@ public final class LogUtil {
         return U.toLong(MDC.get(START_REQUEST_TIME));
     }
     public static String getTraceId() {
-        return MDC.get(TRACE_ID);
+        return U.toStr(MDC.get(TRACE_ID)).trim();
     }
 
 
