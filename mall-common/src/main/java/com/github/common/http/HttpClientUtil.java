@@ -64,7 +64,7 @@ public class HttpClientUtil {
     static {
         SSLConnectionSocketFactory sslConnectionSocketFactory;
         SSLContext ignoreVerifySSL = TrustCerts.IGNORE_SSL_CONTEXT;
-        if (U.isBlank(ignoreVerifySSL)) {
+        if (U.isNull(ignoreVerifySSL)) {
             sslConnectionSocketFactory = SSLConnectionSocketFactory.getSocketFactory();
         } else {
             sslConnectionSocketFactory = new SSLConnectionSocketFactory(ignoreVerifySSL);
@@ -135,7 +135,7 @@ public class HttpClientUtil {
 
     /** 向指定 url 进行 get 请求 */
     public static String get(String url) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return null;
         }
 
@@ -144,19 +144,19 @@ public class HttpClientUtil {
     }
     @SuppressWarnings("unchecked")
     public static <T> String get(String url, T param) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return null;
         }
 
         Map<String, Object> params = Collections.emptyMap();
-        if (U.isNotBlank(param)) {
+        if (A.isNotEmpty(param)) {
             params = JsonUtil.convert(param, Map.class);
         }
         return get(url, params);
     }
     /** 向指定 url 进行 get 请求. 有参数 */
     public static String get(String url, Map<String, Object> params) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return null;
         }
 
@@ -166,7 +166,7 @@ public class HttpClientUtil {
     }
     /** 向指定 url 进行 get 请求. 有参数和头 */
     public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return null;
         }
 
@@ -181,7 +181,7 @@ public class HttpClientUtil {
 
     /** 向指定的 url 进行 post 请求. 有参数 */
     public static String post(String url, Map<String, Object> params) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return null;
         }
 
@@ -191,7 +191,7 @@ public class HttpClientUtil {
     }
     /** 向指定的 url 进行 post 请求. 参数以 json 的方式一次传递 */
     public static String post(String url, String json) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return null;
         }
 
@@ -203,7 +203,7 @@ public class HttpClientUtil {
     }
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return null;
         }
 
@@ -214,7 +214,7 @@ public class HttpClientUtil {
     }
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postBodyWithHeader(String url, String json, Map<String, Object> headers) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return null;
         }
 
@@ -229,7 +229,7 @@ public class HttpClientUtil {
 
     /** 向指定的 url 进行 post 操作, 有参数和文件 */
     public static String postFile(String url, Map<String, Object> params, Map<String, File> files) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return null;
         }
 
@@ -275,7 +275,7 @@ public class HttpClientUtil {
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
-                if (U.isNotBlank(key) && U.isNotBlank(value)) {
+                if (U.isNotBlank(key) && U.isNotNull(value)) {
                     nameValuePairs.add(new BasicNameValuePair(key, A.toString(value)));
                 }
             }
@@ -288,7 +288,7 @@ public class HttpClientUtil {
         if (A.isNotEmpty(headers)) {
             for (Map.Entry<String, Object> entry : headers.entrySet()) {
                 Object value = entry.getValue();
-                if (U.isNotBlank(value)) {
+                if (U.isNotNull(value)) {
                     request.addHeader(entry.getKey(), value.toString());
                 }
             }
@@ -367,7 +367,7 @@ public class HttpClientUtil {
         long start = System.currentTimeMillis();
         try (CloseableHttpResponse response = createHttpClient().execute(request, HttpClientContext.create())) {
             HttpEntity entity = response.getEntity();
-            if (U.isNotBlank(entity)) {
+            if (U.isNotNull(entity)) {
                 entity.writeTo(new FileOutputStream(file));
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                     long ms = (System.currentTimeMillis() - start);

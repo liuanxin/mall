@@ -31,6 +31,6 @@ public enum UserTestLevel {
     @JsonCreator
     public static UserTestLevel deserializer(Object obj) {
         UserTestLevel level = U.enumDeserializer(obj, UserTestLevel.class);
-        return U.isBlank(level) ? Normal : level;
+        return U.isNull(level) ? Normal : level;
     }
 }

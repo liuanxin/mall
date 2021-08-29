@@ -69,7 +69,7 @@ public class ExampleRes {
     public static PageReturn<ExampleRes> assemblyData(PageReturn<UserTest> userPageInfo,
                                                       List<ProductTest> productExampleList) {
         PageReturn<ExampleRes> returnRes = PageReturn.convert(userPageInfo);
-        if (U.isNotBlank(userPageInfo)) {
+        if (U.isNotNull(userPageInfo)) {
             // 把商品数据整理成  userId: List<商品>
             Multimap<Long, ProductTest> multiMap = ArrayListMultimap.create();
             if (A.isNotEmpty(productExampleList)) {
@@ -82,7 +82,7 @@ public class ExampleRes {
             List<ExampleRes> exampleVoList = Lists.newArrayList();
             for (UserTest userExample : userPageInfo.getList()) {
                 ExampleRes res = JsonUtil.convert(userExample, ExampleRes.class);
-                if (U.isNotBlank(res)) {
+                if (U.isNotNull(res)) {
                     // 从上面的 map 中获取当前用户对应的商品列表
                     Collection<ProductTest> productExamples = userIdMap.get(userExample.getId());
                     if (A.isNotEmpty(productExamples)) {

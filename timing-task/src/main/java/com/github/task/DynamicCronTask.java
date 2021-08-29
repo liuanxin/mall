@@ -45,7 +45,7 @@ public class DynamicCronTask implements SchedulingConfigurer {
         Trigger trigger = (triggerContext) -> {
             // 从数据库读取 cron 表达式
             String cron = ""; // commonService.getAbcCron();
-            if (U.isBlank(cron)) {
+            if (U.isEmpty(cron)) {
                 // 如果没有, 给一个默认值.
                 cron = CRON;
             }

@@ -33,10 +33,10 @@ public class UserTestServiceImpl implements UserTestService {
 
         LambdaQueryWrapper<UserTest> query = Wrappers.lambdaQuery(UserTest.class)
                 .select(UserTest::getId, UserTest::getUserName, UserTest::getLevel);
-        if (U.isNotBlank(userTest)) {
+        if (U.isNotNull(userTest)) {
             query.eq(U.isNotBlank(userTest.getUserName()), UserTest::getUserName, userTest.getUserName());
             query.eq(U.isNotBlank(userTest.getPassword()), UserTest::getPassword, userTest.getPassword());
-            if (U.isNotBlank(userTest.getLevel())) {
+            if (U.isNotNull(userTest.getLevel())) {
                 query.eq(UserTest::getLevel, userTest.getLevel().getCode());
             }
         }

@@ -104,7 +104,7 @@ public class Money implements Serializable {
 
     /** 元转换为分 */
     public static Long yuan2Cent(String yuan) {
-        if (U.isBlank(yuan)) {
+        if (U.isEmpty(yuan)) {
             return null;
         }
 
@@ -123,7 +123,7 @@ public class Money implements Serializable {
     }
     /** 分转换为元 */
     public static String cent2Yuan(Long cent) {
-        if (U.isBlank(cent)) {
+        if (U.isNull(cent)) {
             return U.EMPTY;
         }
         if (cent == 0) {
@@ -148,19 +148,19 @@ public class Money implements Serializable {
 
     /** 设置金额的精度 */
     public static BigDecimal setPrecision(BigDecimal money) {
-        return U.isBlank(money) ? money : money.setScale(SCALE, RoundingMode.DOWN);
+        return U.isNull(money) ? money : money.setScale(SCALE, RoundingMode.DOWN);
     }
 
     /** num1 + num2 */
     public static BigDecimal add(BigDecimal num1, BigDecimal num2) {
-        BigDecimal n1 = U.isBlank(num1) ? BigDecimal.ZERO : num1;
-        BigDecimal n2 = U.isBlank(num2) ? BigDecimal.ZERO : num2;
+        BigDecimal n1 = U.isNull(num1) ? BigDecimal.ZERO : num1;
+        BigDecimal n2 = U.isNull(num2) ? BigDecimal.ZERO : num2;
         return n1.add(n2);
     }
     /** num1 - num2 */
     public static BigDecimal subtract(BigDecimal num1, BigDecimal num2) {
-        BigDecimal n1 = U.isBlank(num1) ? BigDecimal.ZERO : num1;
-        BigDecimal n2 = U.isBlank(num2) ? BigDecimal.ZERO : num2;
+        BigDecimal n1 = U.isNull(num1) ? BigDecimal.ZERO : num1;
+        BigDecimal n2 = U.isNull(num2) ? BigDecimal.ZERO : num2;
         return n1.subtract(n2);
     }
     /** num1 * num2 */
@@ -169,10 +169,10 @@ public class Money implements Serializable {
     }
     /** num1 * num2 第二个参数为空则是 1 */
     public static BigDecimal multiply(BigDecimal num1, BigDecimal num2) {
-        if (U.isBlank(num2)) {
+        if (U.isNull(num2)) {
             return num1;
         } else {
-            BigDecimal n1 = U.isBlank(num1) ? BigDecimal.ZERO : num1;
+            BigDecimal n1 = U.isNull(num1) ? BigDecimal.ZERO : num1;
             return n1.multiply(num2);
         }
     }
@@ -184,7 +184,7 @@ public class Money implements Serializable {
     public static BigDecimal divide(BigDecimal num1, BigDecimal num2) {
         U.assertException(num2 == null || num2.doubleValue() == 0, "除数要有值且不能为 0");
 
-        BigDecimal n1 = U.isBlank(num1) ? BigDecimal.ZERO : num1;
+        BigDecimal n1 = U.isNull(num1) ? BigDecimal.ZERO : num1;
         return n1.divide(num2, SCALE, RoundingMode.DOWN);
     }
 

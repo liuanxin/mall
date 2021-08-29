@@ -55,7 +55,7 @@ public class ShowSqlInterceptor implements QueryInterceptor {
     }
 
     private String getRealSql(Supplier<String> sql) {
-        if (U.isBlank(sql)) {
+        if (U.isNull(sql)) {
             return null;
         }
 

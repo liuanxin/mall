@@ -127,7 +127,7 @@ class ManagerSessionModel implements Serializable {
     /** 将数据库对应的数据模型转换成 session 中存放的对象 */
     static <T,P> ManagerSessionModel assemblyData(T account, List<P> permissions) {
         ManagerSessionModel sessionModel = JsonUtil.convert(account, ManagerSessionModel.class);
-        if (U.isNotBlank(sessionModel)) {
+        if (U.isNotNull(sessionModel)) {
             List<Permission> permissionList = JsonUtil.convertList(permissions, Permission.class);
             if (A.isNotEmpty(permissionList)) {
                 sessionModel.setPermissionList(permissionList);

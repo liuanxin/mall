@@ -79,7 +79,7 @@ public final class Encrypt {
     }
     /** 使用 aes 解密 */
     public static String aesDecode(String data, String secretKey) {
-        if (U.isBlank(data)) {
+        if (U.isEmpty(data)) {
             throw new RuntimeException("空值无需使用 " + AES + " 解密");
         }
         if (secretKey.length() != AES_LEN) {
@@ -337,7 +337,7 @@ public final class Encrypt {
     }
     /** 使用 aes 解密并解码 jwt 及验证过期和数据完整性, 解码异常 或 数据已过期 或 验证失败 则抛出未登录异常 */
     public static Map<String, Object> jwtDecode(String data) {
-        if (U.isBlank(data)) {
+        if (U.isEmpty(data)) {
             return Collections.emptyMap();
         }
 
@@ -439,7 +439,7 @@ public final class Encrypt {
      */
     @SuppressWarnings("UnstableApiUsage")
     public static String getShortString(String src) {
-        if (U.isBlank(src)) {
+        if (U.isEmpty(src)) {
             return U.EMPTY;
         } else if (src.length() < 6) {
             return src;

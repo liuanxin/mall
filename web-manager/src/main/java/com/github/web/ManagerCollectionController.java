@@ -68,7 +68,7 @@ public class ManagerCollectionController {
                 }
                 ApiGroup apiGroup = getAnnotation(handlerMethod, ApiGroup.class);
                 String menu;
-                if (U.isBlank(apiGroup)) {
+                if (U.isNull(apiGroup)) {
                     menu = className;
                 } else {
                     String[] t = apiGroup.value()[0].split("-");
@@ -76,7 +76,7 @@ public class ManagerCollectionController {
                 }
 
                 ApiMethod apiMethod = handlerMethod.getMethodAnnotation(ApiMethod.class);
-                String permissionName = U.isBlank(apiMethod) ? U.EMPTY : apiMethod.value();
+                String permissionName = U.isNull(apiMethod) ? U.EMPTY : apiMethod.value();
                 // 类名用作 front
                 String m = Joiner.on(sp).join(menu, className);
                 String p = Joiner.on(sp).join(permissionName, A.toStr(methodArray), A.toStr(urlArray));

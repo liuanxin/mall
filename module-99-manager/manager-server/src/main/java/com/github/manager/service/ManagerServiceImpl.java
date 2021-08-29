@@ -42,7 +42,7 @@ public class ManagerServiceImpl implements ManagerService {
     public ManagerUser login(String userName, String password) {
         Wrapper<ManagerUser> query = Wrappers.lambdaQuery(ManagerUser.class).eq(ManagerUser::getUserName, userName);
         Page<ManagerUser> page = userMapper.selectPage(Pages.paramOnlyLimit(1), query);
-        ManagerUser user = U.isNotBlank(page) ? A.first(page.getRecords()) : null;
+        ManagerUser user = U.isNotNull(page) ? A.first(page.getRecords()) : null;
         U.assertNil(user, "无此用户");
         return user;
     }

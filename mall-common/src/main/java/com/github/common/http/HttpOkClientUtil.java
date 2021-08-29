@@ -45,7 +45,7 @@ public class HttpOkClientUtil {
 
     /** 向指定 url 进行 get 请求 */
     public static String get(String url) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return null;
         }
 
@@ -53,7 +53,7 @@ public class HttpOkClientUtil {
     }
     /** 向指定 url 进行 get 请求. 有参数 */
     public static String get(String url, Map<String, Object> params) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return null;
         }
 
@@ -62,7 +62,7 @@ public class HttpOkClientUtil {
     }
     /** 向指定 url 进行 get 请求. 有参数和头 */
     public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return null;
         }
 
@@ -75,7 +75,7 @@ public class HttpOkClientUtil {
 
     /** 向指定的 url 进行 post 请求. 有参数 */
     public static String post(String url, Map<String, Object> params) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return null;
         }
 
@@ -84,7 +84,7 @@ public class HttpOkClientUtil {
     }
     /** 向指定的 url 进行 post 请求. 参数以 json 的方式一次传递 */
     public static String post(String url, String json) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return null;
         }
 
@@ -94,7 +94,7 @@ public class HttpOkClientUtil {
     }
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return null;
         }
 
@@ -106,20 +106,20 @@ public class HttpOkClientUtil {
 
     /** 向指定 url 上传 png 图片文件 */
     public static String postFile(String url, Map<String, Object> params, Map<String, File> files) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return null;
         }
 
         MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
         for (Map.Entry<String, Object> entry : params.entrySet()) {
             Object value = entry.getValue();
-            if (U.isNotBlank(value)) {
+            if (U.isNotNull(value)) {
                 builder.addFormDataPart(entry.getKey(), value.toString());
             }
         }
         for (Map.Entry<String, File> entry : files.entrySet()) {
             File file = entry.getValue();
-            if (U.isNotBlank(file)) {
+            if (U.isNotNull(file)) {
                 try {
                     MediaType type = MediaType.parse(java.nio.file.Files.probeContentType(file.toPath()));
                     builder.addFormDataPart(entry.getKey(), null, RequestBody.create(type, file));
@@ -159,7 +159,7 @@ public class HttpOkClientUtil {
             for (Map.Entry<String, Object> entry : headers.entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
-                if (U.isNotBlank(value)) {
+                if (U.isNotNull(value)) {
                     request.addHeader(key, value.toString());
                 }
             }
@@ -176,7 +176,7 @@ public class HttpOkClientUtil {
         if (U.isNotBlank(params)) {
             sbd.append(" params(").append(U.compress(params)).append(")");
         }
-        if (U.isNotBlank(requestHeaders)) {
+        if (U.isNotNull(requestHeaders)) {
             sbd.append(" request headers(");
             for (String name : requestHeaders.names()) {
                 sbd.append("<").append(name).append(": ").append(requestHeaders.get(name)).append(">");
@@ -186,7 +186,7 @@ public class HttpOkClientUtil {
 
         sbd.append(",");
 
-        if (U.isNotBlank(responseHeaders)) {
+        if (U.isNotNull(responseHeaders)) {
             sbd.append(" response headers(");
             for (String name : responseHeaders.names()) {
                 sbd.append("<").append(name).append(": ").append(responseHeaders.get(name)).append(">");

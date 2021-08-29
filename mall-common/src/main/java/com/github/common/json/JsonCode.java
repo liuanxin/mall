@@ -51,6 +51,6 @@ public enum JsonCode {
     @JsonCreator
     public static JsonCode deserializer(Object obj) {
         JsonCode code = U.enumDeserializer(obj, JsonCode.class);
-        return U.isBlank(code) ? SUCCESS : code;
+        return U.isNull(code) ? SUCCESS : code;
     }
 }

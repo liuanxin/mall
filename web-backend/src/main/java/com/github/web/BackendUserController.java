@@ -40,7 +40,7 @@ public class BackendUserController {
                                           @ApiParam("密码, 当验证码为空时") String password,
                                           @ApiParam("验证码") String code) {
         U.assertNil(userName, "请输入用户名");
-        U.assertException(U.isBlank(password) && U.isBlank(code), "请使用密码或验证码登录");
+        U.assertException(U.isEmpty(password) && U.isEmpty(code), "请使用密码或验证码登录");
 
         /*
         User user;
@@ -55,7 +55,7 @@ public class BackendUserController {
         } else {
             // 使用密码登录
             user = userService.get(userName);
-            U.assertException(U.isBlank(user) || !user.samePassword(password), "用户名或密码错误");
+            U.assertException(U.isEmpty(user) || !user.samePassword(password), "用户名或密码错误");
         }
         */
 

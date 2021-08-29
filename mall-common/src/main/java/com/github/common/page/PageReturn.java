@@ -35,7 +35,7 @@ public class PageReturn<T> implements Serializable {
 
     /** 在 Controller 中调用 --> 组装不同的 res 时使用此方法 */
     public static <S,T> PageReturn<T> convert(PageReturn<S> pageInfo) {
-        if (U.isBlank(pageInfo)) {
+        if (U.isNull(pageInfo)) {
             return emptyReturn();
         } else {
             // 只要总条数

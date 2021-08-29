@@ -40,7 +40,7 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
                 return;
             }
             String json = jsonDesensitization.toJson(bodyContainer.getValue());
-            if (U.isBlank(json)) {
+            if (U.isEmpty(json)) {
                 return;
             }
 
@@ -57,7 +57,7 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
                 sbd.append(className);
 
                 Method method = parameter.getMethod();
-                String methodName = U.isNotBlank(method) ? method.getName() : U.EMPTY;
+                String methodName = U.isNotNull(method) ? method.getName() : U.EMPTY;
                 if (U.isNotBlank(methodName)) {
                     sbd.append("#").append(methodName);
                     try {

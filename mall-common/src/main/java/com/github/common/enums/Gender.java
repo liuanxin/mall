@@ -30,6 +30,6 @@ public enum Gender {
     @JsonCreator
     public static Gender deserializer(Object obj) {
         Gender gender = U.enumDeserializer(obj, Gender.class);
-        return U.isBlank(gender) ? Nil : gender;
+        return U.isNull(gender) ? Nil : gender;
     }
 }

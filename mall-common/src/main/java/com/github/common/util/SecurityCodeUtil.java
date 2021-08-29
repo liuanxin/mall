@@ -56,10 +56,10 @@ public final class SecurityCodeUtil {
      * @param style  图片上的文字: 英文, 数字(num), 英文加数字(n)还是中文(cn), 传空值或传的值不是 num n cn 则会默认是英文
      * @param width  生成的图片宽度, 最小 100. 传空值或传小于 100 的值会使用最小值
      * @param height 生成的图片高度, 最小 30. 传空值或传小于 30 的值会使用最小值
-     * @param grb 生成的图片的颜色, 不传则默认是 57,66,108
+     * @param rgb 生成的图片的颜色, 不传则默认是 57,66,108
      * @return 图像
      */
-    public static Code generateCode(String count, String style, String width, String height, String grb) {
+    public static Code generateCode(String count, String style, String width, String height, String rgb) {
         int loop = toInt(count);
         int maxCount = 4;
         if (loop < maxCount) {
@@ -75,25 +75,18 @@ public final class SecurityCodeUtil {
             str = WORD_NUMBER;
         }
 
-        int widthCount = toInt(width);
-        int minWidth = 100;
-        if (widthCount < minWidth) {
-            widthCount = minWidth;
-        }
-
-        int heightCount = toInt(height);
-        int minHeight = 30;
-        if (heightCount < minHeight) {
-            heightCount = minHeight;
-        }
+        int widthCount = Math.max(toInt(width), 100);
+        int heightCount = Math.max(toInt(height), 30);
 
         int r = -1, g = -1, b = -1;
-        if (U.isNotBlank(grb)) {
-            String[] s = grb.split(",");
-            if (s.length == 3) {
-                r = U.toInt(s[0]);
-                g = U.toInt(s[1]);
-                b = U.toInt(s[2]);
+        if (U.isNotBlank(rgb)) {
+            String[] s = rgb.split(",");
+            r = U.toInt(s[0].trim());
+            if (s.length > 1) {
+                g = U.toInt(s[1].trim());
+                if (s.length > 2) {
+                    b = U.toInt(s[2].trim());
+                }
             }
         }
         if (r < 0 || r > 255) { r = 57; }

@@ -38,7 +38,7 @@ public class ExampleReq {
         }
         U.assertNil(gender, "请选择性别进行查询");
         // 检查还是给默认值, 看业务
-        if (U.isBlank(level)) {
+        if (U.isNull(level)) {
             level = UserTestLevel.Normal;
         }
 

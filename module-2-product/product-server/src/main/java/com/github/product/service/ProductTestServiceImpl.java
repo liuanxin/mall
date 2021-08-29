@@ -22,7 +22,7 @@ public class ProductTestServiceImpl implements ProductTestService {
         LambdaQueryWrapper<ProductTest> query = Wrappers.lambdaQuery(ProductTest.class);
 
         query.in(A.isNotEmpty(userIdList), ProductTest::getUserId, userIdList);
-        if (U.isNotBlank(param)) {
+        if (U.isNotNull(param)) {
             if (U.isNotBlank(param.getType())) {
                 query.eq(ProductTest::getType, param.getType().getCode());
             }

@@ -26,7 +26,7 @@ public final class AppTokenHandler {
     /** 基于存进 session 的数据(设置过期时间)生成 token 返回, 登录后调用返回给 app 由其保存下来 */
     @SuppressWarnings("unchecked")
     public static <T> String generateToken(T session, long expireDay) {
-        if (U.isNotBlank(session)) {
+        if (U.isNotNull(session)) {
             Map<String, Object> jwt = JsonUtil.convert(session, Map.class);
             if (A.isNotEmpty(jwt)) {
                 return Encrypt.jwtEncode(jwt, expireDay, TOKEN_EXPIRE_TIME_UNIT);

@@ -51,8 +51,8 @@
 //    }
 //
 //    private String getRealSql(String sql, Statement statement) {
-//        if (U.isBlank(sql)) {
-//            if (U.isNotBlank(statement)) {
+//        if (U.isEmpty(sql)) {
+//            if (U.isNotNull(statement)) {
 //                sql = statement.toString();
 //                if (U.isNotBlank(sql)) {
 //                    int i = sql.indexOf(':');

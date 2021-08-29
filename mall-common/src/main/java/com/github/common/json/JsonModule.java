@@ -30,7 +30,7 @@ public class JsonModule {
                     return;
                 }
                 String key = gen.getOutputContext().getCurrentName();
-                if (U.isBlank(key)) {
+                if (U.isEmpty(key)) {
                     gen.writeString(value);
                     return;
                 }

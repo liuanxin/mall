@@ -30,6 +30,6 @@ public enum ProductTestType {
     @JsonCreator
     public static ProductTestType deserializer(Object obj) {
         ProductTestType type = U.enumDeserializer(obj, ProductTestType.class);
-        return U.isBlank(type) ? Normal : type;
+        return U.isNull(type) ? Normal : type;
     }
 }

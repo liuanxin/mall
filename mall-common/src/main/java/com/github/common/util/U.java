@@ -200,7 +200,7 @@ public final class U {
      */
     @SuppressWarnings("rawtypes")
     public static <E extends Enum> E enumDeserializer(Object obj, Class<E> enumClass) {
-        if (isBlank(obj)) {
+        if (isNull(obj)) {
             return null;
         }
 
@@ -214,7 +214,7 @@ public final class U {
             }
         }
 
-        if (isBlank(tmp)) {
+        if (isNull(tmp)) {
             tmp = obj;
         }
         return toEnum(enumClass, tmp);
@@ -223,7 +223,7 @@ public final class U {
     private static Object getEnumInMap(Map map) {
         if (A.isNotEmpty(map)) {
             Object tmp = map.get(ENUM_CODE);
-            if (isBlank(tmp)) {
+            if (isNull(tmp)) {
                 tmp = map.get(ENUM_VALUE);
             }
             return tmp;
@@ -255,7 +255,7 @@ public final class U {
 
     /** 转换成 int, 非数字则返回 0 */
     public static int toInt(Object obj) {
-        if (isBlank(obj)) {
+        if (isNull(obj)) {
             return 0;
         }
         if (obj instanceof Number) {
@@ -270,7 +270,7 @@ public final class U {
 
     /** 转换成 long, 非数字则返回 0L */
     public static long toLong(Object obj) {
-        if (isBlank(obj)) {
+        if (isNull(obj)) {
             return 0L;
         }
         if (obj instanceof Number) {
@@ -285,7 +285,7 @@ public final class U {
 
     /** 转换成 float, 非数字则返回 0F */
     public static float toFloat(Object obj) {
-        if (isBlank(obj)) {
+        if (isNull(obj)) {
             return 0F;
         }
         if (obj instanceof Number) {
@@ -300,7 +300,7 @@ public final class U {
 
     /** 转换成 double, 非数字则返回 0D */
     public static double toDouble(Object obj) {
-        if (isBlank(obj)) {
+        if (isNull(obj)) {
             return 0D;
         }
         if (obj instanceof Number) {
@@ -315,7 +315,7 @@ public final class U {
 
     /** 是数字则返回 true */
     public static boolean isNumber(Object obj) {
-        if (isBlank(obj)) {
+        if (isNull(obj)) {
             return false;
         }
         if (obj instanceof Number) {
@@ -411,7 +411,7 @@ public final class U {
     }
 
     public static String toStr(Object obj) {
-        return isBlank(obj) ? EMPTY : obj.toString();
+        return isNull(obj) ? EMPTY : obj.toString();
     }
 
     /** 如果字符长度大于指定长度, 则只输出头尾的固定字符 */
@@ -491,7 +491,7 @@ public final class U {
 
     /** 对象为空 或 其字符串形态是空字符 时返回 true */
     public static boolean isBlank(Object obj) {
-        if (obj == null) {
+        if (isNull(obj)) {
             return true;
         }
 
@@ -505,7 +505,7 @@ public final class U {
 
     /** 对象为空 或 其字符串形态为 空白符、null、undefined 时返回 true */
     public static boolean isEmpty(Object obj) {
-        if (obj == null) {
+        if (isNull(obj)) {
             return true;
         }
 
@@ -800,7 +800,7 @@ public final class U {
      */
     @SuppressWarnings("rawtypes")
     public static String getField(Object data, String field) {
-        if (isBlank(data) || isBlank(field)) {
+        if (isNull(data) || isBlank(field)) {
             return EMPTY;
         }
 
@@ -816,7 +816,7 @@ public final class U {
             }
         }
 
-        if (isBlank(value)) {
+        if (isNull(value)) {
             Class<?> fieldType = getFieldType(data, field);
             return (isNotBlank(fieldType) && fieldType == Money.class) ? "0" : EMPTY;
         } else if (value.getClass().isEnum()) {
@@ -1170,7 +1170,7 @@ public final class U {
 
     /** 对象为 null、空白符、"null" 字符串时, 则抛出异常 */
     public static void assertNil(Object obj, String msg) {
-        if (isBlank(obj)) {
+        if (isNull(obj)) {
             assertException(msg);
         }
     }

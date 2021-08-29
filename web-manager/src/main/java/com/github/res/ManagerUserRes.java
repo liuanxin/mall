@@ -54,7 +54,7 @@ public class ManagerUserRes {
 
     public static ManagerUserRes assemblyData(ManagerUser user, List<ManagerMenu> menus) {
         ManagerUserRes res = JsonUtil.convert(user, ManagerUserRes.class);
-        if (U.isNotBlank(res)) {
+        if (U.isNotNull(res)) {
             List<ManagerMenuRes> menuList = JsonUtil.convertList(menus, ManagerMenuRes.class);
             if (A.isNotEmpty(menuList)) {
                 res.setMenus(menuList);

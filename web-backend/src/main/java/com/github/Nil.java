@@ -92,7 +92,7 @@ public class Nil {
 //    public static void main(String[] args) {
 //        long prefix = U.toLong(alias.trim()) + 192168;
 //        String html = HttpClientUtil.get("https://shop" + prefix + ".m.youzan.com/wscshop/showcase/homepage?kdt_id=" + alias);
-//        if (U.isBlank(html)) {
+//        if (U.isEmpty(html)) {
 //            System.out.println("响应为空!");
 //            return;
 //        }
@@ -106,7 +106,7 @@ public class Nil {
 //        String name = U.toStr(map.get("shop_name"));
 //        String desc = U.toStr(map.get("intro"));
 //        String image = U.toStr(map.get("logo"));
-//        if (U.isBlank(name) || U.isBlank(image)) {
+//        if (U.isEmpty(name) || U.isEmpty(image)) {
 //            System.out.println("名称或图片为空");
 //            return;
 //        }

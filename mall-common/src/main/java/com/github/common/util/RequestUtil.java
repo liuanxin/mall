@@ -153,7 +153,7 @@ public final class RequestUtil {
 
     /** 从 url 中获取 domain 信息. 如: http://www.jd.com/product/123 返回 http://www.jd.com */
     public static String getDomain(String url) {
-        if (U.isBlank(url)) {
+        if (U.isEmpty(url)) {
             return U.EMPTY;
         }
         String lowerUrl = url.toLowerCase();
@@ -214,7 +214,7 @@ public final class RequestUtil {
     /** 从 cookie 中获取值, 为空就从请求头中取, 为空再从参数中取 */
     public static String getCookieOrHeaderOrParam(String name) {
         String value = getCookieValue(name);
-        return U.isBlank(value) ? getHeaderOrParam(name) : value;
+        return U.isEmpty(value) ? getHeaderOrParam(name) : value;
     }
 
     /** 先从请求头中查, 为空再从参数中查 */
@@ -225,10 +225,10 @@ public final class RequestUtil {
         }
 
         String value = request.getHeader(param);
-        if (U.isBlank(value)) {
+        if (U.isEmpty(value)) {
             value = request.getParameter(param);
         }
-        return U.isBlank(value) ? U.EMPTY : value.trim();
+        return U.isEmpty(value) ? U.EMPTY : value.trim();
     }
 
     /** 从 cookie 中获取值 */
@@ -260,7 +260,7 @@ public final class RequestUtil {
         }
 
         Cookie cookie = getCookie(name);
-        if (U.isBlank(cookie)) {
+        if (U.isNull(cookie)) {
             Cookie add = new Cookie(name, value);
             add.setPath("/");
             add.setHttpOnly(true);
@@ -354,7 +354,7 @@ public final class RequestUtil {
             return;
         }
 
-        if (U.isBlank(langParamName)) {
+        if (U.isEmpty(langParamName)) {
             langParamName = "lang";
         }
         try {

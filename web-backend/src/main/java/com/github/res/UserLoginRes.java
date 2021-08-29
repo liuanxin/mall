@@ -24,7 +24,7 @@ public class UserLoginRes {
     /** 将 service 查询之后的数据组装成前端需要的 */
     public static <T> UserLoginRes assemblyData(T user, String token) {
         UserLoginRes res = JsonUtil.convert(user, UserLoginRes.class);
-        if (U.isNotBlank(res)) {
+        if (U.isNotNull(res)) {
             res.setToken(token);
         }
         return res;

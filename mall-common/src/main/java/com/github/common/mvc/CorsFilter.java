@@ -57,7 +57,7 @@ public class CorsFilter implements Filter {
                 response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, METHODS);
                 response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS, HEADERS);
                 /*
-                if (RequestUtils.isIeRequest() && U.isBlank(response.getHeader(P3P))) {
+                if (RequestUtils.isIeRequest() && U.isEmpty(response.getHeader(P3P))) {
                     response.addHeader(P3P, IEP3P);
                 }
                 */

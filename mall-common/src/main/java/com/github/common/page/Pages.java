@@ -24,7 +24,7 @@ public final class Pages {
 
     /** 在 service 的实现类中调用 --> 在 repository 方法上的返回类型是 mbp 的 Page 对象, service 上的返回类型是 PageReturn, 使用此方法进行转换 */
     public static <T> PageReturn<T> returnPage(Page<T> pageObj) {
-        if (U.isBlank(pageObj)) {
+        if (U.isNull(pageObj)) {
             return PageReturn.emptyReturn();
         } else {
             List<T> objList = pageObj.getRecords();

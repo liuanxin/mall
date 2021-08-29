@@ -33,7 +33,7 @@ public class ManagerRoleReq {
         return U.greater0(id);
     }
     public void basicCheck() {
-        U.assertException(U.isBlank(name) || name.trim().length() > 20, "角色名要有, 且在 20 个字以内");
+        U.assertException(U.isEmpty(name) || name.trim().length() > 20, "角色名要有, 且在 20 个字以内");
     }
 
     public ManagerRole operateParam() {
