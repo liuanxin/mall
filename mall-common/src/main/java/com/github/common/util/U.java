@@ -975,30 +975,30 @@ public final class U {
     }
 
     public static Class<?> getFieldType(Object obj, String field) {
-        if (isNotBlank(field)) {
-            Class<?> clazz = obj.getClass();
-            try {
-                Field f = clazz.getDeclaredField(field);
-                if (isNotBlank(f)) {
-                    return f.getType();
-                }
-            } catch (NoSuchFieldException ignore) {
-            }
-            try {
-                Field f = clazz.getField(field);
-                if (isNotBlank(f)) {
-                    return f.getType();
-                }
-            } catch (NoSuchFieldException ignore) {
-            }
-
-            Class<?> superclass = clazz.getSuperclass();
-            if (superclass == Object.class) {
-                return null;
-            }
-            return getFieldType(superclass, field);
+        if (isEmpty(field)) {
+            return null;
         }
-        return null;
+        Class<?> clazz = obj.getClass();
+        try {
+            Field f = clazz.getDeclaredField(field);
+            if (isNotBlank(f)) {
+                return f.getType();
+            }
+        } catch (NoSuchFieldException ignore) {
+        }
+        try {
+            Field f = clazz.getField(field);
+            if (isNotBlank(f)) {
+                return f.getType();
+            }
+        } catch (NoSuchFieldException ignore) {
+        }
+
+        Class<?> superclass = clazz.getSuperclass();
+        if (superclass == Object.class) {
+            return null;
+        }
+        return getFieldType(superclass, field);
     }
 
     /** 转换成 id=123&name=xyz&name=opq */
