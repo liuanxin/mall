@@ -38,7 +38,7 @@ public final class SecurityCodeUtil {
      * <pre>
      * 生成验证码图像对象
      *
-     * SecurityCodeUtil.Code code = generateCode(count, style, width, height);
+     * SecurityCodeUtil.Code code = generateCode(count, style, width, height, rgb);
      *
      * // 往 session 里面丢值
      * session.setAttribute("xxx", code.getContent());
@@ -53,18 +53,14 @@ public final class SecurityCodeUtil {
      * </pre>
      *
      * @param count  验证码数字个数, 最少 4 个. 传空值或传小于 4 的值会使用最少值
-     * @param style  图片上的文字: 英文, 数字(num), 英文加数字(n)还是中文(cn), 传空值或传的值不是 num n cn 则会默认是英文
+     * @param style  图片上的文字: 英文(w)、数字(n), 否则是数字 + 英文(不包括小写 l、大写 I、小写 o 和 大写 O)
      * @param width  生成的图片宽度, 最小 100. 传空值或传小于 100 的值会使用最小值
      * @param height 生成的图片高度, 最小 30. 传空值或传小于 30 的值会使用最小值
-     * @param rgb 生成的图片的颜色, 不传则默认是 57,66,108
+     * @param rgb 生成的图片上面验证码的颜色, 不传则默认是 57,66,108
      * @return 图像
      */
     public static Code generateCode(String count, String style, String width, String height, String rgb) {
-        int loop = toInt(count);
-        int maxCount = 4;
-        if (loop < maxCount) {
-            loop = maxCount;
-        }
+        int loop = Math.max(toInt(count), 4);
 
         String str;
         if ("w".equalsIgnoreCase(style)) {
