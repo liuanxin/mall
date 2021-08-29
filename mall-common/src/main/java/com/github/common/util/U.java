@@ -1096,7 +1096,7 @@ public final class U {
 
     /** 将长字符串进行 gzip 压缩后再转成 base64 编码返回 */
     public static String compress(final String str) {
-        if (str == null) {
+        if (isNull(str)) {
             return null;
         }
         String trim = str.trim();
