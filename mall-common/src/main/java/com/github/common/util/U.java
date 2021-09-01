@@ -465,6 +465,70 @@ public final class U {
         return count;
     }
 
+    /** 字符串转 unicode(中文转成 \\u) */
+    public static String encodeUnicode(String str) {
+        if (isEmpty(str)) {
+            return str;
+        }
+
+        StringBuilder sbd = new StringBuilder();
+        for (char c : str.toCharArray()) {
+            String hex = Integer.toHexString(c);
+            sbd.append("\\u").append(hex.length() <= 2 ? ("00" + hex) : hex);
+        }
+        return sbd.toString();
+    }
+
+    /** unicode 转字符串(\\u 转成中文) */
+    public static String decodeUnicode(String unicode) {
+        if (isEmpty(unicode)) {
+            return unicode;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        int i;
+        int pos = 0;
+        while ((i = unicode.indexOf("\\u", pos)) != -1) {
+            sb.append(unicode, pos, i);
+            if (i + 5 < unicode.length()) {
+                pos = i + 6;
+                sb.append((char) Integer.parseInt(unicode.substring(i + 2, i + 6), 16));
+            }
+        }
+        sb.append(unicode.substring(pos));
+        return sb.toString();
+    }
+
+    /** 字符串转 ascii */
+    public static String stringToAscii(String str) {
+        if (isEmpty(str)) {
+            return str;
+        }
+
+        StringBuilder sbd = new StringBuilder();
+        for (char c : str.toCharArray()) {
+            sbd.append((int) c).append(" ");
+        }
+        return sbd.toString();
+    }
+
+    /** ascii 转字符串 */
+    public static String asciiToString(String ascii) {
+        if (isEmpty(ascii)) {
+            return ascii;
+        }
+
+        StringBuilder sbd = new StringBuilder();
+        for (String s : ascii.split(" ")) {
+            try {
+                sbd.append((char) Integer.parseInt(s));
+            } catch (NumberFormatException e) {
+                sbd.append(s);
+            }
+        }
+        return sbd.toString();
+    }
+
     /** 去掉所有的制表符 和 换行符 */
     public static String replaceTabAndWrap(String str) {
         return isBlank(str) ? EMPTY : str.replace("\t", EMPTY).replace("\n", EMPTY);
