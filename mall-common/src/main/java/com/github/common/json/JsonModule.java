@@ -59,7 +59,7 @@ public class JsonModule {
 
                 // 不足 2 位则输出 2 位小数
                 if (value.scale() < 2) {
-                    gen.writeString(value.setScale(2, RoundingMode.UNNECESSARY).toString());
+                    gen.writeString(value.setScale(2, RoundingMode.DOWN).toString());
                 } else {
                     gen.writeString(value.toString());
                 }
