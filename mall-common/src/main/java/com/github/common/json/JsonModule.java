@@ -54,11 +54,7 @@ public class JsonModule {
             public void serialize(BigDecimal value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
                 if (U.isNull(value)) {
                     gen.writeString(U.EMPTY);
-                    return;
-                }
-
-                // 不足 2 位则输出 2 位小数
-                if (value.scale() < 2) {
+                } else if (value.scale() < 2) {
                     gen.writeString(value.setScale(2, RoundingMode.DOWN).toString());
                 } else {
                     gen.writeString(value.toString());
