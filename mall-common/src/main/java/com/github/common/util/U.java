@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.beans.PropertyDescriptor;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -567,19 +568,29 @@ public final class U {
         return !isBlank(obj);
     }
 
-    /** 对象为空 或 其字符串形态为 空白符、null、undefined 时返回 true */
+    /** 对象为空, 字符串为 null nil undefined, 数组、集合、Map 长度为 0 则返回 true */
     public static boolean isEmpty(Object obj) {
         if (isNull(obj)) {
             return true;
         }
 
-        String str = obj.toString().trim();
-        if (EMPTY.equals(str)) {
-            return true;
+        if (obj instanceof CharSequence) {
+            String str = obj.toString().trim();
+            return str.isEmpty()
+                    || "null".equalsIgnoreCase(str)
+                    || "nil".equalsIgnoreCase(str)
+                    || "undefined".equalsIgnoreCase(str);
+        } else if (obj instanceof Optional) {
+            return !((Optional<?>) obj).isPresent();
+        } else if (obj.getClass().isArray()) {
+            return Array.getLength(obj) == 0;
+        } else if (obj instanceof Collection) {
+            return ((Collection<?>) obj).isEmpty();
+        } else if (obj instanceof Map) {
+            return ((Map<?, ?>) obj).isEmpty();
+        } else {
+            return false;
         }
-
-        String lower = str.toLowerCase();
-        return "null".equals(lower) || "undefined".equals(lower);
     }
     /** 对象非空 且 其字符串形态不是 空白符、null、undefined 时返回 true */
     public static boolean isNotEmpty(Object obj) {

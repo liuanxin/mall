@@ -46,6 +46,11 @@ public class JsonResult<T> {
         this(code, msg);
         this.error = errorList;
     }
+    private JsonResult(JsonCode code, String msg, List<String> errorList, Map<String, String> validateInfo) {
+        this(code, msg);
+        this.error = errorList;
+        this.validate = validateInfo;
+    }
     private JsonResult(JsonCode code, String msg, T data) {
         this(code, msg);
         this.data = data;
@@ -90,5 +95,8 @@ public class JsonResult<T> {
     }
     public static <T> JsonResult<T> fail(String msg, List<String> errorList) {
         return new JsonResult<>(JsonCode.FAIL, msg, errorList);
+    }
+    public static <T> JsonResult<T> fail(String msg, List<String> errorList, Map<String, String> validateInfo) {
+        return new JsonResult<>(JsonCode.FAIL, msg, errorList, validateInfo);
     }
 }
