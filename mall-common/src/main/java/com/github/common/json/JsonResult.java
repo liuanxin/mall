@@ -77,6 +77,9 @@ public class JsonResult<T> {
     public static <T> JsonResult<T> badRequest(String msg) {
         return new JsonResult<>(JsonCode.BAD_REQUEST, msg);
     }
+    public static <T> JsonResult<T> badRequest(String msg, Map<String, String> validateInfo) {
+        return new JsonResult<>(JsonCode.BAD_REQUEST, msg, null, validateInfo);
+    }
 
     public static <T> JsonResult<T> needLogin(String msg) {
         return new JsonResult<>(JsonCode.NOT_LOGIN, msg);

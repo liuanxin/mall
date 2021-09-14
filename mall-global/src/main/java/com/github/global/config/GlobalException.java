@@ -90,6 +90,15 @@ public class GlobalException {
         int status = returnStatusCode ? JsonCode.NOT_FOUND.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.notFound(e.getMessage()));
     }
+    /** 参数验证 */
+    @ExceptionHandler(ParamException.class)
+    public ResponseEntity<JsonResult<Void>> param(ParamException e) {
+        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+            LogUtil.ROOT_LOG.debug("参数验证不过", e);
+        }
+        int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
+        return ResponseEntity.status(status).body(JsonResult.badRequest(e.getMessage(), e.getValidationErrorMap()));
+    }
     /** 错误的请求 */
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<JsonResult<Void>> badRequest(BadRequestException e) {
