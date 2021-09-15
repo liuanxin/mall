@@ -1,5 +1,6 @@
 package com.github.common.http;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.common.Const;
 import com.github.common.date.DateUtil;
 import com.github.common.json.JsonUtil;
@@ -41,6 +42,7 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+@SuppressWarnings("DuplicatedCode")
 public class HttpClientUtil {
 
     private static final String USER_AGENT = "Mozilla/5.0 (httpclient4.5; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36";
@@ -122,12 +124,12 @@ public class HttpClientUtil {
                 .setConnectionManager(CONNECTION_MANAGER)
                 .setRetryHandler(HTTP_REQUEST_RETRY_HANDLER).build();
     }
-    private static void config(HttpRequestBase request) {
+    private static void config(HttpRequestBase request, int connectTimeout, int socketTimeout) {
         // 配置请求的超时设置
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(CONNECTION_REQUEST_TIME_OUT)
-                .setConnectTimeout(CONNECT_TIME_OUT)
-                .setSocketTimeout(SOCKET_TIME_OUT)
+                .setConnectTimeout(connectTimeout)
+                .setSocketTimeout(socketTimeout)
                 .build();
         request.setConfig(requestConfig);
     }
@@ -140,9 +142,16 @@ public class HttpClientUtil {
         }
 
         url = handleEmptyScheme(url);
-        return handleRequest(new HttpGet(url), null);
+        return handleRequest(new HttpGet(url), null, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
     }
-    @SuppressWarnings("unchecked")
+    public static String get(String url, int connectTimeout, int socketTimeout) {
+        if (U.isEmpty(url)) {
+            return null;
+        }
+
+        url = handleEmptyScheme(url);
+        return handleRequest(new HttpGet(url), null, connectTimeout, socketTimeout);
+    }
     public static <T> String get(String url, T param) {
         if (U.isEmpty(url)) {
             return null;
@@ -150,7 +159,7 @@ public class HttpClientUtil {
 
         Map<String, Object> params = Collections.emptyMap();
         if (A.isNotEmpty(param)) {
-            params = JsonUtil.convert(param, Map.class);
+            params = JsonUtil.convertType(param, new TypeReference<>() {});
         }
         return get(url, params);
     }
@@ -162,7 +171,17 @@ public class HttpClientUtil {
 
         url = handleEmptyScheme(url);
         url = handleGetParams(url, params);
-        return handleRequest(new HttpGet(url), U.formatParam(params));
+        return handleRequest(new HttpGet(url), U.formatParam(params), CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+    }
+    /** 向指定 url 进行 get 请求. 有参数 */
+    public static String get(String url, Map<String, Object> params, int connectTimeout, int socketTimeout) {
+        if (U.isEmpty(url)) {
+            return null;
+        }
+
+        url = handleEmptyScheme(url);
+        url = handleGetParams(url, params);
+        return handleRequest(new HttpGet(url), U.formatParam(params), connectTimeout, socketTimeout);
     }
     /** 向指定 url 进行 get 请求. 有参数和头 */
     public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap) {
@@ -175,7 +194,21 @@ public class HttpClientUtil {
 
         HttpGet request = new HttpGet(url);
         handleHeader(request, headerMap);
-        return handleRequest(request, U.formatParam(params));
+        return handleRequest(request, U.formatParam(params), CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+    }
+    /** 向指定 url 进行 get 请求. 有参数和头 */
+    public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap,
+                                       int connectTimeout, int socketTimeout) {
+        if (U.isEmpty(url)) {
+            return null;
+        }
+
+        url = handleEmptyScheme(url);
+        url = handleGetParams(url, params);
+
+        HttpGet request = new HttpGet(url);
+        handleHeader(request, headerMap);
+        return handleRequest(request, U.formatParam(params), connectTimeout, socketTimeout);
     }
 
 
@@ -187,7 +220,17 @@ public class HttpClientUtil {
 
         url = handleEmptyScheme(url);
         HttpPost request = handlePostParams(url, params);
-        return handleRequest(request, U.formatParam(params));
+        return handleRequest(request, U.formatParam(params), CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+    }
+    /** 向指定的 url 进行 post 请求. 有参数 */
+    public static String post(String url, Map<String, Object> params, int connectTimeout, int socketTimeout) {
+        if (U.isEmpty(url)) {
+            return null;
+        }
+
+        url = handleEmptyScheme(url);
+        HttpPost request = handlePostParams(url, params);
+        return handleRequest(request, U.formatParam(params), connectTimeout, socketTimeout);
     }
     /** 向指定的 url 进行 post 请求. 参数以 json 的方式一次传递 */
     public static String post(String url, String json) {
@@ -199,7 +242,19 @@ public class HttpClientUtil {
         HttpPost request = new HttpPost(url);
         request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
         request.addHeader("Content-Type", "application/json");
-        return handleRequest(request, json);
+        return handleRequest(request, json, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+    }
+    /** 向指定的 url 进行 post 请求. 参数以 json 的方式一次传递 */
+    public static String post(String url, String json, int connectTimeout, int socketTimeout) {
+        if (U.isEmpty(url)) {
+            return null;
+        }
+
+        url = handleEmptyScheme(url);
+        HttpPost request = new HttpPost(url);
+        request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
+        request.addHeader("Content-Type", "application/json");
+        return handleRequest(request, json, connectTimeout, socketTimeout);
     }
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
@@ -210,7 +265,19 @@ public class HttpClientUtil {
         url = handleEmptyScheme(url);
         HttpPost request = handlePostParams(url, params);
         handleHeader(request, headers);
-        return handleRequest(request, U.formatParam(params));
+        return handleRequest(request, U.formatParam(params), CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+    }
+    /** 向指定的 url 进行 post 请求. 有参数和头 */
+    public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers,
+                                        int connectTimeout, int socketTimeout) {
+        if (U.isEmpty(url)) {
+            return null;
+        }
+
+        url = handleEmptyScheme(url);
+        HttpPost request = handlePostParams(url, params);
+        handleHeader(request, headers);
+        return handleRequest(request, U.formatParam(params), connectTimeout, socketTimeout);
     }
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postBodyWithHeader(String url, String json, Map<String, Object> headers) {
@@ -223,7 +290,21 @@ public class HttpClientUtil {
         request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
         handleHeader(request, headers);
         request.addHeader("Content-Type", "application/json");
-        return handleRequest(request, json);
+        return handleRequest(request, json, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+    }
+    /** 向指定的 url 进行 post 请求. 有参数和头 */
+    public static String postBodyWithHeader(String url, String json, Map<String, Object> headers,
+                                            int connectTimeout, int socketTimeout) {
+        if (U.isEmpty(url)) {
+            return null;
+        }
+
+        url = handleEmptyScheme(url);
+        HttpPost request = new HttpPost(url);
+        request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
+        handleHeader(request, headers);
+        request.addHeader("Content-Type", "application/json");
+        return handleRequest(request, json, connectTimeout, socketTimeout);
     }
 
 
@@ -249,7 +330,7 @@ public class HttpClientUtil {
             }
             request.setEntity(entityBuilder.build());
         }
-        return handleRequest(request, U.formatParam(params));
+        return handleRequest(request, U.formatParam(params), CONNECT_TIME_OUT, SOCKET_TIME_OUT);
     }
 
 
@@ -326,7 +407,7 @@ public class HttpClientUtil {
         return sbd.toString();
     }
     /** 发起 http 请求 */
-    private static String handleRequest(HttpRequestBase request, String params) {
+    private static String handleRequest(HttpRequestBase request, String params, int connectTimeout, int socketTimeout) {
         String traceId = LogUtil.getTraceId();
         if (U.isNotBlank(traceId)) {
             request.addHeader(Const.TRACE, traceId);
@@ -335,7 +416,7 @@ public class HttpClientUtil {
         String method = request.getMethod();
         String url = request.getURI().toString();
 
-        config(request);
+        config(request, connectTimeout, socketTimeout);
         long start = System.currentTimeMillis();
         try (CloseableHttpResponse response = createHttpClient().execute(request, HttpClientContext.create())) {
             HttpEntity entity = response.getEntity();
@@ -363,7 +444,7 @@ public class HttpClientUtil {
         url = handleEmptyScheme(url);
         HttpGet request = new HttpGet(url);
 
-        config(request);
+        config(request, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
         long start = System.currentTimeMillis();
         try (CloseableHttpResponse response = createHttpClient().execute(request, HttpClientContext.create())) {
             HttpEntity entity = response.getEntity();
