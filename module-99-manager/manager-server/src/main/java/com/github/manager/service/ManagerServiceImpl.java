@@ -79,9 +79,9 @@ public class ManagerServiceImpl implements ManagerService {
             }
             userMapper.updateById(user);
         } else {
-            int count = userMapper.selectCount(Wrappers.lambdaQuery(ManagerUser.class)
+            Long count = userMapper.selectCount(Wrappers.lambdaQuery(ManagerUser.class)
                     .eq(ManagerUser::getUserName, user.getNickName()));
-            U.assertException(count > 0, "已经有同名用户, 不能再次添加");
+            U.assertException(U.greater0(count), "已经有同名用户, 不能再次添加");
 
             user.setId(null);
             user.setPassword(Encrypt.bcryptEncode(user.getPassword()));
@@ -221,14 +221,14 @@ public class ManagerServiceImpl implements ManagerService {
     public void addOrUpdateRole(ManagerRole role) {
         Long rid = role.getId();
         if (U.greater0(rid)) {
-            int count = roleMapper.selectCount(Wrappers.lambdaQuery(ManagerRole.class).eq(ManagerRole::getId, rid));
-            U.assertException(count == 0, "没有这个角色, 无法修改");
+            Long count = roleMapper.selectCount(Wrappers.lambdaQuery(ManagerRole.class).eq(ManagerRole::getId, rid));
+            U.assertException(U.isNull(count) || count == 0, "没有这个角色, 无法修改");
 
             roleMapper.updateById(role);
         } else {
-            int count = roleMapper.selectCount(Wrappers.lambdaQuery(ManagerRole.class)
+            Long count = roleMapper.selectCount(Wrappers.lambdaQuery(ManagerRole.class)
                     .eq(ManagerRole::getName, role.getName()));
-            U.assertException(count > 0, "已经有同名角色, 不能再次添加");
+            U.assertException(U.greater0(count), "已经有同名角色, 不能再次添加");
 
             role.setId(null);
             roleMapper.insert(role);
@@ -270,9 +270,9 @@ public class ManagerServiceImpl implements ManagerService {
     public void deleteRole(Long roleId) {
         U.assert0(roleId, "无此角色");
 
-        int count = userRoleMapper.selectCount(Wrappers.lambdaQuery(ManagerUserRole.class)
+        Long count = userRoleMapper.selectCount(Wrappers.lambdaQuery(ManagerUserRole.class)
                 .eq(ManagerUserRole::getRoleId, roleId));
-        U.assertException(count > 0, "有用户分配了此角色, 请先取消分配再删除");
+        U.assertException(U.greater0(count), "有用户分配了此角色, 请先取消分配再删除");
 
         int flag = roleMapper.deleteById(roleId);
         if (flag == 1) {
@@ -299,9 +299,9 @@ public class ManagerServiceImpl implements ManagerService {
 
             menuMapper.updateById(menu);
         } else {
-            int count = menuMapper.selectCount(Wrappers.lambdaQuery(ManagerMenu.class)
+            Long count = menuMapper.selectCount(Wrappers.lambdaQuery(ManagerMenu.class)
                     .eq(ManagerMenu::getName, menu.getName()));
-            U.assertException(count > 0, "已经有同名菜单, 不能再次添加");
+            U.assertException(U.greater0(count), "已经有同名菜单, 不能再次添加");
 
             menu.setId(null);
             menuMapper.insert(menu);
@@ -312,9 +312,9 @@ public class ManagerServiceImpl implements ManagerService {
     public void deleteMenu(Long menuId) {
         U.assert0(menuId, "无此菜单");
 
-        int count = permissionMapper.selectCount(Wrappers.lambdaQuery(ManagerPermission.class)
+        Long count = permissionMapper.selectCount(Wrappers.lambdaQuery(ManagerPermission.class)
                 .eq(ManagerPermission::getMenuId, menuId));
-        U.assertException(count > 0, "此菜单下已经有权限了, 请先将权限删除再来删除菜单");
+        U.assertException(U.greater0(count), "此菜单下已经有权限了, 请先将权限删除再来删除菜单");
 
         menuMapper.deleteById(menuId);
     }
@@ -322,9 +322,9 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     public void deleteMenus(List<Long> mids) {
         if (A.isNotEmpty(mids)) {
-            int count = permissionMapper.selectCount(Wrappers.lambdaQuery(ManagerPermission.class)
+            Long count = permissionMapper.selectCount(Wrappers.lambdaQuery(ManagerPermission.class)
                     .in(ManagerPermission::getMenuId, mids));
-            U.assertException(count > 0, "传入的菜单下已经有权限了, 请先将权限删除再来删除菜单");
+            U.assertException(U.greater0(count), "传入的菜单下已经有权限了, 请先将权限删除再来删除菜单");
 
             menuMapper.delete(Wrappers.lambdaQuery(ManagerMenu.class).in(ManagerMenu::getId, mids));
         }
@@ -346,11 +346,11 @@ public class ManagerServiceImpl implements ManagerService {
 
             permissionMapper.updateById(permission);
         } else {
-            int count = permissionMapper.selectCount(Wrappers.lambdaQuery(ManagerPermission.class)
+            Long count = permissionMapper.selectCount(Wrappers.lambdaQuery(ManagerPermission.class)
                     .eq(ManagerPermission::getMethod, permission.getMethod())
                     .eq(ManagerPermission::getUrl, permission.getUrl())
             );
-            U.assertException(count > 0, "已经有同样规则的权限, 不能再次添加");
+            U.assertException(U.greater0(count), "已经有同样规则的权限, 不能再次添加");
 
             permission.setId(null);
             permissionMapper.insert(permission);
