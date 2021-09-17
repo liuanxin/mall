@@ -910,6 +910,28 @@ public final class U {
         }
     }
 
+    /** 获取类的所有属性(包括父类) */
+    public static Set<Field> getAllField(Class<?> clazz) {
+        if (clazz.getName().equals(Object.class.getName())) {
+            return Collections.emptySet();
+        }
+
+        Set<Field> fieldSet = Sets.newLinkedHashSet();
+        fieldSet.addAll(Arrays.asList(clazz.getDeclaredFields()));
+        fieldSet.addAll(Arrays.asList(clazz.getFields()));
+
+        Class<?> superclass = clazz.getSuperclass();
+        if (superclass.getName().equals(Object.class.getName())) {
+            return fieldSet;
+        }
+
+        Set<Field> tmpSet = getAllField(superclass);
+        if (tmpSet.size() > 0) {
+            fieldSet.addAll(tmpSet);
+        }
+        return fieldSet;
+    }
+
     /** 获取类的所有方法(包括父类) */
     public static Set<Method> getAllMethod(Class<?> clazz) {
         if (clazz.getName().equals(Object.class.getName())) {
@@ -917,6 +939,7 @@ public final class U {
         }
 
         Set<Method> methodSet = Sets.newLinkedHashSet();
+        methodSet.addAll(Arrays.asList(clazz.getDeclaredMethods()));
         methodSet.addAll(Arrays.asList(clazz.getMethods()));
 
         Class<?> superclass = clazz.getSuperclass();
