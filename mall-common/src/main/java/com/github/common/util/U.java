@@ -254,6 +254,29 @@ public final class U {
         return !greaterAndEquals0(obj);
     }
 
+    /**
+     * 将 int 转换成 26 进制的数(大写)
+     *
+     * A   <--> 1
+     * Z   <--> 26
+     * AA  <--> 27
+     * AZ  <--> 52
+     * ZZ  <--> 702
+     * AAA <--> 703
+     */
+    public static String numTo26Radix(int n) {
+        StringBuilder s = new StringBuilder();
+        while (n > 0) {
+            int m = n % 26;
+            if (m == 0) {
+                m = 26;
+            }
+            s.insert(0, (char) (m + 64));
+            n = (n - m) / 26;
+        }
+        return s.toString();
+    }
+
     /** 转换成 int, 非数字则返回 0 */
     public static int toInt(Object obj) {
         if (isNull(obj)) {
