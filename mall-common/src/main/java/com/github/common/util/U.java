@@ -158,7 +158,7 @@ public final class U {
      *   private final String value;
      *
      *   &#064;JsonValue
-     *   public Map<String, String> serializer() {
+     *   public Map<String, Object> serializer() {
      *     return <span style="color:red">serializerEnum(code, value);</span>
      *   }
      *   &#064;JsonCreator
@@ -171,7 +171,7 @@ public final class U {
      * 反序列化时, 0、男、{ "code": 0, "value": "男" } 都可以反序列化成 Gender.Male
      * </pre>
      */
-    public static Map<String, String> serializerEnum(int code, String value) {
+    public static Map<String, Object> serializerEnum(int code, String value) {
         return A.maps(ENUM_CODE, code, ENUM_VALUE, value);
     }
     /**
@@ -186,7 +186,7 @@ public final class U {
      *   private final String value;
      *
      *   &#064;JsonValue
-     *   public Map<String, String> serializer() {
+     *   public Map<String, Object> serializer() {
      *     return <span style="color:red">serializerEnum(code, value);</span>
      *   }
      *   &#064;JsonCreator

@@ -23,7 +23,7 @@ public enum ProductTestType {
 
     /** 序列化给前端时, 如果只想给前端返回数值, 去掉此方法并把注解挪到 getCode 即可 */
     @JsonValue
-    public Map<String, String> serializer() {
+    public Map<String, Object> serializer() {
         return U.serializerEnum(code, value);
     }
     /** 数据反序列化. 如 male、0、男、{"code": 0, "value": "男"} 都可以反序列化为 Gender.Male 值 */
