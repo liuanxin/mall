@@ -1,13 +1,25 @@
 package com.github.common.page;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.common.util.A;
 import com.github.common.util.U;
+
+import java.util.Collections;
+import java.util.List;
 
 public final class Pages {
 
     /** 在 service 的实现类中调用 --> 当不想查 select count(*) 时用这个 */
     public static <T> Page<T> paramOnlyLimit(long limit) {
         return new Page<>(1, limit, false);
+    }
+
+    public static <T> List<T> returnList(Page<T> pageInfo) {
+        return U.isNull(pageInfo) ? Collections.emptyList() : pageInfo.getRecords();
+    }
+
+    public static <T> T returnOne(Page<T> pageInfo) {
+        return U.isNull(pageInfo) ? null : A.first(pageInfo.getRecords());
     }
 
     /** 在 service 的实现类中调用 --> 在 repository 方法上的参数是 mbp 的 Page 对象, service 上的参数是 PageParam, 使用此方法进行转换 */
@@ -20,11 +32,11 @@ public final class Pages {
     }
 
     /** 在 service 的实现类中调用 --> 在 repository 方法上的返回类型是 mbp 的 Page 对象, service 上的返回类型是 PageReturn, 使用此方法进行转换 */
-    public static <T> PageReturn<T> returnPage(Page<T> pageObj) {
-        if (U.isNull(pageObj)) {
+    public static <T> PageReturn<T> returnPage(Page<T> pageInfo) {
+        if (U.isNull(pageInfo)) {
             return PageReturn.emptyReturn();
         } else {
-            return PageReturn.returnPage(pageObj.getTotal(), pageObj.getRecords());
+            return PageReturn.returnPage(pageInfo.getTotal(), pageInfo.getRecords());
         }
     }
 }
