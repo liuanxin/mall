@@ -1,10 +1,7 @@
 package com.github.common.page;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.github.common.util.A;
 import com.github.common.util.U;
-
-import java.util.List;
 
 public final class Pages {
 
@@ -27,8 +24,7 @@ public final class Pages {
         if (U.isNull(pageObj)) {
             return PageReturn.emptyReturn();
         } else {
-            List<T> objList = pageObj.getRecords();
-            return A.isEmpty(objList) ? PageReturn.emptyReturn() : PageReturn.returnPage(pageObj.getTotal(), objList);
+            return PageReturn.returnPage(pageObj.getTotal(), pageObj.getRecords());
         }
     }
 }
