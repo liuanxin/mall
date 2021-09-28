@@ -39,7 +39,7 @@ public final class RequestUtil {
     public static String getRealIp() {
         HttpServletRequest request = getRequest();
         if (U.isNull(request)) {
-            return U.EMPTY;
+            return null;
         }
 
         String ip = request.getHeader("X-Forwarded-For");
@@ -49,29 +49,29 @@ public final class RequestUtil {
 
         ip = request.getHeader("X-Real-IP");
         if (U.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
-            return ip.trim();
+            return ip.split(",")[0].trim();
         }
 
         ip = request.getHeader("Proxy-Client-IP");
         if (U.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
-            return ip.trim();
+            return ip.split(",")[0].trim();
         }
 
         ip = request.getHeader("WL-Proxy-Client-IP");
         if (U.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
-            return ip.trim();
+            return ip.split(",")[0].trim();
         }
 
         ip = request.getHeader("HTTP_CLIENT_IP");
         if (U.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
-            return ip.trim();
+            return ip.split(",")[0].trim();
         }
 
         ip = request.getHeader("X-Cluster-Client-IP");
         if (U.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
-            return ip.trim();
+            return ip.split(",")[0].trim();
         }
-        return request.getRemoteAddr();
+        return request.getRemoteAddr().split(",")[0].trim();
     }
 
     /*** 本机就返回 true */
