@@ -1,6 +1,5 @@
 package com.github.global.config;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.common.Const;
 import com.github.common.exception.*;
 import com.github.common.json.JsonCode;
@@ -9,15 +8,12 @@ import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
+import com.github.global.util.ValidationUtil;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
@@ -139,27 +135,7 @@ public class GlobalException {
     }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<JsonResult<String>> paramValidException(MethodArgumentNotValidException e) {
-        Map<String, String> fieldErrorMap = Maps.newLinkedHashMap();
-        Object obj = e.getBindingResult().getTarget();
-        Class<?> clazz = U.isNull(obj) ? null : obj.getClass();
-        for (ObjectError error : e.getBindingResult().getAllErrors()) {
-            if (error instanceof FieldError) {
-                FieldError fieldError = (FieldError) error;
-                String field = fieldError.getField();
-                if (U.isNotNull(clazz) && U.isNotBlank(field)) {
-                    try {
-                        JsonProperty property = AnnotationUtils.findAnnotation(clazz.getDeclaredField(field), JsonProperty.class);
-                        if (U.isNotNull(property)) {
-                            field = property.value();
-                        }
-                    } catch (Exception ignore) {
-                    }
-                }
-                if (U.isNotBlank(field)) {
-                    fieldErrorMap.put(field, fieldError.getDefaultMessage());
-                }
-            }
-        }
+        Map<String, String> fieldErrorMap = ValidationUtil.validate(e.getBindingResult());
         bindAndPrintLog(Joiner.on(", ").join(fieldErrorMap.values()), e);
         int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.fail("参数验证失败", errorTrack(e), fieldErrorMap));
