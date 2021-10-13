@@ -35,7 +35,7 @@ public class ValidationUtil {
         return fieldErrorMap;
     }
 
-    private static String getParamField(Class<?> clazz, String field) {
+    static String getParamField(Class<?> clazz, String field) {
         if (U.isNotNull(clazz) && U.isNotBlank(field)) {
             try {
                 JsonProperty property = AnnotationUtils.findAnnotation(clazz.getDeclaredField(field), JsonProperty.class);
