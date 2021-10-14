@@ -14,12 +14,22 @@ import java.util.Map;
 @AllArgsConstructor
 public enum ProductTestType {
 
-    Normal(0, "普通商品"), Price(1, "特价商品"), Stock(2, "特销商品");
+    Nil(0, ""), Normal(1, "普通商品"), Price(2, "特价商品"), Stock(3, "特销商品");
 
     @EnumValue
     private final int code;
-
     private final String value;
+
+    public static ProductTestType fromCode(Integer code) {
+        if (U.isNotNull(code)) {
+            for (ProductTestType value : values()) {
+                if (value.code == code) {
+                    return value;
+                }
+            }
+        }
+        return Nil;
+    }
 
     /** 序列化给前端时, 如果只想给前端返回数值, 去掉此方法并把注解挪到 getCode 即可 */
     @JsonValue

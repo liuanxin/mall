@@ -4,22 +4,31 @@ import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.common.util.U;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Map;
 
 /** 用户等级 */
 @Getter
+@AllArgsConstructor
 public enum UserTestLevel {
 
-    Normal(0, "普通用户"), Vip(1, "vip 用户");
+    Nil(0, ""), Normal(1, "普通用户"), Vip(2, "vip 用户");
 
     @EnumValue
     private final int code;
     private final String value;
-    UserTestLevel(int code, String value) {
-        this.code = code;
-        this.value = value;
+
+    public static UserTestLevel fromCode(Integer code) {
+        if (U.isNotNull(code)) {
+            for (UserTestLevel value : values()) {
+                if (value.code == code) {
+                    return value;
+                }
+            }
+        }
+        return Nil;
     }
 
     /** 序列化给前端时, 如果只想给前端返回数值, 去掉此方法并把注解挪到 getCode 即可 */

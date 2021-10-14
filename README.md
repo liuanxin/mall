@@ -147,12 +147,13 @@ public class DemoRes {
 | Date          | DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMPON UPDATE CURRENT_TIMESTAMP COMMENT 'XXXXX 时间'        |
 
 注意事项:
-1. 除日期字段外, 其他字段都设置为 NOT NULL DEFAULT 'xx', 日期字段使用 datetime 类型, 是否为 NULL 基于业务
-2. 数字相关的都使用无符号 unsigned 不要存 < 0 的数, 金额除了可以用 DECIMAL 外, 还可以用 bigint, 存到最终的单位(比如分:「20.50 元」存成「2050」)
-3. mysql 中没有 boolean, tinyint(1) 和 tinyint(4) 都是存储 -128 ~ 127 的数(unsigned 则是 0 ~ 255),  
+1. 除日期字段外, 其他字段都设置为 NOT NULL DEFAULT 'xx', 日期字段使用 datetime 类型, 是否为空看具体业务
+2. 映射的 enum 值从 1 开始, 0 在 enum 中定义一个 Nil(0) 当默认值(业务上等同于空)并在 from 方法(从其他地方映射时)上返回
+3. 数字相关的都使用无符号 unsigned 不要存 < 0 的数, 金额除了可以用 DECIMAL 外, 还可以用 bigint, 存到最终的单位(比如分:「20.50 元」存成「2050」)
+4. mysql 中没有 boolean, tinyint(1) 和 tinyint(4) 都是存储 -128 ~ 127 的数(unsigned 则是 0 ~ 255),  
    不要在 tinyint(1) 字段上存储 0 1 以外的值, 对应 Java 的 true 和 false,  
    如果不止用来描述 true false, 在 mysql 中用 tinyint(4), 在 Java 实体中用 Integer 或者枚举相对应
-4. 日期长度默认是 0, 不会存储毫秒微秒, 驱动包 >= 5.1.23 时 mysql 会将毫秒四舍五入到秒  
+5. 日期长度默认是 0, 不会存储毫秒微秒, 驱动包 >= 5.1.23 时 mysql 会将毫秒四舍五入到秒  
    比如 1999-12-31 23:59:59.499 会存成 1999-12-31 23:59:59, 而 1999-12-31 23:59.59.500 却会存为 2000-01-01 00:00:00  
    将长度设置为 3 可以存储到毫秒, 6 可以存储到微妙, 比如  
      创建时间: DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),  

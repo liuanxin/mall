@@ -14,12 +14,23 @@ import java.util.Map;
 @AllArgsConstructor
 public enum Gender {
 
-    Nil(0, "未知"), Male(1, "男"), Female(2, "女");
+    Nil(0, ""), Male(1, "男"), Female(2, "女");
 
     @EnumValue
     private final int code;
 
     private final String value;
+
+    public static Gender fromCode(Integer code) {
+        if (U.isNotNull(code)) {
+            for (Gender value : values()) {
+                if (value.code == code) {
+                    return value;
+                }
+            }
+        }
+        return Nil;
+    }
 
     /** 序列化给前端时, 如果只想给前端返回数值, 去掉此方法并把注解挪到 getCode 即可 */
     @JsonValue

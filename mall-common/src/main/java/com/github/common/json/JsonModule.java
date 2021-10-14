@@ -72,7 +72,8 @@ public class JsonModule {
         return new SimpleModule().addDeserializer(Date.class, new JsonDeserializer<Date>() {
             @Override
             public Date deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-                return DateUtil.parse(p.getText().trim());
+                Date date = DateUtil.parse(p.getText().trim());
+                return (U.isNotNull(date) && date.getTime() == 0) ? null : date;
             }
         });
     }
