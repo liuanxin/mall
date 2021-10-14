@@ -22,7 +22,7 @@ public class JsonModule {
 
     /** 字符串脱敏 */
     public static SimpleModule stringDesensitization() {
-        return new SimpleModule().addSerializer(String.class, new JsonSerializer<String>() {
+        return new SimpleModule().addSerializer(String.class, new JsonSerializer<>() {
             @Override
             public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
                 if (U.isNull(value)) {
@@ -49,7 +49,7 @@ public class JsonModule {
 
     /** 序列化 BigDecimal 小数位不足 2 位的返回 2 位 */
     public static SimpleModule bigDecimalSerializer() {
-        return new SimpleModule().addSerializer(BigDecimal.class, new JsonSerializer<BigDecimal>() {
+        return new SimpleModule().addSerializer(BigDecimal.class, new JsonSerializer<>() {
             @Override
             public void serialize(BigDecimal value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
                 if (U.isNull(value)) {
@@ -69,7 +69,7 @@ public class JsonModule {
 
     /** 反序列化 Date, 序列化使用全局配置, 或者属性上的 @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8") 注解 */
     public static SimpleModule dateDeserializer() {
-        return new SimpleModule().addDeserializer(Date.class, new JsonDeserializer<Date>() {
+        return new SimpleModule().addDeserializer(Date.class, new JsonDeserializer<>() {
             @Override
             public Date deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
                 Date date = DateUtil.parse(p.getText().trim());
