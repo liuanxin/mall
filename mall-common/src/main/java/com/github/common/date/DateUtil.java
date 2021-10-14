@@ -135,30 +135,43 @@ public class DateUtil {
      *
      * toHumanRoughly("2020-01-01 01:02:03".ms - "2019-01-01 01:02:03".ms) ==> 1 年前
      * toHumanRoughly("2020-01-01".ms - "2010-01-01".ms) ==> 10 年前
+     *
+     * @param intervalMs 间隔毫秒数, (大的时间戳 - 小的时间戳)会返回 x 分钟前, 反之会返回 x 分钟后
      * </pre>
      */
     public static String toHumanRoughly(long intervalMs) {
-        if (intervalMs == 0) { return "刚刚"; }
+        if (intervalMs == 0) {
+            return "刚刚";
+        }
 
         boolean flag = (intervalMs < 0);
-        long ms = flag ? -intervalMs : intervalMs;
-        long second = ms / SECOND;
-        if (second < 60) { return "刚刚"; }
+        long ms = (flag ? -intervalMs : intervalMs);
+        if (ms < MINUTE) {
+            return "刚刚";
+        }
 
         String state = flag ? "后" : "前";
 
-        long minute = second / 60;
-        if (minute < 60) { return minute + " 分钟" + state; }
+        long minute = ms / MINUTE;
+        if (minute < 60) {
+            return minute + " 分钟" + state;
+        }
 
         long hour = minute / 60;
-        if (hour < 24) { return hour + " 小时" + state; }
+        if (hour < 24) {
+            return hour + " 小时" + state;
+        }
 
         long day = hour / 24;
-        if (day == 1) { return flag ? "明天" : "昨天"; }
-        if (day == 2) { return flag ? "后天" : "前天"; }
-        if (day < 365) { return day + " 天" + state; }
-
-        return (day / 365) + " 年" + state;
+        if (day == 1) {
+            return flag ? "明天" : "昨天";
+        } else if (day == 2) {
+            return flag ? "后天" : "前天";
+        } else if (day < 365) {
+            return day + " 天" + state;
+        } else {
+            return (day / 365) + " 年" + state;
+        }
     }
     /** 如: toHuman(36212711413L) ==> 1 year 54 day 3 hour 5 minute 11 second 413 ms */
     public static String toHuman(long intervalMs) {
