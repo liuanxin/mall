@@ -22,6 +22,8 @@ public final class LogUtil {
     private static final String TRACE_ID = "Trace_Id";
     /** 在日志上下文中记录的请求信息: 包括 ip、url, param 等  */
     private static final String REQUEST_INFO = "Request_Info";
+    /** 在日志上下文中记录的真实 ip */
+    private static final String REAL_IP = "Real_Ip";
 
     /** 将 跟踪号 和 接收到请求的时间 放进日志上下文 */
     public static void bindBasicInfo(String traceId) {
@@ -42,6 +44,9 @@ public final class LogUtil {
         bindBasicInfo(traceId);
         MDC.put(REQUEST_INFO, logContextInfo.requestInfo());
     }
+    public static void bindIp(String ip) {
+        MDC.put(REAL_IP, ip);
+    }
 
     public static void unbind() {
         MDC.clear();
@@ -52,6 +57,9 @@ public final class LogUtil {
     }
     public static String getTraceId() {
         return U.toStr(MDC.get(TRACE_ID)).trim();
+    }
+    public static String getRealIp() {
+        return MDC.get(TRACE_ID);
     }
 
 
