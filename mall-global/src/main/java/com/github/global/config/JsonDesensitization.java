@@ -2,6 +2,7 @@ package com.github.global.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.common.json.JsonModule;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
@@ -33,7 +34,7 @@ public class JsonDesensitization {
 
         this.desObjectMapper = objectMapper.copy();
         this.desObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        this.desObjectMapper.registerModule(JsonModule.stringDesensitization());
+        this.desObjectMapper.registerModule(new SimpleModule().addSerializer(String.class, JsonModule.DESENSITIZATION_SER));
     }
 
     public String toJson(Object data) {

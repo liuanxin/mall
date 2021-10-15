@@ -6,17 +6,16 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.common.date.DateFormatType;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 public class JsonUtil {
 
@@ -66,8 +65,12 @@ public class JsonUtil {
             // 不确定的属性项上不要失败
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-            registerModule(JsonModule.dateDeserializer());
-            registerModule(JsonModule.bigDecimalSerializer());
+            SimpleModule module = new SimpleModule()
+                    // .addSerializer(Long.class, ToStringSerializer.instance)
+                    // .addSerializer(Long.TYPE, ToStringSerializer.instance)
+                    .addSerializer(BigDecimal.class, JsonModule.DECIMAL_SER)
+                    .addDeserializer(Date.class, JsonModule.DATE_DES);
+            registerModule(module);
         }
     }
 
