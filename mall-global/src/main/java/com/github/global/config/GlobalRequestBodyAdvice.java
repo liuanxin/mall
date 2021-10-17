@@ -34,7 +34,7 @@ import java.nio.charset.StandardCharsets;
 public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
 
     /** 当前端发过来的 RequestBody 数据跟相关的实体对应上时, 此时想要输出用户的输入流, 将此值设置为 true(因为复制了一遍字节码, 内存消耗会比 false 时多) */
-    @Value("${json.logPrintComplete:false}")
+    @Value("${log.printComplete:false}")
     private boolean printComplete;
 
     private final JsonDesensitization jsonDesensitization;
