@@ -41,14 +41,27 @@ public class JsonModule {
                 return;
             }
 
-            String data;
-            if ("password".equalsIgnoreCase(key)) {
-                data = "***";
-            } else {
-                int length = value.length();
-                data = (length <= DES_MAX) ? value : (value.substring(0, DES_LEN) + " *** " + value.substring(length - DES_LEN));
+            switch (key.toLowerCase()) {
+                case "password":
+                    gen.writeString("***");
+                    return;
+                case "phone":
+                    gen.writeString(U.foggyPhone(value));
+                    return;
+                case "idcard":
+                case "id-card":
+                case "id_card":
+                    gen.writeString(U.foggyIdCard(value));
+                    return;
             }
-            gen.writeString(data);
+
+            int len = value.length();
+            if (len > DES_MAX) {
+                gen.writeString(value.substring(0, DES_LEN) + " *** " + value.substring(len - DES_LEN));
+                return;
+            }
+
+            gen.writeString(value);
         }
     }
 

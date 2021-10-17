@@ -34,11 +34,8 @@ import java.nio.charset.StandardCharsets;
 public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
 
     /** 当前端发过来的 RequestBody 数据跟相关的实体对应上时, 此时想要输出用户的输入流, 将此值设置为 true(因为复制了一遍字节码, 内存消耗会比 false 时多) */
-    @Value("${json.sufferErrorRequest:false}")
-    private boolean sufferErrorRequest;
-
-    @Value("${json.logPrintHeader:false}")
-    private boolean printHeader;
+    @Value("${json.logPrintComplete:false}")
+    private boolean printComplete;
 
     private final JsonDesensitization jsonDesensitization;
     private final ObjectMapper mapper;
@@ -51,8 +48,8 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override
     public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
                                            Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
-        if (!GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
-            if (sufferErrorRequest) {
+        if (printComplete) {
+            if (!GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
                 return new HttpInputMessage() {
                     @Override
                     public HttpHeaders getHeaders() {
@@ -89,17 +86,13 @@ public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override
     public Object afterBodyRead(Object body, HttpInputMessage inputMessage, MethodParameter parameter,
                                 Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
-        if (!GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
-            if (!sufferErrorRequest) {
+        if (!printComplete) {
+            if (!GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                     LogUtil.ROOT_LOG.info("after body({})", jsonDesensitization.toJson(body));
                 }
             }
         }
         return super.afterBodyRead(body, inputMessage, parameter, targetType, converterType);
-    }
-
-    private String formatHeader() {
-        return printHeader ? String.format(" header(%s)", RequestUtil.formatHeader()) : U.EMPTY;
     }
 }

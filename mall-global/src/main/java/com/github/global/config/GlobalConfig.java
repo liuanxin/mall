@@ -24,9 +24,10 @@ public class GlobalConfig {
     @ConditionalOnClass(ObjectMapper.class)
     public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(ObjectMapper objectMapper) {
         SimpleModule module = new SimpleModule()
-                .addSerializer(String.class, new JsonModule.StringDesensitization())
-                .addSerializer(BigDecimal.class, new JsonModule.BigDecimalSerializer())
-                .addDeserializer(Date.class, new JsonModule.DateDeserializer());
+                // .addSerializer(Long.class, ToStringSerializer.instance)
+                // .addSerializer(Long.TYPE, ToStringSerializer.instance)
+                .addSerializer(BigDecimal.class, JsonModule.DECIMAL_SER)
+                .addDeserializer(Date.class, JsonModule.DATE_DES);
         objectMapper.registerModule(module);
         return new MappingJackson2HttpMessageConverter(objectMapper);
     }

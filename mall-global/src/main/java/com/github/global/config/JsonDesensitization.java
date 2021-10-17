@@ -17,11 +17,11 @@ import org.springframework.context.annotation.Configuration;
 @AutoConfigureAfter(JacksonAutoConfiguration.class)
 public class JsonDesensitization {
 
-    /** 是否进行脱敏, 默认进行脱敏 */
-    @Value("${json.hasDesensitization:true}")
+    /** 是否进行脱敏 */
+    @Value("${json.hasDesensitization:false}")
     private boolean hasDesensitization;
 
-    /** 是否进行数据压缩, 默认不压缩 */
+    /** 是否进行数据压缩 */
     @Value("${json.hasCompress:false}")
     private boolean hasCompress;
 
