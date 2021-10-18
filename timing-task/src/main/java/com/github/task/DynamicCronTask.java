@@ -1,5 +1,6 @@
 package com.github.task;
 
+import com.github.common.date.DateUtil;
 import com.github.common.service.CommonService;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
@@ -27,8 +28,12 @@ public class DynamicCronTask implements SchedulingConfigurer {
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         Runnable task = () -> {
-            LogUtil.bindBasicInfo(U.uuid16());
+            long start = System.currentTimeMillis();
             try {
+                LogUtil.bindBasicInfo(U.uuid16());
+                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                    LogUtil.ROOT_LOG.info("{}开始", BUSINESS_DESC);
+                }
                 handlerBusiness();
             } catch (Exception e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
@@ -36,7 +41,7 @@ public class DynamicCronTask implements SchedulingConfigurer {
                 }
             } finally {
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info(BUSINESS_DESC + "完成");
+                    LogUtil.ROOT_LOG.info("处理 job 结束({}), 耗时: ({})", BUSINESS_DESC, DateUtil.toHuman(System.currentTimeMillis() - start));
                 }
                 LogUtil.unbind();
             }
