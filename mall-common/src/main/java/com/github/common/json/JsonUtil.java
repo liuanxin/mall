@@ -75,16 +75,16 @@ public class JsonUtil {
     }
 
     /** 对象转换, 失败将会返回 null */
-    public static <S,T> T convertBasic(S source, Class<T> clazz) {
+    public static <S,T> T convert(S source, Class<T> clazz) {
         return U.isNull(source) ? null : toObjectNil(toJsonNil(source), clazz);
     }
     /** 集合转换, 失败将会返回 null */
-    public static <S,T> List<T> convertListBasic(Collection<S> sourceList, Class<T> clazz) {
+    public static <S,T> List<T> convertList(Collection<S> sourceList, Class<T> clazz) {
         return A.isEmpty(sourceList) ? Collections.emptyList() : toListNil(toJsonNil(sourceList), clazz);
     }
 
     /** 对象转换(忽略 class 类属性上的 @Json... 注解), 失败将会返回 null */
-    public static <S,T> T convert(S source, Class<T> clazz) {
+    public static <S,T> T convertIgnoreAnnotation(S source, Class<T> clazz) {
         if (U.isNull(source)) {
             return null;
         }
@@ -116,7 +116,7 @@ public class JsonUtil {
         }
     }
     /** 集合转换(忽略 class 类属性上的 @Json... 注解), 失败将会返回 null */
-    public static <S,T> List<T> convertList(Collection<S> sourceList, Class<T> clazz) {
+    public static <S,T> List<T> convertListIgnoreAnnotation(Collection<S> sourceList, Class<T> clazz) {
         if (A.isEmpty(sourceList)) {
             return Collections.emptyList();
         }
