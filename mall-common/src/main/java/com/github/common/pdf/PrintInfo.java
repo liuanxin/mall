@@ -50,10 +50,6 @@ public class PrintInfo {
     public boolean hasSize() {
         return width != null && width > 0 && height != null && height > 0;
     }
-    public boolean nilData() {
-        return (contentInfo == null || contentInfo.isEmpty())
-                && (tableInfo == null || tableInfo.isEmpty());
-    }
     public List<?> pageList(Map<String, Object> data) {
         if (dynamicHead == null || dynamicContent == null || dynamicContent.isEmpty() || dynamicHead.notDraw()) {
             return null;

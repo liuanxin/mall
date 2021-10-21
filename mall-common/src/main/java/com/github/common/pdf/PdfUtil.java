@@ -6,7 +6,9 @@ import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.qrcode.EncodeHintType;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,46 +25,28 @@ public class PdfUtil {
     }
 
     /** 英文字体 */
-    private static final BaseFont BASE_FONT;
+    private static final BaseFont BASE_FONT = new FontFactoryImp().getFont(BaseFont.COURIER).getBaseFont();
     /** 英文字体 - 粗体 */
-    private static final BaseFont BASE_FONT_BOLD;
+    private static final BaseFont BASE_FONT_BOLD = new FontFactoryImp().getFont(BaseFont.COURIER_BOLD).getBaseFont();
 
     /** 中文字体 */
     private static final BaseFont CHINESE_BASE_FONT;
     /** 中文字体 - 粗体 */
     private static final BaseFont CHINESE_BASE_FONT_BOLD;
     static {
-        String enFontName = BaseFont.COURIER;
-        String enBoldFontName = BaseFont.COURIER_BOLD;
-
-//        String enFontName = BaseFont.HELVETICA;
-//        String enBoldFontName = BaseFont.HELVETICA_BOLD;
-
-//        String enFontName = BaseFont.TIMES_ROMAN;
-//        String enBoldFontName = BaseFont.TIMES_BOLD;
-
         String cnFontName = "STSong-Light";
         String cnBoldFontName = cnFontName + ",Bold";
         String cnEncoding = "UniGB-UCS2-H";
-
-//        String cnFontName = "/home/ty/project/print-example/src/main/resources/wqy-microhei.ttc,0";
-//        String cnBoldFontName = "/home/ty/project/print-example/src/main/resources/wqy-microhei.ttc,0";
-//        String cnEncoding = "Identity-H";
-
-//        String cnFontName = "/home/ty/project/print-example/src/main/resources/msyh.ttc,0";
-//        String cnBoldFontName = "/home/ty/project/print-example/src/main/resources/msyhbd.ttc,1";
-//        String cnEncoding = "Identity-H";
 
         BaseFont baseCnFont;
         try {
             baseCnFont = BaseFont.createFont(cnFontName, cnEncoding, BaseFont.EMBEDDED);
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
-                log.error(String.format("装载字体(%s)时异常", cnFontName), e);
+                log.error(String.format("装载字体(%s)异常", cnFontName), e);
             }
-            baseCnFont = new FontFactoryImp().getFont(enFontName).getBaseFont();
+            baseCnFont = BASE_FONT;
         }
-        BASE_FONT = new FontFactoryImp().getFont(enFontName).getBaseFont();
         CHINESE_BASE_FONT = baseCnFont;
 
         BaseFont baseFontCnBold;
@@ -70,64 +54,78 @@ public class PdfUtil {
             baseFontCnBold = BaseFont.createFont(cnBoldFontName, cnEncoding, BaseFont.EMBEDDED);
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
-                log.error(String.format("装载字体(%s)时异常", cnBoldFontName), e);
+                log.error(String.format("装载字体(%s)异常", cnBoldFontName), e);
             }
-            baseFontCnBold = new FontFactoryImp().getFont(enBoldFontName).getBaseFont();
+            baseFontCnBold = BASE_FONT_BOLD;
         }
-        BASE_FONT_BOLD = new FontFactoryImp().getFont(enBoldFontName).getBaseFont();
         CHINESE_BASE_FONT_BOLD = baseFontCnBold;
     }
 
     public static void generatePdfFile(String file, String template, Map<String, Object> data) {
         PrintInfo printInfo = JsonUtil.toObject(template, PrintInfo.class);
-        if (printInfo == null || printInfo.nilData()) {
-            return;
+        if (printInfo != null) {
+            try (FileOutputStream outputStream = new FileOutputStream(file)) {
+                writePdf(printInfo, data, outputStream);
+            } catch (Exception e) {
+                if (log.isErrorEnabled()) {
+                    log.error("生成 pdf 文件异常", e);
+                }
+            }
         }
+    }
 
-        float offsetX = toFloat(printInfo.getOffsetX(), 0);
-        float offsetY = toFloat(printInfo.getOffsetY(), 0);
+    public static byte[] generatePdfByte(String template, Map<String, Object> data) {
+        PrintInfo printInfo = JsonUtil.toObject(template, PrintInfo.class);
+        if (printInfo != null) {
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                writePdf(printInfo, data, outputStream);
+                return outputStream.toByteArray();
+            } catch (Exception e) {
+                if (log.isErrorEnabled()) {
+                    log.error("生成 pdf 字节异常", e);
+                }
+            }
+        }
+        return null;
+    }
 
-        try (FileOutputStream outputStream = new FileOutputStream(file)) {
-            // 默认是 A4 格式: 宽 595, 高 842
-            Document document = printInfo.hasSize() ?
-                    new Document(new Rectangle(printInfo.getWidth(), printInfo.getHeight())) : new Document();
+    private static void writePdf(PrintInfo template, Map<String, Object> data, OutputStream outputStream) throws DocumentException {
+        // 默认是 A4 格式: 宽 595, 高 842
+        Document document = template.hasSize() ?
+                new Document(new Rectangle(template.getWidth(), template.getHeight())) : new Document();
 
-            PdfWriter writer = PdfWriter.getInstance(document, outputStream);
-            document.open();
-            PdfContentByte canvas = writer.getDirectContent();
+        PdfWriter writer = PdfWriter.getInstance(document, outputStream);
+        document.open();
+        PdfContentByte canvas = writer.getDirectContent();
 
-            List<?> list = printInfo.pageList(data);
-            if (list != null) {
-                PrintInfo.TableDynamicHead dynamicHead = printInfo.getDynamicHead();
-                List<PrintInfo.TableContent> dynamicContent = printInfo.getDynamicContent();
-                if (dynamicHead != null && dynamicContent != null && dynamicContent.size() > 0) {
-                    int total = list.size();
-                    int pageCount = toInt(dynamicHead.getSinglePageCount(), 10);
-                    int loopCount = (total % pageCount == 0) ? total / pageCount : (total / pageCount) + 1;
-                    for (int i = 0; i < loopCount; i++) {
-                        int fromIndex = pageCount * i;
-                        boolean notLastPage = (i + 1 != loopCount);
-                        int toIndex = notLastPage ? (fromIndex + pageCount) : total;
-                        draw(i, loopCount, data, printInfo, offsetX, offsetY, canvas);
-                        drawDynamicTable(i, pageCount, total, list, fromIndex, toIndex, dynamicHead, dynamicContent, offsetX, offsetY, canvas);
-                        if (notLastPage) {
-                            document.newPage();
-                        }
+        float offsetX = toFloat(template.getOffsetX(), 0);
+        float offsetY = toFloat(template.getOffsetY(), 0);
+
+        List<?> list = template.pageList(data);
+        if (list != null) {
+            PrintInfo.TableDynamicHead dynamicHead = template.getDynamicHead();
+            List<PrintInfo.TableContent> dynamicContent = template.getDynamicContent();
+            if (dynamicHead != null && dynamicContent != null && dynamicContent.size() > 0) {
+                int total = list.size();
+                int pageCount = toInt(dynamicHead.getSinglePageCount(), 10);
+                int loopCount = (total % pageCount == 0) ? total / pageCount : (total / pageCount) + 1;
+                for (int i = 0; i < loopCount; i++) {
+                    int fromIndex = pageCount * i;
+                    boolean notLastPage = (i + 1 != loopCount);
+                    int toIndex = notLastPage ? (fromIndex + pageCount) : total;
+                    draw(i, loopCount, data, template, offsetX, offsetY, canvas);
+                    drawDynamicTable(i, pageCount, total, list, fromIndex, toIndex, dynamicHead, dynamicContent, offsetX, offsetY, canvas);
+                    if (notLastPage) {
+                        document.newPage();
                     }
                 }
-            } else {
-                draw(0, 1, data, printInfo, offsetX, offsetY, canvas);
             }
-
-            document.add(new Chunk(""));
-            document.close();
-            System.out.println("save file to " + file + " success");
-        } catch (Exception e) {
-            if (log.isErrorEnabled()) {
-                log.error("生成 pdf 时异常", e);
-            }
-            throw new RuntimeException("生成 pdf 时异常: " + e.getMessage());
+        } else {
+            draw(0, 1, data, template, offsetX, offsetY, canvas);
         }
+
+        document.add(new Chunk(""));
+        document.close();
     }
 
     private static void draw(int page, int total, Map<String, Object> data, PrintInfo printInfo,
