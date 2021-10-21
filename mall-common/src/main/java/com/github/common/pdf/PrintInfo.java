@@ -31,6 +31,21 @@ public class PrintInfo {
      */
     private Float height;
 
+    /** 水印内容 */
+    private String watermarkValue;
+    /** 水印字体大小, 不设置则默认是 60 */
+    private Float watermarkFontSize;
+    /** 水印在一页的个数, 不设置则默认是 3 */
+    private Integer watermarkCount;
+    /** 多个水印的间距, 不设置则默认是 200 */
+    private Integer watermarkSpacing;
+    /** 第一个水印的 x 轴 */
+    private Float watermarkX;
+    /** 第一个水印的 y 轴 */
+    private Float watermarkY;
+    /** 水印旋转的度数, 不设置则默认是 45 */
+    private Float watermarkRotation;
+
     /** x 轴的整体偏移量, 正数则整体向右偏移, 负数则整体向左偏移 */
     private Float offsetX;
 
@@ -47,6 +62,9 @@ public class PrintInfo {
     /** 表格占位内容 */
     private List<TableInfo> tableInfo;
 
+    public boolean hasWatermark() {
+        return watermarkValue != null && !watermarkValue.isEmpty();
+    }
     public boolean hasSize() {
         return width != null && width > 0 && height != null && height > 0;
     }
@@ -75,9 +93,9 @@ public class PrintInfo {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public static class DataContent {
         /** x 轴表示从左向右, 写的左下的位置 */
-        private float x;
+        private Float x;
         /** y 轴表示从下到上, 写的左下的位置, 要注意写的内容的高 */
-        private float y;
+        private Float y;
 
         /** 内容, 会附加上模板的值 */
         private String value;
@@ -99,9 +117,9 @@ public class PrintInfo {
         /** 文字粗体, 不设置则默认是 false */
         private Boolean fontBold;
 
-        /** 二维码、条形码 的宽, 默认是 100 */
+        /** 二维码(默认是 80)、条形码(默认是 160) 的宽 */
         private Float codeWidth;
-        /** 二维码(默认是 100)、条形码(默认是 30) 的高 */
+        /** 二维码(默认是 80)、条形码(默认是 45) 的高 */
         private Float codeHeight;
         /** 条形码 的字体大小, 默认是 10 */
         private Float barCodeTextSize;
@@ -182,9 +200,9 @@ public class PrintInfo {
         /** 如果内容过大, 只显示多少个字符. 超出字符会使用 ... 显示, 大于 0 才会起作用, 不设置则默认是 0 */
         private Integer maxCount;
 
-        /** 二维码、条形码 的宽, 默认是 100 */
+        /** 二维码(默认是 80)、条形码(默认是 160) 的宽 */
         private Float codeWidth;
-        /** 二维码(默认是 100)、条形码(默认是 30) 的高 */
+        /** 二维码(默认是 80)、条形码(默认是 45) 的高 */
         private Float codeHeight;
         /** 条形码 的字体大小, 默认是 10 */
         private Float barCodeTextSize;

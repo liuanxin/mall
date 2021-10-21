@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-@SuppressWarnings({"DuplicatedCode", "unchecked", "SameParameterValue"})
+@SuppressWarnings({"DuplicatedCode", "unchecked"})
 @Slf4j
 public class PdfUtil {
 
@@ -62,10 +62,12 @@ public class PdfUtil {
     }
 
     public static void generatePdfFile(String file, String template, Map<String, Object> data) {
-        PrintInfo printInfo = JsonUtil.toObject(template, PrintInfo.class);
-        if (printInfo != null) {
+        generatePdfFile(file, JsonUtil.toObject(template, PrintInfo.class), data);
+    }
+    public static void generatePdfFile(String file, PrintInfo template, Map<String, Object> data) {
+        if (template != null) {
             try (FileOutputStream outputStream = new FileOutputStream(file)) {
-                writePdf(printInfo, data, outputStream);
+                writePdf(template, data, outputStream);
             } catch (Exception e) {
                 if (log.isErrorEnabled()) {
                     log.error("生成 pdf 文件异常", e);
@@ -75,10 +77,12 @@ public class PdfUtil {
     }
 
     public static byte[] generatePdfByte(String template, Map<String, Object> data) {
-        PrintInfo printInfo = JsonUtil.toObject(template, PrintInfo.class);
-        if (printInfo != null) {
+        return generatePdfByte(JsonUtil.toObject(template, PrintInfo.class), data);
+    }
+    public static byte[] generatePdfByte(PrintInfo template, Map<String, Object> data) {
+        if (template != null) {
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                writePdf(printInfo, data, outputStream);
+                writePdf(template, data, outputStream);
                 return outputStream.toByteArray();
             } catch (Exception e) {
                 if (log.isErrorEnabled()) {
@@ -90,11 +94,26 @@ public class PdfUtil {
     }
 
     private static void writePdf(PrintInfo template, Map<String, Object> data, OutputStream outputStream) throws DocumentException {
-        // 默认是 A4 格式: 宽 595, 高 842
-        Document document = template.hasSize() ?
-                new Document(new Rectangle(template.getWidth(), template.getHeight())) : new Document();
+        Document document;
+        if (template.hasSize()) {
+            document = new Document(new Rectangle(template.getWidth(), template.getHeight()));
+        } else {
+            document = new Document();
+        }
 
         PdfWriter writer = PdfWriter.getInstance(document, outputStream);
+        if (template.hasWatermark()) {
+            String watermarkValue = template.getWatermarkValue();
+            float watermarkFontSize = toFloat(template.getWatermarkFontSize(), 60);
+            Font font = new Font(toBaseFont(watermarkValue, true), watermarkFontSize, Font.NORMAL, new BaseColor(245, 245, 245));
+            int alignment = Element.ALIGN_CENTER;
+            float watermarkX = toFloat(template.getWatermarkX(), 258F);
+            float watermarkY = toFloat(template.getWatermarkY(), 221F);
+            float rotation = toFloat(template.getWatermarkRotation(), 45F);
+            int loop = toInt(template.getWatermarkCount(), 3);
+            int spacing = toInt(template.getWatermarkSpacing(), 200);
+            writer.setPageEvent(new Watermark(watermarkValue, font, alignment, watermarkX, watermarkY, rotation, loop, spacing));
+        }
         document.open();
         PdfContentByte canvas = writer.getDirectContent();
 
@@ -133,7 +152,7 @@ public class PdfUtil {
         List<PrintInfo.DataContent> contentList = printInfo.getContentInfo();
         if (contentList != null && !contentList.isEmpty()) {
             for (PrintInfo.DataContent dataContent : contentList) {
-                writePlaceholderContent(page, total, canvas, offsetX, offsetY, dataContent, data);
+                writeDataContent(page, total, canvas, offsetX, offsetY, dataContent, data);
             }
         }
         List<PrintInfo.TableInfo> tableInfoList = printInfo.getTableInfo();
@@ -141,7 +160,7 @@ public class PdfUtil {
             for (PrintInfo.TableInfo tableInfo : tableInfoList) {
                 PrintInfo.TableHead table = tableInfo.getKey();
                 List<PrintInfo.TableContent> tableContentList = tableInfo.getValue();
-                writePlaceholderTableContent(canvas, offsetX, offsetY, table, tableContentList, data);
+                writeTableInfo(canvas, offsetX, offsetY, table, tableContentList, data);
             }
         }
     }
@@ -201,17 +220,17 @@ public class PdfUtil {
                             switch (fieldType) {
                                 case BARCODE:
                                     float textSize = toFloat(tableContent.getBarCodeTextSize(), 10);
-                                    float baseLine = toFloatIgnore(tableContent.getBarCodeBaseLine(), 10);
-                                    float codeWidth = toFloat(tableContent.getCodeWidth(), 100);
-                                    float codeHeight = toFloat(tableContent.getCodeHeight(), 30);
+                                    float baseLine = toBaseLine(tableContent.getBarCodeBaseLine());
+                                    float codeWidth = toFloat(tableContent.getCodeWidth(), 160);
+                                    float codeHeight = toFloat(tableContent.getCodeHeight(), 45);
                                     Image barCode = generateBarCode(canvas, textSize, baseLine, codeWidth, codeHeight, value);
                                     if (barCode != null) {
                                         cell.setImage(barCode);
                                     }
                                     break;
                                 case QRCODE:
-                                    float qrCodeWidth = toFloat(tableContent.getCodeWidth(), 100);
-                                    float qrCodeHeight = toFloat(tableContent.getCodeHeight(), 100);
+                                    float qrCodeWidth = toFloat(tableContent.getCodeWidth(), 80);
+                                    float qrCodeHeight = toFloat(tableContent.getCodeHeight(), 80);
                                     Image qrCode = generateQrCode(qrCodeWidth, qrCodeHeight, value);
                                     if (qrCode != null) {
                                         cell.setImage(qrCode);
@@ -244,12 +263,12 @@ public class PdfUtil {
         }
     }
 
-    private static void writePlaceholderContent(int page, int len, PdfContentByte canvas, float offsetX, float offsetY,
-                                                PrintInfo.DataContent dataContent, Map<String, Object> data) {
+    private static void writeDataContent(int page, int len, PdfContentByte canvas, float offsetX, float offsetY,
+                                         PrintInfo.DataContent dataContent, Map<String, Object> data) {
         String suffix = toStr(dataContent.getValueSuffix());
         String value = toStr(dataContent.getValue()) + toStr(data.get(toStr(dataContent.getFieldName()))) + suffix;
-        float x = dataContent.getX() + offsetX;
-        float y = dataContent.getY() + offsetY;
+        float x = toFloat(dataContent.getX(), 0) + offsetX;
+        float y = toFloat(dataContent.getY(), 0) + offsetY;
 
         float fontSize = toFloat(dataContent.getFontSize(), 10);
         int splitCount = toInt(dataContent.getSplitCount(), 0);
@@ -284,9 +303,9 @@ public class PdfUtil {
                     return;
                 case BARCODE:
                     float textSize = toFloat(dataContent.getBarCodeTextSize(), 10);
-                    float baseLine = toFloatIgnore(dataContent.getBarCodeBaseLine(), 10);
-                    float codeWidth = toFloat(dataContent.getCodeWidth(), 100);
-                    float codeHeight = toFloat(dataContent.getCodeHeight(), 30);
+                    float baseLine = toBaseLine(dataContent.getBarCodeBaseLine());
+                    float codeWidth = toFloat(dataContent.getCodeWidth(), 160);
+                    float codeHeight = toFloat(dataContent.getCodeHeight(), 45);
                     Image barCode = generateBarCode(canvas, textSize, baseLine, codeWidth, codeHeight, value);
                     if (barCode != null) {
                         try {
@@ -300,8 +319,8 @@ public class PdfUtil {
                     }
                     return;
                 case QRCODE:
-                    float qrCodeWidth = toFloat(dataContent.getCodeWidth(), 100);
-                    float qrCodeHeight = toFloat(dataContent.getCodeHeight(), 100);
+                    float qrCodeWidth = toFloat(dataContent.getCodeWidth(), 80);
+                    float qrCodeHeight = toFloat(dataContent.getCodeHeight(), 80);
                     Image qrCode = generateQrCode(qrCodeWidth, qrCodeHeight, value);
                     if (qrCode != null) {
                         try {
@@ -351,10 +370,10 @@ public class PdfUtil {
         }
     }
 
-    private static void writePlaceholderTableContent(PdfContentByte canvas, float offsetX, float offsetY,
-                                                     PrintInfo.TableHead tableHead,
-                                                     List<PrintInfo.TableContent> tableContentList,
-                                                     Map<String, Object> data) {
+    private static void writeTableInfo(PdfContentByte canvas, float offsetX, float offsetY,
+                                       PrintInfo.TableHead tableHead,
+                                       List<PrintInfo.TableContent> tableContentList,
+                                       Map<String, Object> data) {
         if (tableHead.notDraw() || tableContentList == null || tableContentList.isEmpty()) {
             return;
         }
@@ -412,17 +431,17 @@ public class PdfUtil {
                         switch (fieldType) {
                             case BARCODE:
                                 float textSize = toFloat(tableContent.getBarCodeTextSize(), 10);
-                                float baseLine = toFloatIgnore(tableContent.getBarCodeBaseLine(), 10);
-                                float codeWidth = toFloat(tableContent.getCodeWidth(), 100);
-                                float codeHeight = toFloat(tableContent.getCodeHeight(), 30);
+                                float baseLine = toBaseLine(tableContent.getBarCodeBaseLine());
+                                float codeWidth = toFloat(tableContent.getCodeWidth(), 160);
+                                float codeHeight = toFloat(tableContent.getCodeHeight(), 45);
                                 Image barCode = generateBarCode(canvas, textSize, baseLine, codeWidth, codeHeight, value);
                                 if (barCode != null) {
                                     cell.setImage(barCode);
                                 }
                                 break;
                             case QRCODE:
-                                float qrCodeWidth = toFloat(tableContent.getCodeWidth(), 100);
-                                float qrCodeHeight = toFloat(tableContent.getCodeHeight(), 100);
+                                float qrCodeWidth = toFloat(tableContent.getCodeWidth(), 80);
+                                float qrCodeHeight = toFloat(tableContent.getCodeHeight(), 80);
                                 Image qrCode = generateQrCode(qrCodeWidth, qrCodeHeight, value);
                                 if (qrCode != null) {
                                     cell.setImage(qrCode);
@@ -522,38 +541,26 @@ public class PdfUtil {
     }
     private static BaseColor toColor(List<Integer> rgba) {
         if (rgba != null && !rgba.isEmpty() && rgba.size() >= 3) {
-            int red = toInt(rgba.get(0), 0);
-            if (red > 255) {
-                red = 255;
-            }
+            int red = toColorInt(rgba.get(0));
+            int green = toColorInt(rgba.get(1));
+            int blue = toColorInt(rgba.get(2));
 
-            int green = toInt(rgba.get(1), 0);
-            if (green > 255) {
-                green = 255;
+            if (red > 0 && green > 0 && blue > 0) {
+                int alpha = (rgba.size() > 3) ? toColorInt(rgba.get(3)) : 0;
+                return alpha > 0 ? new BaseColor(red, green, blue, alpha) : new BaseColor(red, green, blue);
             }
-
-            int blue = toInt(rgba.get(2), 0);
-            if (blue > 255) {
-                blue = 255;
-            }
-
-            int alpha = 255;
-            if (rgba.size() > 3) {
-                alpha = toInt(rgba.get(3), 0);
-                if (alpha == 0 || alpha > 255) {
-                    alpha = 255;
-                }
-            }
-            return new BaseColor(red, green, blue, alpha);
         }
         return null;
     }
+    private static int toColorInt(Integer num) {
+        return Math.min(toInt(num, 0), 255);
+    }
 
+    private static float toBaseLine(Float num) {
+        return num == null ? (float) 10 : num;
+    }
     private static String toStr(Object obj) {
         return obj == null ? "" : obj.toString();
-    }
-    private static float toFloatIgnore(Float num, float defaultValue) {
-        return num == null ? defaultValue : num;
     }
     private static float toFloat(Float num, float defaultValue) {
         return num == null || num < 0 ? defaultValue : num;
@@ -563,5 +570,34 @@ public class PdfUtil {
     }
     public static boolean toBoolean(Boolean bool, boolean defaultValue) {
         return bool == null ? defaultValue : bool;
+    }
+
+
+    private static class Watermark extends PdfPageEventHelper {
+
+        private final Phrase value;
+        private final int alignment;
+        private final float x;
+        private final float y;
+        private final float rotation;
+        private final int loop;
+        private final int spacing;
+        private Watermark(String value, Font font, Integer alignment, Float x, Float y, Float rotation, int loop, int spacing) {
+            this.value = new Phrase(value, font);
+            this.alignment = alignment;
+            this.x = toFloat(x, 0);
+            this.y = toFloat(y, 0);
+            this.rotation = toFloat(rotation, 0);
+            this.loop = loop;
+            this.spacing = spacing;
+        }
+
+        @Override
+        public void onEndPage(PdfWriter writer, Document document) {
+            PdfContentByte canvas = writer.getDirectContentUnder();
+            for (int i = 0; i < loop; i++) {
+                ColumnText.showTextAligned(canvas, alignment, value, x, (y + i * spacing), rotation);
+            }
+        }
     }
 }

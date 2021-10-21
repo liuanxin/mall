@@ -16,19 +16,23 @@ public class PdfTest {
     @Test
     public void template() {
         PrintInfo print = new PrintInfo();
+        // print.setWidth(595F);
+        // print.setHeight(842F);
+
+        print.setWatermarkValue("这里有水印");
 
         List<PrintInfo.DataContent> holdContentList = Lists.newArrayList();
         PrintInfo.DataContent phc0 = new PrintInfo.DataContent();
-        phc0.setX(210);
-        phc0.setY(800);
+        phc0.setX(210F);
+        phc0.setY(800F);
         phc0.setValue("Packing List");
         phc0.setFontSize(18F);
         phc0.setFontBold(true);
         holdContentList.add(phc0);
 
         PrintInfo.DataContent phc1 = new PrintInfo.DataContent();
-        phc1.setX(440);
-        phc1.setY(800);
+        phc1.setX(440F);
+        phc1.setY(800F);
         phc1.setFontSize(12F);
         phc1.setFontBold(true);
         phc1.setFieldType(PrintInfo.PlaceholderType.TABLE_LINE_INDEX_COUNT);
@@ -36,21 +40,33 @@ public class PdfTest {
         holdContentList.add(phc1);
 
         PrintInfo.DataContent phc2 = new PrintInfo.DataContent();
-        phc2.setX(75);
-        phc2.setY(755);
+        phc2.setX(75F);
+        phc2.setY(755F);
         phc2.setFieldName("warehouse");
         phc2.setFontBold(true);
         phc2.setFontSize(14F);
         holdContentList.add(phc2);
 
         PrintInfo.DataContent phc3 = new PrintInfo.DataContent();
-        phc3.setX(35);
-        phc3.setY(690);
+        phc3.setX(35F);
+        phc3.setY(690F);
         phc3.setFieldType(PrintInfo.PlaceholderType.BARCODE);
         phc3.setFieldName("barCode");
         phc3.setCodeWidth(165F);
         phc3.setCodeHeight(60F);
         holdContentList.add(phc3);
+
+        // PrintInfo.DataContent phc4 = new PrintInfo.DataContent();
+        // phc4.setFieldType(PrintInfo.PlaceholderType.LINE);
+        // phc4.setLineTrack(Arrays.asList(
+        //         Arrays.asList(10F, 832F),
+        //         Arrays.asList(585F, 832F),
+        //         Arrays.asList(585F, 10F),
+        //         Arrays.asList(10F, 10F)
+        // ));
+        // phc4.setLineWidth(2F);
+        // phc4.setLineGray(0.75F);
+        // holdContentList.add(phc4);
         print.setContentInfo(holdContentList);
 
         List<PrintInfo.TableInfo> tableList = Lists.newArrayList();
@@ -239,6 +255,7 @@ public class PdfTest {
         // System.out.println("===================");
 
         String file = "/home/ty/list-test.pdf";
-        PdfUtil.generatePdfFile(file, template, data);
+        PdfUtil.generatePdfFile(file, print, data);
+        System.out.printf("生成文件 %s 成功\n", file);
     }
 }
