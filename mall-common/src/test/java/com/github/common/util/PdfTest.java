@@ -1,5 +1,6 @@
 package com.github.common.util;
 
+import com.github.common.date.DateUtil;
 import com.github.common.pdf.PdfUtil;
 import com.github.common.pdf.PrintInfo;
 import com.google.common.collect.Lists;
@@ -13,7 +14,244 @@ import java.util.*;
 public class PdfTest {
 
     @Test
-    public void generate() {
+    public void box() {
+        PrintInfo print = new PrintInfo();
+        // print.setWidth(595F);
+        // print.setHeight(842F);
+
+        List<PrintInfo.DataContent> contentList = Lists.newArrayList();
+        PrintInfo.DataContent phc0 = new PrintInfo.DataContent();
+        phc0.setX(270F);
+        phc0.setY(800F);
+        phc0.setValue("入库清单");
+        phc0.setFontSize(26F);
+        phc0.setFontBold(true);
+        contentList.add(phc0);
+
+        PrintInfo.DataContent phc1 = new PrintInfo.DataContent();
+        phc1.setX(440F);
+        phc1.setY(800F);
+        phc1.setFontSize(12F);
+        phc1.setFontBold(true);
+        phc1.setFieldType(PrintInfo.PlaceholderType.INDEX_COUNT);
+        phc1.setValueSuffix(" p");
+        contentList.add(phc1);
+
+        PrintInfo.DataContent phc2 = new PrintInfo.DataContent();
+        phc2.setX(440F);
+        phc2.setY(780F);
+        phc2.setValue("[GC]");
+        phc2.setFontBold(true);
+        phc2.setFontSize(12F);
+        phc2.setRgba(Arrays.asList(255, 0, 0));
+        contentList.add(phc2);
+
+        PrintInfo.DataContent phc3 = new PrintInfo.DataContent();
+        phc3.setX(35F);
+        phc3.setY(780F);
+        phc3.setFieldType(PrintInfo.PlaceholderType.BARCODE);
+        phc3.setFieldName("barCode");
+        phc3.setBarCodeTextSize(0F);
+        phc3.setCodeWidth(165F);
+        phc3.setCodeHeight(30F);
+        contentList.add(phc3);
+        print.setContentInfo(contentList);
+
+        List<PrintInfo.TableInfo> tableList = Lists.newArrayList();
+        PrintInfo.TableInfo pt1 = new PrintInfo.TableInfo();
+        PrintInfo.TableHead key1 = new PrintInfo.TableHead();
+        key1.setX(35);
+        key1.setY(768);
+        key1.setBorder(false);
+        key1.setPrintHead(false);
+        key1.setFieldWidthList(List.of(55F, 180F, 68F, 200F));
+        key1.setFieldName("orderInfo");
+        pt1.setKey(key1);
+
+        List<PrintInfo.TableContent> value1 = Lists.newArrayList();
+        PrintInfo.TableContent ptc11 = new PrintInfo.TableContent();
+        ptc11.setFieldName("c1");
+        ptc11.setFontSize(12F);
+        value1.add(ptc11);
+
+        PrintInfo.TableContent ptc12 = new PrintInfo.TableContent();
+        ptc12.setFieldName("c2");
+        ptc12.setFontSize(12F);
+        value1.add(ptc12);
+
+        PrintInfo.TableContent ptc13 = new PrintInfo.TableContent();
+        ptc13.setFieldName("c3");
+        ptc13.setFontSize(12F);
+        value1.add(ptc13);
+
+        PrintInfo.TableContent ptc14 = new PrintInfo.TableContent();
+        ptc14.setFieldName("c4");
+        ptc14.setFontSize(12F);
+        value1.add(ptc14);
+
+        pt1.setValue(value1);
+        tableList.add(pt1);
+
+
+        PrintInfo.TableInfo pt2 = new PrintInfo.TableInfo();
+        PrintInfo.TableHead key2 = new PrintInfo.TableHead();
+        key2.setX(35);
+        key2.setY(706);
+        key2.setBorder(false);
+        key2.setPrintHead(false);
+        key2.setFieldWidthList(List.of(55F, 470F));
+        key2.setFieldName("remarkInfo");
+        pt2.setKey(key2);
+
+        List<PrintInfo.TableContent> value2 = Lists.newArrayList();
+        PrintInfo.TableContent ptc21 = new PrintInfo.TableContent();
+        ptc21.setFieldName("name");
+        ptc21.setFontSize(12F);
+        value2.add(ptc21);
+
+        PrintInfo.TableContent ptc22 = new PrintInfo.TableContent();
+        ptc22.setFieldName("value");
+        ptc22.setFontSize(12F);
+        value2.add(ptc22);
+        pt2.setValue(value2);
+        tableList.add(pt2);
+        print.setTableInfo(tableList);
+
+        PrintInfo.TableDynamicHead dynamicTableKey = new PrintInfo.TableDynamicHead();
+        dynamicTableKey.setX(35);
+        dynamicTableKey.setY(655);
+        dynamicTableKey.setFieldName("productList");
+        dynamicTableKey.setFieldWidthList(Arrays.asList(30F, 70F, 72F, 68F, 50F, 50F, 50F, 50F, 40F, 40F));
+        dynamicTableKey.setHeadList(Arrays.asList("箱号", "产品代码", "中文申报品名", "产品重量(KG)", "长度(CM)", "宽度(CM)", "高度(CM)", "货物属性", "预期数", "收货数"));
+        dynamicTableKey.setBackRgba(Arrays.asList(220, 220, 220));
+        dynamicTableKey.setTextAlign(Element.ALIGN_CENTER);
+        dynamicTableKey.setFontSize(10F);
+        dynamicTableKey.setFontBold(true);
+        dynamicTableKey.setBorder(true);
+        dynamicTableKey.setHeadHeight(24);
+        dynamicTableKey.setContentHeight(28);
+        dynamicTableKey.setSinglePageCount(15);
+        print.setDynamicHead(dynamicTableKey);
+
+        List<PrintInfo.TableContent> dynamicTableValue = Lists.newArrayList();
+
+        PrintInfo.TableContent dptc1 = new PrintInfo.TableContent();
+        dptc1.setFieldName("boxNum");
+        dptc1.setTextAlign(Element.ALIGN_CENTER);
+        dptc1.setFontSize(8F);
+        dynamicTableValue.add(dptc1);
+
+        PrintInfo.TableContent dptc2 = new PrintInfo.TableContent();
+        dptc2.setFieldName("productCode");
+        dptc2.setTextAlign(Element.ALIGN_CENTER);
+        dptc2.setFontSize(8F);
+        dynamicTableValue.add(dptc2);
+
+        PrintInfo.TableContent dptc3 = new PrintInfo.TableContent();
+        dptc3.setFieldName("cnName");
+        dptc3.setTextAlign(Element.ALIGN_CENTER);
+        dptc3.setFontSize(8F);
+        dynamicTableValue.add(dptc3);
+
+        PrintInfo.TableContent dptc4 = new PrintInfo.TableContent();
+        dptc4.setFieldName("weight");
+        dptc4.setTextAlign(Element.ALIGN_CENTER);
+        dptc4.setFontSize(8F);
+        dynamicTableValue.add(dptc4);
+
+        PrintInfo.TableContent dptc5 = new PrintInfo.TableContent();
+        dptc5.setFieldName("length");
+        dptc5.setTextAlign(Element.ALIGN_CENTER);
+        dptc5.setFontSize(8F);
+        dynamicTableValue.add(dptc5);
+
+        PrintInfo.TableContent dptc6 = new PrintInfo.TableContent();
+        dptc6.setFieldName("width");
+        dptc6.setTextAlign(Element.ALIGN_CENTER);
+        dptc6.setFontSize(8F);
+        dynamicTableValue.add(dptc6);
+
+        PrintInfo.TableContent dptc7 = new PrintInfo.TableContent();
+        dptc7.setFieldName("height");
+        dptc7.setTextAlign(Element.ALIGN_CENTER);
+        dptc7.setFontSize(8F);
+        dynamicTableValue.add(dptc7);
+
+        PrintInfo.TableContent dptc8 = new PrintInfo.TableContent();
+        dptc8.setFieldName("property");
+        dptc8.setTextAlign(Element.ALIGN_CENTER);
+        dptc8.setFontSize(8F);
+        dynamicTableValue.add(dptc8);
+
+        PrintInfo.TableContent dptc9 = new PrintInfo.TableContent();
+        dptc9.setFieldName("forecastNum");
+        dptc9.setTextAlign(Element.ALIGN_CENTER);
+        dptc9.setFontSize(8F);
+        dynamicTableValue.add(dptc9);
+
+        PrintInfo.TableContent dptc10 = new PrintInfo.TableContent();
+        dptc10.setFieldName("receiveNum");
+        dptc10.setTextAlign(Element.ALIGN_CENTER);
+        dptc10.setFontSize(8F);
+        dynamicTableValue.add(dptc10);
+        print.setDynamicContent(dynamicTableValue);
+
+
+        Map<String, Object> data = Maps.newHashMap();
+        data.put("barCode", "RV000013-150721-0004");
+        data.put("remarkInfo", List.of(Map.of(
+                "name", "备注: ",
+                "value", "长一点的备注, 很长的备注, 起码有 100 字个以上的备注. 不够? 再加一点?" +
+                        " 长一点的备注, 很长的备注, 起码有 100 字个以上的备注. 不够? 再加一点?" +
+                        " 长一点的备注, 很长的备注, 起码有 100 字个以上的备注. 不够? 再加一点?"
+        )));
+        data.put("orderInfo", List.of(
+                Map.of("c1", "入库单号: ", "c2", "RV000013-150721-0004", "c3", "创建时间: ", "c4", DateUtil.formatDateTime(new Date())),
+                Map.of("c1", "目的仓库: ", "c2", "USEA", "c3", "客户代码: ", "c4", "000013"),
+                Map.of("c1", "跟踪号: ", "c2", "YT1520216989500749", "c3", "客户参考号: ", "c4", "JD2015002")
+        ));
+        List<Map<Object, Object>> list = Lists.newArrayList();
+        for (int i = 0; i < 31; i++) {
+            list.add(Map.of(
+                    "boxNum", "1",
+                    "productCode", "000013-1399379",
+                    "cnName", "中文",
+                    "weight", "0.030",
+                    "length", "15.00",
+                    "width", "12.00",
+                    "height", "2.00",
+                    "property", "普货",
+                    "forecastNum", "30",
+                    "receiveNum", "30"
+            ));
+            list.add(Map.of(
+                    "boxNum", "1",
+                    "productCode", "000013-1392179",
+                    "cnName", "一二三",
+                    "weight", "0.135",
+                    "length", "15.00",
+                    "width", "12.00",
+                    "height", "2.00",
+                    "property", "普货",
+                    "forecastNum", "17",
+                    "receiveNum", "15"
+            ));
+        }
+        data.put("productList", list);
+
+//        System.out.println("===================");
+//        System.out.println(JsonUtil.toJson(print));
+//        System.out.println("===================");
+//        System.out.println(JsonUtil.toJson(data));
+//        System.out.println("===================");
+
+        String file = "/home/ty/box-test.pdf";
+        PdfUtil.generatePdfFile(file, print, data);
+        System.out.printf("生成文件 %s 成功\n", file);
+    }
+
+    @Test
+    public void sku() {
         PrintInfo print = new PrintInfo();
         // print.setWidth(595F);
         // print.setHeight(842F);
@@ -136,7 +374,8 @@ public class PdfTest {
         dynamicTableKey.setFontSize(10F);
         dynamicTableKey.setFontBold(true);
         dynamicTableKey.setBorder(true);
-        dynamicTableKey.setHeight(18);
+        dynamicTableKey.setHeadHeight(18);
+        dynamicTableKey.setContentHeight(26);
         dynamicTableKey.setSinglePageCount(20);
         print.setDynamicHead(dynamicTableKey);
 
@@ -149,56 +388,48 @@ public class PdfTest {
         PrintInfo.TableContent dptc1 = new PrintInfo.TableContent();
         dptc1.setFieldName("stockCodeAndBoxNum");
         dptc1.setTextAlign(Element.ALIGN_CENTER);
-        dptc1.setHeight(26);
         dptc1.setFontSize(8F);
         dynamicTableValue.add(dptc1);
 
         PrintInfo.TableContent dptc2 = new PrintInfo.TableContent();
         dptc2.setFieldName("productCode");
         dptc2.setTextAlign(Element.ALIGN_CENTER);
-        dptc2.setHeight(26);
         dptc2.setFontSize(8F);
         dynamicTableValue.add(dptc2);
 
         PrintInfo.TableContent dptc3 = new PrintInfo.TableContent();
         dptc3.setFieldName("forecastNum");
         dptc3.setTextAlign(Element.ALIGN_CENTER);
-        dptc3.setHeight(26);
         dptc3.setFontSize(8F);
         dynamicTableValue.add(dptc3);
 
         PrintInfo.TableContent dptc4 = new PrintInfo.TableContent();
         dptc4.setFieldName("actualNum");
         dptc4.setTextAlign(Element.ALIGN_CENTER);
-        dptc4.setHeight(26);
         dptc4.setFontSize(8F);
         dynamicTableValue.add(dptc4);
 
         PrintInfo.TableContent dptc5 = new PrintInfo.TableContent();
         dptc5.setFieldName("skuNum");
         dptc5.setTextAlign(Element.ALIGN_CENTER);
-        dptc5.setHeight(26);
         dptc5.setFontSize(8F);
         dynamicTableValue.add(dptc5);
 
         PrintInfo.TableContent dptc6 = new PrintInfo.TableContent();
         dptc6.setFieldName("actualSkuNum");
         dptc6.setTextAlign(Element.ALIGN_CENTER);
-        dptc6.setHeight(26);
         dptc6.setFontSize(8F);
         dynamicTableValue.add(dptc6);
 
         PrintInfo.TableContent dptc7 = new PrintInfo.TableContent();
         dptc7.setFieldName("size");
         dptc7.setTextAlign(Element.ALIGN_CENTER);
-        dptc7.setHeight(26);
         dptc7.setFontSize(8F);
         dynamicTableValue.add(dptc7);
 
         PrintInfo.TableContent dptc8 = new PrintInfo.TableContent();
         dptc8.setFieldName("weight");
         dptc8.setTextAlign(Element.ALIGN_CENTER);
-        dptc8.setHeight(26);
         dptc8.setFontSize(8F);
         dynamicTableValue.add(dptc8);
         print.setDynamicContent(dynamicTableValue);
@@ -207,14 +438,14 @@ public class PdfTest {
         data.put("warehouse", "[GC] USEA");
         data.put("barCode", "RV000014-150807-0003");
         data.put("orderInfo", Arrays.asList(
-                A.maps("name", "客户代码:", "value", "G666"),
-                A.maps("name", "跟踪号:", "value", "X7832178"),
-                A.maps("name", "参考编号:", "value", "G666-211204-5678"),
-                A.maps("name", "创建时间:", "value", "2020-11-29 12:23:56"),
-                A.maps("name", "备注:", "value", "很长「我人有的和主产不为这工要在地一上是中国经以发了民同」的描述")
+                Map.of("name", "客户代码:", "value", "G666"),
+                Map.of("name", "跟踪号:", "value", "X7832178"),
+                Map.of("name", "参考编号:", "value", "G666-211204-5678"),
+                Map.of("name", "创建时间:", "value", "2020-11-29 12:23:56"),
+                Map.of("name", "备注:", "value", "很长「我人有的和主产不为这工要在地一上是中国经以发了民同」的描述")
         ));
         data.put("printInfo", Collections.singletonList(
-                A.maps(
+                Map.of(
                         "printTime", "打印时间: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
                         "boxTotal", "总箱数: 1",
                         "receiver", "收货员: _______________",
@@ -223,17 +454,17 @@ public class PdfTest {
         ));
         List<Map<Object, Object>> list = Lists.newArrayList();
         for (int i = 0; i < 31; i++) {
-            list.add(A.maps(
-                            "stockCodeAndBoxNum", "0*1",
-                            "productCode", "00014-A4B01",
-                            "forecastNum", "40",
-                            "actualNum", "40",
-                            "skuNum", "1",
-                            "actualSkuNum", "1",
-                            "size", "16.00 * 16.00 * 4.50",
-                            "weight", "0.200"
+            list.add(Map.of(
+                    "stockCodeAndBoxNum", "0*1",
+                    "productCode", "00014-A4B01",
+                    "forecastNum", "40",
+                    "actualNum", "40",
+                    "skuNum", "1",
+                    "actualSkuNum", "1",
+                    "size", "16.00 * 16.00 * 4.50",
+                    "weight", "0.200"
             ));
-            list.add(A.maps(
+            list.add(Map.of(
                     "stockCodeAndBoxNum", "0*1",
                     "abcde", "fdsa",
                     "productCode", "00014-A4W01",

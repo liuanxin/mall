@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 public class PdfUtil {
 
     private static final Pattern CN_PATTERN = Pattern.compile("[\\u4e00-\\u9fa5]");
+    private static final Pattern SPACE_PATTERN = Pattern.compile("([a-zA-Z0-9])");
     private static final Map<EncodeHintType, Object> HINTS = new HashMap<>();
     static {
         HINTS.put(EncodeHintType.CHARACTER_SET, "UTF-8");
@@ -178,10 +179,13 @@ public class PdfUtil {
                 }
             }
 
-            writeTableHead(table, dynamicHead.getPrintHead(), dynamicHead.getFontBold(),
-                    dynamicHead.getFontSize(), dynamicHead.getBackRgba(), dynamicHead.getHeadList(),
-                    dynamicHead.getHeight(), dynamicHead.getBorder(), dynamicHead.getTextAlign());
+            if (toBoolean(dynamicHead.getPrintHead(), true)) {
+                writeTableHead(table, dynamicHead.getFontBold(), dynamicHead.getFontSize(),
+                        dynamicHead.getRgba(), dynamicHead.getBackRgba(), dynamicHead.getHeadList(),
+                        dynamicHead.getHeadHeight(), dynamicHead.getBorder(), dynamicHead.getTextAlign());
+            }
 
+            int contentHeight = toInt(dynamicHead.getContentHeight(), 20);
             for (int i = 0; i < pageDataList.size(); i++) {
                 Object obj = pageDataList.get(i);
                 if ((obj instanceof Map)) {
@@ -196,7 +200,7 @@ public class PdfUtil {
                         }
 
                         PdfPCell cell = new PdfPCell();
-                        cell.setMinimumHeight(toInt(tableContent.getHeight(), 20));
+                        cell.setMinimumHeight(contentHeight);
                         if (!toBoolean(dynamicHead.getBorder(), false)) {
                             cell.setBorder(PdfPCell.NO_BORDER);
                         }
@@ -262,8 +266,6 @@ public class PdfUtil {
         float y = toFloat(dataContent.getY(), 0) + offsetY;
 
         float fontSize = toFloat(dataContent.getFontSize(), 10);
-        int splitCount = toInt(dataContent.getSplitCount(), 0);
-        int maxLine = toInt(dataContent.getMaxLine(), 0);
         int textAlign = toInt(dataContent.getTextAlign(), Element.ALIGN_LEFT);
         boolean bold = toBoolean(dataContent.getFontBold(), false);
         PrintInfo.PlaceholderType fieldType = dataContent.getFieldType();
@@ -336,26 +338,16 @@ public class PdfUtil {
             }
         }
 
-        if (!"".equals(value.trim())) {
-            value = value.trim();
-            int valueLen = value.length();
-            int loopCount;
-            if (splitCount > 0 && valueLen > splitCount) {
-                int calcCount = (valueLen % splitCount == 0) ? valueLen / splitCount : (valueLen / splitCount) + 1;
-                if (maxLine > 0 && calcCount > maxLine) {
-                    loopCount = maxLine;
-                } else {
-                    loopCount = calcCount;
-                }
-            } else {
-                loopCount = 1;
-            }
-
+        if (!value.isEmpty()) {
             canvas.beginText();
+            BaseColor color = toColor(dataContent.getRgba());
+            if (color != null) {
+                canvas.setColorFill(color);
+            }
             canvas.setFontAndSize(toBaseFont(value, bold), fontSize);
-            for (int i = 0; i < loopCount; i++) {
-                canvas.showTextAligned(textAlign, toStr(value), x, y, 0);
-                y -= (fontSize + 4);
+            canvas.showTextAligned(textAlign, value, x, y, 0);
+            if (color != null) {
+                canvas.setColorFill(BaseColor.BLACK);
             }
             canvas.endText();
         }
@@ -389,10 +381,13 @@ public class PdfUtil {
             }
         }
 
-        writeTableHead(table, tableHead.getPrintHead(), tableHead.getFontBold(), tableHead.getFontSize(),
-                tableHead.getBackRgba(), tableHead.getHeadList(), tableHead.getHeight(),
-                tableHead.getBorder(), tableHead.getTextAlign());
+        if (toBoolean(tableHead.getPrintHead(), true)) {
+            writeTableHead(table, tableHead.getFontBold(), tableHead.getFontSize(),
+                    tableHead.getRgba(), tableHead.getBackRgba(), tableHead.getHeadList(),
+                    tableHead.getHeadHeight(), tableHead.getBorder(), tableHead.getTextAlign());
+        }
 
+        int contentHeight = toInt(tableHead.getContentHeight(), 20);
         int size = ((List<?>) list).size();
         for (int i = 0; i < size; i++) {
             Object obj = ((List<?>) list).get(i);
@@ -408,7 +403,7 @@ public class PdfUtil {
                     }
 
                     PdfPCell cell = new PdfPCell();
-                    cell.setMinimumHeight(toInt(tableContent.getHeight(), 20));
+                    cell.setMinimumHeight(contentHeight);
                     if (!toBoolean(tableHead.getBorder(), false)) {
                         cell.setBorder(PdfPCell.NO_BORDER);
                     }
@@ -464,27 +459,30 @@ public class PdfUtil {
         table.writeSelectedRows(0, -1, (tableHead.getX() + offsetX), (tableHead.getY() + offsetY), canvas);
     }
 
-    private static void writeTableHead(PdfPTable table, Boolean printHead, Boolean bold,
-                                       Float fontSize2, List<Integer> backRgba, List<String> headList,
+    private static void writeTableHead(PdfPTable table, Boolean bold, Float fontSize, List<Integer> rgba,
+                                       List<Integer> backRgba, List<String> headList,
                                        Integer height, Boolean border, Integer textAlign) {
-        if (toBoolean(printHead, true)) {
-            BaseFont font = toBoolean(bold, false) ? CHINESE_BASE_FONT_BOLD : CHINESE_BASE_FONT;
-            Font headFont = new Font(font, toFloat(fontSize2, 10));
-            BaseColor background = toColor(backRgba);
-            for (String head : headList) {
-                PdfPCell cell = new PdfPCell(new Phrase(toStr(head), headFont));
-                cell.setMinimumHeight(toInt(height, 15));
-                if (!toBoolean(border, false)) {
-                    cell.setBorder(PdfPCell.NO_BORDER);
-                }
-                if (background != null) {
-                    cell.setBackgroundColor(background);
-                }
-                cell.setUseAscender(true);
-                cell.setHorizontalAlignment(toInt(textAlign, Element.ALIGN_LEFT));
-                cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                table.addCell(cell);
+
+        BaseFont font = toBoolean(bold, false) ? CHINESE_BASE_FONT_BOLD : CHINESE_BASE_FONT;
+        Font headFont = new Font(font, toFloat(fontSize, 10));
+        BaseColor color = toColor(rgba);
+        if (color != null) {
+            headFont.setColor(color);
+        }
+        BaseColor background = toColor(backRgba);
+        for (String head : headList) {
+            PdfPCell cell = new PdfPCell(new Phrase(toStr(head), headFont));
+            cell.setMinimumHeight(toInt(height, 15));
+            if (!toBoolean(border, false)) {
+                cell.setBorder(PdfPCell.NO_BORDER);
             }
+            if (background != null) {
+                cell.setBackgroundColor(background);
+            }
+            cell.setUseAscender(true);
+            cell.setHorizontalAlignment(toInt(textAlign, Element.ALIGN_LEFT));
+            cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            table.addCell(cell);
         }
     }
 
@@ -493,6 +491,9 @@ public class PdfUtil {
         try {
             Barcode128 barcode = new Barcode128();
             barcode.setCode(value);
+            if (barCodeTextSize == 0) {
+                barcode.setFont(null);
+            }
             barcode.setSize(barCodeTextSize);
             barcode.setBaseline(barCodeBaseLine);
             Image image = barcode.createImageWithBarcode(canvas, null, null);
@@ -519,6 +520,23 @@ public class PdfUtil {
         }
     }
 
+    private static BaseColor toColor(List<Integer> rgba) {
+        if (rgba != null && !rgba.isEmpty() && rgba.size() >= 3) {
+            int red = toColorInt(rgba.get(0));
+            int green = toColorInt(rgba.get(1));
+            int blue = toColorInt(rgba.get(2));
+
+            if (red > 0 || green > 0 || blue > 0) {
+                int alpha = (rgba.size() > 3) ? toColorInt(rgba.get(3)) : 0;
+                return alpha > 0 ? new BaseColor(red, green, blue, alpha) : new BaseColor(red, green, blue);
+            }
+        }
+        return null;
+    }
+    private static int toColorInt(Integer num) {
+        return Math.min(toInt(num, 0), 255);
+    }
+
     private static BaseFont toBaseFont(String value, boolean bold) {
         if (value != null && CN_PATTERN.matcher(value).find()) {
             return bold ? CHINESE_BASE_FONT_BOLD : CHINESE_BASE_FONT;
@@ -530,28 +548,18 @@ public class PdfUtil {
         BaseFont baseFont = toBaseFont(value, bold);
         return bold ? new Font(baseFont, fontSize, Font.BOLD) : new Font(baseFont, fontSize);
     }
-    private static BaseColor toColor(List<Integer> rgba) {
-        if (rgba != null && !rgba.isEmpty() && rgba.size() >= 3) {
-            int red = toColorInt(rgba.get(0));
-            int green = toColorInt(rgba.get(1));
-            int blue = toColorInt(rgba.get(2));
-
-            if (red > 0 && green > 0 && blue > 0) {
-                int alpha = (rgba.size() > 3) ? toColorInt(rgba.get(3)) : 0;
-                return alpha > 0 ? new BaseColor(red, green, blue, alpha) : new BaseColor(red, green, blue);
-            }
-        }
-        return null;
-    }
-    private static int toColorInt(Integer num) {
-        return Math.min(toInt(num, 0), 255);
-    }
 
     private static float toBaseLine(Float num) {
         return num == null ? (float) 10 : num;
     }
     private static String toStr(Object obj) {
-        return obj == null ? "" : obj.toString();
+        if (obj == null) {
+            return "";
+        }
+
+        String str = obj.toString();
+        // 中文字体里的字母和英文看起来会显得很紧凑, 加一个空格
+        return CN_PATTERN.matcher(str).find() ? SPACE_PATTERN.matcher(str).replaceAll(" $1 ").replace("  ", " ") : str;
     }
     private static float toFloat(Float num, float defaultValue) {
         return num == null || num < 0 ? defaultValue : num;

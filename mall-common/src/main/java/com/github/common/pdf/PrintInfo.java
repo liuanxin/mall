@@ -116,10 +116,8 @@ public class PrintInfo {
 
         /** 字体大小, 单位 pt(11pt = 14.67px, 15pt = 20px, 20pt = 26.67px), 不设置则默认是 10 */
         private Float fontSize;
-        /** 如果内容过大, 从多少个字符开始下一行, 大于 0 才会起作用, 不设置则默认是 0 */
-        private Integer splitCount;
-        /** 如果内容过多, 最多只显示的行数, 不设置则默认是 0 */
-        private Integer maxLine;
+        /** 字体颜色 rgba 值 */
+        private List<Integer> rgba;
         /** 文字对齐, 不设置则默认是 Element.ALIGN_LEFT */
         private Integer textAlign;
         /** 文字粗体, 不设置则默认是 false */
@@ -159,16 +157,20 @@ public class PrintInfo {
         private Boolean printHead;
         /** 表格头名(长度要跟列宽一致) */
         private List<String> headList;
-        /** 表头的背景 rgba 值 */
-        private List<Integer> backRgba;
         /** 表头字体大小, 单位 pt(11pt = 14.67px, 15pt = 20px, 20pt = 26.67px), 不设置则默认是 10 */
         private Float fontSize;
+        /** 字体颜色 rgba 值 */
+        private List<Integer> rgba;
+        /** 表头的背景 rgba 值 */
+        private List<Integer> backRgba;
         /** 文字对齐, 不设置则默认是 Element.ALIGN_LEFT */
         private Integer textAlign;
         /** 文字粗体, 不设置则默认是 false */
         private Boolean fontBold;
         /** 表格头的高, 单位 pt(11pt = 14.67px, 15pt = 20px, 20pt = 26.67px), 不设置则默认是 15 */
-        private Integer height;
+        private Integer headHeight;
+        /** 表格行的高, 单位 pt(11pt = 14.67px, 15pt = 20px, 20pt = 26.67px), 不设置则默认是 20 */
+        private Integer contentHeight;
         /** 表格是否有边框, 不设置则默认是 false */
         private Boolean border;
 
@@ -199,12 +201,12 @@ public class PrintInfo {
         private PlaceholderType fieldType;
         /** 字体大小, 单位 pt(11pt = 14.67px, 15pt = 20px, 20pt = 26.67px), 不设置则默认是 10 */
         private Float fontSize;
+        /** 字体颜色 rgba 值 */
+        private List<Integer> rgba;
         /** 文字对齐, 不设置则默认是 Element.ALIGN_LEFT */
         private Integer textAlign;
         /** 文字粗体, 不设置则默认是 false */
         private Boolean fontBold;
-        /** 表格行的高, 单位 pt(11pt = 14.67px, 15pt = 20px, 20pt = 26.67px), 不设置则默认是 20 */
-        private Integer height;
         /** 如果内容过大, 只显示多少个字符. 超出字符会使用 ... 显示, 大于 0 才会起作用, 不设置则默认是 0 */
         private Integer maxCount;
 
@@ -212,7 +214,7 @@ public class PrintInfo {
         private Float codeWidth;
         /** 二维码(默认是 80)、条形码(默认是 45) 的高 */
         private Float codeHeight;
-        /** 条形码 的字体大小, 默认是 10 */
+        /** 条形码 的字体大小, 设置为 0 表示不显示文字, 不设置则默认是 10 */
         private Float barCodeTextSize;
         /** 条形码文字跟码的距离, 大于 0 表示文字(在下文)跟码的距离; 小于等于 0 表示文字(在上方)跟码的距离. 默认是 10 */
         private Float barCodeBaseLine;
