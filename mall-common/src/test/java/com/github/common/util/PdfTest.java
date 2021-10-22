@@ -1,5 +1,6 @@
 package com.github.common.util;
 
+import com.github.common.encrypt.Encrypt;
 import com.github.common.json.JsonUtil;
 import com.github.common.pdf.PdfUtil;
 import com.github.common.pdf.PrintInfo;
@@ -14,7 +15,7 @@ import java.util.*;
 public class PdfTest {
 
     @Test
-    public void template() {
+    public void generate() {
         PrintInfo print = new PrintInfo();
         // print.setWidth(595F);
         // print.setHeight(842F);
@@ -254,8 +255,16 @@ public class PdfTest {
         // System.out.println(JsonUtil.toJson(data)); // 数据
         // System.out.println("===================");
 
-        String file = "/home/ty/list-test.pdf";
-        PdfUtil.generatePdfFile(file, print, data);
-        System.out.printf("生成文件 %s 成功\n", file);
+        // String file = "/home/ty/list-test.pdf";
+        // PdfUtil.generatePdfFile(file, print, data);
+        // System.out.printf("生成文件 %s 成功\n", file);
+
+        String encode = Encrypt.base64Encode(PdfUtil.generatePdfByte(print, data));
+        // System.out.println(encode);
+        System.out.println(encode.length());
+
+        String compress = U.compress(encode);
+        // System.out.println(compress);
+        System.out.println(compress.length());
     }
 }

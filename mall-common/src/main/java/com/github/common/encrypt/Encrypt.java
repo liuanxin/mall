@@ -465,9 +465,15 @@ public final class Encrypt {
     public static String base64Encode(String src) {
         return new String(Base64.getEncoder().encode(src.getBytes(UTF8)), UTF8);
     }
+    public static String base64Encode(byte[] src) {
+        return new String(Base64.getEncoder().encode(src), UTF8);
+    }
     /** 使用 base64 解码 */
     public static String base64Decode(String src) {
         return new String(Base64.getDecoder().decode(src.getBytes(UTF8)), UTF8);
+    }
+    public static String base64Decode(byte[] src) {
+        return new String(Base64.getDecoder().decode(src), UTF8);
     }
 
 
