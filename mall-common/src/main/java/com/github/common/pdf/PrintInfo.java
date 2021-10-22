@@ -23,7 +23,6 @@ public class PrintInfo {
      * @see com.itextpdf.text.PageSize
      */
     private Float width;
-
     /**
      * 高, 默认是 A4(842)
      *
@@ -31,26 +30,13 @@ public class PrintInfo {
      */
     private Float height;
 
-    /** 水印内容 */
-    private String watermarkValue;
-    /** 水印字体大小, 不设置则默认是 60 */
-    private Float watermarkFontSize;
-    /** 水印在一页的个数, 不设置则默认是 3 */
-    private Integer watermarkCount;
-    /** 多个水印的间距, 不设置则默认是 200 */
-    private Integer watermarkSpacing;
-    /** 第一个水印的 x 轴 */
-    private Float watermarkX;
-    /** 第一个水印的 y 轴 */
-    private Float watermarkY;
-    /** 水印旋转的度数, 不设置则默认是 45 */
-    private Float watermarkRotation;
-
     /** x 轴的整体偏移量, 正数则整体向右偏移, 负数则整体向左偏移 */
     private Float offsetX;
-
     /** y 轴的整体偏移量, 正数则整体向下偏移, 负数则整体向上偏移 */
     private Float offsetY;
+
+    /** 水印信息 */
+    private WatermarkInfo watermark;
 
     /** 需要做分页的表格头, 一个模板只能有一个分页 */
     private TableDynamicHead dynamicHead;
@@ -63,7 +49,7 @@ public class PrintInfo {
     private List<TableInfo> tableInfo;
 
     public boolean hasWatermark() {
-        return watermarkValue != null && !watermarkValue.isEmpty();
+        return watermark != null && watermark.getValue() != null && !watermark.getValue().isEmpty();
     }
     public boolean hasSize() {
         return width != null && width > 0 && height != null && height > 0;
@@ -87,6 +73,28 @@ public class PrintInfo {
 
         List<?> list = (List<?>) obj;
         return list.isEmpty() ? null : list;
+    }
+
+    @Data
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public static class WatermarkInfo {
+
+        /** 水印内容 */
+        private String value;
+        /** 水印字体大小, 不设置则默认是 60 */
+        private Float fontSize;
+        /** 水印的 rgba 值, alpha 可以忽略, 全部不设置则默认是 [240,240,240,120] */
+        private List<Integer> rgba;
+        /** 第一个水印的 x 轴, 不设置则默认是 256 */
+        private Float x;
+        /** 第一个水印的 y 轴, 不设置则默认是 215 */
+        private Float y;
+        /** 水印旋转的度数, 不设置则默认是 45 */
+        private Float rotation;
+        /** 水印在每一页的个数, 不设置则默认是 3 */
+        private Integer count;
+        /** 多个水印的间距, 不设置则默认是 200 */
+        private Integer spacing;
     }
 
     @Data
@@ -224,9 +232,12 @@ public class PrintInfo {
         BARCODE(2),
         QRCODE(3),
         LINE(4),
-        TABLE_LINE_INDEX(5),
-        TABLE_LINE_COUNT(6),
-        TABLE_LINE_INDEX_COUNT(7);
+        /** 用在表上表示「所在数据位置」, 用在占位内容上表示「所在页数」, 数值从 1 开始 */
+        INDEX(5),
+        /** 用在表上表示「所在数据的总条数」, 用在占位内容上表示「总页数」 */
+        COUNT(6),
+        /** 用在表上表示「数据位置/数据的总条数」, 用在占位内容上表示「所在页数/总页数」, 使用 / 隔开 */
+        INDEX_COUNT(7);
 
         @JsonValue
         private final int code;

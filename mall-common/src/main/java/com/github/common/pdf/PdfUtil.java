@@ -103,16 +103,7 @@ public class PdfUtil {
 
         PdfWriter writer = PdfWriter.getInstance(document, outputStream);
         if (template.hasWatermark()) {
-            String watermarkValue = template.getWatermarkValue();
-            float watermarkFontSize = toFloat(template.getWatermarkFontSize(), 60);
-            Font font = new Font(toBaseFont(watermarkValue, true), watermarkFontSize, Font.NORMAL, new BaseColor(245, 245, 245));
-            int alignment = Element.ALIGN_CENTER;
-            float watermarkX = toFloat(template.getWatermarkX(), 258F);
-            float watermarkY = toFloat(template.getWatermarkY(), 221F);
-            float rotation = toFloat(template.getWatermarkRotation(), 45F);
-            int loop = toInt(template.getWatermarkCount(), 3);
-            int spacing = toInt(template.getWatermarkSpacing(), 200);
-            writer.setPageEvent(new Watermark(watermarkValue, font, alignment, watermarkX, watermarkY, rotation, loop, spacing));
+            writer.setPageEvent(new WatermarkEvent(template.getWatermark()));
         }
         document.open();
         PdfContentByte canvas = writer.getDirectContent();
@@ -236,15 +227,15 @@ public class PdfUtil {
                                         cell.setImage(qrCode);
                                     }
                                     break;
-                                case TABLE_LINE_INDEX:
+                                case INDEX:
                                     String lineIndex = (pageCount * page + 1 + i) + suffix;
                                     cell.setPhrase(new Phrase(toStr(lineIndex), toFont(value, fontBold, fontSize)));
                                     break;
-                                case TABLE_LINE_COUNT:
+                                case COUNT:
                                     String lineCount = size + suffix;
                                     cell.setPhrase(new Phrase(toStr(lineCount), toFont(lineCount, fontBold, fontSize)));
                                     break;
-                                case TABLE_LINE_INDEX_COUNT:
+                                case INDEX_COUNT:
                                     String lineIndexCount = (pageCount * page + 1 + i) + "/" + size + suffix;
                                     cell.setPhrase(new Phrase(toStr(lineIndexCount), toFont(lineIndexCount, fontBold, fontSize)));
                                     break;
@@ -333,13 +324,13 @@ public class PdfUtil {
                         }
                     }
                     return;
-                case TABLE_LINE_INDEX:
+                case INDEX:
                     value = (page + 1) + suffix;
                     break;
-                case TABLE_LINE_COUNT:
+                case COUNT:
                     value = len + suffix;
                     break;
-                case TABLE_LINE_INDEX_COUNT:
+                case INDEX_COUNT:
                     value = (page + 1) + "/" + len + suffix;
                     break;
             }
@@ -447,15 +438,15 @@ public class PdfUtil {
                                     cell.setImage(qrCode);
                                 }
                                 break;
-                            case TABLE_LINE_INDEX:
+                            case INDEX:
                                 String lineIndex = (i + 1) + suffix;
                                 cell.setPhrase(new Phrase(toStr(lineIndex), toFont(lineIndex, fontBold, fontSize)));
                                 break;
-                            case TABLE_LINE_COUNT:
+                            case COUNT:
                                 String lineCount = size + suffix;
                                 cell.setPhrase(new Phrase(toStr(lineCount), toFont(lineCount, fontBold, fontSize)));
                                 break;
-                            case TABLE_LINE_INDEX_COUNT:
+                            case INDEX_COUNT:
                                 String lineIndexCount = (i + 1) + "/" + size + suffix;
                                 cell.setPhrase(new Phrase(toStr(lineIndexCount), toFont(lineIndexCount, fontBold, fontSize)));
                                 break;
@@ -573,30 +564,39 @@ public class PdfUtil {
     }
 
 
-    private static class Watermark extends PdfPageEventHelper {
+    private static class WatermarkEvent extends PdfPageEventHelper {
 
         private final Phrase value;
-        private final int alignment;
+        private final int align;
         private final float x;
         private final float y;
         private final float rotation;
         private final int loop;
         private final int spacing;
-        private Watermark(String value, Font font, Integer alignment, Float x, Float y, Float rotation, int loop, int spacing) {
+        private WatermarkEvent(PrintInfo.WatermarkInfo watermarkInfo) {
+            String value = watermarkInfo.getValue();
+
+            float fontSize = toFloat(watermarkInfo.getFontSize(), 60);
+            BaseColor color = toColor(watermarkInfo.getRgba());
+            if (color == null) {
+                color = new BaseColor(240, 240, 240, 120);
+            }
+            Font font = new Font(toBaseFont(value, true), fontSize, Font.NORMAL, color);
+
             this.value = new Phrase(value, font);
-            this.alignment = alignment;
-            this.x = toFloat(x, 0);
-            this.y = toFloat(y, 0);
-            this.rotation = toFloat(rotation, 0);
-            this.loop = loop;
-            this.spacing = spacing;
+            this.align = Element.ALIGN_CENTER;
+            this.x = toFloat(watermarkInfo.getX(), 255F);
+            this.y = toFloat(watermarkInfo.getY(), 215F);
+            this.rotation = toFloat(watermarkInfo.getRotation(), 45F);
+            this.loop = toInt(watermarkInfo.getCount(), 3);
+            this.spacing = toInt(watermarkInfo.getSpacing(), 200);
         }
 
         @Override
         public void onEndPage(PdfWriter writer, Document document) {
             PdfContentByte canvas = writer.getDirectContentUnder();
             for (int i = 0; i < loop; i++) {
-                ColumnText.showTextAligned(canvas, alignment, value, x, (y + i * spacing), rotation);
+                ColumnText.showTextAligned(canvas, align, value, x, (y + i * spacing), rotation);
             }
         }
     }

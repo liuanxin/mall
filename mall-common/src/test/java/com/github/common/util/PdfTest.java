@@ -1,7 +1,5 @@
 package com.github.common.util;
 
-import com.github.common.encrypt.Encrypt;
-import com.github.common.json.JsonUtil;
 import com.github.common.pdf.PdfUtil;
 import com.github.common.pdf.PrintInfo;
 import com.google.common.collect.Lists;
@@ -20,7 +18,9 @@ public class PdfTest {
         // print.setWidth(595F);
         // print.setHeight(842F);
 
-        print.setWatermarkValue("这里有水印");
+        PrintInfo.WatermarkInfo watermark = new PrintInfo.WatermarkInfo();
+        watermark.setValue("这里有水印");
+        print.setWatermark(watermark);
 
         List<PrintInfo.DataContent> holdContentList = Lists.newArrayList();
         PrintInfo.DataContent phc0 = new PrintInfo.DataContent();
@@ -36,7 +36,7 @@ public class PdfTest {
         phc1.setY(800F);
         phc1.setFontSize(12F);
         phc1.setFontBold(true);
-        phc1.setFieldType(PrintInfo.PlaceholderType.TABLE_LINE_INDEX_COUNT);
+        phc1.setFieldType(PrintInfo.PlaceholderType.INDEX_COUNT);
         phc1.setValueSuffix(" p");
         holdContentList.add(phc1);
 
@@ -203,8 +203,6 @@ public class PdfTest {
         dynamicTableValue.add(dptc8);
         print.setDynamicContent(dynamicTableValue);
 
-        String template = JsonUtil.toJson(print);
-
         Map<String, Object> data = Maps.newHashMap();
         data.put("warehouse", "[GC] USEA");
         data.put("barCode", "RV000014-150807-0003");
@@ -250,21 +248,21 @@ public class PdfTest {
         data.put("productList", list);
 
         // System.out.println("===================");
-        // System.out.println(template); // 模板
+        // System.out.println(JsonUtil.toJson(print)); // 模板
         // System.out.println("===================");
         // System.out.println(JsonUtil.toJson(data)); // 数据
         // System.out.println("===================");
 
-        // String file = "/home/ty/list-test.pdf";
-        // PdfUtil.generatePdfFile(file, print, data);
-        // System.out.printf("生成文件 %s 成功\n", file);
+        String file = "/home/ty/list-test.pdf";
+        PdfUtil.generatePdfFile(file, print, data);
+        System.out.printf("生成文件 %s 成功\n", file);
 
-        String encode = Encrypt.base64Encode(PdfUtil.generatePdfByte(print, data));
+        // String encode = Encrypt.base64Encode(PdfUtil.generatePdfByte(print, data));
         // System.out.println(encode);
-        System.out.println(encode.length());
+        // System.out.println(encode.length());
 
-        String compress = U.compress(encode);
+        // String compress = U.compress(encode);
         // System.out.println(compress);
-        System.out.println(compress.length());
+        // System.out.println(compress.length());
     }
 }
