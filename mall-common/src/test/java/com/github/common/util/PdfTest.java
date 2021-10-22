@@ -377,7 +377,7 @@ public class PdfTest {
         dynamicTableKey.setBorder(true);
         dynamicTableKey.setHeadHeight(18);
         dynamicTableKey.setContentHeight(26);
-        dynamicTableKey.setSinglePageCount(20);
+        dynamicTableKey.setSinglePageCount(15);
         print.setDynamicHead(dynamicTableKey);
 
         List<PrintInfo.TableContent> dynamicTableValue = Lists.newArrayList();
