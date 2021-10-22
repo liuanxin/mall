@@ -5,8 +5,6 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.qrcode.EncodeHintType;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -19,8 +17,6 @@ import java.util.regex.Pattern;
 @SuppressWarnings({"DuplicatedCode", "unchecked"})
 @Slf4j
 public class PdfUtil {
-
-    private static final Logger LOG = LoggerFactory.getLogger(PdfUtil.class);
 
     private static final Pattern CN_PATTERN = Pattern.compile("[\\u4e00-\\u9fa5]");
     private static final Pattern SPACE_PATTERN = Pattern.compile("([a-zA-Z0-9])");
@@ -77,8 +73,6 @@ public class PdfUtil {
                 if (log.isErrorEnabled()) {
                     log.error("生成 pdf 文件异常", e);
                 }
-                System.out.println("-----");
-                System.out.println("生成 pdf 异常");
             }
         }
     }

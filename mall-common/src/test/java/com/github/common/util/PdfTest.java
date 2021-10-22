@@ -64,7 +64,7 @@ public class PdfTest {
         key1.setY(768);
         key1.setBorder(false);
         key1.setPrintHead(false);
-        key1.setFieldWidthList(List.of(55F, 180F, 68F, 200F));
+        key1.setFieldWidthList(Arrays.asList(55F, 180F, 68F, 200F));
         key1.setFieldName("orderInfo");
         pt1.setKey(key1);
 
@@ -99,7 +99,7 @@ public class PdfTest {
         key2.setY(706);
         key2.setBorder(false);
         key2.setPrintHead(false);
-        key2.setFieldWidthList(List.of(55F, 470F));
+        key2.setFieldWidthList(Arrays.asList(55F, 470F));
         key2.setFieldName("remarkInfo");
         pt2.setKey(key2);
 
@@ -201,18 +201,18 @@ public class PdfTest {
 
         Map<String, Object> data = Maps.newHashMap();
         data.put("barCode", "RV000013-150721-0004");
-        data.put("remarkInfo", List.of(Map.of(
+        data.put("remarkInfo", Collections.singletonList(A.maps(
                 "name", "备注: ",
                 "value", "显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字"
         )));
-        data.put("orderInfo", List.of(
-                Map.of("c1", "入库单号: ", "c2", "RV000013-150721-0004", "c3", "创建时间: ", "c4", DateUtil.formatDateTime(new Date())),
-                Map.of("c1", "目的仓库: ", "c2", "USEA", "c3", "客户代码: ", "c4", "000013"),
-                Map.of("c1", "跟踪号: ", "c2", "YT1520216989500749", "c3", "客户参考号: ", "c4", "JD2015002")
+        data.put("orderInfo", Arrays.asList(
+                A.maps("c1", "入库单号: ", "c2", "RV000013-150721-0004", "c3", "创建时间: ", "c4", DateUtil.formatDateTime(new Date())),
+                A.maps("c1", "目的仓库: ", "c2", "USEA", "c3", "客户代码: ", "c4", "000013"),
+                A.maps("c1", "跟踪号: ", "c2", "YT1520216989500749", "c3", "客户参考号: ", "c4", "JD2015002")
         ));
         List<Map<Object, Object>> list = Lists.newArrayList();
         for (int i = 0; i < 31; i++) {
-            list.add(Map.of(
+            list.add(A.maps(
                     "boxNum", "1",
                     "productCode", "000013-1399379",
                     "cnName", "中文",
@@ -224,7 +224,7 @@ public class PdfTest {
                     "forecastNum", "30",
                     "receiveNum", "30"
             ));
-            list.add(Map.of(
+            list.add(A.maps(
                     "boxNum", "1",
                     "productCode", "000013-1392179",
                     "cnName", "一二三",
@@ -439,14 +439,14 @@ public class PdfTest {
         data.put("warehouse", "[GC] USEA");
         data.put("barCode", "RV000014-150807-0003");
         data.put("orderInfo", Arrays.asList(
-                Map.of("name", "客户代码:", "value", "G666"),
-                Map.of("name", "跟踪号:", "value", "X7832178"),
-                Map.of("name", "参考编号:", "value", "G666-211204-5678"),
-                Map.of("name", "创建时间:", "value", "2020-11-29 12:23:56"),
-                Map.of("name", "备注:", "value", "很长「我人有的和主产不为这工要在地一上是中国经以发了民同」的描述")
+                A.maps("name", "客户代码:", "value", "G666"),
+                A.maps("name", "跟踪号:", "value", "X7832178"),
+                A.maps("name", "参考编号:", "value", "G666-211204-5678"),
+                A.maps("name", "创建时间:", "value", "2020-11-29 12:23:56"),
+                A.maps("name", "备注:", "value", "很长「我人有的和主产不为这工要在地一上是中国经以发了民同」的描述")
         ));
         data.put("printInfo", Collections.singletonList(
-                Map.of(
+                A.maps(
                         "printTime", "打印时间: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
                         "boxTotal", "总箱数: 1",
                         "receiver", "收货员: _______________",
@@ -455,7 +455,7 @@ public class PdfTest {
         ));
         List<Map<Object, Object>> list = Lists.newArrayList();
         for (int i = 0; i < 31; i++) {
-            list.add(Map.of(
+            list.add(A.maps(
                     "stockCodeAndBoxNum", "0*1",
                     "productCode", "00014-A4B01",
                     "forecastNum", "40",
@@ -465,7 +465,7 @@ public class PdfTest {
                     "size", "16.00*16.00*4.50",
                     "weight", "0.200"
             ));
-            list.add(Map.of(
+            list.add(A.maps(
                     "stockCodeAndBoxNum", "0*1",
                     "abcde", "fdsa",
                     "productCode", "00014-A4W01",
