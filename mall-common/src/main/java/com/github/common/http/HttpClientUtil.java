@@ -159,7 +159,7 @@ public class HttpClientUtil {
 
         Map<String, Object> params = Collections.emptyMap();
         if (A.isNotEmpty(param)) {
-            params = JsonUtil.convertType(param, new TypeReference<>() {});
+            params = JsonUtil.convertType(param, new TypeReference<Map<String, Object>>() {});
         }
         return get(url, params);
     }

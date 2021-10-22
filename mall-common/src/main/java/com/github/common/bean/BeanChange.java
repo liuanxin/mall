@@ -16,7 +16,7 @@ import java.util.*;
 
 public final class BeanChange {
 
-    private static final TypeReference<Map<String, String>> MAP_REFERENCE = new TypeReference<>() {};
+    private static final TypeReference<Map<String, String>> MAP_REFERENCE = new TypeReference<Map<String, String>>() {};
 
     public static <T> String diff(T oldObj, T newObj) {
         return diff(CollectGroup.ALL, oldObj, newObj);
