@@ -98,7 +98,7 @@ public class PdfTest {
         PrintInfo.TableInfo pt2 = new PrintInfo.TableInfo();
         PrintInfo.TableHead key2 = new PrintInfo.TableHead();
         key2.setX(35);
-        key2.setY(80);
+        key2.setY(60);
         key2.setPrintHead(false);
         key2.setFieldWidthList(Arrays.asList(155F, 90F, 120F, 155F));
         key2.setFieldName("printInfo");
@@ -129,76 +129,76 @@ public class PdfTest {
         dynamicTableKey.setX(35);
         dynamicTableKey.setY(645);
         dynamicTableKey.setFieldName("productList");
-        dynamicTableKey.setFieldWidthList(Arrays.asList(/*40F,*/ 60F, 78F, 55F, 55F, 53F, 45F, 105F, 68F));
-        dynamicTableKey.setHeadList(Arrays.asList(/*"序号", */"分拣码*箱数", "SKU", "预报总数量", "实收总数量", "SKU总箱数", "实收箱数", "单品规格(CM)", "单品重量(KG)"));
+        dynamicTableKey.setFieldWidthList(Arrays.asList(25F, 60F, 58F, 55F, 55F, 53F, 45F, 105F, 68F));
+        dynamicTableKey.setHeadList(Arrays.asList("序号", "分拣码*箱数", "SKU", "预报总数量", "实收总数量", "SKU总箱数", "实收箱数", "单品规格(CM)", "单品重量(KG)"));
         dynamicTableKey.setBackRgba(Arrays.asList(220, 220, 220));
         dynamicTableKey.setTextAlign(Element.ALIGN_CENTER);
         dynamicTableKey.setFontSize(10F);
         dynamicTableKey.setFontBold(true);
         dynamicTableKey.setBorder(true);
-        dynamicTableKey.setHeight(24);
-        dynamicTableKey.setSinglePageCount(15);
+        dynamicTableKey.setHeight(18);
+        dynamicTableKey.setSinglePageCount(20);
         print.setDynamicHead(dynamicTableKey);
 
         List<PrintInfo.TableContent> dynamicTableValue = Lists.newArrayList();
-        // PrintInfo.TableContent dptc0 = new PrintInfo.TableContent();
-        // dptc0.setFieldType(PrintInfo.PlaceholderType.TABLE_LINE_INDEX);
-        // dptc0.setTextAlign(Element.ALIGN_CENTER);
-        // dynamicTableValue.add(dptc0);
+        PrintInfo.TableContent dptc0 = new PrintInfo.TableContent();
+        dptc0.setFieldType(PrintInfo.PlaceholderType.INDEX);
+        dptc0.setTextAlign(Element.ALIGN_CENTER);
+        dynamicTableValue.add(dptc0);
 
         PrintInfo.TableContent dptc1 = new PrintInfo.TableContent();
         dptc1.setFieldName("stockCodeAndBoxNum");
         dptc1.setTextAlign(Element.ALIGN_CENTER);
-        dptc1.setHeight(28);
+        dptc1.setHeight(26);
         dptc1.setFontSize(8F);
         dynamicTableValue.add(dptc1);
 
         PrintInfo.TableContent dptc2 = new PrintInfo.TableContent();
         dptc2.setFieldName("productCode");
         dptc2.setTextAlign(Element.ALIGN_CENTER);
-        dptc2.setHeight(28);
+        dptc2.setHeight(26);
         dptc2.setFontSize(8F);
         dynamicTableValue.add(dptc2);
 
         PrintInfo.TableContent dptc3 = new PrintInfo.TableContent();
         dptc3.setFieldName("forecastNum");
         dptc3.setTextAlign(Element.ALIGN_CENTER);
-        dptc3.setHeight(28);
+        dptc3.setHeight(26);
         dptc3.setFontSize(8F);
         dynamicTableValue.add(dptc3);
 
         PrintInfo.TableContent dptc4 = new PrintInfo.TableContent();
         dptc4.setFieldName("actualNum");
         dptc4.setTextAlign(Element.ALIGN_CENTER);
-        dptc4.setHeight(28);
+        dptc4.setHeight(26);
         dptc4.setFontSize(8F);
         dynamicTableValue.add(dptc4);
 
         PrintInfo.TableContent dptc5 = new PrintInfo.TableContent();
         dptc5.setFieldName("skuNum");
         dptc5.setTextAlign(Element.ALIGN_CENTER);
-        dptc5.setHeight(28);
+        dptc5.setHeight(26);
         dptc5.setFontSize(8F);
         dynamicTableValue.add(dptc5);
 
         PrintInfo.TableContent dptc6 = new PrintInfo.TableContent();
         dptc6.setFieldName("actualSkuNum");
         dptc6.setTextAlign(Element.ALIGN_CENTER);
-        dptc6.setHeight(28);
+        dptc6.setHeight(26);
         dptc6.setFontSize(8F);
         dynamicTableValue.add(dptc6);
 
         PrintInfo.TableContent dptc7 = new PrintInfo.TableContent();
         dptc7.setFieldName("size");
         dptc7.setTextAlign(Element.ALIGN_CENTER);
-        dptc7.setHeight(28);
+        dptc7.setHeight(26);
         dptc7.setFontSize(8F);
         dynamicTableValue.add(dptc7);
 
         PrintInfo.TableContent dptc8 = new PrintInfo.TableContent();
         dptc8.setFieldName("weight");
         dptc8.setTextAlign(Element.ALIGN_CENTER);
-        dptc8.setHeight(28);
+        dptc8.setHeight(26);
         dptc8.setFontSize(8F);
         dynamicTableValue.add(dptc8);
         print.setDynamicContent(dynamicTableValue);
