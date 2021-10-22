@@ -173,7 +173,7 @@ public class PdfUtil {
             PdfPTable table = new PdfPTable(tableColumnSize);
             try {
                 table.setTotalWidth(totalWidth);
-            } catch (DocumentException e) {
+            } catch (Exception e) {
                 if (log.isErrorEnabled()) {
                     log.error("设置动态表头宽时异常", e);
                 }
@@ -375,7 +375,7 @@ public class PdfUtil {
         PdfPTable table = new PdfPTable(tableColumnSize);
         try {
             table.setTotalWidth(totalWidth);
-        } catch (DocumentException e) {
+        } catch (Exception e) {
             if (log.isErrorEnabled()) {
                 log.error("设置表头宽时异常", e);
             }
