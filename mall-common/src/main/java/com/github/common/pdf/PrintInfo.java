@@ -113,6 +113,8 @@ public class PrintInfo {
         private String fieldName;
         /** 拼在内容最后的值 */
         private String valueSuffix;
+        /** 中文字体里的字母和英文看起来会显得很紧凑, 是否需要加一个空格, 不设置则默认是 false */
+        private Boolean space;
 
         /** 字体大小, 单位 pt(11pt = 14.67px, 15pt = 20px, 20pt = 26.67px), 不设置则默认是 10 */
         private Float fontSize;
@@ -157,6 +159,8 @@ public class PrintInfo {
         private Boolean printHead;
         /** 表格头名(长度要跟列宽一致) */
         private List<String> headList;
+        /** 中文字体里的字母和英文看起来会显得很紧凑, 是否需要加一个空格, 不设置则默认是 false */
+        private Boolean space;
         /** 表头字体大小, 单位 pt(11pt = 14.67px, 15pt = 20px, 20pt = 26.67px), 不设置则默认是 10 */
         private Float fontSize;
         /** 字体颜色 rgba 值 */
@@ -196,6 +200,8 @@ public class PrintInfo {
         private String fieldName;
         /** 拼在内容最后的值 */
         private String valueSuffix;
+        /** 中文字体里的字母和英文看起来会显得很紧凑, 是否需要加一个空格, 不设置则默认是 false */
+        private Boolean space;
 
         /** 字段类型, 不设置则默认是 STRING */
         private PlaceholderType fieldType;

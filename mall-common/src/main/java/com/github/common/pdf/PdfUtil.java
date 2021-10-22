@@ -5,6 +5,8 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.qrcode.EncodeHintType;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -17,6 +19,8 @@ import java.util.regex.Pattern;
 @SuppressWarnings({"DuplicatedCode", "unchecked"})
 @Slf4j
 public class PdfUtil {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PdfUtil.class);
 
     private static final Pattern CN_PATTERN = Pattern.compile("[\\u4e00-\\u9fa5]");
     private static final Pattern SPACE_PATTERN = Pattern.compile("([a-zA-Z0-9])");
@@ -73,6 +77,8 @@ public class PdfUtil {
                 if (log.isErrorEnabled()) {
                     log.error("生成 pdf 文件异常", e);
                 }
+                System.out.println("-----");
+                System.out.println("生成 pdf 异常");
             }
         }
     }
@@ -180,8 +186,8 @@ public class PdfUtil {
             }
 
             if (toBoolean(dynamicHead.getPrintHead(), true)) {
-                writeTableHead(table, dynamicHead.getFontBold(), dynamicHead.getFontSize(),
-                        dynamicHead.getRgba(), dynamicHead.getBackRgba(), dynamicHead.getHeadList(),
+                writeTableHead(table, dynamicHead.getFontBold(), dynamicHead.getFontSize(), dynamicHead.getRgba(),
+                        dynamicHead.getBackRgba(), dynamicHead.getHeadList(), dynamicHead.getSpace(),
                         dynamicHead.getHeadHeight(), dynamicHead.getBorder(), dynamicHead.getTextAlign());
             }
 
@@ -192,7 +198,8 @@ public class PdfUtil {
                     Map<String, Object> map = (Map<String, Object>) obj;
                     for (PrintInfo.TableContent tableContent : tableContentList) {
                         String suffix = toStr(tableContent.getValueSuffix());
-                        String value = toStr(map.get(tableContent.getFieldName())) + suffix;
+                        String value = toStr(map.get(toStr(tableContent.getFieldName()))) + suffix;
+                        value = handleSpace(value, toBoolean(tableContent.getSpace(), false));
 
                         int maxCount = toInt(tableContent.getMaxCount(), 0);
                         if (maxCount > 0 && value.length() > maxCount) {
@@ -262,6 +269,8 @@ public class PdfUtil {
                                          PrintInfo.DataContent dataContent, Map<String, Object> data) {
         String suffix = toStr(dataContent.getValueSuffix());
         String value = toStr(dataContent.getValue()) + toStr(data.get(toStr(dataContent.getFieldName()))) + suffix;
+        value = handleSpace(value, toBoolean(dataContent.getSpace(), false));
+
         float x = toFloat(dataContent.getX(), 0) + offsetX;
         float y = toFloat(dataContent.getY(), 0) + offsetY;
 
@@ -382,8 +391,8 @@ public class PdfUtil {
         }
 
         if (toBoolean(tableHead.getPrintHead(), true)) {
-            writeTableHead(table, tableHead.getFontBold(), tableHead.getFontSize(),
-                    tableHead.getRgba(), tableHead.getBackRgba(), tableHead.getHeadList(),
+            writeTableHead(table, tableHead.getFontBold(), tableHead.getFontSize(), tableHead.getRgba(),
+                    tableHead.getBackRgba(), tableHead.getHeadList(), tableHead.getSpace(),
                     tableHead.getHeadHeight(), tableHead.getBorder(), tableHead.getTextAlign());
         }
 
@@ -395,7 +404,8 @@ public class PdfUtil {
                 Map<String, Object> map = (Map<String, Object>) obj;
                 for (PrintInfo.TableContent tableContent : tableContentList) {
                     String suffix = toStr(tableContent.getValueSuffix());
-                    String value = toStr(map.get(tableContent.getFieldName())) + suffix;
+                    String value = toStr(map.get(toStr(tableContent.getFieldName()))) + suffix;
+                    value = handleSpace(value, toBoolean(tableContent.getSpace(), false));
 
                     int maxCount = toInt(tableContent.getMaxCount(), 0);
                     if (maxCount > 0 && value.length() > maxCount) {
@@ -460,9 +470,8 @@ public class PdfUtil {
     }
 
     private static void writeTableHead(PdfPTable table, Boolean bold, Float fontSize, List<Integer> rgba,
-                                       List<Integer> backRgba, List<String> headList,
+                                       List<Integer> backRgba, List<String> headList, Boolean space,
                                        Integer height, Boolean border, Integer textAlign) {
-
         BaseFont font = toBoolean(bold, false) ? CHINESE_BASE_FONT_BOLD : CHINESE_BASE_FONT;
         Font headFont = new Font(font, toFloat(fontSize, 10));
         BaseColor color = toColor(rgba);
@@ -470,8 +479,9 @@ public class PdfUtil {
             headFont.setColor(color);
         }
         BaseColor background = toColor(backRgba);
+        boolean needSpace = toBoolean(space, false);
         for (String head : headList) {
-            PdfPCell cell = new PdfPCell(new Phrase(toStr(head), headFont));
+            PdfPCell cell = new PdfPCell(new Phrase(handleSpace(toStr(head), needSpace), headFont));
             cell.setMinimumHeight(toInt(height, 15));
             if (!toBoolean(border, false)) {
                 cell.setBorder(PdfPCell.NO_BORDER);
@@ -553,13 +563,15 @@ public class PdfUtil {
         return num == null ? (float) 10 : num;
     }
     private static String toStr(Object obj) {
-        if (obj == null) {
-            return "";
-        }
-
-        String str = obj.toString();
+        return (obj == null) ? "" : obj.toString();
+    }
+    private static String handleSpace(String str, boolean space) {
         // 中文字体里的字母和英文看起来会显得很紧凑, 加一个空格
-        return CN_PATTERN.matcher(str).find() ? SPACE_PATTERN.matcher(str).replaceAll(" $1 ").replace("  ", " ") : str;
+        if (space && CN_PATTERN.matcher(str).find()) {
+            return SPACE_PATTERN.matcher(str).replaceAll(" $1 ").replace("  ", " ");
+        } else {
+            return str;
+        }
     }
     private static float toFloat(Float num, float defaultValue) {
         return num == null || num < 0 ? defaultValue : num;

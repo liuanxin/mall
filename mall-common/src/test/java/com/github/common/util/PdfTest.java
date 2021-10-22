@@ -112,16 +112,18 @@ public class PdfTest {
         PrintInfo.TableContent ptc22 = new PrintInfo.TableContent();
         ptc22.setFieldName("value");
         ptc22.setFontSize(12F);
+        ptc22.setSpace(true);
         value2.add(ptc22);
+
         pt2.setValue(value2);
         tableList.add(pt2);
         print.setTableInfo(tableList);
 
         PrintInfo.TableDynamicHead dynamicTableKey = new PrintInfo.TableDynamicHead();
         dynamicTableKey.setX(35);
-        dynamicTableKey.setY(655);
+        dynamicTableKey.setY(645);
         dynamicTableKey.setFieldName("productList");
-        dynamicTableKey.setFieldWidthList(Arrays.asList(30F, 70F, 72F, 68F, 50F, 50F, 50F, 50F, 40F, 40F));
+        dynamicTableKey.setFieldWidthList(Arrays.asList(30F, 70F, 68F, 70F, 54F, 54F, 54F, 50F, 40F, 40F));
         dynamicTableKey.setHeadList(Arrays.asList("箱号", "产品代码", "中文申报品名", "产品重量(KG)", "长度(CM)", "宽度(CM)", "高度(CM)", "货物属性", "预期数", "收货数"));
         dynamicTableKey.setBackRgba(Arrays.asList(220, 220, 220));
         dynamicTableKey.setTextAlign(Element.ALIGN_CENTER);
@@ -201,9 +203,7 @@ public class PdfTest {
         data.put("barCode", "RV000013-150721-0004");
         data.put("remarkInfo", List.of(Map.of(
                 "name", "备注: ",
-                "value", "长一点的备注, 很长的备注, 起码有 100 字个以上的备注. 不够? 再加一点?" +
-                        " 长一点的备注, 很长的备注, 起码有 100 字个以上的备注. 不够? 再加一点?" +
-                        " 长一点的备注, 很长的备注, 起码有 100 字个以上的备注. 不够? 再加一点?"
+                "value", "显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字"
         )));
         data.put("orderInfo", List.of(
                 Map.of("c1", "入库单号: ", "c2", "RV000013-150721-0004", "c3", "创建时间: ", "c4", DateUtil.formatDateTime(new Date())),
@@ -367,8 +367,9 @@ public class PdfTest {
         dynamicTableKey.setX(35);
         dynamicTableKey.setY(645);
         dynamicTableKey.setFieldName("productList");
-        dynamicTableKey.setFieldWidthList(Arrays.asList(25F, 60F, 58F, 55F, 55F, 53F, 45F, 105F, 68F));
-        dynamicTableKey.setHeadList(Arrays.asList("序号", "分拣码*箱数", "SKU", "预报总数量", "实收总数量", "SKU总箱数", "实收箱数", "单品规格(CM)", "单品重量(KG)"));
+        // dynamicTableKey.setFieldWidthList(Arrays.asList(25F, 60F, 58F, 55F, 55F, 53F, 45F, 105F, 68F));
+        dynamicTableKey.setFieldWidthList(Arrays.asList(60F, 93F, 55F, 55F, 53F, 45F, 95F, 68F));
+        dynamicTableKey.setHeadList(Arrays.asList(/*"序号", */"分拣码*箱数", "SKU", "预报总数量", "实收总数量", "SKU总箱数", "实收箱数", "单品规格(CM)", "单品重量(KG)"));
         dynamicTableKey.setBackRgba(Arrays.asList(220, 220, 220));
         dynamicTableKey.setTextAlign(Element.ALIGN_CENTER);
         dynamicTableKey.setFontSize(10F);
@@ -380,10 +381,10 @@ public class PdfTest {
         print.setDynamicHead(dynamicTableKey);
 
         List<PrintInfo.TableContent> dynamicTableValue = Lists.newArrayList();
-        PrintInfo.TableContent dptc0 = new PrintInfo.TableContent();
-        dptc0.setFieldType(PrintInfo.PlaceholderType.INDEX);
-        dptc0.setTextAlign(Element.ALIGN_CENTER);
-        dynamicTableValue.add(dptc0);
+        // PrintInfo.TableContent dptc0 = new PrintInfo.TableContent();
+        // dptc0.setFieldType(PrintInfo.PlaceholderType.INDEX);
+        // dptc0.setTextAlign(Element.ALIGN_CENTER);
+        // dynamicTableValue.add(dptc0);
 
         PrintInfo.TableContent dptc1 = new PrintInfo.TableContent();
         dptc1.setFieldName("stockCodeAndBoxNum");
@@ -461,7 +462,7 @@ public class PdfTest {
                     "actualNum", "40",
                     "skuNum", "1",
                     "actualSkuNum", "1",
-                    "size", "16.00 * 16.00 * 4.50",
+                    "size", "16.00*16.00*4.50",
                     "weight", "0.200"
             ));
             list.add(Map.of(
@@ -472,7 +473,7 @@ public class PdfTest {
                     "actualNum", "50",
                     "skuNum", "1",
                     "actualSkuNum", "1",
-                    "size", "16.00 * 16.00 * 4.50",
+                    "size", "16.00*16.00*4.50",
                     "weight", "0.270"
             ));
         }
@@ -484,7 +485,7 @@ public class PdfTest {
         // System.out.println(JsonUtil.toJson(data)); // 数据
         // System.out.println("===================");
 
-        String file = "/home/ty/list-test.pdf";
+        String file = "/home/ty/sku-test.pdf";
         PdfUtil.generatePdfFile(file, print, data);
         System.out.printf("生成文件 %s 成功\n", file);
 
