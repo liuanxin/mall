@@ -19,14 +19,14 @@
             <artifactId>api-document</artifactId>
         </dependency>
 
-        <dependency>
+        <!--<dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>easyexcel</artifactId>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>${project.groupId}</groupId>
