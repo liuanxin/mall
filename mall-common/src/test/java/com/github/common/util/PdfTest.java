@@ -19,6 +19,11 @@ public class PdfTest {
         // print.setWidth(595F);
         // print.setHeight(842F);
 
+        PrintInfo.WatermarkInfo watermark = new PrintInfo.WatermarkInfo();
+        watermark.setValue("这里有水印");
+        watermark.setRgba(Arrays.asList(180, 180, 180, 40));
+        print.setWatermark(watermark);
+
         List<PrintInfo.DataContent> contentList = Lists.newArrayList();
         PrintInfo.DataContent phc0 = new PrintInfo.DataContent();
         phc0.setX(270F);
@@ -132,7 +137,7 @@ public class PdfTest {
         dynamicTableKey.setBorder(true);
         dynamicTableKey.setHeadHeight(24);
         dynamicTableKey.setContentHeight(28);
-        dynamicTableKey.setSinglePageCount(15);
+        dynamicTableKey.setSinglePageCount(20);
         print.setDynamicHead(dynamicTableKey);
 
         List<PrintInfo.TableContent> dynamicTableValue = Lists.newArrayList();
@@ -245,9 +250,10 @@ public class PdfTest {
 //        System.out.println(JsonUtil.toJson(data));
 //        System.out.println("===================");
 
-        String file = "/home/ty/box-test.pdf";
+        String file = "/home/tony/test-box.pdf";
+        long start = System.currentTimeMillis();
         PdfUtil.generatePdfFile(file, print, data);
-        System.out.printf("生成文件 %s 成功\n", file);
+        System.out.printf("生成文件 %s 成功, 耗时: %sms\n", file, (System.currentTimeMillis() - start));
     }
 
     @Test
@@ -258,6 +264,7 @@ public class PdfTest {
 
         PrintInfo.WatermarkInfo watermark = new PrintInfo.WatermarkInfo();
         watermark.setValue("这里有水印");
+        watermark.setRgba(Arrays.asList(180, 180, 180, 40));
         print.setWatermark(watermark);
 
         List<PrintInfo.DataContent> holdContentList = Lists.newArrayList();
@@ -377,7 +384,7 @@ public class PdfTest {
         dynamicTableKey.setBorder(true);
         dynamicTableKey.setHeadHeight(18);
         dynamicTableKey.setContentHeight(26);
-        dynamicTableKey.setSinglePageCount(15);
+        dynamicTableKey.setSinglePageCount(20);
         print.setDynamicHead(dynamicTableKey);
 
         List<PrintInfo.TableContent> dynamicTableValue = Lists.newArrayList();
@@ -485,9 +492,10 @@ public class PdfTest {
         // System.out.println(JsonUtil.toJson(data)); // 数据
         // System.out.println("===================");
 
-        String file = "/home/ty/sku-test.pdf";
+        String file = "/home/tony/test-sku.pdf";
+        long start = System.currentTimeMillis();
         PdfUtil.generatePdfFile(file, print, data);
-        System.out.printf("生成文件 %s 成功\n", file);
+        System.out.printf("生成文件 %s 成功, 耗时: %sms\n", file, (System.currentTimeMillis() - start));
 
         // String encode = Encrypt.base64Encode(PdfUtil.generatePdfByte(print, data));
         // System.out.println(encode);
