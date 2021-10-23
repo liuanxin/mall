@@ -420,7 +420,7 @@ public final class Encrypt {
 
     // 也不是很懂为什么 guava 都已经发布快 30 个版本了, 还在 Beta, 这个注解用来抑制 idea 的警告
     @SuppressWarnings("UnstableApiUsage")
-    private static final HashFunction HASH_FUN = Hashing.murmur3_32();
+    private static final HashFunction HASH_FUN = Hashing.murmur3_32_fixed();
     /** 62 进制(0-9, a-z, A-Z), 64 进制则再加上 _ 的 @ */
     private static final char[] HEX = new char[] {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -437,7 +437,6 @@ public final class Encrypt {
      * 这样可以将 { http://abc.xyz.com/user/info?id=123&name=中文&sex=0&province=广东 } 缩短成 { http://t.io/44y34N }
      * </pre>
      */
-    @SuppressWarnings("UnstableApiUsage")
     public static String getShortString(String src) {
         if (U.isEmpty(src)) {
             return U.EMPTY;
