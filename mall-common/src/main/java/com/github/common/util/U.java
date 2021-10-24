@@ -577,6 +577,13 @@ public final class U {
         return obj != null;
     }
 
+    public static boolean isTrue(Boolean flag) {
+        return isNotNull(flag) && flag;
+    }
+    public static boolean isNotTrue(Boolean flag) {
+        return !isTrue(flag);
+    }
+
     /** 对象为空 或 其字符串形态是空字符 时返回 true */
     public static boolean isBlank(Object obj) {
         if (isNull(obj)) {
