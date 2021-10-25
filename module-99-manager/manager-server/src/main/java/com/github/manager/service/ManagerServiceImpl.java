@@ -43,7 +43,7 @@ public class ManagerServiceImpl implements ManagerService {
         Wrapper<ManagerUser> query = Wrappers.lambdaQuery(ManagerUser.class).eq(ManagerUser::getUserName, userName);
         Page<ManagerUser> page = userMapper.selectPage(Pages.paramOnlyLimit(1), query);
         ManagerUser user = U.isNotNull(page) ? A.first(page.getRecords()) : null;
-        U.assertNil(user, "无此用户");
+        U.assertNil(user, "用户名或密码有误");
         return user;
     }
 
@@ -60,7 +60,7 @@ public class ManagerServiceImpl implements ManagerService {
     public PageReturn<ManagerUser> queryUser(String userName, Boolean status, PageParam page) {
         Wrapper<ManagerUser> query = Wrappers.lambdaQuery(ManagerUser.class)
                 .like(U.isNotBlank(userName), ManagerUser::getUserName, userName)
-                .eq(U.isNotBlank(status), ManagerUser::getStatus, status);
+                .eq(U.isNotNull(status), ManagerUser::getStatus, status);
         return Pages.returnPage(userMapper.selectPage(Pages.param(page), query));
     }
 
@@ -72,8 +72,8 @@ public class ManagerServiceImpl implements ManagerService {
             U.assertNil(u, "没有这个用户, 无法修改");
 
             if (U.isNotBlank(u.getPassword())) {
-                U.assertException(U.isNotBlank(u.getHasManager()) && u.getHasManager(), "不能重置管理员密码, 请使用旧密码进行修改");
-                U.assertException(U.isNotBlank(u.getStatus()) && u.getStatus(), "用户已被禁用, 请先解禁再修改密码");
+                U.assertException(U.isNotNull(u.getHasManager()) && u.getHasManager(), "不能重置管理员密码, 请使用旧密码进行修改");
+                U.assertException(U.isNotNull(u.getStatus()) && u.getStatus(), "用户已被禁用, 请先解禁再修改密码");
 
                 user.setPassword(Encrypt.bcryptEncode(user.getPassword()));
             }
@@ -119,7 +119,7 @@ public class ManagerServiceImpl implements ManagerService {
 
         ManagerUser user = userMapper.selectById(userId);
         U.assertNil(user, "没有这个用户");
-        U.assertException(U.isNotBlank(user.getStatus()) && user.getStatus(), "用户不能登录");
+        U.assertException(U.isNotNull(user.getStatus()) && user.getStatus(), "用户不能登录");
         U.assertException(Encrypt.checkNotBcrypt(oldPass, user.getPassword()), "旧密码有误");
 
         ManagerUser update = new ManagerUser();
@@ -154,7 +154,7 @@ public class ManagerServiceImpl implements ManagerService {
                     Map<Long, ManagerMenu> menuMap = Maps.uniqueIndex(menus, ManagerMenu::getId);
                     for (ManagerRoleMenu roleMenu : roleMenus) {
                         ManagerMenu menu = menuMap.get(roleMenu.getMenuId());
-                        if (U.isNotBlank(menu)) {
+                        if (U.isNotNull(menu)) {
                             menuMultiMap.put(roleMenu.getRoleId(), menu);
                         }
                     }
@@ -177,7 +177,7 @@ public class ManagerServiceImpl implements ManagerService {
                     Map<Long, ManagerPermission> permissionMap = Maps.uniqueIndex(permissions, ManagerPermission::getId);
                     for (ManagerRolePermission rolePermission : rolePermissions) {
                         ManagerPermission permission = permissionMap.get(rolePermission.getPermissionId());
-                        if (U.isNotBlank(permission)) {
+                        if (U.isNotNull(permission)) {
                             permissionMultimap.put(rolePermission.getPermissionId(), permission);
                         }
                     }

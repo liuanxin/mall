@@ -114,7 +114,7 @@ public final class U {
      */
     @SuppressWarnings("rawtypes")
     public static <E extends Enum> E toEnum(Class<E> clazz, Object obj) {
-        if (isNotBlank(obj)) {
+        if (isNotNull(obj)) {
             E[] constants = clazz.getEnumConstants();
             if (constants != null && constants.length > 0) {
                 String source = obj.toString().trim();
@@ -126,13 +126,13 @@ public final class U {
 
                     // 如果传递过来的值跟枚举的 getCode(数字) 相同则返回
                     Object code = getMethod(em, "getCode");
-                    if (isNotBlank(code) && source.equalsIgnoreCase(code.toString().trim())) {
+                    if (isNotNull(code) && source.equalsIgnoreCase(code.toString().trim())) {
                         return em;
                     }
 
                     // 如果传递过来的值跟枚举的 getValue(中文) 相同则返回
                     Object value = getMethod(em, "getValue");
-                    if (isNotBlank(value) && source.equalsIgnoreCase(value.toString().trim())) {
+                    if (isNotNull(value) && source.equalsIgnoreCase(value.toString().trim())) {
                         return em;
                     }
 
@@ -584,17 +584,12 @@ public final class U {
         return !isTrue(flag);
     }
 
-    /** 对象为空 或 其字符串形态是空字符 时返回 true */
-    public static boolean isBlank(Object obj) {
-        if (isNull(obj)) {
-            return true;
-        }
-
-        String str = obj.toString().trim();
-        return EMPTY.equals(str);
+    /** 为空或是空字符时返回 true */
+    public static boolean isBlank(String str) {
+        return isNull(str) || str.trim().isEmpty();
     }
-    /** 对象非空 且 其字符串形态不是空字符 时返回 true */
-    public static boolean isNotBlank(Object obj) {
+    /** 非空且不是空字符时返回 true */
+    public static boolean isNotBlank(String obj) {
         return !isBlank(obj);
     }
 
@@ -923,7 +918,7 @@ public final class U {
 
         if (isNull(value)) {
             Class<?> fieldType = getFieldType(data, field);
-            return (isNotBlank(fieldType) && fieldType == Money.class) ? "0" : EMPTY;
+            return (isNotNull(fieldType) && fieldType == Money.class) ? "0" : EMPTY;
         } else if (value.getClass().isEnum()) {
             // 如果是枚举, 则调用其 getValue 方法, getValue 没有值则使用枚举的 name
             Object enumValue = getMethod(value, "getValue");
@@ -1108,17 +1103,11 @@ public final class U {
         }
         Class<?> clazz = obj.getClass();
         try {
-            Field f = clazz.getDeclaredField(field);
-            if (isNotBlank(f)) {
-                return f.getType();
-            }
+            return clazz.getDeclaredField(field).getType();
         } catch (NoSuchFieldException ignore) {
         }
         try {
-            Field f = clazz.getField(field);
-            if (isNotBlank(f)) {
-                return f.getType();
-            }
+            return clazz.getField(field).getType();
         } catch (NoSuchFieldException ignore) {
         }
 
@@ -1140,7 +1129,7 @@ public final class U {
         for (Map.Entry<String, ?> entry : params.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
-            if (isNotBlank(key) && isNotBlank(value)) {
+            if (isNotBlank(key) && isNotNull(value)) {
                 if (i > 0) {
                     sbd.append("&");
                 }
@@ -1154,13 +1143,13 @@ public final class U {
 
     /** 获取指定类所在 jar 包的地址 */
     public static String getClassInFile(Class<?> clazz) {
-        if (isNotBlank(clazz)) {
+        if (isNotNull(clazz)) {
             ProtectionDomain domain = clazz.getProtectionDomain();
-            if (isNotBlank(domain)) {
+            if (isNotNull(domain)) {
                 CodeSource source = domain.getCodeSource();
-                if (isNotBlank(source)) {
+                if (isNotNull(source)) {
                     URL location = source.getLocation();
-                    if (isNotBlank(location)) {
+                    if (isNotNull(location)) {
                         return location.getFile();
                     }
                 }

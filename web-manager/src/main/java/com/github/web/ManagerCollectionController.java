@@ -7,7 +7,6 @@ import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiGroup;
 import com.github.liuanxin.api.annotation.ApiIgnore;
 import com.github.liuanxin.api.annotation.ApiMethod;
-import com.github.liuanxin.api.util.Tools;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -15,17 +14,16 @@ import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 @ApiIgnore
 @RestController
@@ -48,20 +46,16 @@ public class ManagerCollectionController {
             HandlerMethod handlerMethod = entry.getValue();
             NotNeedLogin login = getAnnotation(handlerMethod, NotNeedLogin.class);
             // 如果有标 不需要登录 则表示这个请求不需要收集
-            boolean notNeedCollect = Tools.isNotBlank(login) && login.value();
-            if (Tools.isNotBlank(login) && login.value()) {
+            if (U.isNotNull(login) && login.value()) {
                 continue;
             }
             // 如果有标 不需要权限 则表示这个请求不需要收集
             NotNeedPermission permission = getAnnotation(handlerMethod, NotNeedPermission.class);
-            if (Tools.isNotBlank(permission) && login.value()) {
+            if (U.isNotNull(permission) && login.value()) {
                 continue;
             }
 
-            if (U.isNotBlank(requestMapping) && U.isNotBlank(handlerMethod) && wasJsonApi(handlerMethod)) {
-                Set<RequestMethod> methodArray = requestMapping.getMethodsCondition().getMethods();
-                Set<String> urlArray = requestMapping.getPatternsCondition().getPatterns();
-
+            if (U.isNotNull(requestMapping) && wasJsonApi(handlerMethod)) {
                 String className = handlerMethod.getBeanType().getSimpleName();
                 if (className.endsWith(classSuffix)) {
                     className = className.substring(0, className.indexOf(classSuffix));
@@ -79,26 +73,30 @@ public class ManagerCollectionController {
                 String permissionName = U.isNull(apiMethod) ? U.EMPTY : apiMethod.value();
                 // 类名用作 front
                 String m = Joiner.on(sp).join(menu, className);
-                String p = Joiner.on(sp).join(permissionName, A.toStr(methodArray), A.toStr(urlArray));
+
+                String method = A.toStr(requestMapping.getMethodsCondition().getMethods());
+                PatternsRequestCondition patternsCondition = requestMapping.getPatternsCondition();
+                String url = U.isNull(patternsCondition) ? U.EMPTY : A.toStr(patternsCondition.getPatterns());
+                String p = Joiner.on(sp).join(permissionName, method, url);
                 multimap.put(m, p);
             }
         }
         int i = 1;
         for (Map.Entry<String, Collection<String>> entry : multimap.asMap().entrySet()) {
             String[] menuArr = entry.getKey().split(sp);
-            System.out.println(String.format(
-                    "REPLACE INTO `t_manager_menu`(`id`, `name`, `front`) VALUES(%s,'%s','%s')",
+            System.out.printf(
+                    "REPLACE INTO `t_manager_menu`(`id`, `name`, `front`) VALUES(%s,'%s','%s')%n",
                     i, menuArr[0], menuArr[1]
-            ));
+            );
 
             int j = 1;
             for (String permission : Sets.newLinkedHashSet(entry.getValue())) {
                 String[] arr = permission.split(sp);
-                System.out.println(String.format(
+                System.out.printf(
                         "REPLACE INTO `t_manager_permission`(`id`, `mid`, `name`, `method`, `url`)" +
-                                " VALUES(%s, %s, '%s', '%s', '%s')",
+                                " VALUES(%s, %s, '%s', '%s', '%s')%n",
                         j, i, arr[0], arr[1], arr[2]
-                ));
+                );
                 j++;
             }
             System.out.println("\n");
@@ -108,10 +106,10 @@ public class ManagerCollectionController {
     }
 
     private static boolean wasJsonApi(HandlerMethod handlerMethod) {
-        if (Tools.isNotBlank(getAnnotation(handlerMethod, ResponseBody.class))) {
+        if (U.isNotNull(getAnnotation(handlerMethod, ResponseBody.class))) {
             return true;
         } else {
-            return Tools.isNotBlank(getAnnotationByClass(handlerMethod, RestController.class));
+            return U.isNotNull(getAnnotationByClass(handlerMethod, RestController.class));
         }
     }
     private static <T extends Annotation> T getAnnotationByClass(HandlerMethod handlerMethod, Class<T> clazz) {
@@ -119,7 +117,7 @@ public class ManagerCollectionController {
     }
     private static <T extends Annotation> T getAnnotation(HandlerMethod handlerMethod, Class<T> clazz) {
         T annotation = handlerMethod.getMethodAnnotation(clazz);
-        if (Tools.isBlank(annotation)) {
+        if (U.isNull(annotation)) {
             annotation = getAnnotationByClass(handlerMethod, clazz);
         }
         return annotation;

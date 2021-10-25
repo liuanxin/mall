@@ -88,7 +88,7 @@ public class ShowSqlInterceptor implements QueryInterceptor {
                             if (U.greater0(start)) {
                                 sbd.append(", 用时: ").append(DateUtil.toHuman(System.currentTimeMillis() - start));
                             }
-                            if (U.isNotBlank(rs) && rs.hasRows()) {
+                            if (U.isNotNull(rs) && rs.hasRows()) {
                                 sbd.append(", 返回行数: ").append(rs.getRows().size());
                             }
                             LogUtil.SQL_LOG.debug(sbd.toString());

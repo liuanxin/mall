@@ -420,7 +420,7 @@ public class HttpClientUtil {
         long start = System.currentTimeMillis();
         try (CloseableHttpResponse response = createHttpClient().execute(request, HttpClientContext.create())) {
             HttpEntity entity = response.getEntity();
-            if (U.isNotBlank(entity)) {
+            if (U.isNotNull(entity)) {
                 String result = EntityUtils.toString(entity, StandardCharsets.UTF_8);
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                     Header[] reqHeaders = request.getAllHeaders();

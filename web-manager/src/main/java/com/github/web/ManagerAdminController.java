@@ -44,7 +44,7 @@ public class ManagerAdminController {
         req.basicCheck();
 
         ManagerUser managerUser = req.operateParam();
-        if (U.isNotBlank(managerUser) && U.greater0(image.getSize())) {
+        if (U.isNotNull(managerUser) && U.greater0(image.getSize())) {
             managerUser.setAvatar(FileUtil.save(image, config.getFilePath(), config.getFileUrl(), false));
         }
         adminService.addOrUpdateUser(managerUser);

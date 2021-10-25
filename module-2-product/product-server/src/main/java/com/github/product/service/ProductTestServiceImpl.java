@@ -23,7 +23,7 @@ public class ProductTestServiceImpl implements ProductTestService {
 
         query.in(A.isNotEmpty(userIdList), ProductTest::getUserId, userIdList);
         if (U.isNotNull(param)) {
-            if (U.isNotBlank(param.getType())) {
+            if (U.isNotNull(param.getType())) {
                 query.eq(ProductTest::getType, param.getType().getCode());
             }
             if (U.isNotBlank(param.getName())) {

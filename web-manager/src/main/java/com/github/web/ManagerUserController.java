@@ -41,8 +41,7 @@ public class ManagerUserController {
         U.assertException(U.isEmpty(userName) || U.isEmpty(password), "请输入用户名或密码");
 
         ManagerUser user = adminService.login(userName, password);
-        boolean cannotLogin = U.isNotBlank(user.getStatus()) && user.getStatus();
-        U.assertException(cannotLogin, "用户无法登录");
+        U.assertException(U.isTrue(user.getStatus()), "用户被禁止登录, 请联系管理员");
         U.assertException(Encrypt.checkNotBcrypt(password, user.getPassword()), "用户名或密码不正确");
 
         // 登录成功后填充菜单和权限, 平级放到用户上
