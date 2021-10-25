@@ -99,6 +99,7 @@
             </rollingPolicy>
             <encoder>
                 <pattern>${LOG_PATTERN}</pattern>
+                <charset>utf8</charset>
             </encoder>
         </appender>
 
@@ -126,6 +127,7 @@
             </rollingPolicy>
             <encoder>
                 <pattern>${LOG_PATTERN}</pattern>
+                <charset>utf8</charset>
             </encoder>
         </appender>
         <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
@@ -148,6 +150,7 @@
             </rollingPolicy>
             <encoder>
                 <pattern>${LOG_PATTERN}</pattern>
+                <charset>utf8</charset>
             </encoder>
         </appender>
         <appender name="ASYNC-ERROR" class="ch.qos.logback.classic.AsyncAppender">
