@@ -606,7 +606,7 @@ public final class U {
                     || "nil".equalsIgnoreCase(str)
                     || "undefined".equalsIgnoreCase(str);
         } else if (obj instanceof Optional) {
-            return !((Optional<?>) obj).isPresent();
+            return ((Optional<?>) obj).isEmpty();
         } else if (obj.getClass().isArray()) {
             return Array.getLength(obj) == 0;
         } else if (obj instanceof Collection) {
@@ -617,7 +617,7 @@ public final class U {
             return false;
         }
     }
-    /** 对象非空 且 其字符串形态不是 空白符、null、undefined 时返回 true */
+    /** 对象非空, 字符串不为 null nil undefined, 数组、集合、Map 长度不为 0 则返回 true */
     public static boolean isNotEmpty(Object obj) {
         return !isEmpty(obj);
     }
