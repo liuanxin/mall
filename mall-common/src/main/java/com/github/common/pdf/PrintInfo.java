@@ -83,7 +83,9 @@ public class PrintInfo {
         private String value;
         /** 水印字体大小, 不设置则默认是 60 */
         private Float fontSize;
-        /** 水印的 rgba 值, alpha 可以忽略, 全部不设置则默认是 [240,240,240,120] */
+        /** 字体是否是粗体, 不设置则默认是 true */
+        private Boolean fontBold;
+        /** 水印的 rgba 值, alpha 可以忽略, 全部不设置则默认是 [180,180,180,40] */
         private List<Integer> rgba;
         /** 第一个水印的 x 轴, 不设置则默认是 256 */
         private Float x;

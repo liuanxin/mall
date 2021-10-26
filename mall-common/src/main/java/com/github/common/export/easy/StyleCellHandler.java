@@ -1,8 +1,8 @@
 package com.github.common.export.easy;
 
 import com.alibaba.excel.enums.CellDataTypeEnum;
-import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.Head;
+import com.alibaba.excel.metadata.data.WriteCellData;
 import com.alibaba.excel.write.handler.CellWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
@@ -22,7 +22,6 @@ import org.apache.poi.xssf.usermodel.IndexedColorMap;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -39,7 +38,7 @@ public class StyleCellHandler implements CellWriteHandler {
     private static final int[] TITLE_RGB = new int[] { 160, 200, 230 };
 
     private static final Cache<Thread, Map<String, CellStyle>> STYLE_CACHE =
-            CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).build();
+            CacheBuilder.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build();
 
     private final boolean hasCellStyle;
 
@@ -92,7 +91,8 @@ public class StyleCellHandler implements CellWriteHandler {
 
     @Override
     public void afterCellDataConverted(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder,
-                                       CellData cellData, Cell cell, Head head, Integer relativeRowIndex, Boolean isHead) {
+                                       WriteCellData<?> cellData, Cell cell, Head head,
+                                       Integer relativeRowIndex, Boolean isHead) {
         if (hasCellStyle) {
             return;
         }
@@ -114,11 +114,6 @@ public class StyleCellHandler implements CellWriteHandler {
                 }
             }
         }
-    }
-
-    @Override
-    public void afterCellDispose(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder,
-                                 List<CellData> cellDataList, Cell cell, Head head, Integer relativeRowIndex, Boolean isHead) {
     }
 
 

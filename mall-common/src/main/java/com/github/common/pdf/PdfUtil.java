@@ -1,6 +1,9 @@
 package com.github.common.pdf;
 
+import com.github.common.encrypt.Encrypt;
 import com.github.common.json.JsonUtil;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.qrcode.EncodeHintType;
@@ -12,6 +15,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 @SuppressWarnings({"DuplicatedCode", "unchecked"})
@@ -62,16 +66,23 @@ public class PdfUtil {
         CHINESE_BASE_FONT_BOLD = baseFontCnBold;
     }
 
+    private static final Cache<String, Object> CACHE = CacheBuilder.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build();
+
+
     public static void generatePdfFile(String file, String template, Map<String, Object> data) {
         generatePdfFile(file, JsonUtil.toObject(template, PrintInfo.class), data);
     }
     public static void generatePdfFile(String file, PrintInfo template, Map<String, Object> data) {
         if (template != null) {
             try (FileOutputStream outputStream = new FileOutputStream(file)) {
+                long start = System.currentTimeMillis();
                 writePdf(template, data, outputStream);
+                if (log.isInfoEnabled()) {
+                    log.info("生成 pdf 文件({})耗时({}ms)", file, (System.currentTimeMillis() - start));
+                }
             } catch (Exception e) {
                 if (log.isErrorEnabled()) {
-                    log.error("生成 pdf 文件异常", e);
+                    log.error(String.format("生成 pdf 文件(%s)异常", file), e);
                 }
             }
         }
@@ -83,7 +94,11 @@ public class PdfUtil {
     public static byte[] generatePdfByte(PrintInfo template, Map<String, Object> data) {
         if (template != null) {
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                long start = System.currentTimeMillis();
                 writePdf(template, data, outputStream);
+                if (log.isInfoEnabled()) {
+                    log.info("生成 pdf 字节耗时({}ms)", (System.currentTimeMillis() - start));
+                }
                 return outputStream.toByteArray();
             } catch (Exception e) {
                 if (log.isErrorEnabled()) {
@@ -234,22 +249,22 @@ public class PdfUtil {
                                     break;
                                 case INDEX:
                                     String lineIndex = (pageCount * page + 1 + i) + suffix;
-                                    cell.setPhrase(new Phrase(toStr(lineIndex), toFont(value, fontBold, fontSize)));
+                                    cell.setPhrase(generateValue(toStr(lineIndex), fontBold, toFont(value, fontBold, fontSize)));
                                     break;
                                 case COUNT:
                                     String lineCount = size + suffix;
-                                    cell.setPhrase(new Phrase(toStr(lineCount), toFont(lineCount, fontBold, fontSize)));
+                                    cell.setPhrase(generateValue(toStr(lineCount), fontBold, toFont(lineCount, fontBold, fontSize)));
                                     break;
                                 case INDEX_COUNT:
                                     String lineIndexCount = (pageCount * page + 1 + i) + "/" + size + suffix;
-                                    cell.setPhrase(new Phrase(toStr(lineIndexCount), toFont(lineIndexCount, fontBold, fontSize)));
+                                    cell.setPhrase(generateValue(toStr(lineIndexCount), fontBold, toFont(lineIndexCount, fontBold, fontSize)));
                                     break;
                                 default:
-                                    cell.setPhrase(new Phrase(toStr(value), toFont(value, fontBold, fontSize)));
+                                    cell.setPhrase(generateValue(toStr(value), fontBold, toFont(value, fontBold, fontSize)));
                                     break;
                             }
                         } else {
-                            cell.setPhrase(new Phrase(toStr(value), toFont(value, fontBold, fontSize)));
+                            cell.setPhrase(generateValue(toStr(value), fontBold, toFont(value, fontBold, fontSize)));
                         }
                         table.addCell(cell);
                     }
@@ -439,22 +454,22 @@ public class PdfUtil {
                                 break;
                             case INDEX:
                                 String lineIndex = (i + 1) + suffix;
-                                cell.setPhrase(new Phrase(toStr(lineIndex), toFont(lineIndex, fontBold, fontSize)));
+                                cell.setPhrase(generateValue(toStr(lineIndex), fontBold, toFont(lineIndex, fontBold, fontSize)));
                                 break;
                             case COUNT:
                                 String lineCount = size + suffix;
-                                cell.setPhrase(new Phrase(toStr(lineCount), toFont(lineCount, fontBold, fontSize)));
+                                cell.setPhrase(generateValue(toStr(lineCount), fontBold, toFont(lineCount, fontBold, fontSize)));
                                 break;
                             case INDEX_COUNT:
                                 String lineIndexCount = (i + 1) + "/" + size + suffix;
-                                cell.setPhrase(new Phrase(toStr(lineIndexCount), toFont(lineIndexCount, fontBold, fontSize)));
+                                cell.setPhrase(generateValue(toStr(lineIndexCount), fontBold, toFont(lineIndexCount, fontBold, fontSize)));
                                 break;
                             default:
-                                cell.setPhrase(new Phrase(toStr(value), toFont(value, fontBold, fontSize)));
+                                cell.setPhrase(generateValue(toStr(value), fontBold, toFont(value, fontBold, fontSize)));
                                 break;
                         }
                     } else {
-                        cell.setPhrase(new Phrase(toStr(value), toFont(value, fontBold, fontSize)));
+                        cell.setPhrase(generateValue(toStr(value), fontBold, toFont(value, fontBold, fontSize)));
                     }
                     table.addCell(cell);
                 }
@@ -466,16 +481,12 @@ public class PdfUtil {
     private static void writeTableHead(PdfPTable table, Boolean bold, Float fontSize, List<Integer> rgba,
                                        List<Integer> backRgba, List<String> headList, Boolean space,
                                        Integer height, Boolean border, Integer textAlign) {
-        BaseFont font = toBoolean(bold, false) ? CHINESE_BASE_FONT_BOLD : CHINESE_BASE_FONT;
-        Font headFont = new Font(font, toFloat(fontSize, 10));
-        BaseColor color = toColor(rgba);
-        if (color != null) {
-            headFont.setColor(color);
-        }
+        boolean hasBold = toBoolean(bold, false);
+        Font headFont = toHeadFont(headHasCn(headList), bold, toFloat(fontSize, 10), rgba);
         BaseColor background = toColor(backRgba);
         boolean needSpace = toBoolean(space, false);
         for (String head : headList) {
-            PdfPCell cell = new PdfPCell(new Phrase(handleSpace(toStr(head), needSpace), headFont));
+            PdfPCell cell = new PdfPCell(generateValue(handleSpace(toStr(head), needSpace), hasBold, headFont));
             cell.setMinimumHeight(toInt(height, 15));
             if (!toBoolean(border, false)) {
                 cell.setBorder(PdfPCell.NO_BORDER);
@@ -490,18 +501,74 @@ public class PdfUtil {
         }
     }
 
-    private static Image generateBarCode(PdfContentByte canvas, float barCodeTextSize, float barCodeBaseLine,
-                                         float barCodeWidth, float barCodeHeight, String value) {
+    private static boolean headHasCn(List<String> headList) {
+        for (String head : headList) {
+            if (CN_PATTERN.matcher(head).find()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static Font toHeadFont(boolean hasCn, boolean bold, float fontSize, List<Integer> rgba) {
+        String key = String.format("head-font-%s-%s-%s-%s", hasCn, bold, fontSize, rgba);
+        Object valueInCache = CACHE.getIfPresent(key);
+        if (valueInCache instanceof Font) {
+            return (Font) valueInCache;
+        }
+
+        BaseFont headBaseFont;
+        if (hasCn) {
+            headBaseFont = bold ? CHINESE_BASE_FONT_BOLD : CHINESE_BASE_FONT;
+        } else {
+            headBaseFont = bold ? BASE_FONT_BOLD : BASE_FONT;
+        }
+        Font headFont = new Font(headBaseFont, fontSize);
+        BaseColor color = toColor(rgba);
+        if (color != null) {
+            headFont.setColor(color);
+        }
+        return headFont;
+    }
+
+    private static Phrase generateValue(String value, boolean bold, Font font) {
+        Font.FontFamily fontFamily = font.getFamily();
+        int family = fontFamily != null ? fontFamily.ordinal() : 0;
+        BaseColor baseColor = font.getColor();
+        int color = baseColor != null ? baseColor.hashCode() : 0;
+        float size = font.getSize();
+        int style = font.getStyle();
+        String v = value.length() > 32 ? Encrypt.toMd5(value) : value;
+        String key = String.format("value-%s-%s-%s-%s-%s-%s", v, (bold ? 1 : 0), family, size, style, color);
+        Object valueInCache = CACHE.getIfPresent(key);
+        if (valueInCache instanceof Phrase) {
+            return (Phrase) valueInCache;
+        }
+
+        Phrase phrase = new Phrase(value, font);
+        CACHE.put(key, phrase);
+        return phrase;
+    }
+
+    private static Image generateBarCode(PdfContentByte canvas, float textSize, float baseLine,
+                                         float width, float height, String value) {
+        String key = String.format("bar-%s-%s-%s-%s-%s", value, textSize, baseLine, width, height);
+        Object valueInCache = CACHE.getIfPresent(key);
+        if (valueInCache instanceof Image) {
+            return (Image) valueInCache;
+        }
+
         try {
             Barcode128 barcode = new Barcode128();
             barcode.setCode(value);
-            if (barCodeTextSize == 0) {
+            if (textSize == 0) {
                 barcode.setFont(null);
             }
-            barcode.setSize(barCodeTextSize);
-            barcode.setBaseline(barCodeBaseLine);
+            barcode.setSize(textSize);
+            barcode.setBaseline(baseLine);
             Image image = barcode.createImageWithBarcode(canvas, null, null);
-            image.scaleAbsolute(barCodeWidth, barCodeHeight);
+            image.scaleAbsolute(width, height);
+            CACHE.put(key, image);
             return image;
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
@@ -511,11 +578,18 @@ public class PdfUtil {
         }
     }
 
-    private static Image generateQrCode(float qrCodeWidth, float qrCodeHeight, String value) {
+    private static Image generateQrCode(float width, float height, String value) {
+        String key = String.format("qr-%s-%s-%s", value, width, height);
+        Object valueInCache = CACHE.getIfPresent(key);
+        if (valueInCache instanceof Image) {
+            return (Image) valueInCache;
+        }
+
         try {
-            Image qrcodeImage = new BarcodeQRCode(value, (int) qrCodeWidth, (int) qrCodeHeight, HINTS).getImage();
-            qrcodeImage.scaleAbsolute(qrCodeWidth, qrCodeHeight);
-            return qrcodeImage;
+            Image image = new BarcodeQRCode(value, (int) width, (int) height, HINTS).getImage();
+            image.scaleAbsolute(width, height);
+            CACHE.put(key, image);
+            return image;
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
                 log.error("生成 qrCode 异常", e);
@@ -532,7 +606,15 @@ public class PdfUtil {
 
             if (red > 0 || green > 0 || blue > 0) {
                 int alpha = (rgba.size() > 3) ? toColorInt(rgba.get(3)) : 0;
-                return alpha > 0 ? new BaseColor(red, green, blue, alpha) : new BaseColor(red, green, blue);
+                String key = String.format("color-%s-%s-%s-%s", red, green, blue, alpha);
+                Object valueInCache = CACHE.getIfPresent(key);
+                if (valueInCache instanceof BaseColor) {
+                    return (BaseColor) valueInCache;
+                }
+
+                BaseColor color = (alpha > 0) ? new BaseColor(red, green, blue, alpha) : new BaseColor(red, green, blue);
+                CACHE.put(key, color);
+                return color;
             }
         }
         return null;
@@ -542,15 +624,27 @@ public class PdfUtil {
     }
 
     private static BaseFont toBaseFont(String value, boolean bold) {
-        if (value != null && CN_PATTERN.matcher(value).find()) {
+        return toBaseFont(value != null && CN_PATTERN.matcher(value).find(), bold);
+    }
+    private static BaseFont toBaseFont(boolean hasCn, boolean bold) {
+        if (hasCn) {
             return bold ? CHINESE_BASE_FONT_BOLD : CHINESE_BASE_FONT;
         } else {
             return bold ? BASE_FONT_BOLD : BASE_FONT;
         }
     }
     private static Font toFont(String value, boolean bold, float fontSize) {
-        BaseFont baseFont = toBaseFont(value, bold);
-        return bold ? new Font(baseFont, fontSize, Font.BOLD) : new Font(baseFont, fontSize);
+        boolean hasCn = value != null && CN_PATTERN.matcher(value).find();
+        String key = String.format("font-%s-%s-%s", (hasCn ? 1 : 0), (bold ? 1 : 0), fontSize);
+        Object valueInCache = CACHE.getIfPresent(key);
+        if (valueInCache instanceof Font) {
+            return (Font) valueInCache;
+        }
+
+        BaseFont baseFont = toBaseFont(hasCn, bold);
+        Font font = bold ? new Font(baseFont, fontSize, Font.BOLD) : new Font(baseFont, fontSize);
+        CACHE.put(key, font);
+        return font;
     }
 
     private static float toBaseLine(Float num) {
@@ -593,11 +687,12 @@ public class PdfUtil {
             float fontSize = toFloat(watermarkInfo.getFontSize(), 60);
             BaseColor color = toColor(watermarkInfo.getRgba());
             if (color == null) {
-                color = new BaseColor(240, 240, 240, 120);
+                color = new BaseColor(180, 180, 180, 40);
             }
-            Font font = new Font(toBaseFont(value, true), fontSize, Font.NORMAL, color);
+            boolean bold = toBoolean(watermarkInfo.getFontBold(), true);
+            Font font = new Font(toBaseFont(value, bold), fontSize, Font.NORMAL, color);
 
-            this.value = new Phrase(value, font);
+            this.value = generateValue(value, bold, font);
             this.align = Element.ALIGN_CENTER;
             this.x = toFloat(watermarkInfo.getX(), 255F);
             this.y = toFloat(watermarkInfo.getY(), 215F);
