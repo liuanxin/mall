@@ -14,7 +14,7 @@ import java.util.*;
 public class PdfTest {
 
     @Test
-    public void box() {
+    public void sku() {
         PrintInfo print = new PrintInfo();
         // print.setWidth(595F);
         // print.setHeight(842F);
@@ -243,18 +243,18 @@ public class PdfTest {
         }
         data.put("productList", list);
 
-//        System.out.println("===================");
-//        System.out.println(JsonUtil.toJson(print));
-//        System.out.println("===================");
-//        System.out.println(JsonUtil.toJson(data));
-//        System.out.println("===================");
+        // System.out.println("===================");
+        // System.out.println(JsonUtil.toJson(print));
+        // System.out.println("===================");
+        // System.out.println(JsonUtil.toJson(data));
+        // System.out.println("===================");
 
-        String file = "/home/ty/test-box.pdf";
+        String file = "/home/ty/test-sku.pdf";
         PdfUtil.generatePdfFile(file, print, data);
     }
 
     @Test
-    public void sku() {
+    public void box() {
         PrintInfo print = new PrintInfo();
         // print.setWidth(595F);
         // print.setHeight(842F);
@@ -265,10 +265,10 @@ public class PdfTest {
 
         List<PrintInfo.DataContent> holdContentList = Lists.newArrayList();
         PrintInfo.DataContent phc0 = new PrintInfo.DataContent();
-        phc0.setX(210F);
+        phc0.setX(190F);
         phc0.setY(800F);
         phc0.setValue("Packing List");
-        phc0.setFontSize(18F);
+        phc0.setFontSize(22F);
         phc0.setFontBold(true);
         holdContentList.add(phc0);
 
@@ -488,7 +488,7 @@ public class PdfTest {
         // System.out.println(JsonUtil.toJson(data)); // 数据
         // System.out.println("===================");
 
-        String file = "/home/ty/test-sku.pdf";
+        String file = "/home/ty/test-box.pdf";
         PdfUtil.generatePdfFile(file, print, data);
 
         // String encode = Encrypt.base64Encode(PdfUtil.generatePdfByte(print, data));

@@ -403,37 +403,6 @@ public final class U {
         return THOUSANDS_REGEX.matcher(left).replaceAll("$1,") + right;
     }
 
-    public static boolean equals(Object obj1, Object obj2) {
-        if (obj1 == obj2) {
-            return true;
-        } else if (obj1 != null && obj2 != null) {
-            String s1 = obj1.toString();
-            String s2 = obj2.toString();
-            if (s1.length() != s2.length()) {
-                return false;
-            } else {
-                return s1.equals(s2);
-            }
-        } else {
-            return false;
-        }
-    }
-    public static boolean equalsIgnoreCase(Object obj1, Object obj2) {
-        if (obj1 == obj2) {
-            return true;
-        } else if (obj1 != null && obj2 != null) {
-            String s1 = obj1.toString();
-            String s2 = obj2.toString();
-            if (s1.length() != s2.length()) {
-                return false;
-            } else {
-                return s1.equalsIgnoreCase(s2);
-            }
-        } else {
-            return false;
-        }
-    }
-
     public static String toStr(Object obj) {
         return isNull(obj) ? EMPTY : obj.toString();
     }
@@ -566,6 +535,29 @@ public final class U {
 
     public static <T> T defaultIfNull(T obj, T defaultValue) {
         return isNull(obj) ? defaultValue : obj;
+    }
+
+    public static boolean isEquals(Object obj1, Object obj2) {
+        if (obj1 == obj2) {
+            return true;
+        } else if (obj1 != null && obj2 != null) {
+            return obj1.equals(obj2);
+        } else {
+            return false;
+        }
+    }
+    public static boolean isNotEquals(Object obj1, Object obj2) {
+        return !isEquals(obj1, obj2);
+    }
+    public static boolean isEqualsIgnoreCase(String str1, String str2) {
+        if (str1 != null && str2 != null) {
+            return str1.equalsIgnoreCase(str2);
+        } else {
+            return false;
+        }
+    }
+    public static boolean isNotEqualsIgnoreCase(String str1, String str2) {
+        return !isEqualsIgnoreCase(str1, str2);
     }
 
     /** 对象为 null 时返回 true */
