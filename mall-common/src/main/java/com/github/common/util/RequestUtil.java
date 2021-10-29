@@ -17,7 +17,14 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 
-/** <span style="color:red;">!!!此工具类请只在 Controller 中调用!!!</span> */
+/**
+ * <span style="color:red;">
+ * !!!
+ * 此工具类请只在有 Request 上下文的地方调用(比如 Controller),
+ * 在 Service 层调用意味着把 Request 的生命周期放到了更深的业务层.
+ * 这不是一个好的习惯, 请不要这么做
+ * !!!
+ * </span> */
 public final class RequestUtil {
 
     private static final String USER_AGENT = "user-agent";
