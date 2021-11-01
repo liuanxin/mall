@@ -3,7 +3,8 @@ package com.github.global.util;
 import com.github.common.exception.ParamException;
 import com.github.common.util.A;
 import com.github.common.util.U;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
@@ -25,7 +26,7 @@ public class ValidationExtendUtil {
         }
         Set<ConstraintViolation<T>> errorSet = validator.validate(obj, groups);
         if (A.isNotEmpty(errorSet)) {
-            Map<String, String> fieldErrorMap = Maps.newLinkedHashMap();
+            Multimap<String, String> fieldErrorMap = ArrayListMultimap.create();
             Class<?> clazz = obj.getClass();
             for (ConstraintViolation<?> error : errorSet) {
                 if (U.isNotNull(error)) {
@@ -33,8 +34,9 @@ public class ValidationExtendUtil {
                     fieldErrorMap.put(ValidationUtil.getParamField(clazz, field), error.getMessage());
                 }
             }
-            if (A.isNotEmpty(fieldErrorMap)) {
-                throw new ParamException(fieldErrorMap);
+            Map<String, String> errorMap = ValidationUtil.handleError(fieldErrorMap);
+            if (A.isNotEmpty(errorMap)) {
+                throw new ParamException(errorMap);
             }
         }
     }
