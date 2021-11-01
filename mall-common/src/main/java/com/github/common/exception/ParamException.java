@@ -1,6 +1,7 @@
 package com.github.common.exception;
 
 import com.github.common.util.A;
+import com.google.common.base.Joiner;
 import lombok.Getter;
 
 import java.util.Collections;
@@ -11,19 +12,21 @@ import java.util.Map;
 public class ParamException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 
-	private final Map<String, String> validationErrorMap;
+	private final Map<String, String> errorMap;
 
 	public ParamException(String msg) {
 		super(msg);
-		this.validationErrorMap = Collections.emptyMap();
+		this.errorMap = Collections.emptyMap();
 	}
 
 	public ParamException(String field, String message) {
-		this.validationErrorMap = A.maps(field, message);
+		super(message);
+		this.errorMap = A.maps(field, message);
 	}
 
-	public ParamException(Map<String, String> messageMap) {
-		this.validationErrorMap = messageMap;
+	public ParamException(Map<String, String> errorMap) {
+		super(Joiner.on(",").join(errorMap.values()));
+		this.errorMap = errorMap;
 	}
 
 	@Override

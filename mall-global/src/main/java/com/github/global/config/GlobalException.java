@@ -4,6 +4,7 @@ import com.github.common.Const;
 import com.github.common.exception.*;
 import com.github.common.json.JsonCode;
 import com.github.common.json.JsonResult;
+import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
@@ -93,7 +94,7 @@ public class GlobalException {
             LogUtil.ROOT_LOG.debug("参数验证不过", e);
         }
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
-        return ResponseEntity.status(status).body(JsonResult.badRequest(e.getMessage(), e.getValidationErrorMap()));
+        return ResponseEntity.status(status).body(JsonResult.badRequest(e.getMessage(), e.getErrorMap()));
     }
     /** 错误的请求 */
     @ExceptionHandler(BadRequestException.class)
@@ -135,10 +136,10 @@ public class GlobalException {
     }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<JsonResult<String>> paramValidException(MethodArgumentNotValidException e) {
-        Map<String, String> fieldErrorMap = ValidationUtil.validate(e.getBindingResult());
-        bindAndPrintLog(Joiner.on(", ").join(fieldErrorMap.values()), e);
-        int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
-        return ResponseEntity.status(status).body(JsonResult.fail("参数验证失败", errorTrack(e), fieldErrorMap));
+        Map<String, String> errorMap = ValidationUtil.validate(e.getBindingResult());
+        bindAndPrintLog(JsonUtil.toJson(errorMap), e);
+        int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
+        return ResponseEntity.status(status).body(JsonResult.badRequest(Joiner.on(",").join(errorMap.values()), errorMap));
     }
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<JsonResult<Void>> notSupported(HttpRequestMethodNotSupportedException e) {
