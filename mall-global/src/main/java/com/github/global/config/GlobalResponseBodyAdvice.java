@@ -48,7 +48,8 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
             try {
                 if (notRequestInfo) {
                     String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
-                    LogUtil.bindContext(traceId, RequestUtil.logContextInfo());
+                    LogUtil.putContext(traceId, RequestUtil.logContextInfo());
+                    LogUtil.putIp(RequestUtil.getRealIp());
                 }
                 StringBuilder sbd = new StringBuilder();
 

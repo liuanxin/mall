@@ -24,6 +24,8 @@ public final class LogUtil {
     private static final String REQUEST_INFO = "Request_Info";
     /** 在日志上下文中记录的真实 ip */
     private static final String REAL_IP = "Real_Ip";
+    /** 在日志上下文中记录的用户信息 */
+    private static final String USER = "User";
 
     /** 将 跟踪号 和 接收到请求的时间 放进日志上下文 */
     public static void bindBasicInfo(String traceId) {
@@ -40,12 +42,17 @@ public final class LogUtil {
         return U.isEmpty(MDC.get(REQUEST_INFO));
     }
     /** 将 请求上下文信息 放进日志上下文 */
-    public static void bindContext(String traceId, RequestLogContext logContextInfo) {
+    public static void putContext(String traceId, RequestLogContext logContextInfo) {
         bindBasicInfo(traceId);
         MDC.put(REQUEST_INFO, logContextInfo.requestInfo());
     }
-    public static void bindIp(String ip) {
+    public static void putIp(String ip) {
         MDC.put(REAL_IP, ip);
+    }
+    public static void putUser(String user) {
+        if (U.isNotBlank(user)) {
+            MDC.put(USER, " " + user);
+        }
     }
 
     public static void unbind() {
@@ -58,8 +65,11 @@ public final class LogUtil {
     public static String getTraceId() {
         return U.toStr(MDC.get(TRACE_ID)).trim();
     }
-    public static String getRealIp() {
-        return MDC.get(TRACE_ID);
+    public static String getIp() {
+        return MDC.get(REAL_IP);
+    }
+    public static String getUser() {
+        return MDC.get(USER);
     }
 
 
@@ -68,9 +78,6 @@ public final class LogUtil {
     @NoArgsConstructor
     @Accessors(chain = true)
     public static class RequestLogContext {
-        private String user;
-        /** 访问 ip */
-        private String ip;
         /** 访问方法 */
         private String method;
         /** 访问地址 */
@@ -80,23 +87,18 @@ public final class LogUtil {
         /** 请求 header 中的参数 */
         private String heads;
 
-        RequestLogContext(String ip, String method, String url, String params, String heads) {
-            this.ip = ip;
+        RequestLogContext(String method, String url, String params, String heads) {
             this.method =method;
             this.url = url;
             this.params = params;
             this.heads = heads;
         }
 
-        /** 输出 " [ip (user) (method url) params(...) headers(...)]" */
+        /** 输出 " [method url params(...) headers(...)]" */
         private String requestInfo() {
             StringBuilder sbd = new StringBuilder();
             sbd.append(" [");
-            sbd.append(ip);
-            if (U.isNotBlank(user)) {
-                sbd.append(" (").append(user).append(")");
-            }
-            sbd.append(" (").append(method).append(" ").append(url).append(")");
+            sbd.append(method).append(" ").append(url).append(")");
             if (U.isNotBlank(heads)) {
                 sbd.append(" headers(").append(heads).append(")");
             }

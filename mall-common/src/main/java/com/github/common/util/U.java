@@ -560,6 +560,13 @@ public final class U {
         return !isEqualsIgnoreCase(str1, str2);
     }
 
+    public static boolean isTrue(Boolean flag) {
+        return isNotNull(flag) && flag;
+    }
+    public static boolean isNotTrue(Boolean flag) {
+        return !isTrue(flag);
+    }
+
     /** 对象为 null 时返回 true */
     public static boolean isNull(Object obj) {
         return obj == null;
@@ -569,16 +576,16 @@ public final class U {
         return obj != null;
     }
 
-    public static boolean isTrue(Boolean flag) {
-        return isNotNull(flag) && flag;
-    }
-    public static boolean isNotTrue(Boolean flag) {
-        return !isTrue(flag);
-    }
-
     /** 为空或是空字符时返回 true */
     public static boolean isBlank(String str) {
-        return isNull(str) || str.trim().isEmpty();
+        if (isNull(str)) {
+            return true;
+        }
+        String trim = str.trim();
+        return trim.isEmpty()
+                || "null".equalsIgnoreCase(trim)
+                || "nil".equalsIgnoreCase(trim)
+                || "undefined".equalsIgnoreCase(trim);
     }
     /** 非空且不是空字符时返回 true */
     public static boolean isNotBlank(String obj) {

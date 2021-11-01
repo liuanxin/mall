@@ -182,7 +182,8 @@ public class GlobalException {
             try {
                 if (notRequestInfo) {
                     String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
-                    LogUtil.bindContext(traceId, RequestUtil.logContextInfo());
+                    LogUtil.putContext(traceId, RequestUtil.logContextInfo());
+                    LogUtil.putIp(RequestUtil.getRealIp());
                 }
                 LogUtil.ROOT_LOG.debug(msg, e);
             } finally {

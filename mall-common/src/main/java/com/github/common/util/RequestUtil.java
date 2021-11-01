@@ -337,15 +337,12 @@ public final class RequestUtil {
 
     /** 基于请求上下文生成一个日志需要的上下文信息对象 */
     public static LogUtil.RequestLogContext logContextInfo() {
-        String ip = getRealIp();
-        LogUtil.bindIp(ip);
-
         HttpServletRequest request = getRequest();
         String method = U.isNull(request) ? U.EMPTY : request.getMethod();
         String url = getRequestUrl();
         String param = formatParam();
         String head = formatHeader();
-        return new LogUtil.RequestLogContext(ip, method, url, param, head);
+        return new LogUtil.RequestLogContext(method, url, param, head);
     }
 
     /**
