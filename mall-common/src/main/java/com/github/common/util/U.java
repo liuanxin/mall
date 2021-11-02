@@ -591,8 +591,8 @@ public final class U {
             return true;
         }
 
-        if (obj instanceof CharSequence) {
-            String str = obj.toString().trim();
+        if (obj instanceof String) {
+            String str = ( (String) obj ).trim();
             return str.isEmpty() || "null".equalsIgnoreCase(str) || "undefined".equalsIgnoreCase(str);
         } else if (obj instanceof Optional) {
             return ((Optional<?>) obj).isEmpty();
