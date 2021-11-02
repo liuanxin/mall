@@ -104,7 +104,7 @@ public class Money implements Serializable {
 
     /** 元转换为分 */
     public static Long yuan2Cent(String yuan) {
-        if (U.isEmpty(yuan)) {
+        if (U.isBlank(yuan)) {
             return null;
         }
 

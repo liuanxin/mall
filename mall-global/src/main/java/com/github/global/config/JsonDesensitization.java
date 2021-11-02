@@ -56,6 +56,6 @@ public class JsonDesensitization {
             }
         }
 
-        return (hasCompress && U.isNotEmpty(json)) ? U.compress(json) : json;
+        return (hasCompress && U.isNotBlank(json)) ? U.compress(json) : json;
     }
 }

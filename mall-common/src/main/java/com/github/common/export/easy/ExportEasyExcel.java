@@ -210,7 +210,7 @@ public class ExportEasyExcel {
      * @see org.apache.poi.ss.util.WorkbookUtil#validateSheetName
      */
     private static String handleSheetName(String sheetName, int sheetCount, int sheetIndex) {
-        if (U.isEmpty(sheetName)) {
+        if (U.isBlank(sheetName)) {
             sheetName = "sheet";
         }
         String tmpSn = sheetName.replace("/", " ").replace("\\", " ").replace("?", " ")

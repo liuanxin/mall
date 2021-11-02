@@ -3,26 +3,26 @@ package com.github.common.encrypt;
 import com.github.common.encrypt.jwt.JWTExpiredException;
 import com.github.common.encrypt.jwt.JWTSigner;
 import com.github.common.encrypt.jwt.JWTVerifier;
-import com.github.common.encrypt.jwt.JWTVerifyException;
-import com.github.common.util.LogUtil;
+import com.github.common.exception.ForbiddenException;
 import com.github.common.util.U;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import lombok.Data;
 
-import javax.crypto.*;
+import javax.crypto.Cipher;
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -57,20 +57,17 @@ public final class Encrypt {
     /** 使用 aes 加密 */
     public static String aesEncode(String data, String secretKey) {
         if (data == null) {
-            throw new RuntimeException("空无需使用 " + AES + " 加密");
+            throw new RuntimeException(String.format("空无需使用 %s 加密", AES));
         }
         if (secretKey.length() != AES_LEN) {
-            throw new RuntimeException(AES + " 加密时, 密钥必须是 " + AES_LEN + " 位");
+            throw new RuntimeException(String.format("%s 加密时, 密钥必须是 %s 位", AES, AES_LEN));
         }
         try {
             Cipher cipher = Cipher.getInstance(AES);
             cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(secretKey.getBytes(UTF8), AES));
             return binary2Hex(cipher.doFinal(data.getBytes(UTF8)));
         } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isWarnEnabled()) {
-                LogUtil.ROOT_LOG.warn(AES + "(" + data + ")加密异常", e);
-            }
-            throw new RuntimeException(AES + "(" + data + ")加密异常");
+            throw new RuntimeException(String.format("用 %s 加密(%s)密钥(%s)时异常", AES, data, secretKey), e);
         }
     }
     /** 使用 aes 解密(使用默认密钥) */
@@ -79,26 +76,18 @@ public final class Encrypt {
     }
     /** 使用 aes 解密 */
     public static String aesDecode(String data, String secretKey) {
-        if (U.isEmpty(data)) {
-            throw new RuntimeException("空值无需使用 " + AES + " 解密");
+        if (U.isBlank(data)) {
+            throw new RuntimeException(String.format("空无需使用 %s 解密", AES));
         }
         if (secretKey.length() != AES_LEN) {
-            throw new RuntimeException(AES + " 解密时, 密钥必须是 " + AES_LEN + " 位");
+            throw new RuntimeException(String.format("%s 解密时, 密钥必须是 %s 位", AES, AES_LEN));
         }
         try {
             Cipher cipher = Cipher.getInstance(AES);
             cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(secretKey.getBytes(UTF8), AES));
             return new String(cipher.doFinal(hex2Binary(data)), UTF8);
-        } catch (BadPaddingException e) {
-            if (LogUtil.ROOT_LOG.isWarnEnabled()) {
-                LogUtil.ROOT_LOG.warn(AES + "(" + data + ")解密时密钥错误", e);
-            }
-            throw new RuntimeException(AES + "(" + data + ")解密时密钥错误");
         } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isWarnEnabled()) {
-                LogUtil.ROOT_LOG.warn(AES + "(" + data + ")解密异常", e);
-            }
-            throw new RuntimeException(AES + "(" + data + ")解密异常");
+            throw new RuntimeException(String.format("用 %s 解密(%s)密钥(%s)时异常", AES, data, secretKey), e);
         }
     }
 
@@ -109,10 +98,10 @@ public final class Encrypt {
     /** 使用 des 加密 */
     public static String desEncode(String data, String secretKey) {
         if (data == null) {
-            throw new RuntimeException("空无需使用 " + DES + " 加密");
+            throw new RuntimeException(String.format("空无需使用 %s 加密", DES));
         }
         if (secretKey.length() != DES_LEN) {
-            throw new RuntimeException(DES + " 加密时, 密钥必须是 " + DES_LEN + " 位");
+            throw new RuntimeException(String.format("%s 加密时, 密钥必须是 %s 位", DES, DES_LEN));
         }
         try {
             DESKeySpec desKey = new DESKeySpec(secretKey.getBytes(UTF8));
@@ -122,10 +111,7 @@ public final class Encrypt {
             cipher.init(Cipher.ENCRYPT_MODE, secretkey, new SecureRandom());
             return binary2Hex(cipher.doFinal(data.getBytes()));
         } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isWarnEnabled()) {
-                LogUtil.ROOT_LOG.warn(AES + "(" + data + ")加密失败", e);
-            }
-            throw new RuntimeException(AES + "(" + data + ")加密失败");
+            throw new RuntimeException(String.format("用 %s 加密(%s)密钥(%s)时异常", DES, data, secretKey), e);
         }
     }
     /** 使用 des 解密(使用默认密钥) */
@@ -135,10 +121,10 @@ public final class Encrypt {
     /** 使用 des 解密 */
     public static String desDecode(String data, String secretKey) {
         if (data == null || data.trim().length() == 0) {
-            throw new RuntimeException("空值无需使用 " + DES + " 解密");
+            throw new RuntimeException(String.format("空无需使用 %s 解密", DES));
         }
         if (secretKey.length() != DES_LEN) {
-            throw new RuntimeException(DES + " 解密时, 密钥必须是 " + DES_LEN + " 位");
+            throw new RuntimeException(String.format("%s 解密时, 密钥必须是 %s 位", DES, DES_LEN));
         }
         try {
             DESKeySpec desKey = new DESKeySpec(secretKey.getBytes(UTF8));
@@ -147,16 +133,8 @@ public final class Encrypt {
             Cipher cipher = Cipher.getInstance(DES);
             cipher.init(Cipher.DECRYPT_MODE, secretkey, new SecureRandom());
             return new String(cipher.doFinal(hex2Binary(data)), UTF8);
-        } catch (BadPaddingException e) {
-            if (LogUtil.ROOT_LOG.isWarnEnabled()) {
-                LogUtil.ROOT_LOG.warn(DES + "(" + data + ")解密时密钥错误", e);
-            }
-            throw new RuntimeException(DES + "(" + data + ")解密时密钥错误");
         } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isWarnEnabled()) {
-                LogUtil.ROOT_LOG.warn(DES + "(" + data + ")解密异常", e);
-            }
-            throw new RuntimeException(DES + "(" + data + ")解密异常");
+            throw new RuntimeException(String.format("用 %s 解密(%s)密钥(%s)时异常", DES, data, secretKey), e);
         }
     }
 
@@ -167,10 +145,10 @@ public final class Encrypt {
     /** 使用 DES/CBC/PKCS5Padding 加密 */
     public static String desCbcEncode(String data, String secretKey) {
         if (data == null) {
-            throw new RuntimeException("空无需使用 " + DES_CBC_PKCS5PADDING + " 加密");
+            throw new RuntimeException(String.format("空无需使用 %s 加密", DES_CBC_PKCS5PADDING));
         }
         if (secretKey.length() != DES_LEN) {
-            throw new RuntimeException(DES_CBC_PKCS5PADDING + " 加密时, 密钥必须是 " + DES_LEN + " 位");
+            throw new RuntimeException(String.format("%s 加密时, 密钥必须是 %s 位", DES_CBC_PKCS5PADDING, DES_LEN));
         }
         try {
             byte[] secretKeyBytes = secretKey.getBytes(UTF8);
@@ -181,10 +159,7 @@ public final class Encrypt {
             cipher.init(Cipher.ENCRYPT_MODE, secretkey, new IvParameterSpec(secretKeyBytes));
             return binary2Hex(cipher.doFinal(data.getBytes()));
         } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isWarnEnabled()) {
-                LogUtil.ROOT_LOG.warn(DES_CBC_PKCS5PADDING + "(" + data + ")加密失败", e);
-            }
-            throw new RuntimeException(DES_CBC_PKCS5PADDING + "(" + data + ")加密失败");
+            throw new RuntimeException(String.format("用 %s 加密(%s)密钥(%s)时异常", DES_CBC_PKCS5PADDING, data, secretKey), e);
         }
     }
     /** 使用 DES/CBC/PKCS5Padding 解密(使用默认密钥) */
@@ -194,10 +169,10 @@ public final class Encrypt {
     /** 使用 DES/CBC/PKCS5Padding 解密 */
     public static String desCbcDecode(String data, String secretKey) {
         if (data == null || data.trim().length() == 0) {
-            throw new RuntimeException("空值无需使用 " + DES_CBC_PKCS5PADDING + " 解密");
+            throw new RuntimeException(String.format("空无需使用 %s 解密", DES_CBC_PKCS5PADDING));
         }
         if (secretKey.length() != DES_LEN) {
-            throw new RuntimeException(DES_CBC_PKCS5PADDING + " 解密时, 密钥必须是 " + DES_LEN + " 位");
+            throw new RuntimeException(String.format("%s 解密时, 密钥必须是 %s 位", DES_CBC_PKCS5PADDING, DES_LEN));
         }
         try {
             byte[] secretKeyBytes = secretKey.getBytes(UTF8);
@@ -206,16 +181,8 @@ public final class Encrypt {
             Cipher cipher = Cipher.getInstance(DES_CBC_PKCS5PADDING);
             cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(secretKeyBytes));
             return new String(cipher.doFinal(hex2Binary(data)), UTF8);
-        } catch (BadPaddingException e) {
-            if (LogUtil.ROOT_LOG.isWarnEnabled()) {
-                LogUtil.ROOT_LOG.warn(DES_CBC_PKCS5PADDING + "(" + data + ")解密时密钥错误", e);
-            }
-            throw new RuntimeException(DES_CBC_PKCS5PADDING + "(" + data + ")解密时密钥错误");
         } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isWarnEnabled()) {
-                LogUtil.ROOT_LOG.warn(DES_CBC_PKCS5PADDING + "(" + data + ")解密异常", e);
-            }
-            throw new RuntimeException(DES_CBC_PKCS5PADDING + "(" + data + ")解密时异常");
+            throw new RuntimeException(String.format("用 %s 解密(%s)密钥(%s)时异常", DES_CBC_PKCS5PADDING, data, secretKey), e);
         }
     }
 
@@ -238,11 +205,8 @@ public final class Encrypt {
             pair.setPublicKey(new String(Base64.getEncoder().encode(keyPair.getPublic().getEncoded()), UTF8));
             pair.setPrivateKey(new String(Base64.getEncoder().encode(keyPair.getPrivate().getEncoded()), UTF8));
             return pair;
-        } catch (NoSuchAlgorithmException e) {
-            if (LogUtil.ROOT_LOG.isWarnEnabled()) {
-                LogUtil.ROOT_LOG.warn("RSA(" + keyLength + ")生成密钥对时异常", e);
-            }
-            throw new RuntimeException("RSA(" + keyLength + ")生成密钥对时异常");
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("用 %s 生成 %s 位的密钥对时异常", RSA, keyLength), e);
         }
     }
     /** 使用 rsa 的公钥加密 */
@@ -259,10 +223,7 @@ public final class Encrypt {
 
             return new String(Base64.getEncoder().encode(encodeBytes), UTF8);
         } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isWarnEnabled()) {
-                LogUtil.ROOT_LOG.warn("RSA(" + data + ")加密失败", e);
-            }
-            throw new RuntimeException("RSA(" + data + ")加密失败");
+            throw new RuntimeException(String.format("用 %s 基于公钥(%s)加密(%s)时异常", RSA, publicKey, data), e);
         }
     }
     /** 使用 rsa 的私钥解密 */
@@ -279,10 +240,7 @@ public final class Encrypt {
 
             return new String(decodeBytes, UTF8);
         } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isWarnEnabled()) {
-                LogUtil.ROOT_LOG.warn("RSA(" + data + ")解密失败", e);
-            }
-            throw new RuntimeException("RSA(" + data + ")解密失败");
+            throw new RuntimeException(String.format("用 %s 基于私钥(%s)解密(%s)时异常", RSA, privateKey, data), e);
         }
     }
 
@@ -337,29 +295,17 @@ public final class Encrypt {
     }
     /** 使用 aes 解密并解码 jwt 及验证过期和数据完整性, 解码异常 或 数据已过期 或 验证失败 则抛出未登录异常 */
     public static Map<String, Object> jwtDecode(String data) {
-        if (U.isEmpty(data)) {
-            return Collections.emptyMap();
+        if (U.isBlank(data)) {
+            throw new ForbiddenException("数据有误, 请重新登录");
         }
 
         try {
             String jwt = aesDecode(data);
             return JWT_VERIFIER.verify(jwt);
         } catch (JWTExpiredException e) {
-            if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-                LogUtil.ROOT_LOG.debug("使用 jwt 解密(" + data + ")时, 数据已过期", e);
-            }
-            throw new RuntimeException("登录已过期, 请重新登录");
-        } catch (NoSuchAlgorithmException | InvalidKeyException | IOException |
-                SignatureException | JWTVerifyException e) {
-            if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-                LogUtil.ROOT_LOG.debug("使用 jwt 解密(" + data + ")失败", e);
-            }
-            throw new RuntimeException("验证失败, 需要重新登录");
+            throw new ForbiddenException("登录已过期, 请重新登录", e);
         } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-                LogUtil.ROOT_LOG.debug("使用 jwt 解密(" + data + ")异常", e);
-            }
-            throw new RuntimeException("验证失败, 请重新登录");
+            throw new ForbiddenException(String.format("数据(%s)验证失败, 请重新登录", data), e);
         }
     }
 
@@ -438,8 +384,8 @@ public final class Encrypt {
      * </pre>
      */
     public static String getShortString(String src) {
-        if (U.isEmpty(src)) {
-            return U.EMPTY;
+        if (U.isBlank(src)) {
+            return null;
         } else if (src.length() < 6) {
             return src;
         } else {
@@ -510,11 +456,7 @@ public final class Encrypt {
             md.update(src.getBytes());
             return binary2Hex(md.digest());
         } catch (Exception e) {
-            String msg = "无法给(" + src + ")生成 " + algorithm + " 值";
-            if (LogUtil.ROOT_LOG.isWarnEnabled()) {
-                LogUtil.ROOT_LOG.warn(msg, e);
-            }
-            throw new RuntimeException(msg);
+            throw new RuntimeException(String.format("无法给(%s)生成 %s 值", src, algorithm), e);
         }
     }
 
@@ -552,11 +494,7 @@ public final class Encrypt {
             }
             return binary2Hex(md.digest());
         } catch (Exception e) {
-            String msg = "无法生成文件(" + file + ")的 " + algorithm + " 值";
-            if (LogUtil.ROOT_LOG.isWarnEnabled()) {
-                LogUtil.ROOT_LOG.warn(msg, e);
-            }
-            throw new RuntimeException(msg);
+            throw new RuntimeException(String.format("无法生成文件(%s)的 %s 值", file, algorithm), e);
         }
     }
 
@@ -590,11 +528,7 @@ public final class Encrypt {
             mac.init(new SecretKeySpec(secret.getBytes(), algorithm));
             return binary2Hex(mac.doFinal(src.getBytes()));
         } catch (Exception e) {
-            String msg = "无法基于(" + secret + ")给(" + src + ")生成 " + algorithm + " 值";
-            if (LogUtil.ROOT_LOG.isWarnEnabled()) {
-                LogUtil.ROOT_LOG.warn(msg, e);
-            }
-            throw new RuntimeException(msg);
+            throw new RuntimeException(String.format("无法基于(%s)给(%s)生成 %s 值", secret, src, algorithm), e);
         }
     }
 

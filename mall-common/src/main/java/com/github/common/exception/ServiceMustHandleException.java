@@ -6,8 +6,15 @@ import java.io.Serializable;
 public class ServiceMustHandleException extends Exception implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    public ServiceMustHandleException() {super();}
-    public ServiceMustHandleException(String msg) {super(msg);}
+    public ServiceMustHandleException() {
+        super();
+    }
+    public ServiceMustHandleException(String msg) {
+        super(msg);
+    }
+    public ServiceMustHandleException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
 
     @Override
     public Throwable fillInStackTrace() {

@@ -45,7 +45,7 @@ public class HttpOkClientUtil {
 
     /** 向指定 url 进行 get 请求 */
     public static String get(String url) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -53,7 +53,7 @@ public class HttpOkClientUtil {
     }
     /** 向指定 url 进行 get 请求. 有参数 */
     public static String get(String url, Map<String, Object> params) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -62,7 +62,7 @@ public class HttpOkClientUtil {
     }
     /** 向指定 url 进行 get 请求. 有参数和头 */
     public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -75,7 +75,7 @@ public class HttpOkClientUtil {
 
     /** 向指定的 url 进行 post 请求. 有参数 */
     public static String post(String url, Map<String, Object> params) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -84,7 +84,7 @@ public class HttpOkClientUtil {
     }
     /** 向指定的 url 进行 post 请求. 参数以 json 的方式一次传递 */
     public static String post(String url, String json) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -94,7 +94,7 @@ public class HttpOkClientUtil {
     }
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -106,7 +106,7 @@ public class HttpOkClientUtil {
 
     /** 向指定 url 上传 png 图片文件 */
     public static String postFile(String url, Map<String, Object> params, Map<String, File> files) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 

@@ -460,7 +460,7 @@ public final class U {
 
     /** 字符串转 unicode(中文转成 \\u) */
     public static String encodeUnicode(String str) {
-        if (isEmpty(str)) {
+        if (isBlank(str)) {
             return str;
         }
 
@@ -474,7 +474,7 @@ public final class U {
 
     /** unicode 转字符串(\\u 转成中文) */
     public static String decodeUnicode(String unicode) {
-        if (isEmpty(unicode)) {
+        if (isBlank(unicode)) {
             return unicode;
         }
 
@@ -494,7 +494,7 @@ public final class U {
 
     /** 字符串转 ascii */
     public static String stringToAscii(String str) {
-        if (isEmpty(str)) {
+        if (isBlank(str)) {
             return str;
         }
 
@@ -507,7 +507,7 @@ public final class U {
 
     /** ascii 转字符串 */
     public static String asciiToString(String ascii) {
-        if (isEmpty(ascii)) {
+        if (isBlank(ascii)) {
             return ascii;
         }
 
@@ -578,14 +578,7 @@ public final class U {
 
     /** 为空或是空字符时返回 true */
     public static boolean isBlank(String str) {
-        if (isNull(str)) {
-            return true;
-        }
-        String trim = str.trim();
-        return trim.isEmpty()
-                || "null".equalsIgnoreCase(trim)
-                || "nil".equalsIgnoreCase(trim)
-                || "undefined".equalsIgnoreCase(trim);
+        return isNull(str) || str.trim().isEmpty();
     }
     /** 非空且不是空字符时返回 true */
     public static boolean isNotBlank(String obj) {
@@ -600,10 +593,7 @@ public final class U {
 
         if (obj instanceof CharSequence) {
             String str = obj.toString().trim();
-            return str.isEmpty()
-                    || "null".equalsIgnoreCase(str)
-                    || "nil".equalsIgnoreCase(str)
-                    || "undefined".equalsIgnoreCase(str);
+            return str.isEmpty() || "null".equalsIgnoreCase(str) || "undefined".equalsIgnoreCase(str);
         } else if (obj instanceof Optional) {
             return ((Optional<?>) obj).isEmpty();
         } else if (obj.getClass().isArray()) {
@@ -1097,7 +1087,7 @@ public final class U {
     }
 
     public static Class<?> getFieldType(Object obj, String field) {
-        if (isEmpty(field)) {
+        if (isBlank(field)) {
             return null;
         }
         Class<?> clazz = obj.getClass();

@@ -54,7 +54,7 @@ public final class BeanChange {
                 order = changeProperty.order();
                 dateFormat = changeProperty.dateFormat();
                 Map<String, String> valueMapping = JsonUtil.convertType(changeProperty.valueMapping(), MAP_REFERENCE);
-                map = U.isEmpty(valueMapping) ? Collections.emptyMap() : valueMapping;
+                map = A.isEmpty(valueMapping) ? Collections.emptyMap() : valueMapping;
                 typeSet = Sets.newHashSet(changeProperty.collectGroup());
             }
 
@@ -75,7 +75,7 @@ public final class BeanChange {
 
                 if (oldValue != newValue) {
                     String value = compareValue(getValue(oldValue, dateFormat), getValue(newValue, dateFormat), name, map);
-                    if (U.isNotEmpty(value)) {
+                    if (U.isNotBlank(value)) {
                         fieldMap.put(order, value);
                     }
                 }
@@ -97,7 +97,7 @@ public final class BeanChange {
         if (U.isNull(obj)) {
             return null;
         } else if (obj instanceof Date) {
-            if (U.isEmpty(dateFormat)) {
+            if (U.isBlank(dateFormat)) {
                 return DateUtil.formatDateTime((Date) obj);
             } else {
                 return DateUtil.format((Date) obj, dateFormat);
@@ -109,11 +109,11 @@ public final class BeanChange {
 
     private static String getMapping(Map<String, String> map, String obj) {
         String value = map.get(obj);
-        if (U.isNotEmpty(value)) {
+        if (U.isNotBlank(value)) {
             return value;
         }
         String other = map.get("OTHER");
-        if (U.isNotEmpty(other)) {
+        if (U.isNotBlank(other)) {
             return other;
         }
         return obj;

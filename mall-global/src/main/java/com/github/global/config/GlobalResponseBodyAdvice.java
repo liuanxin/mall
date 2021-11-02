@@ -40,7 +40,7 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
                 return;
             }
             String json = jsonDesensitization.toJson(bodyContainer.getValue());
-            if (U.isEmpty(json)) {
+            if (U.isBlank(json)) {
                 return;
             }
 

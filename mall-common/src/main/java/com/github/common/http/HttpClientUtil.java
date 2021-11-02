@@ -137,7 +137,7 @@ public class HttpClientUtil {
 
     /** 向指定 url 进行 get 请求 */
     public static String get(String url) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -145,7 +145,7 @@ public class HttpClientUtil {
         return handleRequest(new HttpGet(url), null, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
     }
     public static String get(String url, int connectTimeout, int socketTimeout) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -153,7 +153,7 @@ public class HttpClientUtil {
         return handleRequest(new HttpGet(url), null, connectTimeout, socketTimeout);
     }
     public static <T> String get(String url, T param) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -165,7 +165,7 @@ public class HttpClientUtil {
     }
     /** 向指定 url 进行 get 请求. 有参数 */
     public static String get(String url, Map<String, Object> params) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -175,7 +175,7 @@ public class HttpClientUtil {
     }
     /** 向指定 url 进行 get 请求. 有参数 */
     public static String get(String url, Map<String, Object> params, int connectTimeout, int socketTimeout) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -185,7 +185,7 @@ public class HttpClientUtil {
     }
     /** 向指定 url 进行 get 请求. 有参数和头 */
     public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -199,7 +199,7 @@ public class HttpClientUtil {
     /** 向指定 url 进行 get 请求. 有参数和头 */
     public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap,
                                        int connectTimeout, int socketTimeout) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -214,7 +214,7 @@ public class HttpClientUtil {
 
     /** 向指定的 url 进行 post 请求. 有参数 */
     public static String post(String url, Map<String, Object> params) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -224,7 +224,7 @@ public class HttpClientUtil {
     }
     /** 向指定的 url 进行 post 请求. 有参数 */
     public static String post(String url, Map<String, Object> params, int connectTimeout, int socketTimeout) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -234,7 +234,7 @@ public class HttpClientUtil {
     }
     /** 向指定的 url 进行 post 请求. 参数以 json 的方式一次传递 */
     public static String post(String url, String json) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -246,7 +246,7 @@ public class HttpClientUtil {
     }
     /** 向指定的 url 进行 post 请求. 参数以 json 的方式一次传递 */
     public static String post(String url, String json, int connectTimeout, int socketTimeout) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -258,7 +258,7 @@ public class HttpClientUtil {
     }
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -270,7 +270,7 @@ public class HttpClientUtil {
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers,
                                         int connectTimeout, int socketTimeout) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -281,7 +281,7 @@ public class HttpClientUtil {
     }
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postBodyWithHeader(String url, String json, Map<String, Object> headers) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -295,7 +295,7 @@ public class HttpClientUtil {
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postBodyWithHeader(String url, String json, Map<String, Object> headers,
                                             int connectTimeout, int socketTimeout) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 
@@ -310,7 +310,7 @@ public class HttpClientUtil {
 
     /** 向指定的 url 进行 post 操作, 有参数和文件 */
     public static String postFile(String url, Map<String, Object> params, Map<String, File> files) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return null;
         }
 

@@ -99,7 +99,7 @@ public final class Compressor {
 
     /** 压缩 html 代码成一行 */
     public static String html(String html) {
-        if (U.isEmpty(html)) {
+        if (U.isBlank(html)) {
             return U.EMPTY;
         }
 

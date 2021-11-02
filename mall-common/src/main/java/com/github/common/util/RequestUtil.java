@@ -160,7 +160,7 @@ public final class RequestUtil {
 
     /** 从 url 中获取 domain 信息. 如: http://www.jd.com/product/123 返回 http://www.jd.com */
     public static String getDomain(String url) {
-        if (U.isEmpty(url)) {
+        if (U.isBlank(url)) {
             return U.EMPTY;
         }
         String lowerUrl = url.toLowerCase();
@@ -360,7 +360,7 @@ public final class RequestUtil {
             return;
         }
 
-        if (U.isEmpty(langParamName)) {
+        if (U.isBlank(langParamName)) {
             langParamName = "lang";
         }
         try {
@@ -370,10 +370,10 @@ public final class RequestUtil {
             if (U.isNotBlank(lan)) {
                 locale = StringUtils.parseLocale(lan);
             }
-            if (U.isNull(locale) || U.isEmpty(locale.getCountry())) {
+            if (U.isNull(locale) || U.isBlank(locale.getCountry())) {
                 locale = request.getLocale();
             }
-            if (U.isNull(locale) || U.isEmpty(locale.getCountry())) {
+            if (U.isNull(locale) || U.isBlank(locale.getCountry())) {
                 locale = Locale.SIMPLIFIED_CHINESE;
             }
             LocaleContextHolder.setLocale(locale);

@@ -103,7 +103,7 @@ public class JsonUtil {
             }
         }
 
-        if (U.isEmpty(json)) {
+        if (U.isBlank(json)) {
             return null;
         }
         try {
@@ -131,7 +131,7 @@ public class JsonUtil {
             return Collections.emptyList();
         }
 
-        if (U.isEmpty(json)) {
+        if (U.isBlank(json)) {
             return Collections.emptyList();
         }
         try {
@@ -182,7 +182,7 @@ public class JsonUtil {
 
     /** 将 json 字符串转换为对象 */
     public static <T> T toObject(String json, Class<T> clazz) {
-        if (U.isEmpty(json)) {
+        if (U.isBlank(json)) {
             return null;
         }
         try {
@@ -193,7 +193,7 @@ public class JsonUtil {
     }
     /** 将 json 字符串转换为对象, 当转换异常时, 返回 null */
     public static <T> T toObjectNil(String json, Class<T> clazz) {
-        if (U.isEmpty(json)) {
+        if (U.isBlank(json)) {
             return null;
         }
         try {
@@ -207,7 +207,7 @@ public class JsonUtil {
     }
     /** 将 json 字符串转换为泛型对象 */
     public static <T> T toObjectType(String json, TypeReference<T> type) {
-        if (U.isEmpty(json)) {
+        if (U.isBlank(json)) {
             return null;
         }
         try {
@@ -222,7 +222,7 @@ public class JsonUtil {
 
     /** 将 json 字符串转换为指定的数组列表 */
     public static <T> List<T> toList(String json, Class<T> clazz) {
-        if (U.isEmpty(json)) {
+        if (U.isBlank(json)) {
             return Collections.emptyList();
         }
         try {
@@ -233,7 +233,7 @@ public class JsonUtil {
     }
     /** 将 json 字符串转换为指定的数组列表 */
     public static <T> List<T> toListNil(String json, Class<T> clazz) {
-        if (U.isEmpty(json)) {
+        if (U.isBlank(json)) {
             return Collections.emptyList();
         }
         try {

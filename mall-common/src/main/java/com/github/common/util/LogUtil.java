@@ -29,17 +29,17 @@ public final class LogUtil {
 
     /** 将 跟踪号 和 接收到请求的时间 放进日志上下文 */
     public static void bindBasicInfo(String traceId) {
-        if (U.isEmpty(MDC.get(START_REQUEST_TIME))) {
+        if (U.isBlank(MDC.get(START_REQUEST_TIME))) {
             MDC.put(START_REQUEST_TIME, U.toStr(System.currentTimeMillis()));
         }
-        if (U.isEmpty(MDC.get(TRACE_ID))) {
+        if (U.isBlank(MDC.get(TRACE_ID))) {
             // xml 中没有加空格, 在值的前面加一个空格
-            MDC.put(TRACE_ID, " " + (U.isEmpty(traceId) ? U.uuid16() : traceId));
+            MDC.put(TRACE_ID, " " + (U.isBlank(traceId) ? U.uuid16() : traceId));
         }
     }
     /** 日志上下文中没有 请求上下文信息 则返回 true */
     public static boolean hasNotRequestInfo() {
-        return U.isEmpty(MDC.get(REQUEST_INFO));
+        return U.isBlank(MDC.get(REQUEST_INFO));
     }
     /** 将 请求上下文信息 放进日志上下文 */
     public static void putContext(String traceId, RequestLogContext logContextInfo) {
