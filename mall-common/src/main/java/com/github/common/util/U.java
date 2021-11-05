@@ -1,6 +1,5 @@
 package com.github.common.util;
 
-import com.github.common.Money;
 import com.github.common.date.DateUtil;
 import com.github.common.exception.*;
 import com.github.common.json.JsonUtil;
@@ -33,7 +32,6 @@ import java.util.zip.GZIPOutputStream;
 public final class U {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(U.class);
-    private static final Pattern MULTI_SPACE_REGEX = Pattern.compile("\\s{2,}");
 
     public static final Random RANDOM = new Random();
 
@@ -43,6 +41,9 @@ public final class U {
     public static final String EMPTY = "";
     public static final String BLANK = " ";
     private static final String LIKE = "%";
+
+    /** 递归时的最大深度, 如果数据本身有自己引用自己, 加一个深度避免无限递归 */
+    public static final int MAX_DEPTH = 10;
 
     /** 手机号. 见: https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%86%85%E5%9C%B0%E7%A7%BB%E5%8A%A8%E7%BB%88%E7%AB%AF%E9%80%9A%E8%AE%AF%E5%8F%B7%E6%AE%B5 */
     private static final String PHONE = "^1[3-9]\\d{9}$";
@@ -55,16 +56,10 @@ public final class U {
     /** 身份证号码 */
     private static final String ID_CARD = "(^[1-9]\\d{5}(18|19|([23]\\d))\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3}[0-9Xx]$)|(^[1-9]\\d{5}\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3}$)";
 
-    /** 字母 */
-    private static final String LETTER = "(?i)[a-z]";
     /** 中文 */
     private static final String CHINESE = "[\\u4e00-\\u9fa5]";
     /** 是否是移动端: https://gist.github.com/dalethedeveloper/1503252 */
     private static final String MOBILE = "(?i)Mobile|iP(hone|od|ad)|Android|BlackBerry|Blazer|PSP|UCWEB|IEMobile|Kindle|NetFront|Silk-Accelerated|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Dol(f|ph)in|Skyfire|Zune";
-    /** 是否是 iOS 端 */
-    private static final String IOS = "(?i)iP(hone|od|ad)";
-    /** 是否是 android 端 */
-    private static final String ANDROID = "(?i)Mobile|Android";
     /** 是否是 pc 端 */
     private static final String PC = "(?i)AppleWebKit|Mozilla|Chrome|Safari|MSIE|Windows NT";
     /** 是否是本地 ip */
@@ -435,13 +430,7 @@ public final class U {
         if (length >= minLen) {
             return str;
         }
-
-        StringBuilder sbd = new StringBuilder();
-        int loop = minLen - length;
-        for (int i = 0; i < loop; i++) {
-            sbd.append(completion);
-        }
-        return sbd.append(str).toString();
+        return toStr(completion).repeat(minLen - length) + str;
     }
 
     /** 对象长度: 中文字符的长度为 2, 其他字符的长度为 1 */
@@ -471,7 +460,6 @@ public final class U {
         }
         return sbd.toString();
     }
-
     /** unicode 转字符串(\\u 转成中文) */
     public static String decodeUnicode(String unicode) {
         if (isBlank(unicode)) {
@@ -504,7 +492,6 @@ public final class U {
         }
         return sbd.toString();
     }
-
     /** ascii 转字符串 */
     public static String asciiToString(String ascii) {
         if (isBlank(ascii)) {
@@ -520,17 +507,6 @@ public final class U {
             }
         }
         return sbd.toString();
-    }
-
-    /** 去掉所有的制表符 和 换行符 */
-    public static String replaceTabAndWrap(String str) {
-        return isBlank(str) ? EMPTY : str.replace("\t", EMPTY).replace("\n", EMPTY);
-    }
-    /** 将字符串中的多个空白符替换成一个 */
-    public static String replaceBlank(String str) {
-        return isBlank(str)
-                ? EMPTY
-                : MULTI_SPACE_REGEX.matcher(str.replace("\r", EMPTY).replace("\n", BLANK)).replaceAll(BLANK).trim();
     }
 
     public static <T> T defaultIfNull(T obj, T defaultValue) {
@@ -581,8 +557,8 @@ public final class U {
         return isNull(str) || str.trim().isEmpty();
     }
     /** 非空且不是空字符时返回 true */
-    public static boolean isNotBlank(String obj) {
-        return !isBlank(obj);
+    public static boolean isNotBlank(String str) {
+        return !isBlank(str);
     }
 
     /** 对象为空, 字符串为 null nil undefined, 数组、集合、Map 长度为 0 则返回 true */
@@ -722,10 +698,6 @@ public final class U {
         return isNotBlank(param) && Pattern.compile(regex).matcher(param).find();
     }
 
-    /** 传入的参数只要包含字母就返回 true */
-    public static boolean isLetter(String param) {
-        return checkRegexWithRelax(param, LETTER);
-    }
     /** 传入的参数只要包含中文就返回 true */
     public static boolean checkChinese(String param) {
         return checkRegexWithRelax(param, CHINESE);
@@ -733,14 +705,6 @@ public final class U {
     /** 传入的参数只要来自移动端就返回 true */
     public static boolean checkMobile(String param) {
         return checkRegexWithRelax(param, MOBILE);
-    }
-    /** 传入的参数只要是 iOS 端就返回 true */
-    public static boolean checkiOS(String param) {
-        return checkRegexWithRelax(param, IOS);
-    }
-    /** 传入的参数只要是 android 端就返回 true */
-    public static boolean checkAndroid(String param) {
-        return checkRegexWithRelax(param, ANDROID);
     }
     /** 传入的参数只要是 pc 端就返回 true */
     public static boolean checkPc(String param) {
@@ -782,30 +746,6 @@ public final class U {
             return src;
         }
     }
-    /** 给参数中的值转义 */
-    public static String urlEncodeValue(String src) {
-        if (isBlank(src)) {
-            return EMPTY;
-        }
-
-        if (!src.contains("=")) {
-            return src;
-        }
-        StringBuilder sbd = new StringBuilder();
-        String[] sp = src.split("&");
-        for (int i = 0; i < sp.length; i++) {
-            String[] split = sp[i].split("=");
-
-            if (i > 0) {
-                sbd.append("&");
-            }
-            sbd.append(split[0]).append("=");
-            if (split.length == 2) {
-                sbd.append(urlEncode(split[1]));
-            }
-        }
-        return sbd.toString();
-    }
 
     /** 生成不带 - 的 uuid */
     public static String uuid() {
@@ -827,10 +767,6 @@ public final class U {
         return uuid() + getSuffix(fileName);
     }
 
-    /** 拼接 url 和 path */
-    public static String appendUrlAndPath(String url, String path) {
-        return addSuffix(url) + addPrefix(path).substring(1);
-    }
     /** 为空则返回空字符串, 如果传入的 url 中有 ? 则在尾部拼接 &, 否则拼接 ? 返回 */
     public static String appendUrl(String src) {
         if (isBlank(src)) {
@@ -858,15 +794,6 @@ public final class U {
         }
         return src + "/";
     }
-    /** 从 url 中获取最后一个 斜杆(/) 后的内容 */
-    public static String getFileNameInUrl(String url) {
-        if (isBlank(url) || !url.contains("/")) {
-            return EMPTY;
-        }
-        // 只截取到 ? 处, 如果有的话
-        int last = url.contains("?") ? url.lastIndexOf("?") : url.length();
-        return url.substring(url.lastIndexOf("/") + 1, last);
-    }
 
     /** 属性转换成方法, 加上 get 并首字母大写 */
     public static String fieldToMethod(String field) {
@@ -893,32 +820,25 @@ public final class U {
             return EMPTY;
         }
 
-        String[] split = field.split("\\|");
         Object value;
         if (data instanceof Map) {
-            value = ((Map) data).get(split[0]);
+            value = ((Map) data).get(field);
         } else {
             try {
                 value = new PropertyDescriptor(field, data.getClass()).getReadMethod().invoke(data);
             } catch (Exception e) {
-                value = getMethod(data, fieldToMethod(split[0]));
+                value = getMethod(data, "get" + field.substring(0, 1).toUpperCase() + field.substring(1));
             }
         }
 
         if (isNull(value)) {
-            Class<?> fieldType = getFieldType(data, field);
-            return (isNotNull(fieldType) && fieldType == Money.class) ? "0" : EMPTY;
+            return EMPTY;
         } else if (value.getClass().isEnum()) {
             // 如果是枚举, 则调用其 getValue 方法, getValue 没有值则使用枚举的 name
-            Object enumValue = getMethod(value, "getValue");
-            return toStr(enumValue != null ? enumValue : value);
+            return toStr(defaultIfNull(getMethod(value, "getValue"), value));
         } else if (value instanceof Date) {
             // 如果是日期, 则格式化
-            if (split.length > 1 && isNotBlank(split[1])) {
-                return toStr(DateUtil.format((Date) value, split[1]));
-            } else {
-                return toStr(DateUtil.formatDateTime((Date) value));
-            }
+            return toStr(DateUtil.formatDateTime((Date) value));
         } else {
             return toStr(value);
         }
@@ -926,6 +846,9 @@ public final class U {
 
     /** 获取类的所有属性(包括父类) */
     public static Set<Field> getAllField(Class<?> clazz) {
+        return getAllFieldWithDepth(clazz, 0);
+    }
+    private static Set<Field> getAllFieldWithDepth(Class<?> clazz, int depth) {
         if (clazz.getName().equals(Object.class.getName())) {
             return Collections.emptySet();
         }
@@ -939,15 +862,20 @@ public final class U {
             return fieldSet;
         }
 
-        Set<Field> tmpSet = getAllField(superclass);
-        if (tmpSet.size() > 0) {
-            fieldSet.addAll(tmpSet);
+        if (depth <= MAX_DEPTH) {
+            Set<Field> tmpSet = getAllFieldWithDepth(superclass, depth + 1);
+            if (tmpSet.size() > 0) {
+                fieldSet.addAll(tmpSet);
+            }
         }
         return fieldSet;
     }
 
     /** 获取类的所有方法(包括父类) */
     public static Set<Method> getAllMethod(Class<?> clazz) {
+        return getAllMethodWithDepth(clazz, 0);
+    }
+    private static Set<Method> getAllMethodWithDepth(Class<?> clazz, int depth) {
         if (clazz.getName().equals(Object.class.getName())) {
             return Collections.emptySet();
         }
@@ -961,9 +889,11 @@ public final class U {
             return methodSet;
         }
 
-        Set<Method> tmpSet = getAllMethod(superclass);
-        if (tmpSet.size() > 0) {
-            methodSet.addAll(tmpSet);
+        if (depth <= MAX_DEPTH) {
+            Set<Method> tmpSet = getAllMethodWithDepth(superclass, depth + 1);
+            if (tmpSet.size() > 0) {
+                methodSet.addAll(tmpSet);
+            }
         }
         return methodSet;
     }
@@ -1086,10 +1016,11 @@ public final class U {
         return null;
     }
 
-    public static Class<?> getFieldType(Object obj, String field) {
+    public static Class<?> getFieldType(Object obj, String field, int depth) {
         if (isBlank(field)) {
             return null;
         }
+
         Class<?> clazz = obj.getClass();
         try {
             return clazz.getDeclaredField(field).getType();
@@ -1104,7 +1035,7 @@ public final class U {
         if (superclass == Object.class) {
             return null;
         }
-        return getFieldType(superclass, field);
+        return (depth <= MAX_DEPTH) ? getFieldType(superclass, field, depth + 1) : null;
     }
 
     /** 转换成 id=123&name=xyz&name=opq */
@@ -1161,14 +1092,16 @@ public final class U {
         try {
             // guava
             // ByteStreams.copy(inputStream, outputStream);
+
             // jdk-8
-            byte[] buf = new byte[8192];
-            int length;
-            while ((length = input.read(buf)) != -1) {
-                output.write(buf, 0, length);
-            }
+            // byte[] buf = new byte[8192];
+            // int length;
+            // while ((length = input.read(buf)) != -1) {
+            //     output.write(buf, 0, length);
+            // }
+
             // jdk-9
-            // inputStream.transferTo(outputStream);
+            input.transferTo(output);
         } catch (IOException e) {
             throw new RuntimeException("input to output exception", e);
         }
@@ -1180,27 +1113,27 @@ public final class U {
      *         InputStream inputStream = ...;
      *         OutputStream outputStream = ...;
      *
-     *         ReadableByteChannel input = Channels.newChannel(inputStream);
-     *         WritableByteChannel output = Channels.newChannel(outputStream);
+     *         ReadableByteChannel readChannel = Channels.newChannel(inputStream);
+     *         WritableByteChannel writeChannel = Channels.newChannel(outputStream);
      * ) {
-     *     inputToOutputWithChannel(input, output);
+     *     inputToOutputWithChannel(readChannel, writeChannel);
      * }
      * </pre>
      */
-    public static void inputToOutputWithChannel(ReadableByteChannel input, WritableByteChannel output) {
+    public static void inputToOutputWithChannel(ReadableByteChannel readChannel, WritableByteChannel writeChannel) {
         try {
             ByteBuffer buffer = ByteBuffer.allocateDirect(8192);
-            while (input.read(buffer) != -1) {
+            while (readChannel.read(buffer) != -1) {
                 buffer.flip();
-                output.write(buffer);
+                writeChannel.write(buffer);
                 buffer.clear();
             }
         } catch (IOException e) {
-            throw new RuntimeException("input to output with channel exception", e);
+            throw new RuntimeException("read to output with channel exception", e);
         }
     }
 
-    /** 将长字符串进行 gzip 压缩后再转成 base64 编码返回 */
+    /** 将长字符串进行 gzip 压缩, 再转成 base64 编码返回 */
     public static String compress(final String str) {
         if (isNull(str)) {
             return null;
@@ -1224,8 +1157,7 @@ public final class U {
             return trim;
         }
     }
-
-    /** 将压缩的字符串用 base64 解码再进行 gzip 解压 */
+    /** 将压缩的字符串用 base64 解码, 再进行 gzip 解压 */
     public static String decompress(String str) {
         if (isNull(str)) {
             return null;
@@ -1242,26 +1174,25 @@ public final class U {
         byte[] bytes;
         try {
             bytes = Base64.getDecoder().decode(str.getBytes(StandardCharsets.UTF_8));
+            if (bytes.length == 0) {
+                return trim;
+            }
         } catch (Exception e) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("字符串解码异常", e);
             }
             return trim;
         }
-        if (bytes.length == 0) {
-            return trim;
-        }
-
         try (
                 ByteArrayInputStream input = new ByteArrayInputStream(bytes);
                 GZIPInputStream gis = new GZIPInputStream(input);
 
                 InputStreamReader in = new InputStreamReader(gis, StandardCharsets.UTF_8);
-                final BufferedReader bufferedReader = new BufferedReader(in)
+                BufferedReader reader = new BufferedReader(in)
         ) {
             StringBuilder sbd = new StringBuilder();
             String line;
-            while ((line = bufferedReader.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 sbd.append(line);
             }
             return sbd.toString();

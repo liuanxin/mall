@@ -24,8 +24,6 @@ public class ManagerMenu implements Serializable {
 
     /** 根 id */
     private static final long ROOT_ID = 0L;
-    /** 递归时的最大深度, 如果数据本身有自己引用自己, 加一个深度避免无限递归 */
-    private static final int MAX_DEPTH = 10;
 
 
     private Long id;
@@ -52,7 +50,7 @@ public class ManagerMenu implements Serializable {
 
     private static void handle(ManagerMenu menu, Map<String, Collection<ManagerMenu>> menuMap, int depth) {
         Collection<ManagerMenu> menus = menuMap.get(U.toStr(menu.getId()));
-        if (A.isNotEmpty(menus) && depth < MAX_DEPTH) {
+        if (A.isNotEmpty(menus) && depth < U.MAX_DEPTH) {
             for (ManagerMenu m : menus) {
                 handle(m, menuMap, depth + 1);
             }
@@ -118,8 +116,8 @@ public class ManagerMenu implements Serializable {
             return Collections.emptyList();
         } else {
             List<ManagerMenu> returnList = Lists.newArrayList();
-            allMenuUseDepth(returnList, menus, 0);
-            // allMenuUseBreadth(returnList, menus, 0);
+            allMenuUseDepth(returnList, menus);
+            // allMenuUseBreadth(returnList, menus);
             return returnList;
         }
     }
@@ -137,14 +135,17 @@ public class ManagerMenu implements Serializable {
      * [ { "id": 1 }, { "id": 11 }, { "id": 111 }, { "id": 12 }, { "id": 2 }, { "id": 21 }, { "id": 22 }, { "id": 221 } ]
      * </pre>
      */
-    private static void allMenuUseDepth(List<ManagerMenu> returnList, List<ManagerMenu> menus, int depth) {
+    private static void allMenuUseDepth(List<ManagerMenu> returnList, List<ManagerMenu> menus) {
+        allMenuUseDepthWithDepth(returnList, menus, 0);
+    }
+    private static void allMenuUseDepthWithDepth(List<ManagerMenu> returnList, List<ManagerMenu> menus, int depth) {
         if (A.isNotEmpty(menus)) {
             for (ManagerMenu menu : menus) {
                 returnList.add(menu);
 
                 List<ManagerMenu> children = menu.getChildren();
-                if (A.isNotEmpty(children) && depth <= MAX_DEPTH) {
-                    allMenuUseDepth(returnList, children, depth + 1);
+                if (A.isNotEmpty(children) && depth <= U.MAX_DEPTH) {
+                    allMenuUseDepthWithDepth(returnList, children, depth + 1);
                 }
             }
         }
@@ -163,14 +164,17 @@ public class ManagerMenu implements Serializable {
      * [ { "id": 1 }, { "id": 2 }, { "id": 11 }, { "id": 12 }, { "id": 111 }, { "id": 21 }, { "id": 22 }, { "id": 221 } ]
      * </pre>
      */
-    private static void allMenuUseBreadth(List<ManagerMenu> returnList, List<ManagerMenu> menus, int depth) {
+    private static void allMenuUseBreadth(List<ManagerMenu> returnList, List<ManagerMenu> menus) {
+        allMenuUseBreadthWithDepth(returnList, menus, 0);
+    }
+    private static void allMenuUseBreadthWithDepth(List<ManagerMenu> returnList, List<ManagerMenu> menus, int depth) {
         if (A.isNotEmpty(menus)) {
             returnList.addAll(menus);
 
             for (ManagerMenu menu : menus) {
                 List<ManagerMenu> children = menu.getChildren();
-                if (A.isNotEmpty(children) && depth <= MAX_DEPTH) {
-                    allMenuUseBreadth(returnList, children, depth + 1);
+                if (A.isNotEmpty(children) && depth <= U.MAX_DEPTH) {
+                    allMenuUseBreadthWithDepth(returnList, children, depth + 1);
                 }
             }
         }
