@@ -13,7 +13,5 @@ public class NotFoundException extends RuntimeException implements Serializable 
     }
 
     @Override
-    public Throwable fillInStackTrace() {
-        return this;
-    }
+    public Throwable fillInStackTrace() { return this; }
 }

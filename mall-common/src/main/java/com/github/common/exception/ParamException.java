@@ -30,7 +30,5 @@ public class ParamException extends RuntimeException {
 	}
 
 	@Override
-	public Throwable fillInStackTrace() {
-		return this;
-	}
+	public Throwable fillInStackTrace() { return this; }
 }

@@ -14,7 +14,5 @@ public class ServiceException extends RuntimeException implements Serializable {
     }
 
     @Override
-    public Throwable fillInStackTrace() {
-        return this;
-    }
+    public Throwable fillInStackTrace() { return this; }
 }

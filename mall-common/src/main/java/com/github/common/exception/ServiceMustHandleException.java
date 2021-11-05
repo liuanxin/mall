@@ -17,7 +17,5 @@ public class ServiceMustHandleException extends Exception implements Serializabl
     }
 
     @Override
-    public Throwable fillInStackTrace() {
-        return this;
-    }
+    public Throwable fillInStackTrace() { return this; }
 }
