@@ -12,12 +12,14 @@ import com.itextpdf.text.pdf.qrcode.EncodeHintType;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class PdfUtil {
 
     private static final Pattern CN_PATTERN = Pattern.compile("[\\u4e00-\\u9fa5]");
@@ -126,33 +128,77 @@ public class PdfUtil {
         float offsetX = toFloat(template.getOffsetX(), 0);
         float offsetY = toFloat(template.getOffsetY(), 0);
 
+        String dynamicContentKey = template.getDynamicContentKey();
+        List<?> placeContent = placeContent(data, dynamicContentKey);
+
         List<?> list = template.pageList(data);
         if (list != null) {
             PrintInfo.TableDynamicHead tableHead = template.getDynamicHead();
             List<PrintInfo.TableContent> tableContent = template.getDynamicContent();
             if (tableHead != null && tableContent != null && tableContent.size() > 0) {
+
                 int total = list.size();
                 int pageCount = toInt(tableHead.getSinglePageCount(), 10);
                 int loopCount = (total % pageCount == 0) ? total / pageCount : (total / pageCount) + 1;
+                loopCount = Math.max(Math.max(loopCount, placeContent.size()), 1);
+
                 for (int i = 0; i < loopCount; i++) {
                     int fromIndex = pageCount * i;
                     boolean notLastPage = (i + 1 != loopCount);
                     int toIndex = notLastPage ? (fromIndex + pageCount) : total;
                     draw(i, loopCount, data, template, offsetX, offsetY, canvas);
+                    drawPlaceContent(template, canvas, offsetX, offsetY, placeContent, total, loopCount, i);
+
                     List<?> pageDataList = list.subList(fromIndex, toIndex);
-                    int lineStart = i * pageCount;
-                    drawDynamicTable(lineStart, total, pageDataList, tableHead, tableContent, offsetX, offsetY, canvas);
+                    drawDynamicTable(i * pageCount, total, pageDataList, tableHead, tableContent, offsetX, offsetY, canvas);
                     if (notLastPage) {
                         document.newPage();
                     }
                 }
             }
         } else {
-            draw(0, 1, data, template, offsetX, offsetY, canvas);
+            int loopCount = placeContent.size();
+            for (int i = 0; i < loopCount; i++) {
+                drawPlaceContent(template, canvas, offsetX, offsetY, placeContent, loopCount, loopCount, i);
+                draw(0, 1, data, template, offsetX, offsetY, canvas);
+                if (i + 1 != loopCount) {
+                    document.newPage();
+                }
+            }
         }
 
         document.add(new Chunk(""));
         document.close();
+    }
+
+    private static void drawPlaceContent(PrintInfo template, PdfContentByte canvas, float offsetX, float offsetY,
+                                         List<?> placeContent, int total, int loopCount, int i) {
+        List<PrintInfo.DataContent> dynamicContentList = template.getDynamicContentList();
+        if (!placeContent.isEmpty() && placeContent.size() >= loopCount
+                && dynamicContentList != null && !dynamicContentList.isEmpty()) {
+            for (PrintInfo.DataContent dataContent : dynamicContentList) {
+                Object obj = placeContent.get(i);
+                if (obj instanceof Map) {
+                    writeDataContent(i, total, canvas, offsetX, offsetY, dataContent, (Map<String, Object>) obj);
+                }
+            }
+        }
+    }
+
+    private static List<?> placeContent(Map<String, Object> data, String dynamicContentKey) {
+        Object dynamicContent = data.get(dynamicContentKey);
+        List<?> placeContent;
+        if ((dynamicContent instanceof List)) {
+            placeContent = (List) dynamicContent;
+        } else {
+            if (dynamicContent != null) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error("动态占位数据有误");
+                }
+            }
+            placeContent = Collections.emptyList();
+        }
+        return placeContent;
     }
 
     private static void draw(int page, int total, Map<String, Object> data, PrintInfo printInfo,
@@ -192,8 +238,9 @@ public class PdfUtil {
 
     private static void writeDataContent(int page, int len, PdfContentByte canvas, float offsetX, float offsetY,
                                          PrintInfo.DataContent dataContent, Map<String, Object> data) {
+        String prefix = toStr(dataContent.getValuePrefix());
         String suffix = toStr(dataContent.getValueSuffix());
-        String value = toStr(dataContent.getValue()) + toStr(data.get(toStr(dataContent.getFieldName()))) + suffix;
+        String value = prefix + toStr(dataContent.getValue()) + toStr(data.get(toStr(dataContent.getFieldName()))) + suffix;
         value = handleSpace(value, toBoolean(dataContent.getSpace(), false));
 
         float x = toFloat(dataContent.getX(), 0) + offsetX;
@@ -261,13 +308,13 @@ public class PdfUtil {
                     }
                     return;
                 case INDEX:
-                    value = (page + 1) + suffix;
+                    value = prefix + (page + 1) + suffix;
                     break;
                 case COUNT:
-                    value = len + suffix;
+                    value = prefix + len + suffix;
                     break;
                 case INDEX_COUNT:
-                    value = (page + 1) + "/" + len + suffix;
+                    value = prefix + (page + 1) + "/" + len + suffix;
                     break;
             }
         }
@@ -361,16 +408,16 @@ public class PdfUtil {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private static void writeTableContent(PdfContentByte canvas, PrintInfo.TableHead head,
                                           List<PrintInfo.TableContent> tableContentList, List<?> list,
                                           PdfPTable table, int contentHeight, int size, int i, int lineStart) {
         Object obj = list.get(i);
-        if ((obj instanceof Map)) {
+        if (obj instanceof Map) {
             Map<String, Object> map = (Map<String, Object>) obj;
             for (PrintInfo.TableContent tableContent : tableContentList) {
+                String prefix = toStr(tableContent.getValuePrefix());
                 String suffix = toStr(tableContent.getValueSuffix());
-                String value = toStr(map.get(toStr(tableContent.getFieldName()))) + suffix;
+                String value = prefix + toStr(map.get(toStr(tableContent.getFieldName()))) + suffix;
                 value = handleSpace(value, toBoolean(tableContent.getSpace(), false));
 
                 int maxCount = toInt(tableContent.getMaxCount(), 0);
@@ -411,15 +458,15 @@ public class PdfUtil {
                             }
                             break;
                         case INDEX:
-                            String lineIndex = (lineStart + i + 1) + suffix;
+                            String lineIndex = prefix + (lineStart + i + 1) + suffix;
                             cell.setPhrase(generateValue(toStr(lineIndex), fontBold, toFont(lineIndex, fontBold, fontSize)));
                             break;
                         case COUNT:
-                            String lineCount = size + suffix;
+                            String lineCount = prefix + size + suffix;
                             cell.setPhrase(generateValue(toStr(lineCount), fontBold, toFont(lineCount, fontBold, fontSize)));
                             break;
                         case INDEX_COUNT:
-                            String lineIndexCount = (lineStart + i + 1) + "/" + size + suffix;
+                            String lineIndexCount = prefix + (lineStart + i + 1) + "/" + size + suffix;
                             cell.setPhrase(generateValue(toStr(lineIndexCount), fontBold, toFont(lineIndexCount, fontBold, fontSize)));
                             break;
                         default:

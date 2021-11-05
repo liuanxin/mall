@@ -42,6 +42,10 @@ public class PrintInfo {
     private TableDynamicHead dynamicHead;
     /** 需要做分页的表格内容, 一个模板只能有一个分页 */
     private List<TableContent> dynamicContent;
+    /** 用在分页里的占位键 */
+    private String dynamicContentKey;
+    /** 用在分页里的占位内容 */
+    private List<DataContent> dynamicContentList;
 
     /** 占位内容 */
     private List<DataContent> contentInfo;
@@ -113,6 +117,8 @@ public class PrintInfo {
         private PlaceholderType fieldType;
         /** 模板对应的属性名 */
         private String fieldName;
+        /** 拼在内容最前的值 */
+        private String valuePrefix;
         /** 拼在内容最后的值 */
         private String valueSuffix;
         /** 中文字体里的字母和英文看起来会显得很紧凑, 是否需要加一个空格, 不设置则默认是 false */
@@ -200,6 +206,8 @@ public class PrintInfo {
     public static class TableContent {
         /** 模板对应的属性名 */
         private String fieldName;
+        /** 拼在内容最前的值 */
+        private String valuePrefix;
         /** 拼在内容最后的值 */
         private String valueSuffix;
         /** 中文字体里的字母和英文看起来会显得很紧凑, 是否需要加一个空格, 不设置则默认是 false */

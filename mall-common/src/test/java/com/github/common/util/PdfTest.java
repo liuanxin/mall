@@ -499,4 +499,173 @@ public class PdfTest {
         // System.out.println(compress);
         // System.out.println(compress.length());
     }
+
+    @Test
+    public void product() {
+        PrintInfo print = new PrintInfo();
+        print.setWidth(198F);
+        print.setHeight(84F);
+
+        List<PrintInfo.DataContent> tableList = Lists.newArrayList();
+        PrintInfo.DataContent dc1 = new PrintInfo.DataContent();
+        dc1.setX(151F);
+        dc1.setY(5F);
+        dc1.setFieldName("qrCode");
+        dc1.setFieldType(PrintInfo.PlaceholderType.QRCODE);
+        dc1.setTextAlign(Element.ALIGN_RIGHT);
+        dc1.setCodeWidth(50F);
+        dc1.setCodeHeight(50F);
+        tableList.add(dc1);
+        print.setDynamicContentKey("dynamicInfo");
+        print.setDynamicContentList(tableList);
+
+
+        PrintInfo.TableDynamicHead dynamicTableKey = new PrintInfo.TableDynamicHead();
+        dynamicTableKey.setX(10F);
+        dynamicTableKey.setY(80F);
+        dynamicTableKey.setFieldName("dynamicTable");
+        dynamicTableKey.setFieldWidthList(List.of(178F));
+        dynamicTableKey.setPrintHead(false);
+        dynamicTableKey.setSinglePageCount(1);
+        print.setDynamicHead(dynamicTableKey);
+
+        List<PrintInfo.TableContent> dynamicTableValue = Lists.newArrayList();
+        PrintInfo.TableContent dptc1 = new PrintInfo.TableContent();
+        dptc1.setFieldName("barCode");
+        dptc1.setFieldType(PrintInfo.PlaceholderType.BARCODE);
+        dptc1.setTextAlign(Element.ALIGN_CENTER);
+        dptc1.setBarCodeBaseLine(-5F);
+        dptc1.setCodeWidth(178F);
+        dptc1.setCodeHeight(70F);
+        dynamicTableValue.add(dptc1);
+        print.setDynamicContent(dynamicTableValue);
+
+
+        Map<String, Object> data = Maps.newHashMap();
+
+        List<Map<Object, Object>> list1 = Lists.newArrayList();
+        List<Map<Object, Object>> list2 = Lists.newArrayList();
+
+        list1.add(A.maps("qrCode", "G1082-AUTOTEST9336290"));
+        list1.add(A.maps("qrCode", "G1082-AUTOTEST9336291"));
+
+        list2.add(A.maps("barCode", "G1082-AUTOTEST9336290"));
+        list2.add(A.maps("barCode", "G1082-AUTOTEST9336291"));
+
+        data.put("dynamicInfo", list1);
+        data.put("dynamicTable", list2);
+
+        String file = "/home/ty/test-product.pdf";
+        PdfUtil.generatePdfFile(file, print, data);
+    }
+
+    @Test
+    public void num() {
+        PrintInfo print = new PrintInfo();
+        print.setWidth(284F);
+        print.setHeight(170F);
+
+        List<PrintInfo.DataContent> contentList = Lists.newArrayList();
+
+        PrintInfo.DataContent dc3 = new PrintInfo.DataContent();
+        dc3.setFieldType(PrintInfo.PlaceholderType.QRCODE);
+        dc3.setX(8F);
+        dc3.setY(105F);
+        dc3.setValue("中文二维码");
+        dc3.setCodeWidth(58F);
+        dc3.setCodeHeight(58F);
+        contentList.add(dc3);
+
+        PrintInfo.DataContent dc1 = new PrintInfo.DataContent();
+        dc1.setFieldType(PrintInfo.PlaceholderType.LINE);
+        dc1.setLineTrack(List.of(List.of(10F, 160F), List.of(274F, 160F), List.of(274F, 10F), List.of(10F, 10F)));
+        dc1.setLineWidth(1F);
+        dc1.setLineGray(0.6F);
+        contentList.add(dc1);
+
+        PrintInfo.DataContent dc2 = new PrintInfo.DataContent();
+        dc2.setFieldType(PrintInfo.PlaceholderType.LINE);
+        dc2.setLineTrack(List.of(List.of(12F, 108F), List.of(272F, 108F)));
+        dc2.setLineWidth(1F);
+        dc2.setLineGray(0.1F);
+        contentList.add(dc2);
+
+        PrintInfo.DataContent dc4 = new PrintInfo.DataContent();
+        dc4.setX(15F);
+        dc4.setY(15F);
+        dc4.setValuePrefix("[");
+        dc4.setFieldType(PrintInfo.PlaceholderType.INDEX);
+        dc4.setValueSuffix("]");
+        contentList.add(dc4);
+
+        PrintInfo.DataContent dc5 = new PrintInfo.DataContent();
+        dc5.setX(238F);
+        dc5.setY(15F);
+        dc5.setValue("China");
+        contentList.add(dc5);
+
+        PrintInfo.DataContent dc6 = new PrintInfo.DataContent();
+        dc6.setX(170F);
+        dc6.setY(120F);
+        dc6.setFieldName("countryCode");
+        dc6.setFontSize(22F);
+        dc6.setFontBold(true);
+        contentList.add(dc6);
+        print.setContentInfo(contentList);
+
+
+        List<PrintInfo.DataContent> tableList = Lists.newArrayList();
+        PrintInfo.DataContent pdc2 = new PrintInfo.DataContent();
+        pdc2.setX(45F);
+        pdc2.setY(75F);
+        pdc2.setFieldName("barCode");
+        pdc2.setFieldType(PrintInfo.PlaceholderType.BARCODE);
+        pdc2.setCodeWidth(200F);
+        pdc2.setCodeHeight(30F);
+        pdc2.setBarCodeBaseLine(10F);
+        tableList.add(pdc2);
+        print.setDynamicContentKey("dynamicInfo");
+        print.setDynamicContentList(tableList);
+
+        PrintInfo.TableDynamicHead dynamicTableKey = new PrintInfo.TableDynamicHead();
+        dynamicTableKey.setX(15F);
+        dynamicTableKey.setY(70F);
+        dynamicTableKey.setFieldName("dt");
+        dynamicTableKey.setFieldWidthList(List.of(214F, 40F));
+        dynamicTableKey.setHeadList(List.of("Multi(1)", "PCS"));
+        dynamicTableKey.setTextAlign(Element.ALIGN_CENTER);
+        dynamicTableKey.setBackRgba(List.of(120, 120, 120, 120));
+        dynamicTableKey.setSinglePageCount(1);
+        dynamicTableKey.setBorder(true);
+        print.setDynamicHead(dynamicTableKey);
+
+        List<PrintInfo.TableContent> dynamicTableValue = Lists.newArrayList();
+        PrintInfo.TableContent dptc1 = new PrintInfo.TableContent();
+        dptc1.setFieldName("num");
+        dptc1.setTextAlign(Element.ALIGN_CENTER);
+        dynamicTableValue.add(dptc1);
+
+        PrintInfo.TableContent dptc2 = new PrintInfo.TableContent();
+        dptc2.setFieldName("pcs");
+        dptc2.setTextAlign(Element.ALIGN_CENTER);
+        dynamicTableValue.add(dptc2);
+        print.setDynamicContent(dynamicTableValue);
+
+
+        Map<String, Object> data = Maps.newHashMap();
+        data.put("countryCode", "UK");
+
+        List<Map<Object, Object>> list1 = Lists.newArrayList();
+        list1.add(A.maps("barCode", "G1082-AUTOTEST9336290"));
+        list1.add(A.maps("barCode", "G1082-AUTOTEST9336291"));
+        data.put("dynamicInfo", list1);
+
+        List<Map<Object, Object>> list2 = Lists.newArrayList();
+        list2.add(A.maps("num", "G1082-AUTOTEST9336290", "pcs", "0"));
+        list2.add(A.maps("num", "G1082-AUTOTEST9336291", "pcs", "1"));
+        data.put("dt", list2);
+
+        String file = "/home/ty/test-number.pdf";
+        PdfUtil.generatePdfFile(file, print, data);
+    }
 }
