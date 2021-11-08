@@ -88,8 +88,7 @@ public class HttpClientUtil {
             }
 
             Class<? extends IOException> methodThrowClass = exception.getClass();
-            // noinspection ArraysAsListWithZeroOrOneArgument
-            List<Class<? extends IOException>> retryClasses = Arrays.asList(
+            List<Class<? extends IOException>> retryClasses = Collections.singletonList(
                     NoHttpResponseException.class // 服务器未响应时
             );
             for (Class<? extends IOException> clazz : retryClasses) {
@@ -122,16 +121,16 @@ public class HttpClientUtil {
         return HttpClients.custom()
                 .setUserAgent(USER_AGENT)
                 .setConnectionManager(CONNECTION_MANAGER)
-                .setRetryHandler(HTTP_REQUEST_RETRY_HANDLER).build();
+                .setRetryHandler(HTTP_REQUEST_RETRY_HANDLER)
+                .build();
     }
-    private static void config(HttpRequestBase request, int connectTimeout, int socketTimeout) {
+    private static RequestConfig config(int connectTimeout, int socketTimeout) {
         // 配置请求的超时设置
-        RequestConfig requestConfig = RequestConfig.custom()
+        return RequestConfig.custom()
                 .setConnectionRequestTimeout(CONNECTION_REQUEST_TIME_OUT)
                 .setConnectTimeout(connectTimeout)
                 .setSocketTimeout(socketTimeout)
                 .build();
-        request.setConfig(requestConfig);
     }
 
 
@@ -408,15 +407,16 @@ public class HttpClientUtil {
     }
     /** 发起 http 请求 */
     private static String handleRequest(HttpRequestBase request, String params, int connectTimeout, int socketTimeout) {
+        request.setConfig(config(connectTimeout, socketTimeout));
+        request.addHeader("Content-Type", "application/json");
+
         String traceId = LogUtil.getTraceId();
         if (U.isNotBlank(traceId)) {
             request.addHeader(Const.TRACE, traceId);
         }
-        request.addHeader("Content-Type", "application/json");
         String method = request.getMethod();
         String url = request.getURI().toString();
 
-        config(request, connectTimeout, socketTimeout);
         long start = System.currentTimeMillis();
         try (CloseableHttpResponse response = createHttpClient().execute(request, HttpClientContext.create())) {
             HttpEntity entity = response.getEntity();
@@ -443,8 +443,8 @@ public class HttpClientUtil {
     public static void download(String url, String file) {
         url = handleEmptyScheme(url);
         HttpGet request = new HttpGet(url);
+        request.setConfig(config(CONNECT_TIME_OUT, SOCKET_TIME_OUT));
 
-        config(request, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
         long start = System.currentTimeMillis();
         try (CloseableHttpResponse response = createHttpClient().execute(request, HttpClientContext.create())) {
             HttpEntity entity = response.getEntity();
