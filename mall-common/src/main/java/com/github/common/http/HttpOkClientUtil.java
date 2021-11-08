@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-@SuppressWarnings("ConstantConditions")
 public class HttpOkClientUtil {
 
     // MIME 说明: http://www.w3school.com.cn/media/media_mimeref.asp
@@ -189,7 +188,7 @@ public class HttpOkClientUtil {
         if (U.isNotNull(responseHeaders)) {
             sbd.append(" response headers(");
             for (String name : responseHeaders.names()) {
-                sbd.append("<").append(name).append(": ").append(responseHeaders.get(name)).append(">");
+                sbd.append("<").append(name).append(":").append(responseHeaders.get(name)).append(">");
             }
             sbd.append(")");
         }

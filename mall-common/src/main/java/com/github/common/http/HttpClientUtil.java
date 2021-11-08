@@ -18,11 +18,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -31,7 +26,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,18 +34,20 @@ import java.io.InterruptedIOException;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
-@SuppressWarnings("DuplicatedCode")
 public class HttpClientUtil {
 
     private static final String USER_AGENT = "Mozilla/5.0 (httpclient4.5; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36";
 
     /** 重试次数 */
     private static final int RETRY_COUNT = 3;
-    /** 连接池最大数量 */
+    /** 每个连接的最大连接数, 默认是 20 */
     private static final int MAX_CONNECTIONS = 200;
-    /** 每个连接的最大连接数 */
+    /** 每个连接的路由数, 默认是 2 */
     private static final int MAX_CONNECTIONS_PER_ROUTE = 50;
 
     /** 从连接池获取到连接的超时时间, 单位: 毫秒 */
@@ -64,22 +60,12 @@ public class HttpClientUtil {
     private static final PoolingHttpClientConnectionManager CONNECTION_MANAGER;
     private static final HttpRequestRetryHandler HTTP_REQUEST_RETRY_HANDLER;
     static {
-        SSLConnectionSocketFactory sslConnectionSocketFactory;
-        SSLContext ignoreVerifySSL = TrustCerts.IGNORE_SSL_CONTEXT;
-        if (U.isNull(ignoreVerifySSL)) {
-            sslConnectionSocketFactory = SSLConnectionSocketFactory.getSocketFactory();
-        } else {
-            sslConnectionSocketFactory = new SSLConnectionSocketFactory(ignoreVerifySSL);
-        }
+        CONNECTION_MANAGER = new PoolingHttpClientConnectionManager();
 
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("http", PlainConnectionSocketFactory.INSTANCE)
-                .register("https", sslConnectionSocketFactory)
-                .build();
-
-        CONNECTION_MANAGER = new PoolingHttpClientConnectionManager(registry);
-        CONNECTION_MANAGER.setMaxTotal(MAX_CONNECTIONS);
+        // 设置每个连接的路由数, 默认是 2
         CONNECTION_MANAGER.setDefaultMaxPerRoute(MAX_CONNECTIONS_PER_ROUTE);
+        // 每个连接的最大连接数, 默认是 20
+        CONNECTION_MANAGER.setMaxTotal(MAX_CONNECTIONS);
 
         // 重试策略
         HTTP_REQUEST_RETRY_HANDLER = (exception, executionCount, context) -> {
@@ -88,7 +74,7 @@ public class HttpClientUtil {
             }
 
             Class<? extends IOException> methodThrowClass = exception.getClass();
-            List<Class<? extends IOException>> retryClasses = Collections.singletonList(
+            List<Class<? extends IOException>> retryClasses = List.of(
                     NoHttpResponseException.class // 服务器未响应时
             );
             for (Class<? extends IOException> clazz : retryClasses) {
@@ -98,7 +84,7 @@ public class HttpClientUtil {
                 }
             }
 
-            List<Class<? extends IOException>> noRetryClasses = Arrays.asList(
+            List<Class<? extends IOException>> noRetryClasses = List.of(
                     SSLException.class, // SSL 异常
                     InterruptedIOException.class, // 超时
                     UnknownHostException.class, // 目标服务器不可达
@@ -158,7 +144,7 @@ public class HttpClientUtil {
 
         Map<String, Object> params = Collections.emptyMap();
         if (A.isNotEmpty(param)) {
-            params = JsonUtil.convertType(param, new TypeReference<Map<String, Object>>() {});
+            params = JsonUtil.convertType(param, new TypeReference<>() {});
         }
         return get(url, params);
     }
