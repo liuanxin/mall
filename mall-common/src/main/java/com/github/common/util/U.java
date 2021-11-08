@@ -1205,7 +1205,7 @@ public final class U {
     }
 
 
-    /** 对象为 null、空白符、"null" 字符串时, 则抛出异常 */
+    /** 对象为 null 时抛出异常 */
     public static void assertNil(Object obj, String msg) {
         if (isNull(obj)) {
             assertException(msg);
