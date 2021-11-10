@@ -3,16 +3,15 @@ package com.github.common.pdf;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.github.common.util.LogUtil;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
 
-@Slf4j
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class PrintInfo {
@@ -65,8 +64,8 @@ public class PrintInfo {
         int headSize = dynamicHead.getFieldWidthList().size();
         int contentSize = dynamicContent.size();
         if (headSize != contentSize) {
-            if (log.isErrorEnabled()) {
-                log.error("表头的长度({})与内容个数({})必须一致", headSize, contentSize);
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("表头的长度({})与内容个数({})必须一致", headSize, contentSize);
             }
             return null;
         }

@@ -1,8 +1,8 @@
 package com.github.global.service;
 
+import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
@@ -20,7 +20,6 @@ import java.util.List;
  * @see org.springframework.boot.autoconfigure.mail.MailProperties
  * @see org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration
  */
-@Slf4j
 @RequiredArgsConstructor
 @Configuration
 @ConditionalOnClass({ Message.class, JavaMailSender.class })
@@ -47,8 +46,10 @@ public class MailSender {
                 }
             });
         } catch (MailException ex) {
-            log.error(String.format("%s -> %s (title: %s, content: %s, attach: %s) exception",
-                    from, to, subject, htmlContent, attachFileList), ex);
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error(String.format("%s -> %s (title: %s, content: %s, attach: %s) exception",
+                        from, to, subject, htmlContent, attachFileList), ex);
+            }
         }
     }
 }
