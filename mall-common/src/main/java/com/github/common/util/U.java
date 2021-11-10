@@ -569,7 +569,7 @@ public final class U {
 
         if (obj instanceof String) {
             String str = ( (String) obj ).trim();
-            return str.isEmpty() || "null".equalsIgnoreCase(str) || "undefined".equalsIgnoreCase(str);
+            return str.isEmpty() || str.equalsIgnoreCase("null") || str.equalsIgnoreCase("undefined");
         } else if (obj instanceof Optional) {
             return ((Optional<?>) obj).isEmpty();
         } else if (obj.getClass().isArray()) {
