@@ -37,7 +37,7 @@ public class PageReturn<T> implements Serializable {
     public static <T> PageReturn<T> emptyReturn() {
         return EMPTY;
     }
-    public static <T> PageReturn<T> returnEmptyPage(long total) {
+    public static <T> PageReturn<T> returnTotal(long total) {
         return new PageReturn<>(total, Collections.emptyList());
     }
     public static <T> PageReturn<T> returnPage(long total, List<T> list) {
