@@ -7,6 +7,7 @@ import com.github.common.util.U;
 import java.util.Collections;
 import java.util.List;
 
+/** 当 controller 层无需引用 mbp 包时只需要在 service 层调用当前工具类 */
 public final class Pages {
 
     /** 在 service 的实现类中调用 --> 当不想查 select count(*) 时用这个 */

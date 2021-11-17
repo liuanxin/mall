@@ -66,14 +66,13 @@ public class ExampleRes {
 
 
     /** 组装数据 */
-    public static PageReturn<ExampleRes> assemblyData(PageReturn<UserTest> userPageInfo,
-                                                      List<ProductTest> productExampleList) {
-        PageReturn<ExampleRes> returnRes = PageReturn.convert(userPageInfo);
+    public static PageReturn<ExampleRes> assemblyData(PageReturn<UserTest> userPageInfo, List<ProductTest> testList) {
+        PageReturn<ExampleRes> returnRes = PageReturn.convertJustTotal(userPageInfo);
         if (U.isNotNull(userPageInfo)) {
             // 把商品数据整理成  userId: List<商品>
             Multimap<Long, ProductTest> multiMap = ArrayListMultimap.create();
-            if (A.isNotEmpty(productExampleList)) {
-                for (ProductTest productExample : productExampleList) {
+            if (A.isNotEmpty(testList)) {
+                for (ProductTest productExample : testList) {
                     multiMap.put(productExample.getUserId(), productExample);
                 }
             }
