@@ -30,7 +30,7 @@ public class PageReturn<T> implements Serializable {
     @ApiReturn("SELECT ... FROM ... LIMIT 0, 10 的结果")
     private List<T> list;
 
-    PageReturn(long total) {
+    public PageReturn(long total) {
         this.total = total;
     }
 
