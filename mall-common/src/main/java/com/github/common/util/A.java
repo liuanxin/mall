@@ -139,6 +139,7 @@ public final class A {
 
     /** 数组去重返回 */
     public static <T> Collection<T> removeDuplicate(T[] source) {
+        // return ImmutableSet.copyOf(Lists.newArrayList(source)).asList();
         return removeDuplicate(Lists.newArrayList(source));
     }
     /** 删除重复的项 */
