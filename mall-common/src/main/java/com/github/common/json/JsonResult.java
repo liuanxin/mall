@@ -46,10 +46,10 @@ public class JsonResult<T> {
         this(code, msg);
         this.error = errorList;
     }
-    private JsonResult(JsonCode code, String msg, List<String> errorList, Map<String, String> validateInfo) {
+    private JsonResult(JsonCode code, String msg, List<String> errorList, Map<String, String> validate) {
         this(code, msg);
         this.error = errorList;
-        this.validate = validateInfo;
+        this.validate = validate;
     }
     private JsonResult(JsonCode code, String msg, T data) {
         this(code, msg);
@@ -77,8 +77,8 @@ public class JsonResult<T> {
     public static <T> JsonResult<T> badRequest(String msg) {
         return new JsonResult<>(JsonCode.BAD_REQUEST, msg);
     }
-    public static <T> JsonResult<T> badRequest(String msg, Map<String, String> validateInfo) {
-        return new JsonResult<>(JsonCode.BAD_REQUEST, msg, null, validateInfo);
+    public static <T> JsonResult<T> badRequest(String msg, Map<String, String> validate) {
+        return new JsonResult<>(JsonCode.BAD_REQUEST, msg, null, validate);
     }
 
     public static <T> JsonResult<T> needLogin(String msg) {
@@ -99,7 +99,7 @@ public class JsonResult<T> {
     public static <T> JsonResult<T> fail(String msg, List<String> errorList) {
         return new JsonResult<>(JsonCode.FAIL, msg, errorList);
     }
-    public static <T> JsonResult<T> fail(String msg, List<String> errorList, Map<String, String> validateInfo) {
-        return new JsonResult<>(JsonCode.FAIL, msg, errorList, validateInfo);
+    public static <T> JsonResult<T> fail(String msg, List<String> errorList, Map<String, String> validate) {
+        return new JsonResult<>(JsonCode.FAIL, msg, errorList, validate);
     }
 }
