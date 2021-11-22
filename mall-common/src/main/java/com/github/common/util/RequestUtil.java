@@ -36,6 +36,8 @@ public final class RequestUtil {
     private static final String URL_SPLIT = "/";
     private static final String WWW = "www.";
 
+    private static final Locale DEFAULT_LOCALE = Locale.SIMPLIFIED_CHINESE; // Locale.getDefault();
+
     /**
      * 获取真实客户端 ip, 关于 X-Forwarded-For 参考: http://zh.wikipedia.org/wiki/X-Forwarded-For<br>
      *
@@ -46,7 +48,7 @@ public final class RequestUtil {
     public static String getRealIp() {
         HttpServletRequest request = getRequest();
         if (U.isNull(request)) {
-            return null;
+            return U.EMPTY;
         }
 
         String ip = request.getHeader("X-Forwarded-For");
@@ -81,11 +83,23 @@ public final class RequestUtil {
         return request.getRemoteAddr().split(",")[0].trim();
     }
 
+    /** 获取请求的语言信息, 获取不到就返回简体中文环境 */
+    public static Locale getLocale() {
+        HttpServletRequest request = getRequest();
+        if (U.isNull(request)) {
+            return DEFAULT_LOCALE;
+        }
+
+        Locale locale = request.getLocale();
+        return U.isNull(locale) ? DEFAULT_LOCALE : locale;
+    }
+
     /*** 本机就返回 true */
     public static boolean isLocalRequest() {
         return U.isLocalRequest(getRealIp());
     }
 
+    /** 获取 ua 信息 */
     public static String userAgent() {
         HttpServletRequest request = getRequest();
         return U.isNull(request) ? U.EMPTY : request.getHeader(USER_AGENT);
@@ -199,7 +213,7 @@ public final class RequestUtil {
                 }
             }
         }
-        return null;
+        return U.EMPTY;
     }
 
     /**
@@ -374,11 +388,11 @@ public final class RequestUtil {
                 locale = request.getLocale();
             }
             if (U.isNull(locale) || U.isBlank(locale.getCountry())) {
-                locale = Locale.SIMPLIFIED_CHINESE;
+                locale = DEFAULT_LOCALE;
             }
             LocaleContextHolder.setLocale(locale);
             LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
-            if (localeResolver != null) {
+            if (U.isNotNull(localeResolver)) {
                 localeResolver.setLocale(request, getResponse(), locale);
             }
         } catch (Exception e) {
