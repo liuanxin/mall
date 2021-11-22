@@ -105,11 +105,26 @@ public class MybatisPlusUtil {
      * @return 实体中的属性对应的数据库字段名, 如 [id, user_name]
      */
     @SuppressWarnings("unchecked")
-    public static <T> String[] fieldsToColumnArray(SFunction<T, ?>... columns) {
+    public static <T> List<String> fieldsToColumnList(SFunction<T, ?>... columns) {
         List<String> returnList = Lists.newArrayList();
         for (SFunction<T, ?> column : columns) {
             returnList.add(fieldToColumn(column));
         }
-        return returnList.toArray(new String[0]);
+        return returnList;
+    }
+
+    /**
+     * java 字段转换成数据库列名<br><br>
+     *
+     * 使用 columnsToString(User::getUserName, User::getPassword, User::getNickName)<br>
+     * 返回 [user_name, password, nick_name]
+     *
+     * @param columns lambda 表达式对应的字段数组, 如 [User::getId, User::getUserName]
+     * @param <T> 数据库表对应的实体
+     * @return 实体中的属性对应的数据库字段名, 如 [id, user_name]
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> String[] fieldsToColumnArray(SFunction<T, ?>... columns) {
+        return fieldsToColumnList(columns).toArray(new String[0]);
     }
 }
