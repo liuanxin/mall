@@ -1,6 +1,5 @@
 package com.github.web;
 
-import com.github.common.json.JsonResult;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
@@ -56,7 +55,7 @@ public class BackendIndexController {
 
     @GetMapping("/collect")
     @ResponseBody
-    public JsonResult<String> collect() {
+    public String collect() {
         List<Map<String, String>> urlList = Lists.newArrayList();
         for (Map.Entry<RequestMappingInfo, HandlerMethod> entry : mapping.getHandlerMethods().entrySet()) {
             RequestMappingInfo info = entry.getKey();
@@ -70,6 +69,6 @@ public class BackendIndexController {
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
             LogUtil.ROOT_LOG.info("接口信息: ({})", JsonUtil.toJson(urlList));
         }
-        return JsonResult.success("collect");
+        return "collect";
     }
 }
