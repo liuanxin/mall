@@ -52,6 +52,11 @@ public class RedissonService {
         redisson.getBucket(key, USE_CODEC).expire(time, unit);
     }
 
+    /** 获取键的存活时间, 单位: 毫秒, 对应命令: PTTL key */
+    public long getExpireMs(String key) {
+        return redisson.getBucket(key, USE_CODEC).remainTimeToLive();
+    }
+
     /** 自增, 对应命令: INCR key */
     public long incr(String key) {
         return redisson.getAtomicLong(key).incrementAndGet();
@@ -61,6 +66,15 @@ public class RedissonService {
         return redisson.getAtomicLong(key).addAndGet(incr);
     }
 
+    /** 自减, 对应命令: DECR key */
+    public long decr(String key) {
+        return redisson.getAtomicLong(key).decrementAndGet();
+    }
+    /** 自减, 对应命令: INCRBY key -increment, redisson 没有用 DECRBY key decrement */
+    public long decr(String key, int decr) {
+        return redisson.getAtomicLong(key).addAndGet(-decr);
+    }
+
     /** 从 redis 中取值, 对应命令: GET key */
     public <T> T get(String key) {
         return (T) redisson.getBucket(key, USE_CODEC).get();
@@ -68,11 +82,6 @@ public class RedissonService {
     /** 从 redis 中删值, 对应命令: DEL key */
     public void delete(String key) {
         redisson.getBucket(key, USE_CODEC).delete();
-    }
-
-    /** 获取键的存活时间, 单位: 毫秒, 对应命令: PTTL key */
-    public long getExpireMs(String key) {
-        return redisson.getBucket(key, USE_CODEC).remainTimeToLive();
     }
 
 
