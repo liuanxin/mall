@@ -63,6 +63,11 @@ public class RedissonService {
         redisson.getBucket(key, USE_CODEC).delete();
     }
 
+    /** 获取键的存活时间, 单位: 毫秒 */
+    public long getExpireMs(String key) {
+        return redisson.getBucket(key, USE_CODEC).remainTimeToLive();
+    }
+
 
     /**
      * 用 redis 获取分布式锁
