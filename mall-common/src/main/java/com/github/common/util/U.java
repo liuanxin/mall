@@ -513,6 +513,20 @@ public final class U {
         return isNull(obj) ? defaultValue : obj;
     }
 
+    public static boolean safeEquals(String a, String b) {
+        if (a != null && b != null) {
+            if (a.length() != b.length()) {
+                return false;
+            }
+            int equal = 0;
+            for (int i = 0; i < a.length(); i++) {
+                equal |= a.charAt(i) ^ b.charAt(i);
+            }
+            return equal == 0;
+        } else {
+            return false;
+        }
+    }
     public static boolean isEquals(Object obj1, Object obj2) {
         if (obj1 == obj2) {
             return true;
