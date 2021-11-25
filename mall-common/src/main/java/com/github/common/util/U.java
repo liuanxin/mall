@@ -509,8 +509,8 @@ public final class U {
         return sbd.toString();
     }
 
-    public static <T> T defaultIfNull(T obj, T defaultValue) {
-        return isNull(obj) ? defaultValue : obj;
+    public static <T> T defaultIfNull(T value, T defaultValue) {
+        return isNull(value) ? defaultValue : value;
     }
 
     public static boolean safeEquals(String a, String b) {
