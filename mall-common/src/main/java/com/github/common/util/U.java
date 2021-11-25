@@ -513,6 +513,10 @@ public final class U {
         return isNull(value) ? defaultValue : value;
     }
 
+    public static String defaultIfBlank(String value, String defaultValue) {
+        return isBlank(value) ? defaultValue : value;
+    }
+
     public static boolean safeEquals(String a, String b) {
         if (a != null && b != null) {
             int al = a.length();
@@ -567,9 +571,14 @@ public final class U {
         return obj != null;
     }
 
-    /** 为空或是空字符时返回 true */
+    /** 为空或是空字符或是 null undefined 时返回 true */
     public static boolean isBlank(String str) {
-        return isNull(str) || str.trim().isEmpty();
+        if (isNull(str)) {
+            return true;
+        } else {
+            String trim = str.trim();
+            return trim.isEmpty() || trim.equalsIgnoreCase("null") || trim.equalsIgnoreCase("undefined");
+        }
     }
     /** 非空且不是空字符时返回 true */
     public static boolean isNotBlank(String str) {
