@@ -80,10 +80,12 @@ public final class JsonModule {
     public static class BigDecimalSerializer extends JsonSerializer<BigDecimal> {
         @Override
         public void serialize(BigDecimal value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+            int minScale = 2;
             if (U.isNull(value)) {
                 gen.writeString(U.EMPTY);
-            } else if (value.scale() < 2) {
-                gen.writeString(value.setScale(2, RoundingMode.DOWN).toString());
+            } else if (value.scale() < minScale) {
+                // 忽略小数位后的值, 有值就进 1 则使用 RoundingMode.UP
+                gen.writeString(value.setScale(minScale, RoundingMode.DOWN).toString());
             } else {
                 gen.writeString(value.toString());
             }
