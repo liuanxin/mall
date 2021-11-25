@@ -206,7 +206,7 @@ public class Money implements Serializable {
                 "万", "拾", "佰", "仟",
                 "亿", "拾", "佰", "仟"
         };
-        private static final String[] DECIMAL = { /* "微", "忽", "丝", "毫", "厘", */ "分", "角"};
+        private static final String[] DECIMAL = { "角", "分", "厘", "毫", "丝", "忽", "微" };
         private static final String[] NUM = { "零", "壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖" };
 
         private static final String MONEY_NOT_EFFECTIVE = "不是有效的金额";
@@ -295,7 +295,7 @@ public class Money implements Serializable {
                 sbd.append(SPLIT);
                 for (int i = 0; i < rightLen; i++) {
                     int number = U.toInt(String.valueOf(right.charAt(i)));
-                    sbd.append(NUM[number]).append(DECIMAL[rightLen - i - 1]);
+                    sbd.append(NUM[number]).append(DECIMAL[i]);
                 }
             } else if (rightLong == 0) {
                 sbd.append(WHOLE);
