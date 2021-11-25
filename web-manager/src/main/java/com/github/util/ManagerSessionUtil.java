@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /** 操作 session 都基于此, 其他地方不允许操作! 避免 session 被滥用 */
+@SuppressWarnings("ConstantConditions")
 public class ManagerSessionUtil {
 
     /** 放在 session 里的图片验证码 key */

@@ -148,7 +148,7 @@ public class Money implements Serializable {
 
     /** 设置金额的精度 */
     public static BigDecimal setPrecision(BigDecimal money) {
-        return U.isNull(money) ? money : money.setScale(SCALE, RoundingMode.DOWN);
+        return U.isNull(money) ? null : money.setScale(SCALE, RoundingMode.DOWN);
     }
 
     /** num1 + num2 */
@@ -167,25 +167,30 @@ public class Money implements Serializable {
     public static BigDecimal multiply(BigDecimal num1, int num2) {
         return multiply(num1, new BigDecimal(num2));
     }
-    /** num1 * num2 第二个参数为空则是 1 */
+    /** num1 * num2 */
     public static BigDecimal multiply(BigDecimal num1, BigDecimal num2) {
         if (U.isNull(num2)) {
             return num1;
+        } else if (U.isNull(num1)) {
+            return num2;
         } else {
-            BigDecimal n1 = U.isNull(num1) ? BigDecimal.ZERO : num1;
-            return n1.multiply(num2);
+            return num1.multiply(num2);
         }
     }
     /** num1 / num2 返回有 2 位小数点精度的结果 */
-    public static BigDecimal divide(BigDecimal num1, Integer num2) {
+    public static BigDecimal divide(BigDecimal num1, int num2) {
         return divide(num1, new BigDecimal(num2));
     }
     /** num1 / num2 返回有 2 位小数点精度的结果 */
     public static BigDecimal divide(BigDecimal num1, BigDecimal num2) {
+        return divideScale(num1, num2, SCALE);
+    }
+    /** num1 / num2 返回有指定位小数点精度的结果 */
+    public static BigDecimal divideScale(BigDecimal num1, BigDecimal num2, int scale) {
         U.assertException(num2 == null || num2.doubleValue() == 0, "除数要有值且不能为 0");
 
         BigDecimal n1 = U.isNull(num1) ? BigDecimal.ZERO : num1;
-        return n1.divide(num2, SCALE, RoundingMode.DOWN);
+        return n1.divide(num2, scale, RoundingMode.DOWN);
     }
 
 
