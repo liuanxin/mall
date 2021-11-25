@@ -1,16 +1,12 @@
 package com.github.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.common.json.JsonModule;
 import com.github.common.util.ApplicationContexts;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-
-import java.math.BigDecimal;
-import java.util.Date;
 
 @Configuration
 public class GlobalConfig {
@@ -23,12 +19,7 @@ public class GlobalConfig {
     @Bean
     @ConditionalOnClass(ObjectMapper.class)
     public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(ObjectMapper objectMapper) {
-        SimpleModule module = new SimpleModule()
-                // .addSerializer(Long.class, ToStringSerializer.instance)
-                // .addSerializer(Long.TYPE, ToStringSerializer.instance)
-                .addSerializer(BigDecimal.class, JsonModule.DECIMAL_SER)
-                .addDeserializer(Date.class, JsonModule.DATE_DES);
-        objectMapper.registerModule(module);
+        objectMapper.registerModule(JsonModule.GLOBAL_MODULE);
         return new MappingJackson2HttpMessageConverter(objectMapper);
     }
 

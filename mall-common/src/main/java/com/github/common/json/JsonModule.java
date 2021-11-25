@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.github.common.date.DateUtil;
 import com.github.common.util.U;
 
@@ -14,18 +16,27 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
 
-public class JsonModule {
+public final class JsonModule {
 
-    public static final JsonSerializer<String> DESENSITIZATION_SER = new StringDesensitization();
-    public static final JsonSerializer<BigDecimal> DECIMAL_SER = new BigDecimalSerializer();
+    /** 全局序列化反序列化模块 */
+    public static final SimpleModule GLOBAL_MODULE = new SimpleModule()
+            .addSerializer(Integer.TYPE, ToStringSerializer.instance)
+            .addSerializer(Integer.class, ToStringSerializer.instance)
+            .addSerializer(Long.class, ToStringSerializer.instance)
+            .addSerializer(Long.TYPE, ToStringSerializer.instance)
+            .addSerializer(Float.class, ToStringSerializer.instance)
+            .addSerializer(Float.TYPE, ToStringSerializer.instance)
+            .addSerializer(Double.class, ToStringSerializer.instance)
+            .addSerializer(Double.TYPE, ToStringSerializer.instance)
+            .addSerializer(BigDecimal.class, new BigDecimalSerializer())
 
-    // =============================== 上面是序列化, 下面是反序列化 ===============================
+            .addDeserializer(BigDecimal.class, new BigDecimalDeserializer())
+            .addDeserializer(Date.class, new DateDeserializer());
 
-    public static final JsonDeserializer<Date> DATE_DES = new DateDeserializer();
 
+    /** 脱敏用到的序列化模块 */
+    public static final SimpleModule DES_MODULE = new SimpleModule().addSerializer(String.class, new StringDesensitization());
 
-    private static final int DES_MAX = 1000;
-    private static final int DES_LEN = 200;
 
     /** 字符串脱敏 */
     public static class StringDesensitization extends JsonSerializer<String> {
@@ -55,9 +66,9 @@ public class JsonModule {
                     return;
             }
 
-            int len = value.length();
-            if (len > DES_MAX) {
-                gen.writeString(value.substring(0, DES_LEN) + " *** " + value.substring(len - DES_LEN));
+            int valueLen = value.length(), max = 1000, len = 200;
+            if (valueLen > max) {
+                gen.writeString(value.substring(0, len) + " *** " + value.substring(valueLen - len));
                 return;
             }
 
@@ -79,6 +90,7 @@ public class JsonModule {
         }
     }
 
+    // ================= 上面是序列化, 下面是反序列化 =================
 
     /** 反序列化 Date, 序列化使用全局配置, 或者属性上的 @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8") 注解 */
     public static class DateDeserializer extends JsonDeserializer<Date> {
@@ -86,6 +98,15 @@ public class JsonModule {
         public Date deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             Date date = DateUtil.parse(p.getText().trim());
             return (U.isNotNull(date) && date.getTime() == 0) ? null : date;
+        }
+    }
+
+    /** 反序列化 BigDecimal */
+    public static class BigDecimalDeserializer extends JsonDeserializer<BigDecimal> {
+        @Override
+        public BigDecimal deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+            String text = p.getText();
+            return U.isBlank(text) ? null : new BigDecimal(text.trim());
         }
     }
 }
