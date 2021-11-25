@@ -177,20 +177,20 @@ public class Money implements Serializable {
             return num1.multiply(num2);
         }
     }
-    /** num1 / num2 返回有 2 位小数点精度的结果 */
+    /** num1 / num2 返回有 2 位小数点精度的结果, 忽略 2 位后的小数位 */
     public static BigDecimal divide(BigDecimal num1, int num2) {
         return divide(num1, new BigDecimal(num2));
     }
-    /** num1 / num2 返回有 2 位小数点精度的结果 */
+    /** num1 / num2 返回有 2 位小数点精度的结果, 忽略 2 位后的小数位 */
     public static BigDecimal divide(BigDecimal num1, BigDecimal num2) {
-        return divideScale(num1, num2, SCALE);
+        return divideScale(num1, num2, SCALE, RoundingMode.DOWN);
     }
-    /** num1 / num2 返回有指定位小数点精度的结果 */
-    public static BigDecimal divideScale(BigDecimal num1, BigDecimal num2, int scale) {
+    /** num1 / num2 返回有指定位小数点精度的结果, 指定精度取舍 */
+    public static BigDecimal divideScale(BigDecimal num1, BigDecimal num2, int scale, RoundingMode mode) {
         U.assertException(num2 == null || num2.doubleValue() == 0, "除数要有值且不能为 0");
 
         BigDecimal n1 = U.isNull(num1) ? BigDecimal.ZERO : num1;
-        return n1.divide(num2, scale, RoundingMode.DOWN);
+        return n1.divide(num2, scale, mode);
     }
 
 
