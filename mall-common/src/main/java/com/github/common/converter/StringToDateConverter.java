@@ -1,6 +1,5 @@
 package com.github.common.converter;
 
-import com.github.common.date.DateFormatType;
 import com.github.common.date.DateUtil;
 import org.springframework.core.convert.converter.Converter;
 
@@ -13,7 +12,7 @@ import java.util.Date;
  *
  * 此 convert 用于替代 org.springframework.format.annotation.DateTimeFormat 注解
  *
- * @see DateFormatType
+ * @see com.github.common.date.DateFormatType
  * @see org.springframework.format.annotation.DateTimeFormat
  */
 public class StringToDateConverter implements Converter<String, Date> {
