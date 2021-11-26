@@ -434,6 +434,7 @@ public class PdfUtil {
                 cell.setHorizontalAlignment(toInt(tableContent.getTextAlign(), Element.ALIGN_LEFT));
                 cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
+                BaseColor color = toColor(tableContent.getRgba());
                 PrintInfo.PlaceholderType fieldType = tableContent.getFieldType();
                 float fontSize = toFloat(tableContent.getFontSize(), 10);
                 boolean fontBold = toBoolean(tableContent.getFontBold(), false);
@@ -459,22 +460,22 @@ public class PdfUtil {
                             break;
                         case INDEX:
                             String lineIndex = prefix + (lineStart + i + 1) + suffix;
-                            cell.setPhrase(generateValue(toStr(lineIndex), fontBold, toFont(lineIndex, fontBold, fontSize)));
+                            cell.setPhrase(generateValue(toStr(lineIndex), fontBold, toFont(lineIndex, fontBold, fontSize, color)));
                             break;
                         case COUNT:
                             String lineCount = prefix + size + suffix;
-                            cell.setPhrase(generateValue(toStr(lineCount), fontBold, toFont(lineCount, fontBold, fontSize)));
+                            cell.setPhrase(generateValue(toStr(lineCount), fontBold, toFont(lineCount, fontBold, fontSize, color)));
                             break;
                         case INDEX_COUNT:
                             String lineIndexCount = prefix + (lineStart + i + 1) + "/" + size + suffix;
-                            cell.setPhrase(generateValue(toStr(lineIndexCount), fontBold, toFont(lineIndexCount, fontBold, fontSize)));
+                            cell.setPhrase(generateValue(toStr(lineIndexCount), fontBold, toFont(lineIndexCount, fontBold, fontSize, color)));
                             break;
                         default:
-                            cell.setPhrase(generateValue(toStr(value), fontBold, toFont(value, fontBold, fontSize)));
+                            cell.setPhrase(generateValue(toStr(value), fontBold, toFont(value, fontBold, fontSize, color)));
                             break;
                     }
                 } else {
-                    cell.setPhrase(generateValue(toStr(value), fontBold, toFont(value, fontBold, fontSize)));
+                    cell.setPhrase(generateValue(toStr(value), fontBold, toFont(value, fontBold, fontSize, color)));
                 }
                 table.addCell(cell);
             }
@@ -639,11 +640,12 @@ public class PdfUtil {
             return bold ? BASE_FONT_BOLD : BASE_FONT;
         }
     }
-    private static Font toFont(String value, boolean bold, float fontSize) {
+    private static Font toFont(String value, boolean bold, float fontSize, BaseColor color) {
         boolean hasCn = value != null && CN_PATTERN.matcher(value).find();
         String cacheKey;
         if (USE_CACHE) {
-            cacheKey = String.format("font-%s-%s-%s", (hasCn ? 1 : 0), (bold ? 1 : 0), fontSize);
+            String c = ( (color == null) ? "" : ("-" + color.getRGB()) );
+            cacheKey = String.format("font-%s-%s-%s%s", (hasCn ? 1 : 0), (bold ? 1 : 0), fontSize, c);
             Object valueInCache = CACHE.getIfPresent(cacheKey);
             if (valueInCache instanceof Font) {
                 return (Font) valueInCache;
@@ -651,7 +653,7 @@ public class PdfUtil {
         }
 
         BaseFont baseFont = toBaseFont(hasCn, bold);
-        Font font = bold ? new Font(baseFont, fontSize, Font.BOLD) : new Font(baseFont, fontSize);
+        Font font = new Font(baseFont, fontSize, (bold ? Font.BOLD : Font.UNDEFINED), color);
         if (USE_CACHE) {
             CACHE.put(cacheKey, font);
         }

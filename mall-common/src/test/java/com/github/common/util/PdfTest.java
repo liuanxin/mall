@@ -405,6 +405,7 @@ public class PdfTest {
         dptc3.setFieldName("forecastNum");
         dptc3.setTextAlign(Element.ALIGN_CENTER);
         dptc3.setFontSize(8F);
+        dptc3.setRgba(Arrays.asList(255, 0, 0));
         dynamicTableValue.add(dptc3);
 
         PrintInfo.TableContent dptc4 = new PrintInfo.TableContent();
