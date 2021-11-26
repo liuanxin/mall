@@ -75,11 +75,14 @@ public class PdfUtil {
     }
     public static void generatePdfFile(String file, PrintInfo template, Map<String, Object> data) {
         if (template != null) {
+            if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+                LogUtil.ROOT_LOG.debug("开始生成 pdf 文件({})", file);
+            }
             try (FileOutputStream outputStream = new FileOutputStream(file)) {
                 long start = System.currentTimeMillis();
                 writePdf(template, data, outputStream);
-                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("生成 pdf 文件({})耗时({}ms)", file, (System.currentTimeMillis() - start));
+                if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+                    LogUtil.ROOT_LOG.debug("生成 pdf 文件({})耗时({}ms)", file, (System.currentTimeMillis() - start));
                 }
             } catch (Exception e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
@@ -94,11 +97,14 @@ public class PdfUtil {
     }
     public static byte[] generatePdfByte(PrintInfo template, Map<String, Object> data) {
         if (template != null) {
+            if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+                LogUtil.ROOT_LOG.debug("开始生成 pdf 字节");
+            }
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 long start = System.currentTimeMillis();
                 writePdf(template, data, outputStream);
-                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("生成 pdf 字节耗时({}ms)", (System.currentTimeMillis() - start));
+                if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+                    LogUtil.ROOT_LOG.debug("生成 pdf 字节耗时({}ms)", (System.currentTimeMillis() - start));
                 }
                 return outputStream.toByteArray();
             } catch (Exception e) {
@@ -192,8 +198,8 @@ public class PdfUtil {
             placeContent = (List) dynamicContent;
         } else {
             if (dynamicContent != null) {
-                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("动态占位数据有误");
+                if (LogUtil.ROOT_LOG.isWarnEnabled()) {
+                    LogUtil.ROOT_LOG.warn("动态占位数据有误");
                 }
             }
             placeContent = Collections.emptyList();
