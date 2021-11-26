@@ -32,6 +32,8 @@ public class JsonDesensitization {
         this.objectMapper = objectMapper;
 
         this.desObjectMapper = objectMapper.copy();
+        // NON_NULL  : null 值不序列化
+        // NON_EMPTY : null、空字符串、长度为 0 的 list、长度为 0 的 map 都不序列化
         this.desObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         this.desObjectMapper.registerModule(JsonModule.DES_MODULE);
     }

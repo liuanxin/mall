@@ -28,18 +28,21 @@ public final class JsonModule {
             .addSerializer(Float.TYPE, ToStringSerializer.instance)
             .addSerializer(Double.class, ToStringSerializer.instance)
             .addSerializer(Double.TYPE, ToStringSerializer.instance)
-            .addSerializer(BigDecimal.class, new BigDecimalSerializer())
+            .addSerializer(BigDecimal.class, BigDecimalSerializer.instance)
 
-            .addDeserializer(BigDecimal.class, new BigDecimalDeserializer())
-            .addDeserializer(Date.class, new DateDeserializer());
+            .addDeserializer(BigDecimal.class, BigDecimalDeserializer.instance)
+            .addDeserializer(Date.class, DateDeserializer.instance);
 
 
     /** 脱敏用到的序列化模块 */
-    public static final SimpleModule DES_MODULE = new SimpleModule().addSerializer(String.class, new StringDesensitization());
+    public static final SimpleModule DES_MODULE = new SimpleModule()
+            .addSerializer(String.class, StringDesensitization.instance);
 
 
     /** 字符串脱敏 */
     public static class StringDesensitization extends JsonSerializer<String> {
+        public static final StringDesensitization instance = new StringDesensitization();
+
         @Override
         public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
             if (U.isNull(value)) {
@@ -78,6 +81,7 @@ public final class JsonModule {
 
     /** 序列化 BigDecimal 小数位不足 2 位的返回 2 位 */
     public static class BigDecimalSerializer extends JsonSerializer<BigDecimal> {
+        public static final BigDecimalSerializer instance = new BigDecimalSerializer();
         @Override
         public void serialize(BigDecimal value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
             int minScale = 2;
@@ -96,6 +100,7 @@ public final class JsonModule {
 
     /** 反序列化 Date, 序列化使用全局配置, 或者属性上的 @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8") 注解 */
     public static class DateDeserializer extends JsonDeserializer<Date> {
+        public static final DateDeserializer instance = new DateDeserializer();
         @Override
         public Date deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             Date date = DateUtil.parse(p.getText().trim());
@@ -105,6 +110,7 @@ public final class JsonModule {
 
     /** 反序列化 BigDecimal */
     public static class BigDecimalDeserializer extends JsonDeserializer<BigDecimal> {
+        public static final BigDecimalDeserializer instance = new BigDecimalDeserializer();
         @Override
         public BigDecimal deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             String text = p.getText();

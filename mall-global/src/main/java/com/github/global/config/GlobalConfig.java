@@ -1,7 +1,7 @@
 package com.github.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.common.json.JsonModule;
+import com.github.common.json.JsonUtil;
 import com.github.common.util.ApplicationContexts;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +19,7 @@ public class GlobalConfig {
     @Bean
     @ConditionalOnClass(ObjectMapper.class)
     public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(ObjectMapper objectMapper) {
-        objectMapper.registerModule(JsonModule.GLOBAL_MODULE);
+        JsonUtil.globalConfig(objectMapper);
         return new MappingJackson2HttpMessageConverter(objectMapper);
     }
 
