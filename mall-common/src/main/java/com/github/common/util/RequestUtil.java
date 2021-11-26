@@ -85,15 +85,8 @@ public final class RequestUtil {
 
     /** 获取请求的语言信息, 获取不到就返回简体中文环境 */
     public static Locale getLocale() {
-        Locale locale;
-
         HttpServletRequest request = getRequest();
-        if (U.isNull(request)) {
-            locale = LocaleContextHolder.getLocale();
-        } else {
-            locale = RequestContextUtils.getLocale(request);
-        }
-        return U.defaultIfNull(locale, DEFAULT_LOCALE);
+        return U.isNull(request) ? LocaleContextHolder.getLocale() : RequestContextUtils.getLocale(request);
     }
 
     /*** 本机就返回 true */
