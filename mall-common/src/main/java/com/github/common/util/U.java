@@ -272,6 +272,10 @@ public final class U {
         return s.toString();
     }
 
+    public static int unixTimestamp() {
+        return (int) (System.currentTimeMillis() / 1000);
+    }
+
     /** 转换成 int, 非数字则返回 0 */
     public static int toInt(Object obj) {
         if (isNull(obj)) {
