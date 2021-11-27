@@ -64,7 +64,7 @@ public class JsonUtil {
 
         // 不确定值的枚举返回 null
         objectMapper.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL);
-        // 用 BigDecimal 来反序列化浮点数, 避免精度
+        // 用 BigDecimal 来反序列化浮点数
         objectMapper.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
         // 用 BigInteger 来反序列化整数
         objectMapper.enable(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS);

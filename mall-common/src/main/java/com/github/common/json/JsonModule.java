@@ -73,6 +73,7 @@ public final class JsonModule {
     /** 序列化 BigDecimal 小数位不足 2 位的返回 2 位 */
     public static class BigDecimalSerializer extends JsonSerializer<BigDecimal> {
         public static final BigDecimalSerializer instance = new BigDecimalSerializer();
+
         @Override
         public void serialize(BigDecimal value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
             int minScale = 2;
@@ -92,6 +93,7 @@ public final class JsonModule {
     /** 反序列化 Date, 序列化使用全局配置, 或者属性上的 @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8") 注解 */
     public static class DateDeserializer extends JsonDeserializer<Date> {
         public static final DateDeserializer instance = new DateDeserializer();
+
         @Override
         public Date deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             Date date = DateUtil.parse(p.getText().trim());
@@ -102,6 +104,7 @@ public final class JsonModule {
     /** 反序列化 BigDecimal */
     public static class BigDecimalDeserializer extends JsonDeserializer<BigDecimal> {
         public static final BigDecimalDeserializer instance = new BigDecimalDeserializer();
+
         @Override
         public BigDecimal deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             String text = p.getText();
