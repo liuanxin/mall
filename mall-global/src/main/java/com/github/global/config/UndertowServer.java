@@ -8,15 +8,20 @@ import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFa
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * In Spring Boot 2,
+ *   the EmbeddedServletContainerCustomizer interface is replaced by WebServerFactoryCustomizer,
+ *   while the ConfigurableEmbeddedServletContainer class is replaced with ConfigurableServletWebServerFactory.
+ */
 @Configuration
 @ConditionalOnClass({ WebSocketDeploymentInfo.class })
 public class UndertowServer implements WebServerFactoryCustomizer<UndertowServletWebServerFactory> {
 
     @Override
-    public void customize(UndertowServletWebServerFactory factory) {
-        factory.addDeploymentInfoCustomizers(deploymentInfo -> {
+    public void customize(UndertowServletWebServerFactory undertow) {
+        undertow.addDeploymentInfoCustomizers(deploymentInfo -> {
             WebSocketDeploymentInfo webSocketDeploymentInfo = new WebSocketDeploymentInfo();
-            webSocketDeploymentInfo.setBuffers(new DefaultByteBufferPool(false, U.PROCESSORS << 1 + 1));
+            webSocketDeploymentInfo.setBuffers(new DefaultByteBufferPool(false, (U.PROCESSORS << 1) + 1));
             deploymentInfo.addServletContextAttribute(WebSocketDeploymentInfo.class.getName(), webSocketDeploymentInfo);
         });
     }
