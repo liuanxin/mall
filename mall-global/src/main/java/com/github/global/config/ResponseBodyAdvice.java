@@ -27,7 +27,7 @@ import java.lang.reflect.Method;
 @RequiredArgsConstructor
 @ConditionalOnClass({ HttpServletResponse.class, ResponseBody.class })
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
-public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice {
+public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice {
 
     private final JsonDesensitization jsonDesensitization;
 
@@ -78,7 +78,7 @@ public class GlobalResponseBodyAdvice extends AbstractMappingJacksonResponseBody
                     }
                 }
 
-                long startTimeMillis = LogUtil.getStartTimeMillis();
+                long startTimeMillis = LogUtil.getStartMilli();
                 if (U.greater0(startTimeMillis)) {
                     sbd.append(" time(").append(DateUtil.toHuman(System.currentTimeMillis() - startTimeMillis)).append(")");
                 }

@@ -59,7 +59,7 @@ public final class LogUtil {
         MDC.clear();
     }
 
-    public static long getStartTimeMillis() {
+    public static long getStartMilli() {
         return U.toLong(MDC.get(START_REQUEST_TIME));
     }
     public static String getTraceId() {

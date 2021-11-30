@@ -31,7 +31,7 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 @ConditionalOnClass({ HttpServletRequest.class, RequestBody.class })
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
-public class GlobalRequestBodyAdvice extends RequestBodyAdviceAdapter {
+public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
 
     /**
      * 当前端发过来的 RequestBody 数据跟相关的实体对应不上时, 是进不到 afterBodyRead 去的
