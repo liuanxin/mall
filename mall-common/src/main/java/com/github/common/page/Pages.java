@@ -23,6 +23,14 @@ public final class Pages {
         return U.isNull(pageInfo) ? null : A.first(pageInfo.getRecords());
     }
 
+    public static <T> boolean hasExists(Page<T> pageInfo) {
+        return U.isNotNull(pageInfo) && U.isNotNull(A.first(pageInfo.getRecords()));
+    }
+
+    public static <T> boolean notExists(Page<T> pageInfo) {
+        return U.isNull(pageInfo) || U.isNull(A.first(pageInfo.getRecords()));
+    }
+
     /** 在 service 的实现类中调用 --> 在 repository 方法上的参数是 mbp 的 Page 对象, service 上的参数是 PageParam, 使用此方法进行转换 */
     public static <T> Page<T> param(PageParam page) {
         // 移动端与 pc 端的分页不同, 前者的用户习惯是一直刷, 一边刷一边加载, 它是不需要查询 select count(*) 的

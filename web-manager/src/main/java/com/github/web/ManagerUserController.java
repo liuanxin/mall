@@ -40,9 +40,10 @@ public class ManagerUserController {
     public JsonResult<ManagerUserRes> login(@ApiParam("用户名") String userName, @ApiParam("密码") String password) {
         U.assertException(U.isEmpty(userName) || U.isEmpty(password), "请输入用户名或密码");
 
-        ManagerUser user = adminService.login(userName, password);
-        U.assertException(U.isTrue(user.getStatus()), "用户被禁止登录, 请联系管理员");
+        ManagerUser user = adminService.getUser(userName);
+        U.assertNil(user, "用户名或密码有误");
         U.assertException(Encrypt.checkNotBcrypt(password, user.getPassword()), "用户名或密码不正确");
+        U.assertException(U.isTrue(user.getStatus()), "用户被禁止登录, 请联系管理员");
 
         // 登录成功后填充菜单和权限, 平级放到用户上
         user.assignmentData(adminService.getUserRole(user.getId(), !user.getHasManager(), true)); // 管理员不加载菜单

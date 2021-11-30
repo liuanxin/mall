@@ -1,8 +1,8 @@
 package com.github.manager.service;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.common.encrypt.Encrypt;
 import com.github.common.page.PageParam;
 import com.github.common.page.PageReturn;
@@ -39,12 +39,9 @@ public class ManagerServiceImpl implements ManagerService {
 
 
     @Override
-    public ManagerUser login(String userName, String password) {
+    public ManagerUser getUser(String userName) {
         Wrapper<ManagerUser> query = Wrappers.lambdaQuery(ManagerUser.class).eq(ManagerUser::getUserName, userName);
-        Page<ManagerUser> page = userMapper.selectPage(Pages.paramOnlyLimit(1), query);
-        ManagerUser user = U.isNotNull(page) ? A.first(page.getRecords()) : null;
-        U.assertNil(user, "用户名或密码有误");
-        return user;
+        return Pages.returnOne(userMapper.selectPage(Pages.paramOnlyLimit(1), query));
     }
 
     @Override
@@ -79,9 +76,10 @@ public class ManagerServiceImpl implements ManagerService {
             }
             userMapper.updateById(user);
         } else {
-            Long count = userMapper.selectCount(Wrappers.lambdaQuery(ManagerUser.class)
-                    .eq(ManagerUser::getUserName, user.getNickName()));
-            U.assertException(U.greater0(count), "已经有同名用户, 不能再次添加");
+            LambdaQueryWrapper<ManagerUser> existsQuery = Wrappers.lambdaQuery(ManagerUser.class)
+                    .select(ManagerUser::getId).eq(ManagerUser::getUserName, user.getNickName());
+            boolean exists = Pages.hasExists(userMapper.selectPage(Pages.paramOnlyLimit(1), existsQuery));
+            U.assertException(exists, "已经有同名用户, 不能再次添加");
 
             user.setId(null);
             user.setPassword(Encrypt.bcryptEncode(user.getPassword()));
@@ -221,14 +219,17 @@ public class ManagerServiceImpl implements ManagerService {
     public void addOrUpdateRole(ManagerRole role) {
         Long rid = role.getId();
         if (U.greater0(rid)) {
-            Long count = roleMapper.selectCount(Wrappers.lambdaQuery(ManagerRole.class).eq(ManagerRole::getId, rid));
-            U.assertException(U.isNull(count) || count == 0, "没有这个角色, 无法修改");
+            LambdaQueryWrapper<ManagerRole> existsQuery = Wrappers.lambdaQuery(ManagerRole.class)
+                    .select(ManagerRole::getId).eq(ManagerRole::getId, rid);
+            boolean noExists = Pages.notExists(roleMapper.selectPage(Pages.paramOnlyLimit(1), existsQuery));
+            U.assertNil(noExists, "没有这个角色, 无法修改");
 
             roleMapper.updateById(role);
         } else {
-            Long count = roleMapper.selectCount(Wrappers.lambdaQuery(ManagerRole.class)
-                    .eq(ManagerRole::getName, role.getName()));
-            U.assertException(U.greater0(count), "已经有同名角色, 不能再次添加");
+            LambdaQueryWrapper<ManagerRole> existsQuery = Wrappers.lambdaQuery(ManagerRole.class)
+                    .select(ManagerRole::getId).eq(ManagerRole::getName, role.getName());
+            boolean exists = Pages.hasExists(roleMapper.selectPage(Pages.paramOnlyLimit(1), existsQuery));
+            U.assertException(exists, "已经有同名角色, 不能再次添加");
 
             role.setId(null);
             roleMapper.insert(role);
@@ -270,9 +271,10 @@ public class ManagerServiceImpl implements ManagerService {
     public void deleteRole(Long roleId) {
         U.assert0(roleId, "无此角色");
 
-        Long count = userRoleMapper.selectCount(Wrappers.lambdaQuery(ManagerUserRole.class)
-                .eq(ManagerUserRole::getRoleId, roleId));
-        U.assertException(U.greater0(count), "有用户分配了此角色, 请先取消分配再删除");
+        LambdaQueryWrapper<ManagerUserRole> existsQuery = Wrappers.lambdaQuery(ManagerUserRole.class)
+                .select(ManagerUserRole::getId).eq(ManagerUserRole::getRoleId, roleId);
+        boolean exists = Pages.hasExists(userRoleMapper.selectPage(Pages.paramOnlyLimit(1), existsQuery));
+        U.assertException(exists, "已经有用户分配了这个角色, 请先取消分配再删除");
 
         int flag = roleMapper.deleteById(roleId);
         if (flag == 1) {
@@ -299,9 +301,10 @@ public class ManagerServiceImpl implements ManagerService {
 
             menuMapper.updateById(menu);
         } else {
-            Long count = menuMapper.selectCount(Wrappers.lambdaQuery(ManagerMenu.class)
-                    .eq(ManagerMenu::getName, menu.getName()));
-            U.assertException(U.greater0(count), "已经有同名菜单, 不能再次添加");
+            LambdaQueryWrapper<ManagerMenu> existsQuery = Wrappers.lambdaQuery(ManagerMenu.class)
+                    .select(ManagerMenu::getId).eq(ManagerMenu::getName, menu.getName());
+            boolean exists = Pages.hasExists(menuMapper.selectPage(Pages.paramOnlyLimit(1), existsQuery));
+            U.assertException(exists, "已经有同名菜单, 不能再次添加");
 
             menu.setId(null);
             menuMapper.insert(menu);
@@ -312,9 +315,10 @@ public class ManagerServiceImpl implements ManagerService {
     public void deleteMenu(Long menuId) {
         U.assert0(menuId, "无此菜单");
 
-        Long count = permissionMapper.selectCount(Wrappers.lambdaQuery(ManagerPermission.class)
-                .eq(ManagerPermission::getMenuId, menuId));
-        U.assertException(U.greater0(count), "此菜单下已经有权限了, 请先将权限删除再来删除菜单");
+        LambdaQueryWrapper<ManagerPermission> existsQuery = Wrappers.lambdaQuery(ManagerPermission.class)
+                .select(ManagerPermission::getId).eq(ManagerPermission::getMenuId, menuId);
+        boolean exists = Pages.hasExists(permissionMapper.selectPage(Pages.paramOnlyLimit(1), existsQuery));
+        U.assertException(exists, "此菜单下已经有权限了, 请先将权限删除再来删除菜单");
 
         menuMapper.deleteById(menuId);
     }
@@ -322,9 +326,10 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     public void deleteMenus(List<Long> mids) {
         if (A.isNotEmpty(mids)) {
-            Long count = permissionMapper.selectCount(Wrappers.lambdaQuery(ManagerPermission.class)
-                    .in(ManagerPermission::getMenuId, mids));
-            U.assertException(U.greater0(count), "传入的菜单下已经有权限了, 请先将权限删除再来删除菜单");
+            LambdaQueryWrapper<ManagerPermission> existsQuery = Wrappers.lambdaQuery(ManagerPermission.class)
+                    .select(ManagerPermission::getId).in(ManagerPermission::getMenuId, mids);
+            boolean exists = Pages.hasExists(permissionMapper.selectPage(Pages.paramOnlyLimit(1), existsQuery));
+            U.assertException(exists, "传入的菜单下已经有权限了, 请先将权限删除再来删除菜单");
 
             menuMapper.delete(Wrappers.lambdaQuery(ManagerMenu.class).in(ManagerMenu::getId, mids));
         }
@@ -346,11 +351,12 @@ public class ManagerServiceImpl implements ManagerService {
 
             permissionMapper.updateById(permission);
         } else {
-            Long count = permissionMapper.selectCount(Wrappers.lambdaQuery(ManagerPermission.class)
+            LambdaQueryWrapper<ManagerPermission> existsQuery = Wrappers.lambdaQuery(ManagerPermission.class)
+                    .select(ManagerPermission::getId)
                     .eq(ManagerPermission::getMethod, permission.getMethod())
-                    .eq(ManagerPermission::getUrl, permission.getUrl())
-            );
-            U.assertException(U.greater0(count), "已经有同样规则的权限, 不能再次添加");
+                    .eq(ManagerPermission::getUrl, permission.getUrl());
+            boolean exists = Pages.hasExists(permissionMapper.selectPage(Pages.paramOnlyLimit(1), existsQuery));
+            U.assertException(exists, "已经有同样规则的权限, 不能再次添加");
 
             permission.setId(null);
             permissionMapper.insert(permission);

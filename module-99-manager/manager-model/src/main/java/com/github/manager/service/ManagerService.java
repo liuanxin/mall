@@ -11,8 +11,8 @@ import java.util.List;
 
 public interface ManagerService {
 
-    /** 验证登录并返回用户信息 */
-    ManagerUser login(String userName, String password);
+    /** 查询用户信息 */
+    ManagerUser getUser(String userName);
 
     ManagerUser getUser(Long userId);
 
