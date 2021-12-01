@@ -50,6 +50,17 @@ public final class Encrypt {
 
     private static final Charset UTF8 = StandardCharsets.UTF_8;
 
+    // 也不是很懂为什么 guava 已经发布了这么多的版本却还在 Beta, 这个注解用来抑制 idea 的警告
+    @SuppressWarnings("UnstableApiUsage")
+    private static final HashFunction HASH_FUN = Hashing.murmur3_32_fixed();
+    /** 62 进制(0-9, a-z, A-Z), 64 进制则再加上 _ 和 @ */
+    private static final char[] HEX = new char[] {
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+    };
+    private static final int HEX_LEN = HEX.length;
+
     /** 使用 aes 加密(使用默认密钥) */
     public static String aesEncode(String data) {
         return aesEncode(data, AES_SECRET);
@@ -316,7 +327,7 @@ public final class Encrypt {
     }
     /** 使用 rc4 加密 */
     public static String rc4Encode(String input, String key) {
-        return base64Encode(rc4(input, key));
+        return U.base64Encode(rc4(input, key));
     }
     /** 使用 rc4 解密(使用默认密钥) */
     public static String rc4Decode(String input) {
@@ -324,7 +335,7 @@ public final class Encrypt {
     }
     /** 使用 rc4 解密 */
     public static String rc4Decode(String input, String key) {
-        return rc4(base64Decode(input), key);
+        return rc4(U.base64Decode(input), key);
     }
     /** 使用 rc4 加解密, 如果是密文调用此方法将返回明文 */
     private static String rc4(String input, String key) {
@@ -364,17 +375,6 @@ public final class Encrypt {
         return new String(iOutputChar);
     }
 
-    // 也不是很懂为什么 guava 都已经发布快 30 个版本了, 还在 Beta, 这个注解用来抑制 idea 的警告
-    @SuppressWarnings("UnstableApiUsage")
-    private static final HashFunction HASH_FUN = Hashing.murmur3_32_fixed();
-    /** 62 进制(0-9, a-z, A-Z), 64 进制则再加上 _ 的 @ */
-    private static final char[] HEX = new char[] {
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
-    };
-    private static final int HEX_LEN = HEX.length;
-
     /**
      * <pre>
      * 生成短地址: 长度大于 6 则用 Murmur3_32Hash 算法来生成 hash 并返回其 62 进制数(0-9 + a-z + A-Z)
@@ -405,22 +405,6 @@ public final class Encrypt {
             return sbd.toString();
         }
     }
-
-    /** 使用 base64 编码 */
-    public static String base64Encode(String src) {
-        return base64Encode(src.getBytes(UTF8));
-    }
-    public static String base64Encode(byte[] src) {
-        return new String(Base64.getEncoder().encode(src), UTF8);
-    }
-    /** 使用 base64 解码 */
-    public static String base64Decode(String src) {
-        return base64Decode(src.getBytes(UTF8));
-    }
-    public static String base64Decode(byte[] src) {
-        return new String(Base64.getDecoder().decode(src), UTF8);
-    }
-
 
     /** 生成 md5 值(16 位) */
     public static String to16Md5(String src) {

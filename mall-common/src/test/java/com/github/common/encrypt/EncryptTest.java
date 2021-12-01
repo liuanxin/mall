@@ -104,10 +104,10 @@ public class EncryptTest {
 
     @Test
     public void base64Test() {
-        String encode = Encrypt.base64Encode(SOURCE);
+        String encode = U.base64Encode(SOURCE);
         Assert.assertTrue(encode.length() > 0);
 
-        String decode = Encrypt.base64Decode(encode);
+        String decode = U.base64Decode(encode);
         Assert.assertEquals(SOURCE, decode);
     }
 

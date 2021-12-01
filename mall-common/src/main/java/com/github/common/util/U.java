@@ -1161,11 +1161,27 @@ public final class U {
         }
     }
 
+    /** 使用 base64 编码 */
+    public static String base64Encode(String src) {
+        return new String(base64Encode(src.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+    }
+    public static byte[] base64Encode(byte[] src) {
+        return Base64.getEncoder().encode(src);
+    }
+    /** 使用 base64 解码 */
+    public static String base64Decode(String src) {
+        return new String(base64Decode(src.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+    }
+    public static byte[] base64Decode(byte[] src) {
+        return Base64.getDecoder().decode(src);
+    }
+
     /** 将长字符串进行 gzip 压缩, 再转成 base64 编码返回 */
     public static String compress(final String str) {
         if (isNull(str)) {
             return null;
         }
+
         String trim = str.trim();
         if (EMPTY.equals(trim) || trim.length() < COMPRESS_MIN_LEN) {
             return trim;
@@ -1177,7 +1193,7 @@ public final class U {
         ) {
             gzip.write(trim.getBytes(StandardCharsets.UTF_8));
             gzip.finish();
-            return new String(Base64.getEncoder().encode(output.toByteArray()), StandardCharsets.UTF_8);
+            return new String(base64Encode(output.toByteArray()), StandardCharsets.UTF_8);
         } catch (Exception e) {
             if (LOGGER.isErrorEnabled()) {
                 LOGGER.error("压缩字符串异常", e);
@@ -1201,7 +1217,7 @@ public final class U {
 
         byte[] bytes;
         try {
-            bytes = Base64.getDecoder().decode(str.getBytes(StandardCharsets.UTF_8));
+            bytes = base64Decode(str.getBytes(StandardCharsets.UTF_8));
             if (bytes.length == 0) {
                 return trim;
             }
