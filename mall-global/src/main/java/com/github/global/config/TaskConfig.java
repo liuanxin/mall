@@ -1,21 +1,14 @@
 package com.github.global.config;
 
-import com.github.common.util.A;
+import com.github.common.util.AsyncUti;
 import com.github.common.util.U;
-import org.slf4j.MDC;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.Collections;
-import java.util.Map;
 import java.util.concurrent.Executor;
 
 /**
@@ -31,6 +24,7 @@ import java.util.concurrent.Executor;
 public class TaskConfig implements AsyncConfigurer {
 
     /** @see org.springframework.boot.autoconfigure.task.TaskExecutionProperties */
+    @SuppressWarnings("NullableProblems")
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -40,28 +34,7 @@ public class TaskConfig implements AsyncConfigurer {
         executor.setQueueCapacity((U.PROCESSORS << 8) - (U.PROCESSORS << 3)); // (8 * 256) - (8 * 8) = 1984
         executor.setThreadNamePrefix("task-executor-");  // 线程名字的前缀
         // 见: https://moelholm.com/blog/2017/07/24/spring-43-using-a-taskdecorator-to-copy-mdc-data-to-async-threads
-        executor.setTaskDecorator(runnable -> {
-            RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-            boolean hasWeb = (attributes instanceof ServletRequestAttributes);
-            Map<String, String> contextMap = MDC.getCopyOfContextMap();
-            // 把主线程运行时的请求和日志上下文放到 异步任务的请求和日志上下文去
-            return () -> {
-                try {
-                    if (hasWeb) {
-                        LocaleContextHolder.setLocale(((ServletRequestAttributes) attributes).getRequest().getLocale());
-                        RequestContextHolder.setRequestAttributes(attributes);
-                    }
-                    MDC.setContextMap(A.isEmpty(contextMap) ? Collections.emptyMap() : contextMap);
-                    runnable.run();
-                } finally {
-                    if (hasWeb) {
-                        LocaleContextHolder.resetLocaleContext();
-                        RequestContextHolder.resetRequestAttributes();
-                    }
-                    MDC.clear();
-                }
-            };
-        });
+        executor.setTaskDecorator(AsyncUti::wrapRun);
         executor.initialize();
         return executor;
     }
