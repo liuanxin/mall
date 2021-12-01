@@ -42,19 +42,19 @@ public class TaskConfig implements AsyncConfigurer {
         // 见: https://moelholm.com/blog/2017/07/24/spring-43-using-a-taskdecorator-to-copy-mdc-data-to-async-threads
         executor.setTaskDecorator(runnable -> {
             RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-            boolean hasRequest = (attributes instanceof ServletRequestAttributes);
+            boolean web = (attributes instanceof ServletRequestAttributes);
             Map<String, String> contextMap = MDC.getCopyOfContextMap();
             // 把主线程运行时的请求和日志上下文放到 异步任务的请求和日志上下文去
             return () -> {
                 try {
-                    if (hasRequest) {
+                    if (web) {
                         LocaleContextHolder.setLocale(((ServletRequestAttributes) attributes).getRequest().getLocale());
                         RequestContextHolder.setRequestAttributes(attributes);
                     }
                     MDC.setContextMap(A.isEmpty(contextMap) ? Collections.emptyMap() : contextMap);
                     runnable.run();
                 } finally {
-                    if (hasRequest) {
+                    if (web) {
                         LocaleContextHolder.resetLocaleContext();
                         RequestContextHolder.resetRequestAttributes();
                     }
