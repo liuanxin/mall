@@ -47,7 +47,7 @@ public final class BackendDataCollectUtil {
                 } else {
                     name = anEnum;
                 }
-                Map<String, Object> map = ALL_ENUM_INFO.get(name.trim());
+                Map<String, Object> map = ALL_ENUM_INFO.get(name);
                 if (A.isNotEmpty(map)) {
                     returnMap.put(anEnum, map);
                 }
