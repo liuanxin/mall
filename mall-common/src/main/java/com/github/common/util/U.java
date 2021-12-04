@@ -1256,6 +1256,13 @@ public final class U {
         }
     }
 
+    /** 空白符、null、undefined、nil 时抛出异常 */
+    public static void assertBlank(String str, String msg) {
+        if (isBlank(str)) {
+            assertException(msg);
+        }
+    }
+
     /** 数组为 null 或 长度为 0 时则抛出异常 */
     public static <T> void assertEmpty(T[] array, String msg) {
         if (A.isEmpty(array)) {

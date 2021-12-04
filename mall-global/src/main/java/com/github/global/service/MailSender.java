@@ -32,7 +32,7 @@ public class MailSender {
     }
 
     public void send(String from, String to, String subject, String htmlContent, List<File> attachFileList) {
-        U.assertNil(from, "Need from email address");
+        U.assertBlank(from, "Need from email address");
         try {
             mailSender.send(mimeMessage -> {
                 mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(to));

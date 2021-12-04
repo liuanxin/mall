@@ -27,7 +27,7 @@ public class BackendUserController {
     @GetMapping("/refresh-token")
     public JsonResult<String> refreshToken() {
         String refreshToken = AppTokenHandler.resetTokenExpireTime();
-        U.assertNil(refreshToken, "token 刷新失败, 请重新登录!");
+        U.assertBlank(refreshToken, "token 刷新失败, 请重新登录!");
         return JsonResult.success("token 刷新成功!", refreshToken);
     }
 
@@ -39,7 +39,7 @@ public class BackendUserController {
     public JsonResult<UserLoginRes> login(@ApiParam(value = "用户名", must = true) String userName,
                                           @ApiParam("密码, 当验证码为空时") String password,
                                           @ApiParam("验证码") String code) {
-        U.assertNil(userName, "请输入用户名");
+        U.assertBlank(userName, "请输入用户名");
         U.assertException(U.isEmpty(password) && U.isEmpty(code), "请使用密码或验证码登录");
 
         /*

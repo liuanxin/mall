@@ -222,7 +222,7 @@ public class ManagerServiceImpl implements ManagerService {
             LambdaQueryWrapper<ManagerRole> existsQuery = Wrappers.lambdaQuery(ManagerRole.class)
                     .select(ManagerRole::getId).eq(ManagerRole::getId, rid);
             boolean noExists = Pages.notExists(roleMapper.selectPage(Pages.paramOnlyLimit(1), existsQuery));
-            U.assertNil(noExists, "没有这个角色, 无法修改");
+            U.assertException(noExists, "没有这个角色, 无法修改");
 
             roleMapper.updateById(role);
         } else {

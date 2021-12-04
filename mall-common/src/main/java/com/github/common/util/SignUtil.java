@@ -92,7 +92,7 @@ public final class SignUtil {
         U.assertEmpty(parameterMap, "缺少参数");
 
         String sign = A.first(parameterMap.get(SIGN));
-        U.assertNil(sign, "缺少必要的参数");
+        U.assertBlank(sign, "缺少必要的参数");
         U.assertException(!sign(parameterMap, ticketValue).equals(sign), "参数有误");
     }
 }
