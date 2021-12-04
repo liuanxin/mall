@@ -4,6 +4,7 @@ import com.github.common.util.A;
 import com.github.common.util.U;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -76,30 +77,28 @@ public class EncryptTest {
                 "name", System.currentTimeMillis()
         ));
         System.out.println(encode);
-        Assert.assertTrue(encode.length() > 0);
+        Assertions.assertTrue(encode.length() > 0);
 
         Map<String, Object> decode = Encrypt.jwtDecode(encode);
-        Assert.assertEquals(123, decode.get("id"));
-        Assert.assertTrue(System.currentTimeMillis() > U.toLong(decode.get("name").toString()));
+        Assertions.assertEquals(123, decode.get("id"));
+        Assertions.assertTrue(System.currentTimeMillis() > U.toLong(decode.get("name").toString()));
 
 
         encode = Encrypt.jwtEncode(A.maps("id", 123), 2L, TimeUnit.SECONDS);
-        Assert.assertTrue(encode.length() > 0);
+        Assertions.assertTrue(encode.length() > 0);
 
         decode = Encrypt.jwtDecode(encode);
-        Assert.assertEquals(123, decode.get("id"));
+        Assertions.assertEquals(123, decode.get("id"));
 
 
         encode = Encrypt.jwtEncode(A.maps("id", 123), 10L, TimeUnit.MILLISECONDS);
-        Assert.assertTrue(encode.length() > 0);
-
+        Assertions.assertTrue(encode.length() > 0);
         try {
             Thread.sleep(11L);
-        } catch (InterruptedException ignore) {
+            Encrypt.jwtDecode(encode);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        decode = Encrypt.jwtDecode(encode);
-        Assert.assertTrue(A.isEmpty(decode));
     }
 
     @Test

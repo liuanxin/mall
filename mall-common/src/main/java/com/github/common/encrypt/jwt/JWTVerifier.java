@@ -2,7 +2,6 @@ package com.github.common.encrypt.jwt;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -12,6 +11,7 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,7 +26,7 @@ public class JWTVerifier {
     private final byte[] secret;
     private final String audience;
     private final String issuer;
-    private final Base64 decoder = new Base64(true);
+    private final Base64.Decoder decoder = Base64.getUrlDecoder();
 
     private final ObjectMapper mapper;
 
