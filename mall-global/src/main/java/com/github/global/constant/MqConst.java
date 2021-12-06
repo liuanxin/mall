@@ -37,20 +37,26 @@ public class MqConst {
     /** rabbitmq 用在延迟队列时的配置名. 见: https://www.rabbitmq.com/ttl.html */
     public static final String DELAY = "x-message-ttl";
 
+    private static final String DEAD = ":dead";
+    private static final String DEAD_DEAD = ":dead-dead";
 
+
+    /** 交换机共用一个 */
     public static final String EXAMPLE_EXCHANGE = "example:exchange";
+    /** 死信交换机共用一个 */
+    public static final String DEAD_EXAMPLE_EXCHANGE = EXAMPLE_EXCHANGE + DEAD;
 
     public static final String EXAMPLE_DESC = "示例";
     public static final String EXAMPLE_ROUTING_KEY = "example:routing-key";
     public static final String EXAMPLE_QUEUE = "example:queue";
 
-    public static final String EXAMPLE_DEAD_DESC = "死信示例";
-    public static final String EXAMPLE_DEAD_ROUTING_KEY = "example-dead:routing-key";
-    public static final String EXAMPLE_DEAD_QUEUE = "example-dead:queue";
+    public static final String DEAD_EXAMPLE_DESC = "示例的死信";
+    public static final String DEAD_EXAMPLE_ROUTING_KEY = EXAMPLE_ROUTING_KEY + DEAD;
+    public static final String DEAD_EXAMPLE_QUEUE = EXAMPLE_QUEUE + DEAD;
 
-    public static final String EXAMPLE_DEAD_DEAD_DESC = "死信的死信示例";
-    public static final String EXAMPLE_DEAD_DEAD_ROUTING_KEY = "example-dead-dead:routing-key";
-    public static final String EXAMPLE_DEAD_DEAD_QUEUE = "example-dead-dead:queue";
+    public static final String DEAD_DEAD_EXAMPLE_DESC = "示例的死信的死信";
+    public static final String DEAD_DEAD_EXAMPLE_ROUTING_KEY = EXAMPLE_ROUTING_KEY + DEAD_DEAD;
+    public static final String DEAD_DEAD_EXAMPLE_QUEUE = EXAMPLE_QUEUE + DEAD_DEAD;
     /** 延迟时间, 单位毫秒 */
     public static final int EXAMPLE_DEAD_DEAD_DELAY_MS = 5 * 60 * 1000;
 }
