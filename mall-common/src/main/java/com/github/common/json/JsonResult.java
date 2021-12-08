@@ -3,16 +3,14 @@ package com.github.common.json;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.common.util.LogUtil;
 import com.github.liuanxin.api.annotation.ApiReturn;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.List;
 import java.util.Map;
 
 /** <span style="color:red;">!!!此实体类请只在 Controller 中使用, 且只调用其 static 方法!!!</span> */
-@Setter
-@Getter
+@Data
 @NoArgsConstructor
 public class JsonResult<T> {
 
