@@ -12,9 +12,7 @@ import com.github.liuanxin.api.annotation.ApiReturn;
 import com.github.product.enums.ProductTestType;
 import com.github.product.model.ProductTest;
 import com.github.user.model.UserTest;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -70,13 +68,7 @@ public class ExampleRes {
         PageReturn<ExampleRes> returnRes = PageReturn.convertJustTotal(userPageInfo);
         if (U.isNotNull(userPageInfo)) {
             // 把商品数据整理成  userId: List<商品>
-            Multimap<Long, ProductTest> multiMap = ArrayListMultimap.create();
-            if (A.isNotEmpty(testList)) {
-                for (ProductTest productExample : testList) {
-                    multiMap.put(productExample.getUserId(), productExample);
-                }
-            }
-            Map<Long, Collection<ProductTest>> userIdMap = multiMap.asMap();
+            Map<Long, List<ProductTest>> userIdMap = A.listToMapList(testList, ProductTest::getUserId);
 
             List<ExampleRes> exampleVoList = Lists.newArrayList();
             for (UserTest userExample : userPageInfo.getList()) {

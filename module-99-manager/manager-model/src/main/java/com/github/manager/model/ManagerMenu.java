@@ -65,20 +65,15 @@ public class ManagerMenu implements Serializable {
             return Collections.emptyMap();
         }
 
-        Multimap<String, ManagerPermission> perMap = HashMultimap.create();
-        if (A.isNotEmpty(permissions)) {
-            for (ManagerPermission permission : permissions) {
-                perMap.put(U.toStr(permission.getMenuId()), permission);
-            }
-        }
+        Map<Long, List<ManagerPermission>> mpMap = A.listToMapList(permissions, ManagerPermission::getMenuId);
 
         List<ManagerMenu> menuList = Lists.newArrayList();
         Multimap<String, ManagerMenu> childMap = HashMultimap.create();
         for (ManagerMenu menu : menus) {
             // 将权限写进菜单
-            Collection<ManagerPermission> mps = perMap.get(U.toStr(menu.getId()));
+            List<ManagerPermission> mps = mpMap.get(menu.getId());
             if (A.isNotEmpty(mps)) {
-                menu.setPermissionList(Lists.newArrayList(mps));
+                menu.setPermissionList(mps);
             }
 
             if (menu.getPid() == ROOT_ID) {
