@@ -3,8 +3,6 @@ package com.github.common.util;
 import com.github.common.date.DateUtil;
 import com.github.common.exception.*;
 import com.github.common.json.JsonUtil;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -881,7 +879,7 @@ public final class U {
             return Collections.emptySet();
         }
 
-        Set<Field> fieldSet = Sets.newLinkedHashSet();
+        Set<Field> fieldSet = new LinkedHashSet<>();
         fieldSet.addAll(Arrays.asList(clazz.getDeclaredFields()));
         fieldSet.addAll(Arrays.asList(clazz.getFields()));
 
@@ -908,7 +906,7 @@ public final class U {
             return Collections.emptySet();
         }
 
-        Set<Method> methodSet = Sets.newLinkedHashSet();
+        Set<Method> methodSet = new LinkedHashSet<>();
         methodSet.addAll(Arrays.asList(clazz.getDeclaredMethods()));
         methodSet.addAll(Arrays.asList(clazz.getMethods()));
 
@@ -973,14 +971,14 @@ public final class U {
         Class<?> tc = target.getClass();
         Method[] targetMethods = tc.getMethods();
 
-        Map<String, Method> targetMethodMap = Maps.newHashMap();
+        Map<String, Method> targetMethodMap = new HashMap<>();
         for (Method method : targetMethods) {
             targetMethodMap.put(method.getName(), method);
         }
 
         Class<?> sc = source.getClass();
         Method[] sourceMethods = sc.getMethods();
-        Map<String, Method> sourceMethodMap = Maps.newHashMap();
+        Map<String, Method> sourceMethodMap = new HashMap<>();
         for (Method method : sourceMethods) {
             sourceMethodMap.put(method.getName(), method);
         }

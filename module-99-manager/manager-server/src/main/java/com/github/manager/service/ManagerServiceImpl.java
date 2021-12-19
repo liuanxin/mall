@@ -11,7 +11,7 @@ import com.github.common.util.A;
 import com.github.common.util.U;
 import com.github.manager.model.*;
 import com.github.manager.repository.*;
-import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -134,7 +134,7 @@ public class ManagerServiceImpl implements ManagerService {
             return Collections.emptyList();
         }
 
-        Multimap<Long, ManagerMenu> menuMultiMap = HashMultimap.create();
+        Multimap<Long, ManagerMenu> menuMultiMap = ArrayListMultimap.create();
         if (loadMenu) {
             List<ManagerRoleMenu> roleMenus = roleMenuMapper.selectList(Wrappers.lambdaQuery(ManagerRoleMenu.class)
                     .in(ManagerRoleMenu::getRoleId, rids));
@@ -155,7 +155,7 @@ public class ManagerServiceImpl implements ManagerService {
             }
         }
 
-        Multimap<Long, ManagerPermission> permissionMultimap = HashMultimap.create();
+        Multimap<Long, ManagerPermission> permissionMultimap = ArrayListMultimap.create();
         if (loadPermission) {
             Wrapper<ManagerRolePermission> rolePermissionQuery = Wrappers.lambdaQuery(ManagerRolePermission.class)
                     .in(ManagerRolePermission::getRoleId, rids);

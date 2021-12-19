@@ -1,7 +1,7 @@
 package com.github.global.constant;
 
-import com.google.common.collect.Sets;
-
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 public final class GlobalConst {
@@ -9,10 +9,10 @@ public final class GlobalConst {
     public static final String MODULE_NAME = "global";
 
     /** web 层入参、出参日志打印排除 url 清单 */
-    public static final Set<String> EXCLUDE_PATH_SET = Sets.newHashSet(
+    public static final Set<String> EXCLUDE_PATH_SET = new HashSet<>(Arrays.asList(
             "/actuator/health",
             "/actuator/prometheus"
-    );
+    ));
 
     public static final int ZERO = 0;
     public static final int ONE = 1;

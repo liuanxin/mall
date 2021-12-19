@@ -2,11 +2,10 @@ package com.github.global.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
-import com.github.common.util.U;
 import com.github.global.constant.GlobalConst;
-import com.google.common.io.ByteStreams;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -62,10 +61,10 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                     @Override
                     public InputStream getBody() throws IOException {
                         // Http Request 的 inputStream 读取过后再读取就会异常, 所以这样操作(两处都 new ByteArrayInputStream)
-                        byte[] bytes = ByteStreams.toByteArray(inputMessage.getBody());
-
-                        String data = new String(bytes, StandardCharsets.UTF_8);
-                        if (U.isNotBlank(data)) {
+                        InputStream inputStream = inputMessage.getBody();
+                        byte[] bytes = inputStream.readAllBytes();
+                        if (A.isNotEmpty(bytes)) {
+                            String data = new String(bytes, StandardCharsets.UTF_8);
                             try {
                                 // 先转换成对象, 再输出成 string, 这样可以去掉空白符
                                 Object obj = mapper.readValue(data, Object.class);

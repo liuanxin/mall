@@ -10,7 +10,6 @@ import com.github.common.util.A;
 import com.github.common.util.U;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
 import org.apache.poi.hssf.usermodel.HSSFPalette;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -22,6 +21,7 @@ import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("DuplicatedCode")
@@ -121,7 +121,7 @@ public class StyleCellHandler implements CellWriteHandler {
         Thread currentThread = Thread.currentThread();
         Map<String, CellStyle> styleMap = STYLE_CACHE.getIfPresent(currentThread);
         if (A.isEmpty(styleMap)) {
-            styleMap = Maps.newConcurrentMap();
+            styleMap = new ConcurrentHashMap<>();
         } else if (styleMap.containsKey(key)) {
             return styleMap.get(key);
         }
@@ -163,7 +163,7 @@ public class StyleCellHandler implements CellWriteHandler {
         Thread currentThread = Thread.currentThread();
         Map<String, CellStyle> styleMap = STYLE_CACHE.getIfPresent(currentThread);
         if (A.isEmpty(styleMap)) {
-            styleMap = Maps.newConcurrentMap();
+            styleMap = new ConcurrentHashMap<>();
         } else if (styleMap.containsKey(key)) {
             return styleMap.get(key);
         }
@@ -187,7 +187,7 @@ public class StyleCellHandler implements CellWriteHandler {
         Thread currentThread = Thread.currentThread();
         Map<String, CellStyle> styleMap = STYLE_CACHE.getIfPresent(currentThread);
         if (A.isEmpty(styleMap)) {
-            styleMap = Maps.newConcurrentMap();
+            styleMap = new ConcurrentHashMap<>();
         } else if (styleMap.containsKey(key)) {
             return styleMap.get(key);
         }

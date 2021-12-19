@@ -7,7 +7,6 @@ import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
-import com.google.common.collect.Maps;
 import org.apache.http.*;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
@@ -297,7 +296,7 @@ public class HttpClientUtil {
 
         url = handleEmptyScheme(url);
         if (A.isEmpty(params)) {
-            params = Maps.newHashMap();
+            params = new HashMap<>();
         }
         HttpPost request = handlePostParams(url, params);
         if (A.isNotEmpty(files)) {

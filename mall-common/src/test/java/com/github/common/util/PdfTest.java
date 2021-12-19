@@ -3,7 +3,6 @@ package com.github.common.util;
 import com.github.common.date.DateUtil;
 import com.github.common.pdf.PdfUtil;
 import com.github.common.pdf.PrintInfo;
-import com.google.common.collect.Maps;
 import com.itextpdf.text.Element;
 import org.junit.Test;
 
@@ -202,7 +201,7 @@ public class PdfTest {
         print.setDynamicContent(dynamicTableValue);
 
 
-        Map<String, Object> data = Maps.newHashMap();
+        Map<String, Object> data = new HashMap<>();
         data.put("barCode", "RV000013-150721-0004");
         data.put("remarkInfo", Collections.singletonList(A.maps(
                 "name", "备注: ",
@@ -438,7 +437,7 @@ public class PdfTest {
         dynamicTableValue.add(dptc8);
         print.setDynamicContent(dynamicTableValue);
 
-        Map<String, Object> data = Maps.newHashMap();
+        Map<String, Object> data = new HashMap<>();
         data.put("warehouse", "[GC] USEA");
         data.put("barCode", "RV000014-150807-0003");
         data.put("orderInfo", Arrays.asList(
@@ -541,7 +540,7 @@ public class PdfTest {
         print.setDynamicContent(dynamicTableValue);
 
 
-        Map<String, Object> data = Maps.newHashMap();
+        Map<String, Object> data = new HashMap<>();
 
         List<Map<Object, Object>> list1 = new ArrayList<>();
         List<Map<Object, Object>> list2 = new ArrayList<>();
@@ -652,7 +651,7 @@ public class PdfTest {
         print.setDynamicContent(dynamicTableValue);
 
 
-        Map<String, Object> data = Maps.newHashMap();
+        Map<String, Object> data = new HashMap<>();
         data.put("countryCode", "UK");
 
         List<Map<Object, Object>> list1 = new ArrayList<>();

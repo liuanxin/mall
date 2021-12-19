@@ -34,7 +34,7 @@ public class ValidationExtendUtil {
                     fieldErrorMap.put(ValidationUtil.getParamField(clazz, field), error.getMessage());
                 }
             }
-            Map<String, String> errorMap = ValidationUtil.handleError(fieldErrorMap);
+            Map<String, String> errorMap = ValidationUtil.handleError(fieldErrorMap.asMap());
             if (A.isNotEmpty(errorMap)) {
                 throw new ParamException(errorMap);
             }

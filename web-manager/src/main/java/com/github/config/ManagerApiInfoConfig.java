@@ -5,15 +5,12 @@ import com.github.global.constant.Develop;
 import com.github.liuanxin.api.annotation.EnableApiInfo;
 import com.github.liuanxin.api.model.DocumentCopyright;
 import com.github.liuanxin.api.model.DocumentResponse;
-import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Configuration
 @EnableApiInfo
@@ -36,7 +33,7 @@ public class ManagerApiInfoConfig {
     }
 
     private Set<String> ignoreUrl() {
-        return Sets.newHashSet("/error");
+        return new HashSet<>(Collections.singleton("/error"));
     }
 
     private List<DocumentResponse> globalResponse() {

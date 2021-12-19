@@ -10,8 +10,8 @@ import com.github.order.constant.OrderConst;
 import com.github.product.constant.ProductConst;
 import com.github.user.constant.UserConst;
 import com.google.common.base.CaseFormat;
-import com.google.common.collect.Maps;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /** 从各模块中收集数据的工具类 */
@@ -35,7 +35,7 @@ public final class ManagerDataCollectUtil {
     public static final Map<String, Map<String, Object>> ALL_ENUM_INFO = CollectEnumUtil.enumMap(ENUM_MAP);
     /** 提供接口出去的 单个 枚举信息 */
     public static Map<String, Map<String, Object>> singleEnumInfo(String type) {
-        Map<String, Map<String, Object>> returnMap = Maps.newHashMap();
+        Map<String, Map<String, Object>> returnMap = new HashMap<>();
         for (String anEnum : type.split(",")) {
             if (U.isNotBlank(anEnum)) {
                 anEnum = anEnum.trim();

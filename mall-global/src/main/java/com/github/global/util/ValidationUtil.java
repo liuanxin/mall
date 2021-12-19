@@ -6,7 +6,6 @@ import com.github.common.util.A;
 import com.github.common.util.U;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.validation.BindingResult;
@@ -35,13 +34,13 @@ public class ValidationUtil {
                 fieldErrorMap.put(getParamField(clazz, fieldError.getField()), fieldError.getDefaultMessage());
             }
         }
-        return handleError(fieldErrorMap);
+        return handleError(fieldErrorMap.asMap());
     }
 
-    static Map<String, String> handleError(Multimap<String, String> fieldErrorMap) {
-        Map<String, String> errorMap = Maps.newLinkedHashMap();
-        if (!fieldErrorMap.isEmpty()) {
-            for (Map.Entry<String, Collection<String>> entry : fieldErrorMap.asMap().entrySet()) {
+    static Map<String, String> handleError(Map<String, Collection<String>> fieldErrorMap) {
+        Map<String, String> errorMap = new LinkedHashMap<>();
+        if (A.isNotEmpty(fieldErrorMap)) {
+            for (Map.Entry<String, Collection<String>> entry : fieldErrorMap.entrySet()) {
                 List<String> list = new ArrayList<>(entry.getValue());
                 Collections.sort(list);
                 errorMap.put(entry.getKey(), Joiner.on(",").join(list));

@@ -10,7 +10,6 @@ import com.github.liuanxin.api.annotation.ApiMethod;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +22,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Map;
 
 @ApiIgnore
@@ -90,7 +90,7 @@ public class ManagerCollectionController {
             );
 
             int j = 1;
-            for (String permission : Sets.newLinkedHashSet(entry.getValue())) {
+            for (String permission : new LinkedHashSet<>(entry.getValue())) {
                 String[] arr = permission.split(sp);
                 System.out.printf(
                         "REPLACE INTO `t_manager_permission`(`id`, `mid`, `name`, `method`, `url`)" +

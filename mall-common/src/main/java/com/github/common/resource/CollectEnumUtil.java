@@ -3,13 +3,9 @@ package com.github.common.resource;
 import com.github.common.Const;
 import com.github.common.util.U;
 import com.google.common.base.CaseFormat;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @SuppressWarnings("rawtypes")
 public final class CollectEnumUtil {
@@ -27,7 +23,7 @@ public final class CollectEnumUtil {
      * key 表示模块名(包含在枚举所在类的包名上), value 表示枚举类所在包的类(用来获取 ClassLoader)
      */
     public static Class[] getEnumClass(Map<String, Class> enumMap) {
-        Set<Class> set = Sets.newHashSet();
+        Set<Class> set = new HashSet<>();
         for (Map.Entry<String, Class> entry : enumMap.entrySet()) {
             List<Class> enums = LoaderClass.getEnumArray(entry.getValue(), Const.enumPath(entry.getKey()));
             for (Class anEnum : enums) {
@@ -43,7 +39,7 @@ public final class CollectEnumUtil {
     /** 获取所有枚举的说明 */
     @SuppressWarnings("rawtypes")
     public static Map<String, Map<String, Object>> enumMap(Map<String, Class> enumClassMap) {
-        Map<String, Map<String, Object>> returnMap = Maps.newHashMap();
+        Map<String, Map<String, Object>> returnMap = new HashMap<>();
         for (Map.Entry<String, Class> entry : enumClassMap.entrySet()) {
             List<Class> enumList = LoaderClass.getEnumArray(entry.getValue(), Const.enumPath(entry.getKey()));
             for (Class anEnum : enumList) {
@@ -70,7 +66,7 @@ public final class CollectEnumUtil {
         } catch (Exception ignore) {
         }
 
-        Map<String, Object> returnMap = Maps.newHashMap();
+        Map<String, Object> returnMap = new HashMap<>();
         for (Object anEnum : enumClass.getEnumConstants()) {
             // 没有 getCode 方法就使用枚举的 ordinal
             Object key = U.getMethod(anEnum, CODE);

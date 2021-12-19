@@ -1,11 +1,11 @@
 package com.github.common.util;
 
 import com.github.common.date.DateUtil;
-import com.google.common.collect.Maps;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,7 +59,7 @@ public final class FileUtil {
 
     /** 保存多个文件到指定的位置, 并将 { 原文件名1: url 地址 } 返回 */
     public static Map<String, String> save(List<MultipartFile> fileList, String directoryPrefix, String urlPrefix) {
-        Map<String, String> nameUrlMap = Maps.newHashMap();
+        Map<String, String> nameUrlMap = new HashMap<>();
         for (MultipartFile file : fileList) {
             String url = save(file, directoryPrefix, urlPrefix, false);
             nameUrlMap.put(file.getOriginalFilename(), url);

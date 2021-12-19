@@ -5,11 +5,11 @@ import com.github.common.date.DateUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
-import com.google.common.io.Files;
 import okhttp3.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -249,7 +249,7 @@ public class HttpOkClientUtil {
 
             File f = new File(file);
             f.getParentFile().mkdirs();
-            Files.write(bytes, f);
+            Files.write(f.toPath(), bytes);
         } catch (IOException e) {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info(String.format("download (%s) to file(%s) exception", url, file), e);
@@ -279,7 +279,7 @@ public class HttpOkClientUtil {
 
             File f = new File(file);
             f.getParentFile().mkdirs();
-            Files.write(bytes, f);
+            Files.write(f.toPath(), bytes);
         } catch (IOException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error(String.format("post download (%s) to file(%s) exception", url, file), e);

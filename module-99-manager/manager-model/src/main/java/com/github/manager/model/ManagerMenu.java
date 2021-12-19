@@ -4,8 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.github.common.util.A;
 import com.github.common.util.U;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Data;
 
@@ -64,7 +63,7 @@ public class ManagerMenu implements Serializable {
         Map<Long, List<ManagerPermission>> mpMap = A.listToMapList(permissions, ManagerPermission::getMenuId);
 
         List<ManagerMenu> menuList = new ArrayList<>();
-        Multimap<String, ManagerMenu> childMap = HashMultimap.create();
+        Multimap<String, ManagerMenu> childMap = ArrayListMultimap.create();
         for (ManagerMenu menu : menus) {
             // 将权限写进菜单
             List<ManagerPermission> mps = mpMap.get(menu.getId());
@@ -83,12 +82,12 @@ public class ManagerMenu implements Serializable {
             handle(menu, relationMap, 0);
         }
 
-        Map<String, ManagerMenu> tmpMap = Maps.newHashMap();
+        Map<String, ManagerMenu> tmpMap = new HashMap<>();
         for (ManagerMenu menu : menuList) {
             tmpMap.put(U.toStr(menu.getId()), menu);
         }
 
-        Map<String, List<ManagerMenu>> returnMap = Maps.newHashMap();
+        Map<String, List<ManagerMenu>> returnMap = new HashMap<>();
         if (A.isNotEmpty(tmpMap)) {
             for (Map.Entry<String, Collection<Long>> entry : roleIdMenuIdMap.entrySet()) {
                 List<ManagerMenu> managerMenus = new ArrayList<>();

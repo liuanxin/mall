@@ -3,11 +3,11 @@ package com.github.manager.model;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.github.common.util.A;
-import com.google.common.collect.Sets;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -56,7 +56,7 @@ public class ManagerUser implements Serializable {
     public void assignmentData(List<ManagerRole> roles) {
         if (A.isNotEmpty(roles)) {
             List<ManagerMenu> menuList = new ArrayList<>();
-            Set<ManagerPermission> set = Sets.newHashSet();
+            Set<ManagerPermission> set = new HashSet<>();
             for (ManagerRole role : roles) {
                 menuList.addAll(role.getMenus());
                 set.addAll(role.getPermissions()); // 权限去重

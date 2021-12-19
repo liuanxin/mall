@@ -6,8 +6,6 @@ import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.U;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -38,7 +36,7 @@ public final class BeanChange {
             return DEL;
         }
 
-        Map<Integer, String> fieldMap = Maps.newLinkedHashMap();
+        Map<Integer, String> fieldMap = new LinkedHashMap<>();
         Class<?> clazz = oldObj.getClass();
         for (Field field : U.getAllField(clazz)) {
             String fieldName = field.getName();
@@ -60,7 +58,7 @@ public final class BeanChange {
                 dateFormat = changeProperty.dateFormat();
                 Map<String, String> valueMapping = JsonUtil.convertType(changeProperty.valueMapping(), MAP_REFERENCE);
                 map = A.isEmpty(valueMapping) ? Collections.emptyMap() : valueMapping;
-                typeSet = Sets.newHashSet(changeProperty.collectGroup());
+                typeSet = new HashSet<>(Arrays.asList(changeProperty.collectGroup()));
             }
 
             if (collectType == CollectGroup.ALL || typeSet.contains(CollectGroup.ALL) || typeSet.contains(collectType)) {
