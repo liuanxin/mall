@@ -1,7 +1,5 @@
 package com.github.common.sql;
 
-import com.google.common.collect.Lists;
-
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -68,7 +66,7 @@ class SqlFormat {
     private static String handlerParam(String sql) {
         sql = BLANK_REGEX.matcher(sql).replaceAll(" ");
 
-        List<String> list = Lists.newArrayList();
+        List<String> list = new ArrayList<>();
         Matcher match = PARAM_REGEX.matcher(sql);
         while (match.find()) {
             list.add(match.group());

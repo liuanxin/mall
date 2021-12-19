@@ -6,7 +6,6 @@ import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.U;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -88,9 +87,9 @@ public final class BeanChange {
             }
         }
         if (A.isNotEmpty(fieldMap)) {
-            List<Integer> keys = Lists.newArrayList(fieldMap.keySet());
+            List<Integer> keys = new ArrayList<>(fieldMap.keySet());
             Collections.sort(keys);
-            List<String> values = Lists.newArrayList();
+            List<String> values = new ArrayList<>();
             for (Integer key : keys) {
                 values.add(fieldMap.get(key));
             }

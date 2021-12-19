@@ -272,6 +272,49 @@ public final class A {
         return returnMap;
     }
 
+    public static <T, R> List<R> collect(Collection<T> list, Function<T, R> func) {
+        if (isEmpty(list)) {
+            return Collections.emptyList();
+        }
+
+        List<R> returnList = new ArrayList<>();
+        for (T obj : list) {
+            if (U.isNotNull(obj)) {
+                R value = func.apply(obj);
+                if (U.isNotNull(value)) {
+                    returnList.add(value);
+                }
+            }
+        }
+        return returnList;
+    }
+
+    public static <T> List<List<T>> split(List<T> list, int singleSize) {
+        if (isEmpty(list) || singleSize <= 0) {
+            return Collections.emptyList();
+        }
+
+        List<List<T>> returnList = new ArrayList<>();
+        int size = list.size();
+        int loop = (size / singleSize);
+        if (size % singleSize > 0) {
+            loop += 1;
+        }
+        for (int i = 0; i < loop; i++) {
+            List<T> innerList = new ArrayList<>();
+            int j = (i * singleSize);
+            int innerLoop = (j + singleSize);
+            if (innerLoop > size) {
+                innerLoop = size;
+            }
+            for (; j < innerLoop; j++) {
+                innerList.add(list.get(j));
+            }
+            returnList.add(innerList);
+        }
+        return returnList;
+    }
+
     /** 数组去重返回 */
     public static <T> Collection<T> removeDuplicate(T[] array) {
         return removeDuplicate(Arrays.asList(array));

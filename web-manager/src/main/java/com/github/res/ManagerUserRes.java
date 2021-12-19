@@ -6,10 +6,10 @@ import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiReturn;
 import com.github.manager.model.ManagerMenu;
 import com.github.manager.model.ManagerUser;
-import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -69,7 +69,7 @@ public class ManagerUserRes {
         res.setUserName("zhanshan");
         res.setNickName("张三");
 
-        List<ManagerMenuRes> menus = Lists.newArrayList();
+        List<ManagerMenuRes> menus = new ArrayList<>();
 
         menus.add(new ManagerMenuRes().setName("公共管理").setFront("common").setChildren(Arrays.asList(
                 new ManagerMenuRes().setName("全局配置").setFront("config-index"),

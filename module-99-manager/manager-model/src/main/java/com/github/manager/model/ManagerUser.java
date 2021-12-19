@@ -3,11 +3,11 @@ package com.github.manager.model;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.github.common.util.A;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -55,14 +55,14 @@ public class ManagerUser implements Serializable {
     /** 一个用户有多个角色, 一个角色又有多个菜单(且会有父子层级关系)和多个权限, 基于用户的角色将菜单和权限赋值 */
     public void assignmentData(List<ManagerRole> roles) {
         if (A.isNotEmpty(roles)) {
-            List<ManagerMenu> menuList = Lists.newArrayList();
+            List<ManagerMenu> menuList = new ArrayList<>();
             Set<ManagerPermission> set = Sets.newHashSet();
             for (ManagerRole role : roles) {
                 menuList.addAll(role.getMenus());
                 set.addAll(role.getPermissions()); // 权限去重
             }
             this.menus = ManagerMenu.handleAllMenu(menuList);
-            this.permissions = Lists.newArrayList(set);
+            this.permissions = new ArrayList<>(set);
         }
     }
 }

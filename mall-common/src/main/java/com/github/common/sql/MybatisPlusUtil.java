@@ -5,9 +5,9 @@ import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
 import com.baomidou.mybatisplus.core.toolkit.support.LambdaMeta;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.google.common.base.CaseFormat;
-import com.google.common.collect.Lists;
 import org.apache.ibatis.reflection.property.PropertyNamer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -106,7 +106,7 @@ public class MybatisPlusUtil {
      */
     @SuppressWarnings("unchecked")
     public static <T> List<String> fieldsToColumnList(SFunction<T, ?>... columns) {
-        List<String> returnList = Lists.newArrayList();
+        List<String> returnList = new ArrayList<>();
         for (SFunction<T, ?> column : columns) {
             returnList.add(fieldToColumn(column));
         }

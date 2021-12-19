@@ -12,16 +12,12 @@ import com.github.common.util.U;
 import com.github.manager.model.*;
 import com.github.manager.repository.*;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -88,7 +84,7 @@ public class ManagerServiceImpl implements ManagerService {
 
         List<Long> rids = user.getRoleIds();
         if (A.isNotEmpty(rids)) {
-            List<ManagerUserRole> userRoles = Lists.newArrayList();
+            List<ManagerUserRole> userRoles = new ArrayList<>();
             for (Long rid : rids) {
                 if (U.greater0(rid)) {
                     userRoles.add(new ManagerUserRole().setUserId(userId).setRoleId(rid));
@@ -133,7 +129,7 @@ public class ManagerServiceImpl implements ManagerService {
         if (A.isEmpty(userRoles)) {
             return Collections.emptyList();
         }
-        List<Long> rids = Lists.transform(userRoles, ManagerUserRole::getRoleId);
+        List<Long> rids = A.collect(userRoles, ManagerUserRole::getRoleId);
         if (A.isEmpty(rids)) {
             return Collections.emptyList();
         }
@@ -143,7 +139,7 @@ public class ManagerServiceImpl implements ManagerService {
             List<ManagerRoleMenu> roleMenus = roleMenuMapper.selectList(Wrappers.lambdaQuery(ManagerRoleMenu.class)
                     .in(ManagerRoleMenu::getRoleId, rids));
             if (A.isNotEmpty(roleMenus)) {
-                List<Long> mids = Lists.transform(roleMenus, ManagerRoleMenu::getMenuId);
+                List<Long> mids = A.collect(roleMenus, ManagerRoleMenu::getMenuId);
                 if (A.isNotEmpty(mids)) {
                     List<ManagerMenu> menus = menuMapper.selectList(Wrappers.lambdaQuery(ManagerMenu.class)
                             .in(ManagerMenu::getId, mids));
@@ -165,7 +161,7 @@ public class ManagerServiceImpl implements ManagerService {
                     .in(ManagerRolePermission::getRoleId, rids);
             List<ManagerRolePermission> rolePermissions = rolePermissionMapper.selectList(rolePermissionQuery);
             if (A.isNotEmpty(rolePermissions)) {
-                List<Long> pids = Lists.transform(rolePermissions, ManagerRolePermission::getPermissionId);
+                List<Long> pids = A.collect(rolePermissions, ManagerRolePermission::getPermissionId);
                 if (A.isNotEmpty(pids)) {
                     Wrapper<ManagerPermission> permissionQuery = Wrappers.lambdaQuery(ManagerPermission.class)
                             .in(ManagerPermission::getId, pids);
@@ -194,14 +190,14 @@ public class ManagerServiceImpl implements ManagerService {
             if (A.isNotEmpty(menuMultiMap)) {
                 Collection<ManagerMenu> managerMenus = menuMultiMap.get(rid);
                 if (A.isNotEmpty(managerMenus)) {
-                    role.setMenus(Lists.newArrayList(managerMenus));
+                    role.setMenus(new ArrayList<>(managerMenus));
                 }
             }
 
             if (A.isNotEmpty(permissionMultimap)) {
                 Collection<ManagerPermission> managerPermissions = permissionMultimap.get(rid);
                 if (A.isNotEmpty(managerPermissions)) {
-                    role.setPermissions(Lists.newArrayList(managerPermissions));
+                    role.setPermissions(new ArrayList<>(managerPermissions));
                 }
             }
         }
@@ -237,7 +233,7 @@ public class ManagerServiceImpl implements ManagerService {
 
         List<Long> mids = role.getMenuIds();
         if (A.isNotEmpty(mids)) {
-            List<ManagerRoleMenu> roleMenus = Lists.newArrayList();
+            List<ManagerRoleMenu> roleMenus = new ArrayList<>();
             for (Long mid : mids) {
                 if (U.greater0(mid)) {
                     roleMenus.add(new ManagerRoleMenu().setRoleId(rid).setMenuId(mid));
@@ -251,7 +247,7 @@ public class ManagerServiceImpl implements ManagerService {
 
         List<Long> pids = role.getPermissionIds();
         if (A.isNotEmpty(pids)) {
-            List<ManagerRolePermission> rolePermissions = Lists.newArrayList();
+            List<ManagerRolePermission> rolePermissions = new ArrayList<>();
             for (Long pid : pids) {
                 if (U.greater0(pid)) {
                     rolePermissions.add(new ManagerRolePermission().setRoleId(rid).setPermissionId(pid));

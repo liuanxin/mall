@@ -11,7 +11,6 @@ import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 import com.github.global.util.ValidationUtil;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +24,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -199,7 +199,7 @@ public class GlobalException {
             return null;
         }
 
-        List<String> errorList = Lists.newArrayList();
+        List<String> errorList = new ArrayList<>();
         errorList.add(e.getMessage());
         for (StackTraceElement trace : e.getStackTrace()) {
             errorList.add(trace.toString());

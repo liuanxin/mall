@@ -3,13 +3,13 @@ package com.github.common.resource;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
-import com.google.common.collect.Lists;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -32,7 +32,7 @@ public final class LoaderClass {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
             LogUtil.ROOT_LOG.debug("{} in ({})", clazz, U.getClassInFile(clazz));
         }
-        List<Class> classList = Lists.newArrayList();
+        List<Class> classList = new ArrayList<>();
         String packageName = classPackage.replace(".", "/");
         URL url = clazz.getClassLoader().getResource(packageName);
         if (url != null) {

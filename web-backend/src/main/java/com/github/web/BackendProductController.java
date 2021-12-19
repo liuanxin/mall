@@ -45,7 +45,7 @@ public class BackendProductController {
 
         PageReturn<UserTest> pageUserExampleInfo = userExampleService.example(req.userTestParam(), req.userTestExtendParam(), page);
         /*
-        List<Long> userIdList = Lists.newArrayList();
+        List<Long> userIdList = new ArrayList<>();
         if (U.isNotBlank(pageUserExampleInfo)) {
             if (A.isNotEmpty(pageUserExampleInfo.getList())) {
                 for (UserTest userExample : pageUserExampleInfo.getList()) {

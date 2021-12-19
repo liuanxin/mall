@@ -1,8 +1,8 @@
 package com.github.common.util;
 
 import com.github.common.encrypt.Encrypt;
-import com.google.common.collect.Lists;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +56,7 @@ public final class SignUtil {
      * </pre>
      */
     private static String sign(Map<String, String[]> paramMap, String key) {
-        List<String> paramList = Lists.newArrayList();
+        List<String> paramList = new ArrayList<>();
         for (Map.Entry<String, String[]> entry : paramMap.entrySet()) {
             String k = entry.getKey();
             if (!SIGN.equals(k)) {

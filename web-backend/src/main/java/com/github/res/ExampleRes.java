@@ -12,7 +12,6 @@ import com.github.liuanxin.api.annotation.ApiReturn;
 import com.github.product.enums.ProductTestType;
 import com.github.product.model.ProductTest;
 import com.github.user.model.UserTest;
-import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -70,14 +69,14 @@ public class ExampleRes {
             // 把商品数据整理成  userId: List<商品>
             Map<Long, List<ProductTest>> userIdMap = A.listToMapList(testList, ProductTest::getUserId);
 
-            List<ExampleRes> exampleVoList = Lists.newArrayList();
+            List<ExampleRes> exampleVoList = new ArrayList<>();
             for (UserTest userExample : userPageInfo.getList()) {
                 ExampleRes res = JsonUtil.convert(userExample, ExampleRes.class);
                 if (U.isNotNull(res)) {
                     // 从上面的 map 中获取当前用户对应的商品列表
                     Collection<ProductTest> productExamples = userIdMap.get(userExample.getId());
                     if (A.isNotEmpty(productExamples)) {
-                        List<ProductTest> examples = Lists.newArrayList(productExamples);
+                        List<ProductTest> examples = new ArrayList<>(productExamples);
                         // 把用户商品数据转换成前端需要的数据
                         res.setExampleProductList(JsonUtil.convertList(examples, ExampleProductRes.class));
                     } else {

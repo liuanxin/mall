@@ -7,7 +7,6 @@ import com.alibaba.excel.write.builder.ExcelWriterSheetBuilder;
 import com.alibaba.excel.write.handler.WriteHandler;
 import com.github.common.util.A;
 import com.github.common.util.U;
-import com.google.common.collect.Lists;
 
 import java.io.OutputStream;
 import java.util.*;
@@ -150,7 +149,7 @@ public class ExportEasyExcel {
                 // 表头在数据实体中的字段名
                 Set<String> fields = sheetTitleMap.keySet();
                 // 表头在导出时显示的名字
-                List<List<String>> titles = Lists.newArrayList();
+                List<List<String>> titles = new ArrayList<>();
                 for (String value : sheetTitleMap.values()) {
                     if (U.isNotBlank(value)) {
                         titles.add(Collections.singletonList(value));

@@ -7,7 +7,6 @@ import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.http.*;
 import org.apache.http.client.HttpRequestRetryHandler;
@@ -34,10 +33,7 @@ import java.io.InterruptedIOException;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class HttpClientUtil {
 
@@ -336,7 +332,7 @@ public class HttpClientUtil {
     /** 处理 post 请求的参数 */
     private static HttpPost handlePostParams(String url, Map<String, Object> params) {
         HttpPost request = new HttpPost(url);
-        List<NameValuePair> nameValuePairs = Lists.newArrayList();
+        List<NameValuePair> nameValuePairs = new ArrayList<>();
         if (A.isNotEmpty(params)) {
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 String key = entry.getKey();

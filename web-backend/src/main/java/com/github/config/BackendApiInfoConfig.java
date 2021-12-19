@@ -7,13 +7,13 @@ import com.github.liuanxin.api.annotation.EnableApiInfo;
 import com.github.liuanxin.api.model.DocumentCopyright;
 import com.github.liuanxin.api.model.DocumentParam;
 import com.github.liuanxin.api.model.DocumentResponse;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -44,7 +44,7 @@ public class BackendApiInfoConfig {
     }
 
     private List<DocumentResponse> globalResponse() {
-        List<DocumentResponse> responseList = Lists.newArrayList();
+        List<DocumentResponse> responseList = new ArrayList<>();
         for (JsonCode code : JsonCode.values()) {
             responseList.add(new DocumentResponse(code.getCode(), code.getValue()));
         }

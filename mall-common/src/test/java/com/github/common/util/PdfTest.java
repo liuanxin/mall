@@ -3,7 +3,6 @@ package com.github.common.util;
 import com.github.common.date.DateUtil;
 import com.github.common.pdf.PdfUtil;
 import com.github.common.pdf.PrintInfo;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.itextpdf.text.Element;
 import org.junit.Test;
@@ -23,7 +22,7 @@ public class PdfTest {
         // watermark.setValue("这里有水印");
         // print.setWatermark(watermark);
 
-        List<PrintInfo.DataContent> contentList = Lists.newArrayList();
+        List<PrintInfo.DataContent> contentList = new ArrayList<>();
         PrintInfo.DataContent phc0 = new PrintInfo.DataContent();
         phc0.setX(270F);
         phc0.setY(800F);
@@ -61,7 +60,7 @@ public class PdfTest {
         contentList.add(phc3);
         print.setContentInfo(contentList);
 
-        List<PrintInfo.TableInfo> tableList = Lists.newArrayList();
+        List<PrintInfo.TableInfo> tableList = new ArrayList<>();
         PrintInfo.TableInfo pt1 = new PrintInfo.TableInfo();
         PrintInfo.TableHead key1 = new PrintInfo.TableHead();
         key1.setX(35);
@@ -72,7 +71,7 @@ public class PdfTest {
         key1.setFieldName("orderInfo");
         pt1.setKey(key1);
 
-        List<PrintInfo.TableContent> value1 = Lists.newArrayList();
+        List<PrintInfo.TableContent> value1 = new ArrayList<>();
         PrintInfo.TableContent ptc11 = new PrintInfo.TableContent();
         ptc11.setFieldName("c1");
         ptc11.setFontSize(12F);
@@ -107,7 +106,7 @@ public class PdfTest {
         key2.setFieldName("remarkInfo");
         pt2.setKey(key2);
 
-        List<PrintInfo.TableContent> value2 = Lists.newArrayList();
+        List<PrintInfo.TableContent> value2 = new ArrayList<>();
         PrintInfo.TableContent ptc21 = new PrintInfo.TableContent();
         ptc21.setFieldName("name");
         ptc21.setFontSize(12F);
@@ -139,7 +138,7 @@ public class PdfTest {
         dynamicTableKey.setSinglePageCount(20);
         print.setDynamicHead(dynamicTableKey);
 
-        List<PrintInfo.TableContent> dynamicTableValue = Lists.newArrayList();
+        List<PrintInfo.TableContent> dynamicTableValue = new ArrayList<>();
 
         PrintInfo.TableContent dptc1 = new PrintInfo.TableContent();
         dptc1.setFieldName("boxNum");
@@ -214,7 +213,7 @@ public class PdfTest {
                 A.maps("c1", "目的仓库: ", "c2", "USEA", "c3", "客户代码: ", "c4", "000013"),
                 A.maps("c1", "跟踪号: ", "c2", "YT1520216989500749", "c3", "客户参考号: ", "c4", "JD2015002")
         ));
-        List<Map<Object, Object>> list = Lists.newArrayList();
+        List<Map<Object, Object>> list = new ArrayList<>();
         for (int i = 0; i < 31; i++) {
             list.add(A.maps(
                     "boxNum", "1",
@@ -263,7 +262,7 @@ public class PdfTest {
         // watermark.setValue("这里有水印");
         // print.setWatermark(watermark);
 
-        List<PrintInfo.DataContent> holdContentList = Lists.newArrayList();
+        List<PrintInfo.DataContent> holdContentList = new ArrayList<>();
         PrintInfo.DataContent phc0 = new PrintInfo.DataContent();
         phc0.setX(190F);
         phc0.setY(800F);
@@ -311,7 +310,7 @@ public class PdfTest {
         // holdContentList.add(phc4);
         print.setContentInfo(holdContentList);
 
-        List<PrintInfo.TableInfo> tableList = Lists.newArrayList();
+        List<PrintInfo.TableInfo> tableList = new ArrayList<>();
         PrintInfo.TableInfo pt1 = new PrintInfo.TableInfo();
         PrintInfo.TableHead key1 = new PrintInfo.TableHead();
         key1.setX(306);
@@ -322,7 +321,7 @@ public class PdfTest {
         key1.setFieldName("orderInfo");
         pt1.setKey(key1);
 
-        List<PrintInfo.TableContent> value1 = Lists.newArrayList();
+        List<PrintInfo.TableContent> value1 = new ArrayList<>();
         PrintInfo.TableContent ptc11 = new PrintInfo.TableContent();
         ptc11.setFieldName("name");
         ptc11.setTextAlign(Element.ALIGN_RIGHT);
@@ -345,7 +344,7 @@ public class PdfTest {
         key2.setFieldName("printInfo");
         pt2.setKey(key2);
 
-        List<PrintInfo.TableContent> value2 = Lists.newArrayList();
+        List<PrintInfo.TableContent> value2 = new ArrayList<>();
         PrintInfo.TableContent ptc21 = new PrintInfo.TableContent();
         ptc21.setFieldName("printTime");
         value2.add(ptc21);
@@ -383,7 +382,7 @@ public class PdfTest {
         dynamicTableKey.setSinglePageCount(20);
         print.setDynamicHead(dynamicTableKey);
 
-        List<PrintInfo.TableContent> dynamicTableValue = Lists.newArrayList();
+        List<PrintInfo.TableContent> dynamicTableValue = new ArrayList<>();
         // PrintInfo.TableContent dptc0 = new PrintInfo.TableContent();
         // dptc0.setFieldType(PrintInfo.PlaceholderType.INDEX);
         // dptc0.setTextAlign(Element.ALIGN_CENTER);
@@ -457,7 +456,7 @@ public class PdfTest {
                         "receiveTime", "收货时间:"
                 )
         ));
-        List<Map<Object, Object>> list = Lists.newArrayList();
+        List<Map<Object, Object>> list = new ArrayList<>();
         for (int i = 0; i < 31; i++) {
             list.add(A.maps(
                     "stockCodeAndBoxNum", "0*1",
@@ -507,7 +506,7 @@ public class PdfTest {
         print.setWidth(198F);
         print.setHeight(84F);
 
-        List<PrintInfo.DataContent> tableList = Lists.newArrayList();
+        List<PrintInfo.DataContent> tableList = new ArrayList<>();
         PrintInfo.DataContent dc1 = new PrintInfo.DataContent();
         dc1.setX(151F);
         dc1.setY(5F);
@@ -530,7 +529,7 @@ public class PdfTest {
         dynamicTableKey.setSinglePageCount(1);
         print.setDynamicHead(dynamicTableKey);
 
-        List<PrintInfo.TableContent> dynamicTableValue = Lists.newArrayList();
+        List<PrintInfo.TableContent> dynamicTableValue = new ArrayList<>();
         PrintInfo.TableContent dptc1 = new PrintInfo.TableContent();
         dptc1.setFieldName("barCode");
         dptc1.setFieldType(PrintInfo.PlaceholderType.BARCODE);
@@ -544,8 +543,8 @@ public class PdfTest {
 
         Map<String, Object> data = Maps.newHashMap();
 
-        List<Map<Object, Object>> list1 = Lists.newArrayList();
-        List<Map<Object, Object>> list2 = Lists.newArrayList();
+        List<Map<Object, Object>> list1 = new ArrayList<>();
+        List<Map<Object, Object>> list2 = new ArrayList<>();
 
         list1.add(A.maps("qrCode", "G1082-AUTOTEST9336290"));
         list1.add(A.maps("qrCode", "G1082-AUTOTEST9336291"));
@@ -566,7 +565,7 @@ public class PdfTest {
         print.setWidth(284F);
         print.setHeight(170F);
 
-        List<PrintInfo.DataContent> contentList = Lists.newArrayList();
+        List<PrintInfo.DataContent> contentList = new ArrayList<>();
 
         PrintInfo.DataContent dc3 = new PrintInfo.DataContent();
         dc3.setFieldType(PrintInfo.PlaceholderType.QRCODE);
@@ -615,7 +614,7 @@ public class PdfTest {
         print.setContentInfo(contentList);
 
 
-        List<PrintInfo.DataContent> tableList = Lists.newArrayList();
+        List<PrintInfo.DataContent> tableList = new ArrayList<>();
         PrintInfo.DataContent pdc2 = new PrintInfo.DataContent();
         pdc2.setX(45F);
         pdc2.setY(75F);
@@ -640,7 +639,7 @@ public class PdfTest {
         dynamicTableKey.setBorder(true);
         print.setDynamicHead(dynamicTableKey);
 
-        List<PrintInfo.TableContent> dynamicTableValue = Lists.newArrayList();
+        List<PrintInfo.TableContent> dynamicTableValue = new ArrayList<>();
         PrintInfo.TableContent dptc1 = new PrintInfo.TableContent();
         dptc1.setFieldName("num");
         dptc1.setTextAlign(Element.ALIGN_CENTER);
@@ -656,12 +655,12 @@ public class PdfTest {
         Map<String, Object> data = Maps.newHashMap();
         data.put("countryCode", "UK");
 
-        List<Map<Object, Object>> list1 = Lists.newArrayList();
+        List<Map<Object, Object>> list1 = new ArrayList<>();
         list1.add(A.maps("barCode", "G1082-AUTOTEST9336290"));
         list1.add(A.maps("barCode", "G1082-AUTOTEST9336291"));
         data.put("dynamicInfo", list1);
 
-        List<Map<Object, Object>> list2 = Lists.newArrayList();
+        List<Map<Object, Object>> list2 = new ArrayList<>();
         list2.add(A.maps("num", "G1082-AUTOTEST9336290", "pcs", "0"));
         list2.add(A.maps("num", "G1082-AUTOTEST9336291", "pcs", "1"));
         data.put("dt", list2);

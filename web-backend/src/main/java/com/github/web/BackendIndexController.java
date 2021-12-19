@@ -7,7 +7,6 @@ import com.github.common.util.SecurityCodeUtil;
 import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiIgnore;
 import com.github.util.BackendSessionUtil;
-import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +17,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -56,7 +56,7 @@ public class BackendIndexController {
     @GetMapping("/collect")
     @ResponseBody
     public String collect() {
-        List<Map<String, String>> urlList = Lists.newArrayList();
+        List<Map<String, String>> urlList = new ArrayList<>();
         for (Map.Entry<RequestMappingInfo, HandlerMethod> entry : mapping.getHandlerMethods().entrySet()) {
             RequestMappingInfo info = entry.getKey();
             HandlerMethod method = entry.getValue();

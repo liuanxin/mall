@@ -5,16 +5,12 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.github.common.util.A;
 import com.github.common.util.U;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /** 菜单, 需要跟前端对应, 前端每增加一个菜单就需要添加一条记录, 与角色是 多对多 的关系 --> t_manager_menu */
 @Data
@@ -54,7 +50,7 @@ public class ManagerMenu implements Serializable {
             for (ManagerMenu m : menus) {
                 handle(m, menuMap, depth + 1);
             }
-            menu.setChildren(Lists.newArrayList(menus));
+            menu.setChildren(new ArrayList<>(menus));
         }
     }
     /** 将多条菜单整理成有父子关系的菜单, 且每条菜单中填充它下面的权限, 以 RoleId 为 key, List<Menu> 为 value 的 Map 形式返回 */
@@ -67,7 +63,7 @@ public class ManagerMenu implements Serializable {
 
         Map<Long, List<ManagerPermission>> mpMap = A.listToMapList(permissions, ManagerPermission::getMenuId);
 
-        List<ManagerMenu> menuList = Lists.newArrayList();
+        List<ManagerMenu> menuList = new ArrayList<>();
         Multimap<String, ManagerMenu> childMap = HashMultimap.create();
         for (ManagerMenu menu : menus) {
             // 将权限写进菜单
@@ -95,7 +91,7 @@ public class ManagerMenu implements Serializable {
         Map<String, List<ManagerMenu>> returnMap = Maps.newHashMap();
         if (A.isNotEmpty(tmpMap)) {
             for (Map.Entry<String, Collection<Long>> entry : roleIdMenuIdMap.entrySet()) {
-                List<ManagerMenu> managerMenus = Lists.newArrayList();
+                List<ManagerMenu> managerMenus = new ArrayList<>();
                 for (Long mid : entry.getValue()) {
                     managerMenus.add(tmpMap.get(U.toStr(mid)));
                 }
@@ -110,7 +106,7 @@ public class ManagerMenu implements Serializable {
         if (A.isEmpty(menus)) {
             return Collections.emptyList();
         } else {
-            List<ManagerMenu> returnList = Lists.newArrayList();
+            List<ManagerMenu> returnList = new ArrayList<>();
             allMenuUseDepth(returnList, menus);
             // allMenuUseBreadth(returnList, menus);
             return returnList;

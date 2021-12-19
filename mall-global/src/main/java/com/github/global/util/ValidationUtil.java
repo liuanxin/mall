@@ -6,7 +6,6 @@ import com.github.common.util.A;
 import com.github.common.util.U;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -14,10 +13,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ValidationUtil {
 
@@ -46,7 +42,7 @@ public class ValidationUtil {
         Map<String, String> errorMap = Maps.newLinkedHashMap();
         if (!fieldErrorMap.isEmpty()) {
             for (Map.Entry<String, Collection<String>> entry : fieldErrorMap.asMap().entrySet()) {
-                List<String> list = Lists.newArrayList(entry.getValue());
+                List<String> list = new ArrayList<>(entry.getValue());
                 Collections.sort(list);
                 errorMap.put(entry.getKey(), Joiner.on(",").join(list));
             }

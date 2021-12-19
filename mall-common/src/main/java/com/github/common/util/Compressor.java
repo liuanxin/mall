@@ -1,7 +1,6 @@
 package com.github.common.util;
 
-import com.google.common.collect.Lists;
-
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -104,13 +103,13 @@ public final class Compressor {
         }
 
         // 收集 <script> 标签. 这个特殊的标签里面的内容要单独处理
-        List<String> scriptList = Lists.newLinkedList();
+        List<String> scriptList = new LinkedList<>();
 
         // 收集 if 标签: <!--[if lt IE 7 ]> <html class="ie ie6"> <![endif]-->
-        List<String> ifList = Lists.newLinkedList();
+        List<String> ifList = new LinkedList<>();
         // 收集 <pre> <textarea> 标签, 这些特殊标签里面的内容不需要压缩, 压缩将会导致内容显示错误
-        List<String> preList = Lists.newLinkedList();
-        List<String> textareaList = Lists.newLinkedList();
+        List<String> preList = new LinkedList<>();
+        List<String> textareaList = new LinkedList<>();
 
         // 先收集 pre textarea 再收集 js, 最后收集 if
         html = replace(html, PRE_REGEX, preList, PRE_PLACE);
