@@ -1,10 +1,8 @@
 package com.github.common.util;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.function.Function;
 
 /** 集合相关的工具包 */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -137,10 +135,146 @@ public final class A {
         return sbd.toString();
     }
 
+    public static <K, T> Map<K, T> listToMap(Collection<T> list, Function<? super T, K> func) {
+        if (isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+
+        Map<K, T> returnMap = new HashMap<>();
+        for (T obj : list) {
+            if (U.isNotNull(obj)) {
+                K k = func.apply(obj);
+                if (U.isNotNull(k)) {
+                    returnMap.put(k, obj);
+                }
+            }
+        }
+        return returnMap;
+    }
+
+    public static <K, T> Map<K, List<T>> listToMapList(Collection<T> list, Function<? super T, K> func) {
+        if (isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+
+        Map<K, List<T>> returnMap = new HashMap<>();
+        for (T obj : list) {
+            if (U.isNotNull(obj)) {
+                K k = func.apply(obj);
+                if (U.isNotNull(k)) {
+                    List<T> array = returnMap.get(k);
+                    if (U.isNull(array)) {
+                        array = new ArrayList<>();
+                        returnMap.put(k, array);
+                    }
+                    array.add(obj);
+                }
+            }
+        }
+        return returnMap;
+    }
+
+    public static <K, T> Map<K, Set<T>> listToMapSet(Collection<T> list, Function<? super T, K> func) {
+        if (isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+
+        Map<K, Set<T>> returnMap = new HashMap<>();
+        for (T obj : list) {
+            if (U.isNotNull(obj)) {
+                K k = func.apply(obj);
+                if (U.isNotNull(k)) {
+                    Set<T> array = returnMap.get(k);
+                    if (isEmpty(array)) {
+                        array = new LinkedHashSet<>();
+                        returnMap.put(k, array);
+                    }
+                    array.add(obj);
+                }
+            }
+        }
+        return returnMap;
+    }
+
+    public static <T, K, V> Map<K, V> listToMapKeyValue(Collection<T> list,
+                                                        Function<? super T, K> keyFun,
+                                                        Function<? super T, V> valueFun) {
+        if (isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+
+        Map<K, V> returnMap = new HashMap<>();
+        for (T obj : list) {
+            if (U.isNotNull(obj)) {
+                K k = keyFun.apply(obj);
+                if (U.isNotNull(k)) {
+                    V v = valueFun.apply(obj);
+                    if (U.isNotNull(v)) {
+                        returnMap.put(k, v);
+                    }
+                }
+            }
+        }
+        return returnMap;
+    }
+
+    public static <T, K, V> Map<K, List<V>> listToMapKeyValueList(Collection<T> list,
+                                                                  Function<? super T, K> keyFun,
+                                                                  Function<? super T, V> valueFun) {
+        if (isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+
+        Map<K, List<V>> returnMap = new HashMap<>();
+        for (T obj : list) {
+            if (U.isNotNull(obj)) {
+                K k = keyFun.apply(obj);
+                if (U.isNotNull(k)) {
+                    V v = valueFun.apply(obj);
+                    if (U.isNotNull(v)) {
+                        List<V> array = returnMap.get(k);
+                        if (U.isNull(array)) {
+                            array = new ArrayList<>();
+                        }
+                        array.add(v);
+                        returnMap.put(k, array);
+                    }
+                }
+            }
+        }
+        return returnMap;
+    }
+
+    public static <T, K, V> Map<K, Set<V>> listToMapKeyValueSet(Collection<T> list,
+                                                                Function<? super T, K> keyFun,
+                                                                Function<? super T, V> valueFun) {
+        if (isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+
+        Map<K, Set<V>> returnMap = new HashMap<>();
+        for (T obj : list) {
+            if (U.isNotNull(obj)) {
+                K k = keyFun.apply(obj);
+                if (U.isNotNull(k)) {
+                    V v = valueFun.apply(obj);
+                    if (U.isNotNull(v)) {
+                        Set<V> array = returnMap.get(k);
+                        if (isEmpty(array)) {
+                            array = new LinkedHashSet<>();
+                            returnMap.put(k, array);
+                        }
+                        array.add(v);
+                    }
+                }
+            }
+        }
+        return returnMap;
+    }
+
     /** 数组去重返回 */
-    public static <T> Collection<T> removeDuplicate(T[] source) {
-        // return ImmutableSet.copyOf(Lists.newArrayList(source)).asList();
-        return removeDuplicate(Lists.newArrayList(source));
+    public static <T> Collection<T> removeDuplicate(T[] array) {
+        return removeDuplicate(Arrays.asList(array));
     }
     /** 删除重复的项 */
     public static <T> Collection<T> removeDuplicate(Collection<T> array) {
@@ -152,7 +286,7 @@ public final class A {
 
     /** 构造 HashMap, 必须保证每两个参数的类型是一致的! 当参数是奇数时, 最后一个 key 将会被忽略 */
     public static <K, V> HashMap<K, V> maps(Object... keysAndValues) {
-        return (HashMap<K, V>) maps(Maps.newHashMap(), keysAndValues);
+        return (HashMap<K, V>) maps(new HashMap<>(), keysAndValues);
     }
     private static <K, V> Map<K, V> maps(Map<K, V> result, Object... keysAndValues) {
         if (isNotEmpty(keysAndValues)) {
@@ -166,7 +300,7 @@ public final class A {
     }
     /** 构造 LinkedHashMap, 必须保证每两个参数的类型是一致的! 当参数是奇数时, 最后一个 key 将会被忽略 */
     public static <K, V> LinkedHashMap<K, V> linkedMaps(Object... keysAndValues) {
-        return (LinkedHashMap<K, V>) maps(Maps.newLinkedHashMap(), keysAndValues);
+        return (LinkedHashMap<K, V>) maps(new LinkedHashMap<>(), keysAndValues);
     }
 
     /** 获取数组的第一个元素 */

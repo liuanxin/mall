@@ -13,7 +13,6 @@ import com.github.manager.model.*;
 import com.github.manager.repository.*;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -149,7 +148,7 @@ public class ManagerServiceImpl implements ManagerService {
                     List<ManagerMenu> menus = menuMapper.selectList(Wrappers.lambdaQuery(ManagerMenu.class)
                             .in(ManagerMenu::getId, mids));
 
-                    Map<Long, ManagerMenu> menuMap = Maps.uniqueIndex(menus, ManagerMenu::getId);
+                    Map<Long, ManagerMenu> menuMap = A.listToMap(menus, ManagerMenu::getId);
                     for (ManagerRoleMenu roleMenu : roleMenus) {
                         ManagerMenu menu = menuMap.get(roleMenu.getMenuId());
                         if (U.isNotNull(menu)) {
@@ -172,7 +171,7 @@ public class ManagerServiceImpl implements ManagerService {
                             .in(ManagerPermission::getId, pids);
                     List<ManagerPermission> permissions = permissionMapper.selectList(permissionQuery);
 
-                    Map<Long, ManagerPermission> permissionMap = Maps.uniqueIndex(permissions, ManagerPermission::getId);
+                    Map<Long, ManagerPermission> permissionMap = A.listToMap(permissions, ManagerPermission::getId);
                     for (ManagerRolePermission rolePermission : rolePermissions) {
                         ManagerPermission permission = permissionMap.get(rolePermission.getPermissionId());
                         if (U.isNotNull(permission)) {
