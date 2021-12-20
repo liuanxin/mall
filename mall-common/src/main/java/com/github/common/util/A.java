@@ -235,9 +235,9 @@ public final class A {
                         List<V> array = returnMap.get(k);
                         if (U.isNull(array)) {
                             array = new ArrayList<>();
+                            returnMap.put(k, array);
                         }
                         array.add(v);
-                        returnMap.put(k, array);
                     }
                 }
             }
