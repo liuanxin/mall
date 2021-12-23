@@ -8,6 +8,7 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 
 import java.nio.charset.StandardCharsets;
@@ -25,6 +26,13 @@ public class ManagerWebConfig extends DelegatingWebMvcConfiguration {
     @Override
     protected void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    protected PathMatchConfigurer getPathMatchConfigurer() {
+        // 当使用 @PathVariable("{xx}") 里面有带 . 的参数时, 也能匹配上
+        return super.getPathMatchConfigurer().setUseSuffixPatternMatch(false);
     }
 
     @Override
