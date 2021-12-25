@@ -27,8 +27,15 @@ import java.util.Locale;
  * </span> */
 public final class RequestUtil {
 
-    private static final String USER_AGENT = "user-agent";
-    private static final String REFERRER = "referer";
+    private static final String CONTENT_TYPE = "Content-Type";
+    private static final String USER_AGENT = "User-Agent";
+    private static final String REFERRER = "Referer";
+    private static final String AJAX_KEY = "X-Requested-With";
+    private static final String AJAX_VALUE = "XMLHttpRequest";
+    /** 需要在 nginx 配置中添加 proxy_set_header X-Forwarded-Proto $scheme; */
+    private static final String NGINX_PROTO = "X-Forwarded-Proto";
+
+    private static final String APPLICATION_JSON = "application/json";
 
     private static final String SCHEME = "//";
     private static final String HTTP = "http:" + SCHEME;
@@ -83,7 +90,7 @@ public final class RequestUtil {
         return request.getRemoteAddr().split(",")[0].trim();
     }
 
-    /** 获取请求的语言信息, 获取不到就返回简体中文环境 */
+    /** 获取请求的语言信息 */
     public static Locale getLocale() {
         HttpServletRequest request = getRequest();
         return U.isNull(request) ? LocaleContextHolder.getLocale() : RequestContextUtils.getLocale(request);
@@ -103,7 +110,7 @@ public final class RequestUtil {
     /** 如果是 ie 请求就返回 true */
     public static boolean isIeRequest() {
         String userAgent = userAgent();
-        return U.isNotNull(userAgent) && userAgent.toUpperCase().contains("MSIE");
+        return U.isNotBlank(userAgent) && userAgent.toUpperCase().contains("MSIE");
     }
 
     /** 判断当前请求是否来自移动端, 来自移动端则返回 true */
@@ -118,13 +125,13 @@ public final class RequestUtil {
             return false;
         }
 
-        String requestedWith = request.getHeader("X-Requested-With");
-        if (U.isNotBlank(requestedWith) && "XMLHttpRequest".equals(requestedWith)) {
+        String requestedWith = request.getHeader(AJAX_KEY);
+        if (U.isNotBlank(requestedWith) && AJAX_VALUE.equalsIgnoreCase(requestedWith)) {
             return true;
         }
 
-        String contentType = request.getHeader("Content-Type");
-        return (U.isNotBlank(contentType) && "application/json".startsWith(contentType))
+        String contentType = request.getHeader(CONTENT_TYPE);
+        return (U.isNotBlank(contentType) && APPLICATION_JSON.startsWith(contentType.toLowerCase()))
                 || U.isNotBlank(request.getParameter("_ajax"))
                 || U.isNotBlank(request.getParameter("_json"));
     }
@@ -153,16 +160,16 @@ public final class RequestUtil {
         }
 
         StringBuilder sbd = new StringBuilder();
-        String proxyScheme = request.getHeader("X-Forwarded-Proto");
-        String scheme = U.isNotBlank(proxyScheme) ? proxyScheme : request.getScheme();
+        String proxyScheme = request.getHeader(NGINX_PROTO);
+        String scheme = (U.isNotBlank(proxyScheme) ? proxyScheme : request.getScheme()).toLowerCase();
 
         sbd.append(scheme).append("://").append(request.getServerName());
 
         int port = request.getServerPort();
-        boolean http = ("http".equalsIgnoreCase(scheme) && port != 80);
-        boolean https = ("https".equalsIgnoreCase(scheme) && port != 80 && port != 443);
+        boolean http = ("http".equals(scheme) && port != 80);
+        boolean https = ("https".equals(scheme) && port != 80 && port != 443);
         if (http || https) {
-            sbd.append(':').append(port);
+            sbd.append(":").append(port);
         }
         return sbd.toString();
     }
@@ -312,7 +319,7 @@ public final class RequestUtil {
 
     /** 将「json 字符」以 json 格式输出 */
     public static <T> void toJson(T jsonResult) {
-        render("application/json", jsonResult);
+        render(APPLICATION_JSON, jsonResult);
     }
     private static <T> void render(String type, T jsonResult) {
         HttpServletResponse response = getResponse();
