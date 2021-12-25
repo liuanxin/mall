@@ -518,13 +518,18 @@ public final class U {
     }
 
     /** 为 null 则返回默认值, 否则调用后返回 */
-    public static <T, R> R returnIfNotNull(T obj, Function<T, R> func, R defaultValue) {
+    public static <T, R> R callIfNotNull(T obj, Function<T, R> func, R defaultValue) {
         return isNull(obj) ? defaultValue : defaultIfNull(func.apply(obj), defaultValue);
     }
 
     /** 为 null 或 空白符则返回默认值 */
     public static String defaultIfBlank(String value, String defaultValue) {
         return isBlank(value) ? defaultValue : value;
+    }
+
+    /** 为 null 或 空白符则返回默认值, 否则调用后返回 */
+    public static <T> String callIfNotBlank(T obj, Function<T, String> func, String defaultValue) {
+        return isNull(obj) ? defaultValue : defaultIfBlank(func.apply(obj), defaultValue);
     }
 
     /** 安全的字符串比较, 时间上是等价的(避免计时攻击) */
