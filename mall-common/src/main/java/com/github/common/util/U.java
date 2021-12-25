@@ -522,12 +522,12 @@ public final class U {
         return isNull(obj) ? defaultValue : defaultIfNull(func.apply(obj), defaultValue);
     }
 
-    /** 为 null 或 空白符则返回默认值 */
+    /** 为 null 或 空白符则返回默认值(字符串) */
     public static String defaultIfBlank(String value, String defaultValue) {
         return isBlank(value) ? defaultValue : value;
     }
 
-    /** 为 null 或 空白符则返回默认值, 否则调用后返回 */
+    /** 为 null 或 空白符则返回默认值, 否则调用后返回(字符串) */
     public static <T> String callIfNotBlank(T obj, Function<T, String> func, String defaultValue) {
         return isNull(obj) ? defaultValue : defaultIfBlank(func.apply(obj), defaultValue);
     }
