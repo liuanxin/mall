@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -511,14 +512,22 @@ public final class U {
         return sbd.toString();
     }
 
+    /** 为 null 则返回默认值 */
     public static <T> T defaultIfNull(T value, T defaultValue) {
         return isNull(value) ? defaultValue : value;
     }
 
+    /** 为 null 则返回默认值, 否则调用后返回 */
+    public static <T, R> R returnIfNotNull(T obj, Function<T, R> func, R defaultValue) {
+        return isNull(obj) ? defaultValue : defaultIfNull(func.apply(obj), defaultValue);
+    }
+
+    /** 为 null 或 空白符则返回默认值 */
     public static String defaultIfBlank(String value, String defaultValue) {
         return isBlank(value) ? defaultValue : value;
     }
 
+    /** 安全的字符串比较, 时间上是等价的(避免计时攻击) */
     public static boolean safeEquals(String a, String b) {
         if (a != null && b != null) {
             int al = a.length();
