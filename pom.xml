@@ -52,8 +52,11 @@
         <poi-ooxml.version>5.1.0</poi-ooxml.version>
         <easyexcel.version>3.0.4</easyexcel.version>
         <opencsv.version>5.5.2</opencsv.version>
+
         <itextpdf.version>5.5.13.2</itextpdf.version>
         <itext-asian.version>5.2.0</itext-asian.version>
+        <!-- https://kb.itextpdf.com/home/it7kb/installation-guidelines/installing-itext-7-for-java -->
+        <itext.version>7.2.0</itext.version>
 
         <elasticsearch.version>7.11.2</elasticsearch.version>
         <redisson.version>3.16.4</redisson.version>
@@ -249,6 +252,22 @@
                 <groupId>com.itextpdf</groupId>
                 <artifactId>itext-asian</artifactId>
                 <version>${itext-asian.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.itextpdf</groupId>
+                <artifactId>layout</artifactId>
+                <version>${itext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.itextpdf</groupId>
+                <artifactId>barcodes</artifactId>
+                <version>${itext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.itextpdf</groupId>
+                <artifactId>font-asian</artifactId>
+                <version>${itext.version}</version>
             </dependency>
 
             <dependency>

@@ -532,6 +532,16 @@ public final class U {
         return isNull(obj) ? defaultValue : defaultIfBlank(func.apply(obj), defaultValue);
     }
 
+    /** 为 null 或 为 0 则返回默认值(数字) */
+    public static <T extends Number> T defaultIfNullOrLess0(T value, T defaultValue) {
+        return isNull(value) || value.doubleValue() == 0 ? defaultValue : value;
+    }
+
+    /** 为 null 或 为 0 则返回默认值, 否则调用后返回(数字) */
+    public static <T, R extends Number> R callIfNotBlankAndLess0(T obj, Function<T, R> func, R defaultValue) {
+        return isNull(obj) ? defaultValue : defaultIfNullOrLess0(func.apply(obj), defaultValue);
+    }
+
     /** 安全的字符串比较, 时间上是等价的(避免计时攻击) */
     public static boolean safeEquals(String a, String b) {
         if (a != null && b != null) {
