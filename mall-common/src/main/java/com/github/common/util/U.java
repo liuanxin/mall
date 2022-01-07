@@ -518,6 +518,10 @@ public final class U {
     }
 
     /** 为 null 则返回默认值, 否则调用后返回 */
+    public static <T, R> R callIfNotNull(T obj, Function<T, R> func) {
+        return isNull(obj) ? null : func.apply(obj);
+    }
+    /** 为 null 则返回默认值, 否则调用后返回 */
     public static <T, R> R callIfNotNull(T obj, Function<T, R> func, R defaultValue) {
         return isNull(obj) ? defaultValue : defaultIfNull(func.apply(obj), defaultValue);
     }
@@ -527,6 +531,10 @@ public final class U {
         return isBlank(value) ? defaultValue : value;
     }
 
+    /** 为 null 或 空白符则返回默认值, 否则调用后返回(字符串) */
+    public static <T> String callIfNotBlank(T obj, Function<T, String> func) {
+        return isNull(obj) ? null : func.apply(obj);
+    }
     /** 为 null 或 空白符则返回默认值, 否则调用后返回(字符串) */
     public static <T> String callIfNotBlank(T obj, Function<T, String> func, String defaultValue) {
         return isNull(obj) ? defaultValue : defaultIfBlank(func.apply(obj), defaultValue);
