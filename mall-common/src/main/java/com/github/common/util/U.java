@@ -469,18 +469,18 @@ public final class U {
             return unicode;
         }
 
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sbd = new StringBuilder();
         int i;
         int pos = 0;
         while ((i = unicode.indexOf("\\u", pos)) != -1) {
-            sb.append(unicode, pos, i);
+            sbd.append(unicode, pos, i);
             if (i + 5 < unicode.length()) {
                 pos = i + 6;
-                sb.append((char) Integer.parseInt(unicode.substring(i + 2, i + 6), 16));
+                sbd.append((char) Integer.parseInt(unicode.substring(i + 2, i + 6), 16));
             }
         }
-        sb.append(unicode.substring(pos));
-        return sb.toString();
+        sbd.append(unicode.substring(pos));
+        return sbd.toString();
     }
 
     /** 字符串转 ascii */
