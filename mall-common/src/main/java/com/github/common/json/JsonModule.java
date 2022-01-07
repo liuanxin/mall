@@ -54,7 +54,6 @@ public final class JsonModule {
                     gen.writeString(U.foggyPhone(value));
                     return;
                 case "idcard":
-                case "id-card":
                 case "id_card":
                     gen.writeString(U.foggyIdCard(value));
                     return;

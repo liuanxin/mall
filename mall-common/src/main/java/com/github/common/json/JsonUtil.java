@@ -74,6 +74,7 @@ public class JsonUtil {
 
         // 日期不用 utc 方式显示(utc 是一个整数值)
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.disable(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS);
         // 不确定的属性项上不要失败
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
