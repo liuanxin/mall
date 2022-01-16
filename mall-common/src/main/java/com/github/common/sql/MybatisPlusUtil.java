@@ -89,8 +89,10 @@ public class MybatisPlusUtil {
             // 上面的不成功就按驼峰规则转换: lowerCamel => lower_camel)
             // 如果是大写(lowerCamel => LOWER_CAMEL)则用 UPPER_UNDERSCORE
             return "`" + CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.LOWER_UNDERSCORE).convert(fieldName) + "`";
-        } else {
+        } else if (returnColumn.startsWith("`") && returnColumn.endsWith("`")) {
             return returnColumn;
+        } else {
+            return "`" + returnColumn + "`";
         }
     }
 
