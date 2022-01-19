@@ -151,6 +151,22 @@ public final class A {
         }
         return returnMap;
     }
+    public static <K, T> Map<K, T> listToLinkedMap(Collection<T> list, Function<? super T, K> func) {
+        if (isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+
+        Map<K, T> returnMap = new LinkedHashMap<>();
+        for (T obj : list) {
+            if (U.isNotNull(obj)) {
+                K k = func.apply(obj);
+                if (U.isNotNull(k)) {
+                    returnMap.put(k, obj);
+                }
+            }
+        }
+        return returnMap;
+    }
 
     public static <K, T> Map<K, List<T>> listToMapList(Collection<T> list, Function<? super T, K> func) {
         if (isEmpty(list)) {
@@ -158,6 +174,27 @@ public final class A {
         }
 
         Map<K, List<T>> returnMap = new HashMap<>();
+        for (T obj : list) {
+            if (U.isNotNull(obj)) {
+                K k = func.apply(obj);
+                if (U.isNotNull(k)) {
+                    List<T> array = returnMap.get(k);
+                    if (U.isNull(array)) {
+                        array = new ArrayList<>();
+                        returnMap.put(k, array);
+                    }
+                    array.add(obj);
+                }
+            }
+        }
+        return returnMap;
+    }
+    public static <K, T> Map<K, List<T>> listToLinkedMapList(Collection<T> list, Function<? super T, K> func) {
+        if (isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+
+        Map<K, List<T>> returnMap = new LinkedHashMap<>();
         for (T obj : list) {
             if (U.isNotNull(obj)) {
                 K k = func.apply(obj);
@@ -195,6 +232,27 @@ public final class A {
         }
         return returnMap;
     }
+    public static <K, T> Map<K, Set<T>> listToLinkedMapSet(Collection<T> list, Function<? super T, K> func) {
+        if (isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+
+        Map<K, Set<T>> returnMap = new LinkedHashMap<>();
+        for (T obj : list) {
+            if (U.isNotNull(obj)) {
+                K k = func.apply(obj);
+                if (U.isNotNull(k)) {
+                    Set<T> array = returnMap.get(k);
+                    if (isEmpty(array)) {
+                        array = new LinkedHashSet<>();
+                        returnMap.put(k, array);
+                    }
+                    array.add(obj);
+                }
+            }
+        }
+        return returnMap;
+    }
 
     public static <T, K, V> Map<K, V> listToMapKeyValue(Collection<T> list,
                                                         Function<? super T, K> keyFun,
@@ -204,6 +262,27 @@ public final class A {
         }
 
         Map<K, V> returnMap = new HashMap<>();
+        for (T obj : list) {
+            if (U.isNotNull(obj)) {
+                K k = keyFun.apply(obj);
+                if (U.isNotNull(k)) {
+                    V v = valueFun.apply(obj);
+                    if (U.isNotNull(v)) {
+                        returnMap.put(k, v);
+                    }
+                }
+            }
+        }
+        return returnMap;
+    }
+    public static <T, K, V> Map<K, V> listToLinkedMapKeyValue(Collection<T> list,
+                                                              Function<? super T, K> keyFun,
+                                                              Function<? super T, V> valueFun) {
+        if (isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+
+        Map<K, V> returnMap = new LinkedHashMap<>();
         for (T obj : list) {
             if (U.isNotNull(obj)) {
                 K k = keyFun.apply(obj);
@@ -244,6 +323,32 @@ public final class A {
         }
         return returnMap;
     }
+    public static <T, K, V> Map<K, List<V>> listToLinkedMapKeyValueList(Collection<T> list,
+                                                                        Function<? super T, K> keyFun,
+                                                                        Function<? super T, V> valueFun) {
+        if (isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+
+        Map<K, List<V>> returnMap = new LinkedHashMap<>();
+        for (T obj : list) {
+            if (U.isNotNull(obj)) {
+                K k = keyFun.apply(obj);
+                if (U.isNotNull(k)) {
+                    V v = valueFun.apply(obj);
+                    if (U.isNotNull(v)) {
+                        List<V> array = returnMap.get(k);
+                        if (U.isNull(array)) {
+                            array = new ArrayList<>();
+                            returnMap.put(k, array);
+                        }
+                        array.add(v);
+                    }
+                }
+            }
+        }
+        return returnMap;
+    }
 
     public static <T, K, V> Map<K, Set<V>> listToMapKeyValueSet(Collection<T> list,
                                                                 Function<? super T, K> keyFun,
@@ -253,6 +358,32 @@ public final class A {
         }
 
         Map<K, Set<V>> returnMap = new HashMap<>();
+        for (T obj : list) {
+            if (U.isNotNull(obj)) {
+                K k = keyFun.apply(obj);
+                if (U.isNotNull(k)) {
+                    V v = valueFun.apply(obj);
+                    if (U.isNotNull(v)) {
+                        Set<V> array = returnMap.get(k);
+                        if (isEmpty(array)) {
+                            array = new LinkedHashSet<>();
+                            returnMap.put(k, array);
+                        }
+                        array.add(v);
+                    }
+                }
+            }
+        }
+        return returnMap;
+    }
+    public static <T, K, V> Map<K, Set<V>> listToLinkedMapKeyValueSet(Collection<T> list,
+                                                                      Function<? super T, K> keyFun,
+                                                                      Function<? super T, V> valueFun) {
+        if (isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+
+        Map<K, Set<V>> returnMap = new LinkedHashMap<>();
         for (T obj : list) {
             if (U.isNotNull(obj)) {
                 K k = keyFun.apply(obj);
