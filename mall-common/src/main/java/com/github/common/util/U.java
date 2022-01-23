@@ -335,8 +335,20 @@ public final class U {
         }
     }
 
-    public static boolean isInt(double num) {
-        return Math.abs(num - Math.round(num)) < Double.MIN_VALUE;
+    public static boolean isInt(Object obj) {
+        if (isNull(obj)) {
+            return false;
+        }
+        if (obj instanceof Number) {
+            double num = ((Number) obj).doubleValue();
+            return Math.abs(num - Math.round(num)) < Double.MIN_VALUE;
+        }
+        try {
+            double num = Double.parseDouble(obj.toString().trim());
+            return Math.abs(num - Math.round(num)) < Double.MIN_VALUE;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     /** 是数字则返回 true */
