@@ -335,6 +335,10 @@ public final class U {
         }
     }
 
+    public static boolean isInt(double num) {
+        return Math.abs(num - Math.round(num)) < Double.MIN_VALUE;
+    }
+
     /** 是数字则返回 true */
     public static boolean isNumber(Object obj) {
         if (isNull(obj)) {
