@@ -4,12 +4,19 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.common.date.DateUtil;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
+import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.google.common.base.Joiner;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
+import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public final class BeanChange {
 
@@ -20,6 +27,8 @@ public final class BeanChange {
     private static final String DEL = "删除";
 
     private static final TypeReference<Map<String, String>> MAP_REFERENCE = new TypeReference<>() {};
+
+    private static final Cache<String, Method> METHOD_CACHE_MAP = CacheBuilder.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build();
 
     public static <T> String diff(T oldObj, T newObj) {
         return diff(CollectGroup.ALL, oldObj, newObj);
@@ -62,20 +71,8 @@ public final class BeanChange {
             }
 
             if (collectType == CollectGroup.ALL || typeSet.contains(CollectGroup.ALL) || typeSet.contains(collectType)) {
-                Object oldValue;
-                try {
-                    oldValue = new PropertyDescriptor(fieldName, clazz).getReadMethod().invoke(oldObj);
-                } catch (Exception ignore) {
-                    oldValue = null;
-                }
-
-                Object newValue;
-                try {
-                    newValue = new PropertyDescriptor(fieldName, clazz).getReadMethod().invoke(newObj);
-                } catch (Exception ignore) {
-                    newValue = null;
-                }
-
+                Object oldValue = getField(fieldName, clazz, oldObj);
+                Object newValue = getField(fieldName, clazz, newObj);
                 if (oldValue != newValue) {
                     String value = compareValue(getValue(oldValue, dateFormat), getValue(newValue, dateFormat), name, map);
                     if (U.isNotBlank(value)) {
@@ -96,6 +93,34 @@ public final class BeanChange {
         return null;
     }
 
+    private static Object getField(String fieldName, Class<?> clazz, Object obj) {
+        String key = fieldName + "-" + clazz.getName();
+        Method method = METHOD_CACHE_MAP.getIfPresent(key);
+        if (U.isNull(method)) {
+            try {
+                method = new PropertyDescriptor(fieldName, clazz).getReadMethod();
+            } catch (IntrospectionException e) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error(String.format("获取类(%s)的 get 方法(%s)时异常", clazz.getName(), fieldName), e);
+                }
+            }
+            if (U.isNotNull(method)) {
+                METHOD_CACHE_MAP.put(key, method);
+            }
+        }
+        if (U.isNull(method)) {
+            return null;
+        }
+        try {
+            return method.invoke(obj);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error(String.format("调用类(%s)的 get 方法(%s)时异常", clazz.getName(), fieldName), e);
+            }
+            return null;
+        }
+    }
+
     private static String getValue(Object obj, String dateFormat) {
         if (U.isNull(obj)) {
             return null;
@@ -110,8 +135,8 @@ public final class BeanChange {
         }
     }
 
-    private static String getMapping(Map<String, String> map, String obj) {
-        String value = map.get(obj);
+    private static String getMapping(Map<String, String> map, String str) {
+        String value = map.get(str);
         if (U.isNotBlank(value)) {
             return value;
         }
@@ -119,18 +144,18 @@ public final class BeanChange {
         if (U.isNotBlank(other)) {
             return other;
         }
-        return obj;
+        return str;
     }
 
-    private static String compareValue(String oldObj, String newObj, String name, Map<String, String> map) {
-        if (U.isNull(oldObj) && U.isNull(newObj)) {
+    private static String compareValue(String oldStr, String newStr, String name, Map<String, String> map) {
+        if (U.isNull(oldStr) && U.isNull(newStr)) {
             return null;
-        } else if (U.isNull(oldObj)) {
-            return String.format(UPDATE_ADD, name, getMapping(map, newObj));
-        } else if (U.isNull(newObj)) {
-            return String.format(UPDATE_DEL, name, getMapping(map, oldObj));
-        } else if (!oldObj.equals(newObj)) {
-            return String.format(UPDATE, name, getMapping(map, oldObj), getMapping(map, newObj));
+        } else if (U.isNull(oldStr)) {
+            return String.format(UPDATE_ADD, name, getMapping(map, newStr));
+        } else if (U.isNull(newStr)) {
+            return String.format(UPDATE_DEL, name, getMapping(map, oldStr));
+        } else if (!oldStr.equals(newStr)) {
+            return String.format(UPDATE, name, getMapping(map, oldStr), getMapping(map, newStr));
         } else {
             return null;
         }
