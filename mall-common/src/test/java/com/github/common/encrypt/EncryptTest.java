@@ -51,23 +51,43 @@ public class EncryptTest {
 
     @Test
     public void rsaCheck() {
-        Encrypt.RsaPair pair = Encrypt.genericRsaKeyPair(1024);
-        System.out.println("公: " + pair.getPublicKey());
-        System.out.println("私: " + pair.getPrivateKey());
+        int size = 1024;
+        Encrypt.RsaPair pair = Encrypt.genericRsaKeyPair(size);
+        String publicKey = pair.getPublicKey();
+        String privateKey = pair.getPrivateKey();
+        System.out.println("密码长度是 " + size + " 时的公钥:\n" + publicKey + "\n");
+        System.out.println("密码长度是 " + size + " 时的私钥:\n" + privateKey + "\n");
 
-        String encode = Encrypt.rsaEncode(pair.getPublicKey(), SOURCE);
-        System.out.println("密: " + encode);
-        System.out.println("解: " + Encrypt.rsaDecode(pair.getPrivateKey(), encode));
+        String encode = Encrypt.rsaEncode(publicKey, SOURCE);
+        System.out.println("密码长度是 " + size + " 时拿公钥加密后的值是:\n" + encode + "\n");
+        try {
+            System.out.println("密码长度是 " + size + " 时拿公钥解密后的值是: " + Encrypt.rsaDecode(publicKey, encode));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String rsa = Encrypt.rsaDecode(privateKey, encode);
+        System.out.println("密码长度是 " + size + " 时拿私钥解密后的值是: " + rsa);
+        System.out.println("密码长度是 " + size + " 时解码是否一致: " + rsa.equals(SOURCE));
 
         System.out.println("\n\n");
 
-        pair = Encrypt.genericRsaKeyPair(2048);
-        System.out.println("公: " + pair.getPublicKey());
-        System.out.println("私: " + pair.getPrivateKey());
+        size = 2048;
+        pair = Encrypt.genericRsaKeyPair(size);
+        publicKey = pair.getPublicKey();
+        privateKey = pair.getPrivateKey();
+        System.out.println("密码长度是 " + size + " 时的公钥:\n" + publicKey + "\n");
+        System.out.println("密码长度是 " + size + " 时的私钥:\n" + privateKey + "\n");
 
-        encode = Encrypt.rsaEncode(pair.getPublicKey(), SOURCE);
-        System.out.println("密: " + encode);
-        System.out.println("解: " + Encrypt.rsaDecode(pair.getPrivateKey(), encode));
+        encode = Encrypt.rsaEncode(publicKey, SOURCE);
+        System.out.println("密码长度是 " + size + " 时拿公钥加密后的值是:\n" + encode + "\n");
+        try {
+            System.out.println("密码长度是 " + size + " 时拿公钥解密后的值是: " + Encrypt.rsaDecode(publicKey, encode));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        rsa = Encrypt.rsaDecode(privateKey, encode);
+        System.out.println("密码长度是 " + size + " 时拿私钥解密后的值是: " + rsa);
+        System.out.println("密码长度是 " + size + " 时解码是否一致: " + rsa.equals(SOURCE));
     }
 
     @Test
@@ -103,10 +123,10 @@ public class EncryptTest {
 
     @Test
     public void base64Test() {
-        String encode = U.base64Encode(SOURCE);
+        String encode = Encrypt.base64Encode(SOURCE);
         Assert.assertTrue(encode.length() > 0);
 
-        String decode = U.base64Decode(encode);
+        String decode = Encrypt.base64Decode(encode);
         Assert.assertEquals(SOURCE, decode);
     }
 

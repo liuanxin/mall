@@ -1,10 +1,10 @@
 package com.github.common.resource;
 
 import com.github.common.Const;
+import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.google.common.base.CaseFormat;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 @SuppressWarnings("rawtypes")
@@ -56,26 +56,26 @@ public final class CollectEnumUtil {
     private static Map<String, Object> enumInfo(Class<?> enumClass) {
         try {
             // 在 enum 中如果有静态的 select 方法且返回的是 Map 就用这个
-            Method select = enumClass.getMethod(METHOD);
-            if (U.isNotNull(select)) {
-                Object result = select.invoke(null);
-                if (U.isNotNull(result) && result instanceof Map) {
-                    return (Map<String, Object>) result;
-                }
+            Object result = enumClass.getMethod(METHOD).invoke(null);
+            if (U.isNotNull(result) && result instanceof Map) {
+                return (Map<String, Object>) result;
             }
-        } catch (Exception ignore) {
+        } catch (Exception e) {
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error(String.format("%s invoke %s exception", enumClass, METHOD), e);
+            }
         }
 
         Map<String, Object> returnMap = new HashMap<>();
         for (Object anEnum : enumClass.getEnumConstants()) {
             // 没有 getCode 方法就使用枚举的 ordinal
-            Object key = U.getMethod(anEnum, CODE);
+            Object key = U.invokeMethod(anEnum, CODE);
             if (key == null) {
                 key = ((Enum) anEnum).ordinal();
             }
 
             // 没有 getValue 方法就使用枚举的 name
-            Object value = U.getMethod(anEnum, VALUE);
+            Object value = U.invokeMethod(anEnum, VALUE);
             if (value == null) {
                 value = ((Enum) anEnum).name();
             }

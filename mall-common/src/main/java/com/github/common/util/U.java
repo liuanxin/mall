@@ -1,10 +1,9 @@
 package com.github.common.util;
 
 import com.github.common.date.DateUtil;
+import com.github.common.encrypt.Encrypt;
 import com.github.common.exception.*;
 import com.github.common.json.JsonUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.beans.PropertyDescriptor;
 import java.io.*;
@@ -29,8 +28,6 @@ import java.util.zip.GZIPOutputStream;
 
 /** 工具类 */
 public final class U {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(U.class);
 
     public static final Random RANDOM = new Random();
 
@@ -119,13 +116,13 @@ public final class U {
                     }
 
                     // 如果传递过来的值跟枚举的 getCode(数字) 相同则返回
-                    Object code = getMethod(em, "getCode");
+                    Object code = invokeMethod(em, "getCode");
                     if (isNotNull(code) && source.equalsIgnoreCase(code.toString().trim())) {
                         return em;
                     }
 
                     // 如果传递过来的值跟枚举的 getValue(中文) 相同则返回
-                    Object value = getMethod(em, "getValue");
+                    Object value = invokeMethod(em, "getValue");
                     if (isNotNull(value) && source.equalsIgnoreCase(value.toString().trim())) {
                         return em;
                     }
@@ -901,7 +898,7 @@ public final class U {
             try {
                 value = new PropertyDescriptor(field, data.getClass()).getReadMethod().invoke(data);
             } catch (Exception e) {
-                value = getMethod(data, "get" + field.substring(0, 1).toUpperCase() + field.substring(1));
+                value = invokeMethod(data, "get" + field.substring(0, 1).toUpperCase() + field.substring(1));
             }
         }
 
@@ -909,7 +906,7 @@ public final class U {
             return EMPTY;
         } else if (value.getClass().isEnum()) {
             // 如果是枚举, 则调用其 getValue 方法, getValue 没有值则使用枚举的 name
-            return toStr(defaultIfNull(getMethod(value, "getValue"), value));
+            return toStr(defaultIfNull(invokeMethod(value, "getValue"), value));
         } else if (value instanceof Date) {
             // 如果是日期, 则格式化
             return toStr(DateUtil.formatDateTime((Date) value));
@@ -1044,8 +1041,8 @@ public final class U {
                                 continue;
                             }
                         } catch (Exception e) {
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug(String.format("%s invoke %s exception", tc.getName(), getMethodName), e);
+                            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                                LogUtil.ROOT_LOG.error(String.format("%s invoke %s exception", tc.getName(), getMethodName), e);
                             }
                             continue;
                         }
@@ -1055,8 +1052,8 @@ public final class U {
                     try {
                         targetObj = sourceMethodMap.get(getMethodName).invoke(source);
                     } catch (Exception e) {
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug(String.format("%s invoke %s exception", sc.getName(), getMethodName), e);
+                        if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                            LogUtil.ROOT_LOG.error(String.format("%s invoke %s exception", sc.getName(), getMethodName), e);
                         }
                         continue;
                     }
@@ -1064,8 +1061,8 @@ public final class U {
                         try {
                             method.invoke(target, targetObj);
                         } catch (Exception e) {
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug(String.format("%s invoke %s exception", tc.getName(), getMethodName), e);
+                            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                                LogUtil.ROOT_LOG.error(String.format("%s invoke %s exception", tc.getName(), getMethodName), e);
                             }
                         }
                     }
@@ -1075,16 +1072,23 @@ public final class U {
     }
 
     /** 调用对象的公有方法. 异常将被忽略并返回 null */
-    public static Object getMethod(Object obj, String method, Object... param) {
-        if (isNotBlank(method)) {
+    public static Object invokeMethod(Object obj, String method, Object... param) {
+        if (isNotNull(obj) && isNotBlank(method)) {
+            Class<?> clazz = obj.getClass();
             try {
-                return obj.getClass().getDeclaredMethod(method).invoke(obj, param);
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ignore) {
+                return clazz.getDeclaredMethod(method).invoke(obj, param);
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error(String.format("%s invoke %s exception", clazz.getName(), method), e);
+                }
             }
             // getMethod 会将从父类继承过来的 public 方法也查询出来
             try {
-                return obj.getClass().getMethod(method).invoke(obj, param);
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ignore) {
+                return clazz.getMethod(method).invoke(obj, param);
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error(String.format("%s invoke %s exception", clazz.getName(), method), e);
+                }
             }
         }
         return null;
@@ -1207,21 +1211,6 @@ public final class U {
         }
     }
 
-    /** 使用 base64 编码 */
-    public static String base64Encode(String src) {
-        return new String(base64Encode(src.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
-    }
-    public static byte[] base64Encode(byte[] src) {
-        return Base64.getEncoder().encode(src);
-    }
-    /** 使用 base64 解码 */
-    public static String base64Decode(String src) {
-        return new String(base64Decode(src.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
-    }
-    public static byte[] base64Decode(byte[] src) {
-        return Base64.getDecoder().decode(src);
-    }
-
     /** 将长字符串进行 gzip 压缩, 再转成 base64 编码返回 */
     public static String compress(final String str) {
         if (isNull(str)) {
@@ -1239,10 +1228,10 @@ public final class U {
         ) {
             gzip.write(trim.getBytes(StandardCharsets.UTF_8));
             gzip.finish();
-            return new String(base64Encode(output.toByteArray()), StandardCharsets.UTF_8);
+            return new String(Encrypt.base64Encode(output.toByteArray()), StandardCharsets.UTF_8);
         } catch (Exception e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("压缩字符串异常", e);
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("压缩字符串异常", e);
             }
             return trim;
         }
@@ -1263,13 +1252,13 @@ public final class U {
 
         byte[] bytes;
         try {
-            bytes = base64Decode(str.getBytes(StandardCharsets.UTF_8));
+            bytes = Encrypt.base64Decode(str.getBytes(StandardCharsets.UTF_8));
             if (bytes.length == 0) {
                 return trim;
             }
         } catch (Exception e) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("字符串解码异常", e);
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("字符串解码异常", e);
             }
             return trim;
         }
@@ -1287,8 +1276,8 @@ public final class U {
             }
             return sbd.toString();
         } catch (Exception e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("解压字符串异常", e);
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("解压字符串异常", e);
             }
             return trim;
         }

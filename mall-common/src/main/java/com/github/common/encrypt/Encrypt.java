@@ -61,6 +61,21 @@ public final class Encrypt {
     };
     private static final int HEX_LEN = HEX.length;
 
+    /** 使用 base64 编码 */
+    public static String base64Encode(String src) {
+        return new String(base64Encode(src.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+    }
+    public static byte[] base64Encode(byte[] src) {
+        return Base64.getEncoder().encode(src);
+    }
+    /** 使用 base64 解码 */
+    public static String base64Decode(String src) {
+        return new String(base64Decode(src.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+    }
+    public static byte[] base64Decode(byte[] src) {
+        return Base64.getDecoder().decode(src);
+    }
+
     /** 使用 aes 加密(使用默认密钥) */
     public static String aesEncode(String data) {
         return aesEncode(data, AES_SECRET);
@@ -213,8 +228,8 @@ public final class Encrypt {
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
             RsaPair pair = new RsaPair();
-            pair.setPublicKey(new String(Base64.getEncoder().encode(keyPair.getPublic().getEncoded()), UTF8));
-            pair.setPrivateKey(new String(Base64.getEncoder().encode(keyPair.getPrivate().getEncoded()), UTF8));
+            pair.setPublicKey(new String(base64Encode(keyPair.getPublic().getEncoded()), UTF8));
+            pair.setPrivateKey(new String(base64Encode(keyPair.getPrivate().getEncoded()), UTF8));
             return pair;
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 %s 生成 %s 位的密钥对时异常", RSA, keyLength), e);
@@ -223,7 +238,7 @@ public final class Encrypt {
     /** 使用 rsa 的公钥加密 */
     public static String rsaEncode(String publicKey, String data) {
         try {
-            byte[] keyBytes = Base64.getDecoder().decode(publicKey.getBytes(UTF8));
+            byte[] keyBytes = base64Decode(publicKey.getBytes(UTF8));
             X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
             KeyFactory keyFactory = KeyFactory.getInstance(RSA);
             PublicKey key = keyFactory.generatePublic(keySpec);
@@ -232,7 +247,7 @@ public final class Encrypt {
             cipher.init(Cipher.ENCRYPT_MODE, key);
             byte[] encodeBytes = cipher.doFinal(data.getBytes(UTF8));
 
-            return new String(Base64.getEncoder().encode(encodeBytes), UTF8);
+            return new String(base64Encode(encodeBytes), UTF8);
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 %s 基于公钥(%s)加密(%s)时异常", RSA, publicKey, data), e);
         }
@@ -240,14 +255,14 @@ public final class Encrypt {
     /** 使用 rsa 的私钥解密 */
     public static String rsaDecode(String privateKey, String data) {
         try {
-            byte[] keyBytes = Base64.getDecoder().decode(privateKey.getBytes(UTF8));
+            byte[] keyBytes = base64Decode(privateKey.getBytes(UTF8));
             PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
             KeyFactory keyFactory = KeyFactory.getInstance(RSA);
             PrivateKey key = keyFactory.generatePrivate(keySpec);
 
             Cipher cipher = Cipher.getInstance(RSA);
             cipher.init(Cipher.DECRYPT_MODE, key);
-            byte[] decodeBytes = cipher.doFinal(Base64.getDecoder().decode(data.getBytes(UTF8)));
+            byte[] decodeBytes = cipher.doFinal(base64Decode(data.getBytes(UTF8)));
 
             return new String(decodeBytes, UTF8);
         } catch (Exception e) {
@@ -327,7 +342,7 @@ public final class Encrypt {
     }
     /** 使用 rc4 加密 */
     public static String rc4Encode(String input, String key) {
-        return U.base64Encode(rc4(input, key));
+        return base64Encode(rc4(input, key));
     }
     /** 使用 rc4 解密(使用默认密钥) */
     public static String rc4Decode(String input) {
@@ -335,7 +350,7 @@ public final class Encrypt {
     }
     /** 使用 rc4 解密 */
     public static String rc4Decode(String input, String key) {
-        return rc4(U.base64Decode(input), key);
+        return rc4(base64Decode(input), key);
     }
     /** 使用 rc4 加解密, 如果是密文调用此方法将返回明文 */
     private static String rc4(String input, String key) {
