@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.mq.repository.MqSendDao">
+
+    <insert id="insertOrUpdate" parameterType="com.github.mq.model.MqSendEntity"
+            keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO `mq_send`
+        <trim prefix="(" suffix=") VALUES" suffixOverrides=",">
+            <if test="id != null">
+                `id`,
+            </if>
+            <if test="exchange != null">
+                `exchange`,
+            </if>
+            <if test="routingKey != null">
+                `routing_key`,
+            </if>
+            <if test="msgId != null">
+                `msg_id`,
+            </if>
+            <if test="appCode != null">
+                `app_code`,
+            </if>
+            <if test="businessType != null">
+                `business_type`,
+            </if>
+            <if test="status != null">
+                `status`,
+            </if>
+            <if test="failType != null">
+                `fail_type`,
+            </if>
+            <if test="retryCount != null">
+                `retry_count`,
+            </if>
+            <if test="msgJson != null">
+                `msg_json`,
+            </if>
+            <if test="remark != null">
+                `remark`,
+            </if>
+            <if test="createTime != null">
+                `create_time`,
+            </if>
+            <if test="updateTime != null">
+                `update_time`,
+            </if>
+        </trim>
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="exchange != null">
+                #{exchange,jdbcType=VARCHAR},
+            </if>
+            <if test="routingKey != null">
+                #{routingKey,jdbcType=VARCHAR},
+            </if>
+            <if test="msgId != null">
+                #{msgId,jdbcType=VARCHAR},
+            </if>
+            <if test="appCode != null">
+                #{appCode,jdbcType=VARCHAR},
+            </if>
+            <if test="businessType != null">
+                #{businessType,jdbcType=VARCHAR},
+            </if>
+            <if test="status != null">
+                #{status,jdbcType=TINYINT},
+            </if>
+            <if test="failType != null">
+                #{failType,jdbcType=TINYINT},
+            </if>
+            <if test="retryCount != null">
+                #{retryCount,jdbcType=INTEGER},
+            </if>
+            <if test="msgJson != null">
+                #{msgJson,jdbcType=LONGVARCHAR},
+            </if>
+            <if test="remark != null">
+                #{remark,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+        <trim prefix="ON DUPLICATE KEY UPDATE" suffixOverrides=",">
+            <if test="id != null">
+                `id` = VALUES(`id`),
+            </if>
+            <if test="exchange != null">
+                `exchange` = VALUES(`exchange`),
+            </if>
+            <if test="routingKey != null">
+                `routing_key` = VALUES(`routing_key`),
+            </if>
+            <if test="msgId != null">
+                `msg_id` = VALUES(`msg_id`),
+            </if>
+            <if test="appCode != null">
+                `app_code` = VALUES(`app_code`),
+            </if>
+            <if test="businessType != null">
+                `business_type` = VALUES(`business_type`),
+            </if>
+            <if test="status != null">
+                `status` = VALUES(`status`),
+            </if>
+            <if test="failType != null">
+                `fail_type` = VALUES(`fail_type`),
+            </if>
+            <if test="retryCount != null">
+                `retry_count` = VALUES(`retry_count`),
+            </if>
+            <if test="msgJson != null">
+                `msg_json` = VALUES(`msg_json`),
+            </if>
+            <if test="remark != null">
+                `remark` = VALUES(`remark`),
+            </if>
+            <if test="createTime != null">
+                `create_time` = VALUES(`create_time`),
+            </if>
+            <if test="updateTime != null">
+                `update_time` = VALUES(`update_time`),
+            </if>
+        </trim>
+    </insert>
+
+</mapper>

@@ -20,6 +20,8 @@
         <module>mall-common</module>
         <!-- 放到 spring 上下文的服务包 -->
         <module>mall-global</module>
+        <!-- 用在 rabbit-mq 的包 -->
+        <module>mall-mq</module>
 
         <!-- 公共模块 -->
         <module>module-0-common</module>
