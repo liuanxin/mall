@@ -20,7 +20,7 @@ public class MqReceive implements Serializable {
     /** 业务场景 --> business_type */
     private String businessType;
 
-    /** 状态(1.失败, 2.成功) --> status */
+    /** 状态(0.初始, 1.失败, 2.成功) --> status */
     private Integer status;
 
     /** 重试次数 --> retry_count */
