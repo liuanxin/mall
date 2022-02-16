@@ -92,16 +92,15 @@ public class MqReceiverHandler {
      * <p>
      * 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
      */
-    public void doConsumeJustJson(String queueName, String businessType, String desc,
+    public void doConsumeJustJson(String queueName, MqInfo mqInfo, String desc,
                                   Message message, Channel channel, Consumer<String> consumer) {
         long start = System.currentTimeMillis();
         try {
-            // msgId 放在 messageId, traceId 放在 correlationId
             MessageProperties messageProperties = message.getMessageProperties();
-            long deliveryTag = messageProperties.getDeliveryTag();
-            String traceId = messageProperties.getCorrelationId();
-            LogUtil.bindBasicInfo(U.isBlank(traceId) ? U.uuid16() : traceId);
+            // traceId 放在 correlationId
+            LogUtil.bindBasicInfo(messageProperties.getCorrelationId());
 
+            long deliveryTag = messageProperties.getDeliveryTag();
             String json = new String(message.getBody());
             if (U.isBlank(json)) {
                 ack(channel, deliveryTag, String.format("消费 %s 数据为空, 发送 ack 时异常", desc));
@@ -112,7 +111,7 @@ public class MqReceiverHandler {
                 LogUtil.ROOT_LOG.info("开始消费 mq({})", desc);
             }
             String msgId = messageProperties.getMessageId();
-            doDataConsume(json, msgId, queueName, businessType, desc, deliveryTag, channel, consumer);
+            doDataConsume(json, msgId, queueName, mqInfo.name().toLowerCase(), desc, deliveryTag, channel, consumer);
         } finally {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("消费 mq{} 结束, 耗时: ({})", desc, DateUtil.toHuman(System.currentTimeMillis() - start));
