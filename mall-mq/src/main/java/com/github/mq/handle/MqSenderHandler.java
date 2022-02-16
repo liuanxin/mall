@@ -8,7 +8,7 @@ import com.github.common.util.U;
 import com.github.mq.constant.MqData;
 import com.github.mq.constant.MqInfo;
 import com.github.mq.constant.SelfCorrelationData;
-import com.github.mq.model.MqSendEntity;
+import com.github.mq.model.MqSend;
 import com.github.mq.service.MqSendService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,9 +72,9 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         String routingKey = mqInfo.getRoutingKey();
         String desc = mqInfo.showDesc();
 
-        MqSendEntity model = mqSendService.queryByMsgId(msgId);
+        MqSend model = mqSendService.queryByMsgId(msgId);
         if (U.isNull(model)) {
-            model = new MqSendEntity();
+            model = new MqSend();
             model.setId(IdWorker.getId());
             model.setMsgId(msgId);
             model.setSearchKey(searchKey);
@@ -83,11 +83,11 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
             model.setStatus(2);
             model.setFailType(0);
             model.setRetryCount(0);
-            model.setMsgJson(json);
+            model.setMsg(json);
             model.setRemark(String.format("发送消息(%s)", desc));
             mqSendService.add(model);
         } else {
-            MqSendEntity update = new MqSendEntity();
+            MqSend update = new MqSend();
             update.setId(model.getId());
             update.setStatus(2);
             update.setFailType(0);
@@ -103,7 +103,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         try {
             rabbitTemplate.convertAndSend(exchangeName, routingKey, msg, correlationData);
         } catch (Exception e) {
-            MqSendEntity errorModel = new MqSendEntity();
+            MqSend errorModel = new MqSend();
             errorModel.setId(model.getId());
             errorModel.setStatus(1);
             errorModel.setFailType(1);
@@ -126,7 +126,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                 SelfCorrelationData data = (SelfCorrelationData) correlationData;
 
                 // 从记录中获取重试次数
-                MqSendEntity mqSend = mqSendService.queryByMsgId(correlationData.getId());
+                MqSend mqSend = mqSendService.queryByMsgId(correlationData.getId());
                 if (U.isNotNull(mqSend) && U.greater0(mqSend.getRetryCount())) {
                     if (mqSend.getRetryCount() < maxRetryCount) {
                         // 重试
@@ -160,7 +160,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         }
         String msgId = message.getMessageProperties().getMessageId();
 
-        MqSendEntity model = new MqSendEntity();
+        MqSend model = new MqSend();
         model.setStatus(1);
         model.setFailType(3);
         model.setRemark(replyText);

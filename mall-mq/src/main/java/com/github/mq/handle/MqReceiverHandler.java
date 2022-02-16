@@ -6,7 +6,7 @@ import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.github.mq.constant.MqData;
 import com.github.mq.constant.MqInfo;
-import com.github.mq.model.MqReceiveEntity;
+import com.github.mq.model.MqReceive;
 import com.github.mq.service.MqReceiveService;
 import com.rabbitmq.client.Channel;
 import lombok.RequiredArgsConstructor;
@@ -123,19 +123,16 @@ public class MqReceiverHandler {
 
     private void doDataConsume(String json, String msgId, String queueName, String businessType, String desc,
                                long deliveryTag, Channel channel, Consumer<String> consumer) {
-        MqReceiveEntity model = mqReceiveService.queryByMsg(msgId);
-        if (U.isNull(model)) {
-            model = new MqReceiveEntity();
+        MqReceive model = mqReceiveService.queryByMsg(msgId);
+        boolean hasExists = U.isNotNull(model);
+        if (hasExists) {
+            model.setRetryCount(model.getRetryCount() + 1);
+        } else {
+            model = new MqReceive();
             model.setMsgId(msgId);
             model.setBusinessType(businessType);
             model.setRetryCount(0);
-            model.setMsgJson(json);
-
-            // model.setStatus(CommonConst.ZERO);
-            // model.setRemark(String.format("开始消费(%s)", desc));
-            // mqReceiveService.add(model);
-        } else {
-            model.setRetryCount(model.getRetryCount() + 1);
+            model.setMsg(json);
         }
 
         // 成功了就只写一次消费成功, 失败了也只写一次, 上面不写初始, 少操作一次 db
@@ -151,7 +148,6 @@ public class MqReceiverHandler {
 
             model.setStatus(2);
             model.setRemark(String.format("消费(%s)成功", desc));
-            mqReceiveService.addOrUpdate(model);
         } catch (Exception e) {
             String failMsg = e.getMessage();
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
@@ -166,7 +162,12 @@ public class MqReceiverHandler {
                 nack(channel, deliveryTag, String.format("%s消费失败, 发送 nack 时异常", desc));
                 model.setRemark(String.format("消费(%s)失败(%s)", desc, failMsg));
             }
-            mqReceiveService.addOrUpdate(model);
+        } finally {
+            if (hasExists) {
+                mqReceiveService.updateById(model);
+            } else {
+                mqReceiveService.add(model);
+            }
         }
     }
 

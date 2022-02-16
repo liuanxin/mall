@@ -3,7 +3,7 @@ package com.github.mq.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.github.common.page.Pages;
-import com.github.mq.model.MqSendEntity;
+import com.github.mq.model.MqSend;
 import com.github.mq.repository.MqSendDao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,32 +16,32 @@ public class MqSendService {
     private final MqSendDao mqSendDao;
 
     @Transactional
-    public void add(MqSendEntity record) {
+    public void add(MqSend record) {
         if (record != null) {
             mqSendDao.insert(record);
         }
     }
 
     @Transactional
-    public void updateById(MqSendEntity record) {
+    public void updateById(MqSend record) {
         if (record != null) {
             mqSendDao.updateById(record);
         }
     }
 
     @Transactional
-    public int updateByMsgId(String msgId, MqSendEntity record) {
-        return mqSendDao.update(record, Wrappers.lambdaQuery(MqSendEntity.class).eq(MqSendEntity::getMsgId, msgId));
+    public void updateByMsgId(String msgId, MqSend record) {
+        mqSendDao.update(record, Wrappers.lambdaQuery(MqSend.class).eq(MqSend::getMsgId, msgId));
     }
 
-    public MqSendEntity queryByMsgId(String msgId) {
+    public MqSend queryByMsgId(String msgId) {
         if (msgId == null || msgId.trim().isEmpty()) {
             return null;
         }
 
-        LambdaQueryWrapper<MqSendEntity> query = Wrappers.lambdaQuery(MqSendEntity.class)
-                .select(MqSendEntity::getId, MqSendEntity::getRetryCount)
-                .eq(MqSendEntity::getMsgId, msgId);
+        LambdaQueryWrapper<MqSend> query = Wrappers.lambdaQuery(MqSend.class)
+                .select(MqSend::getId, MqSend::getRetryCount)
+                .eq(MqSend::getMsgId, msgId);
         return Pages.returnOne(mqSendDao.selectPage(Pages.paramOnlyLimit(1), query));
     }
 }

@@ -3,7 +3,7 @@ package com.github.mq.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.github.common.page.Pages;
-import com.github.mq.model.MqReceiveEntity;
+import com.github.mq.model.MqReceive;
 import com.github.mq.repository.MqReceiveDao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,20 +16,27 @@ public class MqReceiveService {
     private final MqReceiveDao mqReceiveDao;
 
     @Transactional
-    public void addOrUpdate(MqReceiveEntity record) {
+    public void add(MqReceive record) {
         if (record != null) {
-            mqReceiveDao.insertOrUpdate(record);
+            mqReceiveDao.insert(record);
         }
     }
 
-    public MqReceiveEntity queryByMsg(String msgId) {
+    @Transactional
+    public void updateById(MqReceive record) {
+        if (record != null) {
+            mqReceiveDao.updateById(record);
+        }
+    }
+
+    public MqReceive queryByMsg(String msgId) {
         if (msgId == null || msgId.trim().isEmpty()) {
             return null;
         }
 
-        LambdaQueryWrapper<MqReceiveEntity> query = Wrappers.lambdaQuery(MqReceiveEntity.class)
-                .select(MqReceiveEntity::getId, MqReceiveEntity::getRetryCount)
-                .eq(MqReceiveEntity::getMsgId, msgId);
+        LambdaQueryWrapper<MqReceive> query = Wrappers.lambdaQuery(MqReceive.class)
+                .select(MqReceive::getId, MqReceive::getRetryCount)
+                .eq(MqReceive::getMsgId, msgId);
         return Pages.returnOne(mqReceiveDao.selectPage(Pages.paramOnlyLimit(1), query));
     }
 }
