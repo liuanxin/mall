@@ -17,17 +17,17 @@ public void xxx() {
 ```
 4. 消费 mq 消息
 ```java
-private final XxxService xxxService;
 private final MqReceiverHandler handler;
+private final XxxService xxxService;
 
 @RabbitListener(queues = MqConst.xxx)
 public void onReceive(Message message, Channel channel) {
     handler.doConsume(message, channel, this::business);
 }
 public void business(String json) {
-    // 从 mq 接收到的实体
     XXX&lt;YYY&gt; req = JsonUtil.convertType(json, new TypeReference&lt;XXX&lt;YYY&gt;&gt;() {});
-    if (ObjectUtil.isNotNull(req)) {
+    // 从 mq 接收到的实体
+    if (req != null) {
         xxxService.xxx(req);
     }
 }
