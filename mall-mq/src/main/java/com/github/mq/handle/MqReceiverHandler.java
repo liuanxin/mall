@@ -155,8 +155,8 @@ public class MqReceiverHandler {
             model.setStatus(1);
             // 如果重试次数达到设定的值则发送 ack, 否则发送 nack
             if (model.getRetryCount() > consumerRetryCount) {
-                ack(channel, deliveryTag, String.format("%s消费失败且重试(%s)达到上限, 发送 ack 时异常", desc, consumerRetryCount));
-                model.setRemark(String.format("消费(%s)失败(%s)且重试(%s)达到上限", desc, failMsg, consumerRetryCount));
+                ack(channel, deliveryTag, String.format("%s消费失败且重试达到上限(%s), 发送 ack 时异常", desc, consumerRetryCount));
+                model.setRemark(String.format("消费(%s)失败(%s)且重试达到上限(%s)", desc, failMsg, consumerRetryCount));
             } else {
                 nack(channel, deliveryTag, String.format("%s消费失败, 发送 nack 时异常", desc));
                 model.setRemark(String.format("消费(%s)失败(%s)", desc, failMsg));
