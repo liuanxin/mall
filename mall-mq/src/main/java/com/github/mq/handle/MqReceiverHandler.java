@@ -45,9 +45,8 @@ public class MqReceiverHandler {
         try {
             // msgId 放在 messageId, traceId 放在 correlationId
             MessageProperties messageProperties = message.getMessageProperties();
+            LogUtil.bindBasicInfo(messageProperties.getCorrelationId());
             long deliveryTag = messageProperties.getDeliveryTag();
-            String traceId = messageProperties.getCorrelationId();
-            LogUtil.bindBasicInfo(U.isBlank(traceId) ? U.uuid16() : traceId);
 
             MqData selfData = JsonUtil.toObject(new String(message.getBody()), MqData.class);
             if (U.isNull(selfData)) {

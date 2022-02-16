@@ -37,15 +37,13 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
     private final MqSendService mqSendService;
 
     /**
-     * 用这个发送的 mq 信息, 实际发送的是 {@link MqData} 对象, 里面有「发送时间、发送类型、json」信息.
+     * 用这个发送的 mq 信息, 实际发送的是 {@link MqData} 对象, 里面有「发送时间、队列信息」信息.
      * 使用 {@link MqReceiverHandler#doConsume} 处理消息
      */
     public void doProvide(MqInfo mqInfo, String searchKey, String json) {
         String msgId = String.valueOf(IdWorker.getId());
         String traceId = LogUtil.getTraceId();
         MqData data = new MqData();
-        data.setMsgId(msgId);
-        data.setTraceId(traceId);
         data.setSendTime(new Date());
         data.setMqInfo(mqInfo.name().toLowerCase());
         data.setJson(json);
@@ -54,12 +52,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
 
     /** 用这个发送的 mq 消息, 使用 {@link MqReceiverHandler#doConsumeJustJson} 处理消息 */
     public void doProvideJustJson(MqInfo mqInfo, String searchKey, String json) {
-        doProvideJustJson(String.valueOf(IdWorker.getId()), mqInfo, searchKey, json);
-    }
-
-    public void doProvideJustJson(String msgId, MqInfo mqInfo, String searchKey, String json) {
-        String traceId = LogUtil.getTraceId();
-        provide(searchKey, new SelfCorrelationData(msgId, traceId, mqInfo, json));
+        provide(searchKey, new SelfCorrelationData(String.valueOf(IdWorker.getId()), LogUtil.getTraceId(), mqInfo, json));
     }
 
     private void provide(String searchKey, SelfCorrelationData correlationData) {

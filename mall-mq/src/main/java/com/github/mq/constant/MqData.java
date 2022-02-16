@@ -10,10 +10,6 @@ import java.util.Date;
 public class MqData implements Serializable {
     private static final long serialVersionUID = 0L;
 
-    private String msgId;
-
-    private String traceId;
-
     private Date sendTime;
 
     private String mqInfo;
