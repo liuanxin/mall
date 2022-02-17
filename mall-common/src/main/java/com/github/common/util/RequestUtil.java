@@ -32,7 +32,6 @@ public final class RequestUtil {
     private static final String REFERRER = "Referer";
     private static final String AJAX_KEY = "X-Requested-With";
     private static final String AJAX_VALUE = "XMLHttpRequest";
-    /** 需要在 nginx 配置中添加 proxy_set_header X-Forwarded-Proto $scheme; */
     private static final String NGINX_PROTO = "X-Forwarded-Proto";
 
     private static final String APPLICATION_JSON = "application/json";
@@ -91,6 +90,7 @@ public final class RequestUtil {
         return request.getRemoteAddr().split(",")[0].trim();
     }
 
+    /** 获取请求协议, 通常是 http 和 https 两种. https 需要在 nginx 配置中添加 proxy_set_header X-Forwarded-Proto $scheme; 配置 */
     public static String getScheme() {
         HttpServletRequest request = getRequest();
         if (U.isNull(request)) {
