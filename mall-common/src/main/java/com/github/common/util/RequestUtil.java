@@ -87,7 +87,21 @@ public final class RequestUtil {
         if (U.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
             return ip.split(",")[0].trim();
         }
+
         return request.getRemoteAddr().split(",")[0].trim();
+    }
+
+    public static String getScheme() {
+        HttpServletRequest request = getRequest();
+        if (U.isNull(request)) {
+            return U.EMPTY;
+        }
+
+        String scheme = request.getHeader(NGINX_PROTO);
+        if (U.isBlank(scheme)) {
+            scheme = request.getScheme();
+        }
+        return scheme.split(",")[0].trim().toLowerCase();
     }
 
     /** 获取请求的语言信息 */
@@ -159,15 +173,13 @@ public final class RequestUtil {
             return U.EMPTY;
         }
 
-        StringBuilder sbd = new StringBuilder();
-        String proxyScheme = request.getHeader(NGINX_PROTO);
-        String scheme = (U.isNotBlank(proxyScheme) ? proxyScheme : request.getScheme()).toLowerCase();
-
-        sbd.append(scheme).append("://").append(request.getServerName());
-
+        String scheme = getScheme();
         int port = request.getServerPort();
         boolean http = ("http".equals(scheme) && port != 80);
         boolean https = ("https".equals(scheme) && port != 80 && port != 443);
+
+        StringBuilder sbd = new StringBuilder();
+        sbd.append(scheme).append("://").append(request.getServerName());
         if (http || https) {
             sbd.append(":").append(port);
         }
