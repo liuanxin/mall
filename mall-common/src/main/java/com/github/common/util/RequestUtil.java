@@ -301,14 +301,13 @@ public final class RequestUtil {
             add.setHttpOnly(true);
             add.setMaxAge(second);
             response.addCookie(add);
-            return;
-        }
-
-        int maxAge = cookie.getMaxAge();
-        // 如果 cookie 中已经有值且过期时间在延长时间以内了, 则把 cookie 的过期时间延长到指定时间
-        if (maxAge > 0 && maxAge < extendSecond && second > extendSecond) {
-            cookie.setMaxAge(second);
-            response.addCookie(cookie);
+        } else {
+            int maxAge = cookie.getMaxAge();
+            // 如果 cookie 中已经有值且过期时间在延长时间以内了, 则把 cookie 的过期时间延长到指定时间
+            if (maxAge > 0 && maxAge < extendSecond && second > extendSecond) {
+                cookie.setMaxAge(second);
+                response.addCookie(cookie);
+            }
         }
     }
 
@@ -391,28 +390,29 @@ public final class RequestUtil {
         if (U.isBlank(langParamName)) {
             langParamName = "lang";
         }
+
+        Locale locale = null;
         try {
             String lan = getHeaderOrParam(langParamName);
-
-            Locale locale = null;
             if (U.isNotBlank(lan)) {
                 locale = StringUtils.parseLocale(lan);
             }
-            if (U.isNull(locale) || U.isBlank(locale.getCountry())) {
-                locale = request.getLocale();
-            }
-            if (U.isNull(locale) || U.isBlank(locale.getCountry())) {
-                locale = DEFAULT_LOCALE;
-            }
-            LocaleContextHolder.setLocale(locale);
-            LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
-            if (U.isNotNull(localeResolver)) {
-                localeResolver.setLocale(request, getResponse(), locale);
-            }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("handle local exception", e);
+                LogUtil.ROOT_LOG.error("parse Local exception", e);
             }
+        }
+
+        if (U.isNull(locale) || U.isBlank(locale.getCountry())) {
+            locale = request.getLocale();
+        }
+        if (U.isNull(locale) || U.isBlank(locale.getCountry())) {
+            locale = DEFAULT_LOCALE;
+        }
+        LocaleContextHolder.setLocale(locale);
+        LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
+        if (U.isNotNull(localeResolver)) {
+            localeResolver.setLocale(request, getResponse(), locale);
         }
     }
 
