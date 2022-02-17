@@ -191,6 +191,7 @@ public final class RequestUtil {
         if (U.isBlank(url)) {
             return U.EMPTY;
         }
+
         String lowerUrl = url.toLowerCase();
         if (lowerUrl.startsWith(HTTP)) {
             String tmp = url.substring(HTTP.length());
@@ -201,8 +202,9 @@ public final class RequestUtil {
         } else if (lowerUrl.startsWith(SCHEME)) {
             String tmp = url.substring(SCHEME.length());
             return url.substring(0, SCHEME.length() + tmp.indexOf(URL_SPLIT));
+        } else {
+            return url.substring(0, url.indexOf(URL_SPLIT));
         }
-        return url.substring(0, url.indexOf(URL_SPLIT));
     }
 
     /** 检查 url 在不在指定的域名中(以根域名检查, 如 www.qq.com 是以 qq.com 为准), 将所在根域名返回, 不在指定域名中则返回空 */
