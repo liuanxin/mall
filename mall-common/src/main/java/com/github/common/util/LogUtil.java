@@ -19,9 +19,9 @@ public final class LogUtil {
     /** SQL 相关的日志 */
     public static final Logger SQL_LOG = LoggerFactory.getLogger("sqlLog");
 
-    /** 接收到请求的时间  */
+    /** 接收到请求的时间戳  */
     private static final String START_REQUEST_TIME = "Start_Request_Time";
-    /** 在配置文件中使用 %X{Record_Time} 获取  */
+    /** 接收到请求的时间, 在配置文件中使用 %X{Record_Time} 获取  */
     private static final String RECEIVE_TIME = "Receive_Time";
     /** 在日志上下文中记录的跟踪 id */
     private static final String TRACE_ID = "Trace_Id";

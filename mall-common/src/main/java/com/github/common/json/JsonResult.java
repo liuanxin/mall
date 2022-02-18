@@ -2,6 +2,7 @@ package com.github.common.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.common.util.LogUtil;
+import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiReturn;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,9 @@ public class JsonResult<T> {
 
     @ApiReturn(value = "返回说明", example = "用户名密码错误 | 收货地址添加成功")
     private String msg;
+
+    @ApiReturn("跟踪 id")
+    private String traceId;
 
     @ApiReturn(value = "错误信息, 只在非生产时返回")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -57,7 +61,7 @@ public class JsonResult<T> {
     /** 跟踪号 */
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public String getTraceId() {
-        return LogUtil.getTraceId();
+        return U.defaultIfBlank(traceId, LogUtil.getTraceId());
     }
 
 
