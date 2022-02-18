@@ -67,7 +67,7 @@
 
     <springProfile name="dev">
         <include resource="org/springframework/boot/logging/logback/defaults.xml" />
-        <property name="CONSOLE_LOG_PATTERN" value="%n[%d{yyyy-MM-dd HH:mm:ss.SSS}] [${applicationName}] [%clr(${PID}){magenta} - %clr(%t){blue} - %clr(%logger){cyan} - %clr(%p)][%X{Real_Ip}%X{User}]%X{Request_Info}%n%class.%method\\(%file:%line\\) %m%X{Trace_Id}%n"/>
+        <property name="CONSOLE_LOG_PATTERN" value="%n[%X{Record_Time}%d{yyyy-MM-dd HH:mm:ss.SSS}] [${applicationName}] [%clr(${PID}){magenta} - %clr(%t){blue} - %clr(%logger){cyan} - %clr(%p)][%X{Real_Ip}%X{User}]%X{Request_Info}%n%class.%method\\(%file:%line\\) %m%X{Trace_Id}%n"/>
         <property name="CONSOLE_LOG_CHARSET" value="UTF-8"/>
         <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
@@ -80,7 +80,7 @@
     <!-- 输出到文件的地址 -->
     <property name="FILE_PATH" value="${filePath}/${applicationName}-${applicationProfile}"/>
     <!-- 输出到文件时的格式 -->
-    <property name="LOG_PATTERN" value="[%d{yyyy-MM-dd HH:mm:ss.SSS}] [${applicationName}] [\\(${PID}\\):\\(%t\\):\\(%logger{4.22}\\):\\(%p\\)][%X{Real_Ip}%X{User}]%X{Request_Info} %class{30}#%method\\(%file:%line\\) %m%X{Trace_Id}%n"/>
+    <property name="LOG_PATTERN" value="[%X{Record_Time}%d{yyyy-MM-dd HH:mm:ss.SSS}] [${applicationName}] [\\(${PID}\\):\\(%t\\):\\(%logger{4.22}\\):\\(%p\\)][%X{Real_Ip}%X{User}]%X{Request_Info} %class{30}#%method\\(%file:%line\\) %m%X{Trace_Id}%n"/>
 
     <!--
     除开发和生产以外的其他环境

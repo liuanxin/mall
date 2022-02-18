@@ -1,5 +1,6 @@
 package com.github.common.util;
 
+import com.github.common.date.DateUtil;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -7,6 +8,8 @@ import lombok.experimental.Accessors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+
+import java.util.Date;
 
 /** 日志管理, 使用此 utils 获取 log, 不要在类中使用 LoggerFactory.getLogger 的方式! */
 public final class LogUtil {
@@ -18,6 +21,8 @@ public final class LogUtil {
 
     /** 接收到请求的时间  */
     private static final String START_REQUEST_TIME = "Start_Request_Time";
+    /** 在配置文件中使用 %X{Record_Time} 获取  */
+    private static final String RECEIVE_TIME = "Receive_Time";
     /** 在日志上下文中记录的跟踪 id */
     private static final String TRACE_ID = "Trace_Id";
     /** 在日志上下文中记录的请求信息: 包括 ip、url, param 等  */
@@ -30,7 +35,9 @@ public final class LogUtil {
     /** 将 跟踪号 和 接收到请求的时间 放进日志上下文 */
     public static void bindBasicInfo(String traceId) {
         if (U.isBlank(MDC.get(START_REQUEST_TIME))) {
-            MDC.put(START_REQUEST_TIME, U.toStr(System.currentTimeMillis()));
+            Date now = new Date();
+            MDC.put(START_REQUEST_TIME, U.toStr(now.getTime()));
+            MDC.put(RECEIVE_TIME, DateUtil.formatDateTimeMs(now) + " -> ");
         }
         if (U.isBlank(MDC.get(TRACE_ID))) {
             // xml 中没有加空格, 在值的前面加一个空格
