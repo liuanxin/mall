@@ -1,6 +1,5 @@
 package com.github.common.util;
 
-import com.github.common.json.JsonUtil;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -331,23 +330,22 @@ public final class RequestUtil {
 
 
     /** 将「json 字符」以 json 格式输出 */
-    public static <T> void toJson(T jsonResult) {
-        render(APPLICATION_JSON, jsonResult);
+    public static void toJson(String data) {
+        render(APPLICATION_JSON, data);
     }
-    private static <T> void render(String type, T jsonResult) {
+    private static void render(String type, String data) {
         HttpServletResponse response = getResponse();
         if (U.isNull(response)) {
             return;
         }
 
-        String result = JsonUtil.toJson(jsonResult);
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("return json: " + result);
+            LogUtil.ROOT_LOG.debug("return data: " + data);
         }
         try {
             response.setCharacterEncoding("utf-8");
             response.setContentType(type + ";charset=utf-8;");
-            response.getWriter().write(U.toStr(result));
+            response.getWriter().write(data);
         } catch (IllegalStateException e) {
             // 基于 response 调用了 getOutputStream(), 又再调用 getWriter() 会被 web 容器拒绝
             if (LogUtil.ROOT_LOG.isDebugEnabled()) {
@@ -360,8 +358,8 @@ public final class RequestUtil {
         }
     }
     /** 将「json 字符」以 html 格式输出. 不常见! 这种只会在一些特殊的场景用到 */
-    public static <T> void toHtml(T jsonResult) {
-        render("text/html", jsonResult);
+    public static void toHtml(String data) {
+        render("text/html", data);
     }
 
     /** 基于请求上下文生成一个日志需要的上下文信息对象 */
