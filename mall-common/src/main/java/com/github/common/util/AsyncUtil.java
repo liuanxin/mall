@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 @SuppressWarnings("DuplicatedCode")
-public final class AsyncUti {
+public final class AsyncUtil {
 
     public static Runnable wrapRun(Runnable runnable) {
         if (U.isNull(runnable)) {
@@ -20,15 +20,15 @@ public final class AsyncUti {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         boolean hasWeb = (attributes instanceof ServletRequestAttributes);
 
-        Map<String, String> contextMap = MDC.getCopyOfContextMap();
-        boolean hasLogContext = A.isNotEmpty(contextMap);
+        Map<String, String> logContextMap = MDC.getCopyOfContextMap();
+        boolean hasLogContext = A.isNotEmpty(logContextMap);
 
         if (hasWeb || hasLogContext) {
             // 把主线程运行时的请求和日志上下文放到子线程的请求和日志上下文去
             return () -> {
                 try {
                     if (hasLogContext) {
-                        MDC.setContextMap(contextMap);
+                        MDC.setContextMap(logContextMap);
                     }
                     if (hasWeb) {
                         LocaleContextHolder.setLocale(((ServletRequestAttributes) attributes).getRequest().getLocale());
@@ -58,15 +58,15 @@ public final class AsyncUti {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         boolean hasWeb = (attributes instanceof ServletRequestAttributes);
 
-        Map<String, String> contextMap = MDC.getCopyOfContextMap();
-        boolean hasLogContext = A.isNotEmpty(contextMap);
+        Map<String, String> logContextMap = MDC.getCopyOfContextMap();
+        boolean hasLogContext = A.isNotEmpty(logContextMap);
 
         if (hasWeb || hasLogContext) {
             return () -> {
                 // 把主线程运行时的请求和日志上下文放到子线程的请求和日志上下文去
                 try {
                     if (hasLogContext) {
-                        MDC.setContextMap(contextMap);
+                        MDC.setContextMap(logContextMap);
                     }
                     if (hasWeb) {
                         LocaleContextHolder.setLocale(((ServletRequestAttributes) attributes).getRequest().getLocale());
