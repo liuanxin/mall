@@ -1,6 +1,6 @@
 package com.github.global.config;
 
-import com.github.common.util.AsyncUti;
+import com.github.common.util.AsyncUtil;
 import com.github.common.util.U;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler;
@@ -34,7 +34,7 @@ public class TaskConfig implements AsyncConfigurer {
         executor.setQueueCapacity((U.PROCESSORS << 8) - (U.PROCESSORS << 3)); // (8 * 256) - (8 * 8) = 1984
         executor.setThreadNamePrefix("task-executor-");  // 线程名字的前缀
         // 见: https://moelholm.com/blog/2017/07/24/spring-43-using-a-taskdecorator-to-copy-mdc-data-to-async-threads
-        executor.setTaskDecorator(AsyncUti::wrapRun);
+        executor.setTaskDecorator(AsyncUtil::wrapRun);
         executor.initialize();
         return executor;
     }
