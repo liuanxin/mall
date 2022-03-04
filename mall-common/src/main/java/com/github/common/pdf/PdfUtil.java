@@ -399,7 +399,7 @@ public class PdfUtil {
 
             for (String headInfo : headList) {
                 PdfPCell cell = new PdfPCell(generateValue(handleSpace(toStr(headInfo), space), bold, headFont));
-                cell.setMinimumHeight(height);
+                cell.setFixedHeight(height);
                 if (!border) {
                     cell.setBorder(PdfPCell.NO_BORDER);
                 }
@@ -432,7 +432,7 @@ public class PdfUtil {
                 }
 
                 PdfPCell cell = new PdfPCell();
-                cell.setMinimumHeight(contentHeight);
+                cell.setFixedHeight(contentHeight);
                 if (!toBoolean(head.getBorder(), false)) {
                     cell.setBorder(PdfPCell.NO_BORDER);
                 }
