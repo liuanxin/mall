@@ -68,8 +68,8 @@ public final class CollectEnumUtil {
                 return result;
             }
         } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(String.format("%s invoke %s exception", enumClass, METHOD), e);
+            if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+                LogUtil.ROOT_LOG.debug(String.format("%s invoke %s exception", enumClass, METHOD), e);
             }
         }
 
