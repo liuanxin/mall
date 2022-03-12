@@ -73,7 +73,7 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
                         }
                     } catch (Exception e) {
                         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-                            LogUtil.ROOT_LOG.debug(String.format("get %s#%s line-number exception", className, methodName), e);
+                            LogUtil.ROOT_LOG.debug("get {}#{} line-number exception", className, methodName, e);
                         }
                     }
                 }

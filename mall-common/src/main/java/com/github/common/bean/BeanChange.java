@@ -101,7 +101,7 @@ public final class BeanChange {
                 method = new PropertyDescriptor(fieldName, clazz).getReadMethod();
             } catch (IntrospectionException e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error(String.format("获取类(%s)的 get 方法(%s)时异常", clazz.getName(), fieldName), e);
+                    LogUtil.ROOT_LOG.error("call({}) get-field({}) exception", clazz.getName(), fieldName, e);
                 }
             }
             if (U.isNotNull(method)) {
@@ -115,7 +115,7 @@ public final class BeanChange {
             return method.invoke(obj);
         } catch (IllegalAccessException | InvocationTargetException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(String.format("调用类(%s)的 get 方法(%s)时异常", clazz.getName(), fieldName), e);
+                LogUtil.ROOT_LOG.error("call({}) get-field({}) exception", clazz.getName(), fieldName, e);
             }
             return null;
         }

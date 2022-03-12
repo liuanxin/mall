@@ -47,8 +47,8 @@ public class MailSender {
             });
         } catch (MailException ex) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(String.format("%s -> %s (title: %s, content: %s, attach: %s) exception",
-                        from, to, subject, htmlContent, attachFileList), ex);
+                LogUtil.ROOT_LOG.error("{} -> {} (title: {}, content: {}, attach: {}) exception",
+                        from, to, subject, htmlContent, attachFileList, ex);
             }
         }
     }

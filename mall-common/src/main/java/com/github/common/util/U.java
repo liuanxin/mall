@@ -1042,7 +1042,7 @@ public final class U {
                             }
                         } catch (Exception e) {
                             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                                LogUtil.ROOT_LOG.error(String.format("%s invoke %s exception", tc.getName(), getMethodName), e);
+                                LogUtil.ROOT_LOG.error("call({}) method({}) exception", tc.getName(), getMethodName, e);
                             }
                             continue;
                         }
@@ -1053,7 +1053,7 @@ public final class U {
                         targetObj = sourceMethodMap.get(getMethodName).invoke(source);
                     } catch (Exception e) {
                         if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                            LogUtil.ROOT_LOG.error(String.format("%s invoke %s exception", sc.getName(), getMethodName), e);
+                            LogUtil.ROOT_LOG.error("call({}) method({}) exception", sc.getName(), getMethodName, e);
                         }
                         continue;
                     }
@@ -1062,7 +1062,7 @@ public final class U {
                             method.invoke(target, targetObj);
                         } catch (Exception e) {
                             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                                LogUtil.ROOT_LOG.error(String.format("%s invoke %s exception", tc.getName(), getMethodName), e);
+                                LogUtil.ROOT_LOG.error("call({}) method({}) exception", tc.getName(), getMethodName, e);
                             }
                         }
                     }
@@ -1079,7 +1079,7 @@ public final class U {
                 return clazz.getDeclaredMethod(method).invoke(obj, param);
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error(String.format("%s invoke %s exception", clazz.getName(), method), e);
+                    LogUtil.ROOT_LOG.error("call({}) method({}) exception", clazz.getName(), method, e);
                 }
             }
             // getMethod 会将从父类继承过来的 public 方法也查询出来
@@ -1087,7 +1087,7 @@ public final class U {
                 return clazz.getMethod(method).invoke(obj, param);
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error(String.format("%s invoke %s exception", clazz.getName(), method), e);
+                    LogUtil.ROOT_LOG.error("call({}) method({}) exception", clazz.getName(), method, e);
                 }
             }
         }

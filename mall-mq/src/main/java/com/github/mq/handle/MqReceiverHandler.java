@@ -149,7 +149,7 @@ public class MqReceiverHandler {
         } catch (Exception e) {
             String failMsg = e.getMessage();
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(String.format("%s消费失败", desc), e);
+                LogUtil.ROOT_LOG.error("{}消费失败", desc, e);
             }
             model.setStatus(1);
             // 如果重试次数达到设定的值则发送 ack, 否则发送 nack

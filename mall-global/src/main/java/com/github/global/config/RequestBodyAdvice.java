@@ -73,7 +73,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                                 }
                             } catch (JsonProcessingException e) {
                                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                                    LogUtil.ROOT_LOG.error(String.format("@RequestBody(%s) has not json data", data), e);
+                                    LogUtil.ROOT_LOG.error("@RequestBody({}) has not json data", data, e);
                                 }
                             }
                         }

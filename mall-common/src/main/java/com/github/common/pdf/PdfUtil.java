@@ -48,7 +48,7 @@ public class PdfUtil {
             baseCnFont = BaseFont.createFont(cnFontName, cnEncoding, BaseFont.EMBEDDED);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(String.format("装载字体(%s)异常", cnFontName), e);
+                LogUtil.ROOT_LOG.error("装载字体({})异常", cnFontName, e);
             }
             baseCnFont = BASE_FONT;
         }
@@ -59,7 +59,7 @@ public class PdfUtil {
             baseFontCnBold = BaseFont.createFont(cnBoldFontName, cnEncoding, BaseFont.EMBEDDED);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(String.format("装载字体(%s)异常", cnBoldFontName), e);
+                LogUtil.ROOT_LOG.error("装载字体({})异常", cnBoldFontName, e);
             }
             baseFontCnBold = BASE_FONT_BOLD;
         }
@@ -86,7 +86,7 @@ public class PdfUtil {
                 }
             } catch (Exception e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error(String.format("生成 pdf 文件(%s)异常", file), e);
+                    LogUtil.ROOT_LOG.error("生成 pdf 文件({})异常", file, e);
                 }
             }
         }

@@ -61,7 +61,7 @@ public class DynamicCronTask implements SchedulingConfigurer {
                 cronTrigger = new CronTrigger(cron);
             } catch (Exception e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error(String.format("%s的表达式有误, 使用默认值(%s)", BUSINESS_DESC, CRON), e);
+                    LogUtil.ROOT_LOG.error("{}的表达式有误, 使用默认值({})", BUSINESS_DESC, CRON, e);
                 }
                 cronTrigger = new CronTrigger(CRON);
             }

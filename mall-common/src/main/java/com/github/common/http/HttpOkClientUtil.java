@@ -124,7 +124,7 @@ public class HttpOkClientUtil {
                     builder.addFormDataPart(entry.getKey(), null, RequestBody.create(type, file));
                 } catch (IOException e) {
                     if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                        LogUtil.ROOT_LOG.error(String.format("add file (%s) to post exception", file.getName()), e);
+                        LogUtil.ROOT_LOG.error("add file({}) to post exception", file.getName(), e);
                     }
                 }
             }
@@ -215,7 +215,7 @@ public class HttpOkClientUtil {
             }
         } catch (IOException e) {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info(String.format("(%s %s) exception", method, url), e);
+                LogUtil.ROOT_LOG.info("{} => {} exception", method, url, e);
             }
         }
         return null;
@@ -252,7 +252,7 @@ public class HttpOkClientUtil {
             Files.write(f.toPath(), bytes);
         } catch (IOException e) {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info(String.format("download (%s) to file(%s) exception", url, file), e);
+                LogUtil.ROOT_LOG.info("download ({}) to file({}) exception", url, file, e);
             }
             U.assertException("下载文件异常");
         }
@@ -282,7 +282,7 @@ public class HttpOkClientUtil {
             Files.write(f.toPath(), bytes);
         } catch (IOException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(String.format("post download (%s) to file(%s) exception", url, file), e);
+                LogUtil.ROOT_LOG.error("post download ({}) to file({}) exception", url, file, e);
             }
             U.assertException("下载文件异常");
         }

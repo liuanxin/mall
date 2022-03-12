@@ -104,7 +104,7 @@ public class JsonUtil {
                 json = IGNORE_PROPERTY_RENDER.writeValueAsString(source);
             } catch (Exception e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error(String.format("Object(%s) to json exception", U.compress(source.toString())), e);
+                    LogUtil.ROOT_LOG.error("obj({}) to json exception", U.compress(source.toString()), e);
                 }
                 return null;
             }
@@ -117,7 +117,7 @@ public class JsonUtil {
             return IGNORE_PROPERTY_RENDER.readValue(json, clazz);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(String.format("json(%s) to Object(%s) exception", U.compress(json), clazz.getName()), e);
+                LogUtil.ROOT_LOG.error("json({}) to obj({}) exception", U.compress(json), clazz.getName(), e);
             }
             return null;
         }
@@ -133,7 +133,7 @@ public class JsonUtil {
             json = IGNORE_PROPERTY_RENDER.writeValueAsString(sourceList);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(String.format("List(%s) to json exception", U.compress(sourceList.toString())), e);
+                LogUtil.ROOT_LOG.error("List({}) to json exception", U.compress(sourceList.toString()), e);
             }
             return Collections.emptyList();
         }
@@ -145,7 +145,7 @@ public class JsonUtil {
             return IGNORE_PROPERTY_RENDER.readValue(json, IGNORE_PROPERTY_RENDER.getTypeFactory().constructCollectionType(List.class, clazz));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(String.format("List(%s) to List<%s> exception", U.compress(json), clazz.getName()), e);
+                LogUtil.ROOT_LOG.error("List({}) to List<{}> exception", U.compress(json), clazz.getName(), e);
             }
             return Collections.emptyList();
         }
@@ -207,7 +207,7 @@ public class JsonUtil {
             return RENDER.readValue(json, clazz);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(String.format("json(%s) to Object(%s) exception", U.compress(json), clazz.getName()), e);
+                LogUtil.ROOT_LOG.error("json({}) to obj({}) exception", U.compress(json), clazz.getName(), e);
             }
             return null;
         }
@@ -221,7 +221,7 @@ public class JsonUtil {
             return RENDER.readValue(json, type);
         } catch (IOException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(String.format("json(%s) to Object(%s) exception", U.compress(json), type.getClass().getName()), e);
+                LogUtil.ROOT_LOG.error("json({}) to obj({}) exception", U.compress(json), type.getClass().getName(), e);
             }
             return null;
         }
@@ -247,7 +247,7 @@ public class JsonUtil {
             return RENDER.readValue(json, RENDER.getTypeFactory().constructCollectionType(List.class, clazz));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(String.format("json(%s) to List<%s> exception", U.compress(json), clazz.getName()), e);
+                LogUtil.ROOT_LOG.error("json({}) to List<{}> exception", U.compress(json), clazz.getName(), e);
             }
             return Collections.emptyList();
         }

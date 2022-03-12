@@ -353,7 +353,7 @@ public final class RequestUtil {
             }
         } catch (IOException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(String.format("handle json to %s io exception", type), e);
+                LogUtil.ROOT_LOG.error("handle json to {} io exception", type, e);
             }
         }
     }

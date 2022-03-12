@@ -90,7 +90,7 @@ public final class LoaderClass {
                 }
             } catch (ClassNotFoundException e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error(String.format("can't load class file (%s): ", className), e);
+                    LogUtil.ROOT_LOG.error("can't load class file ({})", className, e);
                 }
             }
         }
@@ -106,7 +106,7 @@ public final class LoaderClass {
                 }
             } catch (ClassNotFoundException e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error(String.format("can't load class file (%s): ", className), e);
+                    LogUtil.ROOT_LOG.error("can't load class file({})", className, e);
                 }
             }
         }
