@@ -11,7 +11,6 @@ import com.github.user.constant.UserConst;
 import com.google.common.base.CaseFormat;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /** 从各模块中收集数据的工具类 */
@@ -31,10 +30,10 @@ public final class BackendDataCollectUtil {
     // public static final Class[] VIEW_ENUM_ARRAY = CollectEnumUtil.getEnumClass(ENUM_MAP);
 
     /** 提供接口出去的 所有 枚举信息 */
-    public static final Map<String, List<Map<String, Object>>> ALL_ENUM_INFO = CollectEnumUtil.enumMap(ENUM_MAP);
+    public static final Map<String, Object> ALL_ENUM_INFO = CollectEnumUtil.enumMap(ENUM_MAP);
     /** 提供接口出去的 单个 枚举信息 */
-    public static Map<String, List<Map<String, Object>>> singleEnumInfo(String type) {
-        Map<String, List<Map<String, Object>>> returnMap = new HashMap<>();
+    public static Map<String, Object> singleEnumInfo(String type) {
+        Map<String, Object> returnMap = new HashMap<>();
         for (String anEnum : type.split(",")) {
             if (U.isNotBlank(anEnum)) {
                 anEnum = anEnum.trim();
@@ -48,9 +47,9 @@ public final class BackendDataCollectUtil {
                 } else {
                     name = anEnum;
                 }
-                List<Map<String, Object>> map = ALL_ENUM_INFO.get(name);
-                if (A.isNotEmpty(map)) {
-                    returnMap.put(anEnum, map);
+                Object data = ALL_ENUM_INFO.get(name);
+                if (U.isNotNull(data)) {
+                    returnMap.put(anEnum, data);
                 }
             }
         }
