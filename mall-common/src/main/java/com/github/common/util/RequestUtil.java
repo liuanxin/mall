@@ -327,13 +327,7 @@ public final class RequestUtil {
             sbd.append("<").append(headName).append(": ");
             String value = U.toStr(request.getHeader(headName));
             if (Const.TOKEN.equalsIgnoreCase(headName)) {
-                int max = 50, leftRight = 10;
-                int length = value.length();
-                if (length > max) {
-                    sbd.append(value, 0, leftRight).append(" *** ").append(value, length - leftRight, length);
-                } else {
-                    sbd.append(value);
-                }
+                sbd.append(U.foggyToken(value));
             } else {
                 sbd.append(value);
             }

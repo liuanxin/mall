@@ -698,6 +698,20 @@ public final class U {
             return idCard;
         }
     }
+    public static String foggyToken(String value) {
+        return foggyValue(value, 100, 20);
+    }
+    public static String foggyValue(String value, int max, int leftRight) {
+        if (isBlank(value)) {
+            return value.trim();
+        }
+        int valueLen = value.length();
+        if (valueLen > max && max > (leftRight * 2)) {
+            return value.substring(0, leftRight) + " *** " + value.substring(valueLen - leftRight);
+        } else {
+            return value;
+        }
+    }
 
     public static String like(String param) {
         return isBlank(param) ? EMPTY : LIKE + param + LIKE;

@@ -49,14 +49,10 @@ public final class JsonModule {
 
             String fieldName = key.toLowerCase();
             if (fieldName.equals(Const.TOKEN.toLowerCase())) {
-                int valueLen = value.length(), max = 100, len = 20;
-                if (valueLen > max) {
-                    gen.writeString(value.substring(0, len) + " *** " + value.substring(valueLen - len));
-                } else {
-                    gen.writeString(value);
-                }
+                gen.writeString(U.foggyToken(value));
                 return;
             }
+
             switch (fieldName) {
                 case "password": {
                     gen.writeString("***");
@@ -73,12 +69,7 @@ public final class JsonModule {
                     return;
                 }
                 default: {
-                    int valueLen = value.length(), max = 1000, len = 200;
-                    if (valueLen > max) {
-                        gen.writeString(value.substring(0, len) + " *** " + value.substring(valueLen - len));
-                    } else {
-                        gen.writeString(value);
-                    }
+                    gen.writeString(U.foggyValue(value, 1000, 200));
                 }
             }
         }
