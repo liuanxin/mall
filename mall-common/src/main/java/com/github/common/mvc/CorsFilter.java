@@ -8,6 +8,8 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 /** 处理跨域 */
 public class CorsFilter implements Filter {
@@ -27,42 +29,66 @@ public class CorsFilter implements Filter {
     // private static final String P3P = "P3P";
     // private static final String IEP3P = "CP='CAO IDC DSP COR ADM DEVi TAIi PSA PSD IVAi IVDi CONi HIS OUR IND CNT'";
 
+    private final Set<String> allowOriginSet;
+    public CorsFilter(String allowHeaders) {
+        Set<String> allowOriginSet = new HashSet<>();
+        if (U.isNotBlank(allowHeaders)) {
+            // 英文逗号 或 空格
+            for (String allowHeader : allowHeaders.split("[, ]")) {
+                allowOriginSet.add(allowHeader.trim());
+            }
+        }
+        this.allowOriginSet = allowOriginSet;
+    }
+
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         Filter.super.init(filterConfig);
     }
 
     @Override
-    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
-            throws IOException, ServletException {
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
 
         String origin = request.getHeader(ORIGIN);
-        if (U.isNotBlank(origin)) {
-            String scheme = request.getScheme();
-            int port = request.getServerPort();
-            StringBuilder requestDomain = new StringBuilder();
-            requestDomain.append(scheme).append("://").append(request.getServerName());
-            boolean http = ("http".equals(scheme) && port != 80);
-            boolean https = ("https".equals(scheme) && port != 80 && port != 443);
-            if (http || https) {
-                requestDomain.append(':');
-                requestDomain.append(port);
-            }
-            if (!origin.equals(requestDomain.toString())) {
-                response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
-                response.setHeader(ACCESS_CONTROL_ALLOW_CREDENTIALS, CREDENTIALS);
-                response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, METHODS);
-                response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS, HEADERS);
-                /*
-                if (RequestUtils.isIeRequest() && U.isEmpty(response.getHeader(P3P))) {
-                    response.addHeader(P3P, IEP3P);
+        // 头里面带过来的 origin 跟请求的不一样才需要设置 cors
+        if (U.isNotEquals(getDomain(request), origin)) {
+            // 配置项为空则设置 cors
+            if (A.isEmpty(allowOriginSet)) {
+                setOrigin(response, origin);
+            } else {
+                // 头里面带过来的 origin 是在配置项里面才设置 cors
+                if (U.isNotBlank(origin) && allowOriginSet.contains(origin)) {
+                    setOrigin(response, origin);
                 }
-                */
             }
         }
         chain.doFilter(request, response);
+    }
+    private void setOrigin(HttpServletResponse response, String origin) {
+        response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+        response.setHeader(ACCESS_CONTROL_ALLOW_CREDENTIALS, CREDENTIALS);
+        response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, METHODS);
+        response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS, HEADERS);
+        /*
+        if (RequestUtils.isIeRequest() && U.isEmpty(response.getHeader(P3P))) {
+            response.addHeader(P3P, IEP3P);
+        }
+        */
+    }
+    private String getDomain(HttpServletRequest request) {
+        StringBuilder sbd = new StringBuilder();
+        String scheme = request.getScheme();
+        int port = request.getServerPort();
+        sbd.append(scheme).append("://").append(request.getServerName());
+        boolean http = ("http".equals(scheme) && port != 80);
+        boolean https = ("https".equals(scheme) && port != 80 && port != 443);
+        if (http || https) {
+            sbd.append(':');
+            sbd.append(port);
+        }
+        return sbd.toString();
     }
 
     @Override
