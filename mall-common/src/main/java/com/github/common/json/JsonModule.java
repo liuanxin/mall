@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.github.common.Const;
 import com.github.common.date.DateUtil;
 import com.github.common.util.U;
 
@@ -46,26 +47,40 @@ public final class JsonModule {
                 return;
             }
 
-            switch (key.toLowerCase()) {
-                case "password":
-                    gen.writeString("***");
-                    return;
-                case "phone":
-                    gen.writeString(U.foggyPhone(value));
-                    return;
-                case "idcard":
-                case "id_card":
-                    gen.writeString(U.foggyIdCard(value));
-                    return;
-            }
-
-            int valueLen = value.length(), max = 1000, len = 200;
-            if (valueLen > max) {
-                gen.writeString(value.substring(0, len) + " *** " + value.substring(valueLen - len));
+            String fieldName = key.toLowerCase();
+            if (fieldName.equals(Const.TOKEN.toLowerCase())) {
+                int valueLen = value.length(), max = 100, len = 20;
+                if (valueLen > max) {
+                    gen.writeString(value.substring(0, len) + " *** " + value.substring(valueLen - len));
+                } else {
+                    gen.writeString(value);
+                }
                 return;
             }
-
-            gen.writeString(value);
+            switch (fieldName) {
+                case "password": {
+                    gen.writeString("***");
+                    return;
+                }
+                case "phone": {
+                    gen.writeString(U.foggyPhone(value));
+                    return;
+                }
+                case "id-card":
+                case "idcard":
+                case "id_card": {
+                    gen.writeString(U.foggyIdCard(value));
+                    return;
+                }
+                default: {
+                    int valueLen = value.length(), max = 1000, len = 200;
+                    if (valueLen > max) {
+                        gen.writeString(value.substring(0, len) + " *** " + value.substring(valueLen - len));
+                    } else {
+                        gen.writeString(value);
+                    }
+                }
+            }
         }
     }
 
