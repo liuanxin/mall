@@ -492,7 +492,7 @@ public class DateUtil {
                 .minuteOfHour().withMinimumValue()
                 .secondOfMinute().withMinimumValue()
                 .millisOfSecond().withMinimumValue();
-        return Months.monthsBetween(begin, after).getMonths();
+        return Days.daysBetween(begin, after).getDays();
     }
 
     /** 计算两个日期之间相差的小时数. 如果 start 比 end 大将会返回负数 */
