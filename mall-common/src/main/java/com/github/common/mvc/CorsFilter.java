@@ -15,10 +15,7 @@ public class CorsFilter implements Filter {
     private static final String ORIGIN = "Origin";
     private static final String CREDENTIALS = "true";
     private static final String METHODS = A.toStr(Const.SUPPORT_METHODS);
-    // 如果有自定义头也都加进去, 避免用 *
-    private static final String HEADERS = "Accept, Accept-Encoding, Accept-Language, Cache-Control, " +
-            "Connection, Cookie, DNT, Host, User-Agent, Content-Type, Authorization, " +
-            "X-Requested-With, Origin, Access-Control-Request-headers, " + Const.TOKEN;
+    private static final String HEADERS = A.toStr(Const.ALLOW_HEADERS);
 
     /** @see org.springframework.http.HttpHeaders */
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
@@ -47,7 +44,9 @@ public class CorsFilter implements Filter {
             int port = request.getServerPort();
             StringBuilder requestDomain = new StringBuilder();
             requestDomain.append(scheme).append("://").append(request.getServerName());
-            if (("http".equals(scheme) && port != 80) || ("https".equals(scheme) && port != 443)) {
+            boolean http = ("http".equals(scheme) && port != 80);
+            boolean https = ("https".equals(scheme) && port != 80 && port != 443);
+            if (http || https) {
                 requestDomain.append(':');
                 requestDomain.append(port);
             }

@@ -55,4 +55,5 @@ public final class Const {
 
     /** @see org.springframework.http.HttpMethod */
     public static final String[] SUPPORT_METHODS = new String[] { "GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE" };
+    public static final String[] ALLOW_HEADERS = new String[] { "Accept-Language", "Cookie", "User-Agent", "Content-Type", TOKEN, TRACE, VERSION };
 }
