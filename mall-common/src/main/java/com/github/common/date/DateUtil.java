@@ -437,7 +437,22 @@ public class DateUtil {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        return Years.yearsBetween(new DateTime(start), new DateTime(end)).getYears();
+        // 月、日、时、分、秒、毫秒置为相同
+        DateTime begin = new DateTime(start)
+                .monthOfYear().withMinimumValue()
+                .dayOfMonth().withMinimumValue()
+                .hourOfDay().withMinimumValue()
+                .minuteOfHour().withMinimumValue()
+                .secondOfMinute().withMinimumValue()
+                .millisOfSecond().withMinimumValue();
+        DateTime after = new DateTime(end)
+                .monthOfYear().withMinimumValue()
+                .dayOfMonth().withMinimumValue()
+                .hourOfDay().withMinimumValue()
+                .minuteOfHour().withMinimumValue()
+                .secondOfMinute().withMinimumValue()
+                .millisOfSecond().withMinimumValue();
+        return Years.yearsBetween(begin, after).getYears();
     }
 
     /** 计算两个日期之间相差的月数. 如果 start 比 end 大将会返回负数 */
@@ -445,7 +460,20 @@ public class DateUtil {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        return Months.monthsBetween(new DateTime(start), new DateTime(end)).getMonths();
+        // 日、时、分、秒、毫秒置为相同
+        DateTime begin = new DateTime(start)
+                .dayOfMonth().withMinimumValue()
+                .hourOfDay().withMinimumValue()
+                .minuteOfHour().withMinimumValue()
+                .secondOfMinute().withMinimumValue()
+                .millisOfSecond().withMinimumValue();
+        DateTime after = new DateTime(end)
+                .dayOfMonth().withMinimumValue()
+                .hourOfDay().withMinimumValue()
+                .minuteOfHour().withMinimumValue()
+                .secondOfMinute().withMinimumValue()
+                .millisOfSecond().withMinimumValue();
+        return Months.monthsBetween(begin, after).getMonths();
     }
 
     /** 计算两个日期之间相差的天数. 如果 start 比 end 大将会返回负数 */
@@ -453,7 +481,46 @@ public class DateUtil {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        return Days.daysBetween(getDateTimeStart(start), getDateTimeStart(end)).getDays();
+        // 时、分、秒、毫秒置为相同
+        DateTime begin = new DateTime(start)
+                .hourOfDay().withMinimumValue()
+                .minuteOfHour().withMinimumValue()
+                .secondOfMinute().withMinimumValue()
+                .millisOfSecond().withMinimumValue();
+        DateTime after = new DateTime(end)
+                .hourOfDay().withMinimumValue()
+                .minuteOfHour().withMinimumValue()
+                .secondOfMinute().withMinimumValue()
+                .millisOfSecond().withMinimumValue();
+        return Months.monthsBetween(begin, after).getMonths();
+    }
+
+    /** 计算两个日期之间相差的小时数. 如果 start 比 end 大将会返回负数 */
+    public static int betweenHour(Date start, Date end) {
+        if (U.isNull(start) || U.isNull(end)) {
+            return 0;
+        }
+        // 分、秒、毫秒置为相同
+        DateTime begin = new DateTime(start)
+                .minuteOfHour().withMinimumValue()
+                .secondOfMinute().withMinimumValue()
+                .millisOfSecond().withMinimumValue();
+        DateTime after = new DateTime(end)
+                .minuteOfHour().withMinimumValue()
+                .secondOfMinute().withMinimumValue()
+                .millisOfSecond().withMinimumValue();
+        return Hours.hoursBetween(begin, after).getHours();
+    }
+
+    /** 计算两个日期之间相差的小时数. 如果 start 比 end 大将会返回负数 */
+    public static int betweenMinute(Date start, Date end) {
+        if (U.isNull(start) || U.isNull(end)) {
+            return 0;
+        }
+        // 秒、毫秒置为相同
+        DateTime begin = new DateTime(start).secondOfMinute().withMinimumValue().millisOfSecond().withMinimumValue();
+        DateTime after = new DateTime(end).secondOfMinute().withMinimumValue().millisOfSecond().withMinimumValue();
+        return Minutes.minutesBetween(begin, after).getMinutes();
     }
 
     /** 计算两个日期之间相差的秒数. 如果 start 比 end 大将会返回负数 */
@@ -461,6 +528,9 @@ public class DateUtil {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        return Seconds.secondsBetween(new DateTime(start), new DateTime(end)).getSeconds();
+        // 毫秒置为相同
+        DateTime begin = new DateTime(start).millisOfSecond().withMinimumValue();
+        DateTime after = new DateTime(end).millisOfSecond().withMinimumValue();
+        return Seconds.secondsBetween(begin, after).getSeconds();
     }
 }
