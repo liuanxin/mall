@@ -437,7 +437,7 @@ public class DateUtil {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        // 月、日、时、分、秒、毫秒置为相同
+        // 将 月、日、时、分、秒、毫秒 置为相同
         DateTime begin = new DateTime(start)
                 .monthOfYear().withMinimumValue()
                 .dayOfMonth().withMinimumValue()
@@ -460,7 +460,7 @@ public class DateUtil {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        // 日、时、分、秒、毫秒置为相同
+        // 将 日、时、分、秒、毫秒 置为相同
         DateTime begin = new DateTime(start)
                 .dayOfMonth().withMinimumValue()
                 .hourOfDay().withMinimumValue()
@@ -476,12 +476,33 @@ public class DateUtil {
         return Months.monthsBetween(begin, after).getMonths();
     }
 
+    /** 计算两个日期之间相差的星期数. 如果 start 比 end 大将会返回负数 */
+    public static int betweenWeek(Date start, Date end) {
+        if (U.isNull(start) || U.isNull(end)) {
+            return 0;
+        }
+        // 将时间置为当前时间所在星期中<星期一>且将 时、分、秒、毫秒 置为相同
+        DateTime begin = new DateTime(start)
+                .dayOfWeek().withMinimumValue()
+                .hourOfDay().withMinimumValue()
+                .minuteOfHour().withMinimumValue()
+                .secondOfMinute().withMinimumValue()
+                .millisOfSecond().withMinimumValue();
+        DateTime after = new DateTime(end)
+                .dayOfWeek().withMinimumValue()
+                .hourOfDay().withMinimumValue()
+                .minuteOfHour().withMinimumValue()
+                .secondOfMinute().withMinimumValue()
+                .millisOfSecond().withMinimumValue();
+        return Weeks.weeksBetween(begin, after).getWeeks();
+    }
+
     /** 计算两个日期之间相差的天数. 如果 start 比 end 大将会返回负数 */
     public static int betweenDay(Date start, Date end) {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        // 时、分、秒、毫秒置为相同
+        // 将 时、分、秒、毫秒 置为相同
         DateTime begin = new DateTime(start)
                 .hourOfDay().withMinimumValue()
                 .minuteOfHour().withMinimumValue()
@@ -500,7 +521,7 @@ public class DateUtil {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        // 分、秒、毫秒置为相同
+        // 将 分、秒、毫秒 置为相同
         DateTime begin = new DateTime(start)
                 .minuteOfHour().withMinimumValue()
                 .secondOfMinute().withMinimumValue()
@@ -517,7 +538,7 @@ public class DateUtil {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        // 秒、毫秒置为相同
+        // 将 秒、毫秒 置为相同
         DateTime begin = new DateTime(start).secondOfMinute().withMinimumValue().millisOfSecond().withMinimumValue();
         DateTime after = new DateTime(end).secondOfMinute().withMinimumValue().millisOfSecond().withMinimumValue();
         return Minutes.minutesBetween(begin, after).getMinutes();
@@ -528,7 +549,7 @@ public class DateUtil {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        // 毫秒置为相同
+        // 将 毫秒 置为相同
         DateTime begin = new DateTime(start).millisOfSecond().withMinimumValue();
         DateTime after = new DateTime(end).millisOfSecond().withMinimumValue();
         return Seconds.secondsBetween(begin, after).getSeconds();
