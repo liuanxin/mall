@@ -52,15 +52,18 @@ public class CorsFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) res;
 
         String origin = request.getHeader(ORIGIN);
-        // 头里面带过来的 origin 跟请求的不一样才需要设置 cors
-        if (U.isNotEquals(getDomain(request), origin)) {
-            // 配置项为空则设置 cors
-            if (A.isEmpty(allowOriginSet)) {
-                setOrigin(response, origin);
-            } else {
-                // 头里面带过来的 origin 是在配置项里面才设置 cors
-                if (U.isNotBlank(origin) && allowOriginSet.contains(origin)) {
+        if (U.isNotBlank(origin)) {
+            String domain = getDomain(request);
+            // 头里面带过来的 origin 跟请求的不一样才需要设置 cors
+            if (U.isNotEquals(domain, origin)) {
+                // 配置项为空则设置 cors
+                if (A.isEmpty(allowOriginSet)) {
                     setOrigin(response, origin);
+                } else {
+                    // 头里面带过来的 origin 是在配置项里面才设置 cors
+                    if (allowOriginSet.contains(origin)) {
+                        setOrigin(response, origin);
+                    }
                 }
             }
         }
@@ -85,8 +88,7 @@ public class CorsFilter implements Filter {
         boolean http = ("http".equals(scheme) && port != 80);
         boolean https = ("https".equals(scheme) && port != 80 && port != 443);
         if (http || https) {
-            sbd.append(':');
-            sbd.append(port);
+            sbd.append(':').append(port);
         }
         return sbd.toString();
     }
