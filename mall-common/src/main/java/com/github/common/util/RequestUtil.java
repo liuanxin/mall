@@ -1,6 +1,5 @@
 package com.github.common.util;
 
-import com.github.common.Const;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -324,13 +323,8 @@ public final class RequestUtil {
         Enumeration<String> headers = request.getHeaderNames();
         while (headers.hasMoreElements()) {
             String headName = headers.nextElement();
-            sbd.append("<").append(headName).append(": ");
-            String value = U.toStr(request.getHeader(headName));
-            if (Const.TOKEN.equalsIgnoreCase(headName)) {
-                sbd.append(U.foggyToken(value));
-            } else {
-                sbd.append(value);
-            }
+            sbd.append("<");
+            sbd.append(headName).append(" : ").append(DesensitizationUtil.des(headName, request.getHeader(headName)));
             sbd.append(">");
         }
         return sbd.toString();

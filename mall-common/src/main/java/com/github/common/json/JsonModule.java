@@ -7,8 +7,8 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.github.common.Const;
 import com.github.common.date.DateUtil;
+import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.U;
 
 import java.io.IOException;
@@ -37,41 +37,8 @@ public final class JsonModule {
 
         @Override
         public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-            if (U.isNull(value)) {
-                gen.writeString(U.EMPTY);
-                return;
-            }
             String key = gen.getOutputContext().getCurrentName();
-            if (U.isBlank(key)) {
-                gen.writeString(value);
-                return;
-            }
-
-            String fieldName = key.toLowerCase();
-            if (fieldName.equals(Const.TOKEN.toLowerCase())) {
-                gen.writeString(U.foggyToken(value));
-                return;
-            }
-
-            switch (fieldName) {
-                case "password": {
-                    gen.writeString("***");
-                    return;
-                }
-                case "phone": {
-                    gen.writeString(U.foggyPhone(value));
-                    return;
-                }
-                case "id-card":
-                case "idcard":
-                case "id_card": {
-                    gen.writeString(U.foggyIdCard(value));
-                    return;
-                }
-                default: {
-                    gen.writeString(U.foggyValue(value, 1000, 200));
-                }
-            }
+            gen.writeString(DesensitizationUtil.des(key, value));
         }
     }
 
