@@ -217,7 +217,7 @@ public class PdfTest {
             list.add(A.maps(
                     "boxNum", "1",
                     "productCode", "000013-1399379",
-                    "cnName", "中文",
+                    "cnName", "（仓库自配转换插）手持式电动旋盖机 欧规 220V (采购下单备注英文说明书)（12个一箱）（散单采购200元包邮）",
                     "weight", "0.030",
                     "length", "15.00",
                     "width", "12.00",
@@ -229,7 +229,7 @@ public class PdfTest {
             list.add(A.maps(
                     "boxNum", "1",
                     "productCode", "000013-1392179",
-                    "cnName", "一二三",
+                    "cnName", "夏日花草（合金支架120cm ）浴桶+坐垫+保温盖+10个浴袋（下单备注4个一箱发货）（拍单发图）",
                     "weight", "0.135",
                     "length", "15.00",
                     "width", "12.00",

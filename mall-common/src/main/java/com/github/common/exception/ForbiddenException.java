@@ -12,7 +12,4 @@ public class ForbiddenException extends RuntimeException implements Serializable
     public ForbiddenException(String msg, Throwable cause) {
         super(msg, cause);
     }
-
-    @Override
-    public Throwable fillInStackTrace() { return this; }
 }

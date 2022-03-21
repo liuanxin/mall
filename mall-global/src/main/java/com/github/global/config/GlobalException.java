@@ -55,7 +55,7 @@ public class GlobalException {
     @ExceptionHandler(ServiceException.class)
     public ResponseEntity<JsonResult<Void>> service(ServiceException e) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("业务异常", e);
+            LogUtil.ROOT_LOG.debug("业务异常:({})", serviceExceptionTrack(e));
         }
         int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.fail(e.getMessage()));
@@ -64,7 +64,7 @@ public class GlobalException {
     @ExceptionHandler(NotLoginException.class)
     public ResponseEntity<JsonResult<Void>> notLogin(NotLoginException e) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("没登录", e);
+            LogUtil.ROOT_LOG.debug("没登录:({})", serviceExceptionTrack(e));
         }
         int status = returnStatusCode ? JsonCode.NOT_LOGIN.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.needLogin(e.getMessage()));
@@ -73,7 +73,7 @@ public class GlobalException {
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<JsonResult<Void>> forbidden(ForbiddenException e) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("没权限", e);
+            LogUtil.ROOT_LOG.debug("没权限:({})", serviceExceptionTrack(e));
         }
         int status = returnStatusCode ? JsonCode.NOT_PERMISSION.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.needPermission(e.getMessage()));
@@ -82,7 +82,7 @@ public class GlobalException {
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<JsonResult<Void>> notFound(NotFoundException e) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("404", e);
+            LogUtil.ROOT_LOG.debug("404:({})", serviceExceptionTrack(e));
         }
         int status = returnStatusCode ? JsonCode.NOT_FOUND.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.notFound(e.getMessage()));
@@ -91,7 +91,7 @@ public class GlobalException {
     @ExceptionHandler(ParamException.class)
     public ResponseEntity<JsonResult<Void>> param(ParamException e) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("参数验证不过", e);
+            LogUtil.ROOT_LOG.debug("参数验证不过:({})", serviceExceptionTrack(e));
         }
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.badRequest(e.getMessage(), e.getErrorMap()));
@@ -100,7 +100,7 @@ public class GlobalException {
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<JsonResult<Void>> badRequest(BadRequestException e) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("错误的请求", e);
+            LogUtil.ROOT_LOG.debug("错误的请求:({})", serviceExceptionTrack(e));
         }
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.badRequest(e.getMessage()));
@@ -200,10 +200,21 @@ public class GlobalException {
         }
 
         List<String> errorList = new ArrayList<>();
-        errorList.add(e.getMessage());
+        errorList.add(e.getMessage().trim());
         for (StackTraceElement trace : e.getStackTrace()) {
-            errorList.add(trace.toString());
+            errorList.add(trace.toString().trim());
         }
         return errorList;
+    }
+    private String serviceExceptionTrack(Throwable e) {
+        List<String> exceptionList = new ArrayList<>();
+        exceptionList.add(e.getMessage());
+        for (StackTraceElement trace : e.getStackTrace()) {
+            String msg = trace.toString().trim();
+            if (msg.startsWith(Const.BASE_PACKAGE)) {
+                exceptionList.add(msg);
+            }
+        }
+        return Joiner.on(",").join(exceptionList);
     }
 }

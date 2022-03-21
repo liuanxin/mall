@@ -28,7 +28,4 @@ public class ParamException extends RuntimeException {
 		super(Joiner.on(",").join(errorMap.values()));
 		this.errorMap = errorMap;
 	}
-
-	@Override
-	public Throwable fillInStackTrace() { return this; }
 }

@@ -12,7 +12,4 @@ public class BadRequestException extends RuntimeException implements Serializabl
     public BadRequestException(String msg, Throwable cause) {
         super(msg, cause);
     }
-
-    @Override
-    public Throwable fillInStackTrace() { return this; }
 }

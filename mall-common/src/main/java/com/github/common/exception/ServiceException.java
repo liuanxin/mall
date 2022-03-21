@@ -12,7 +12,4 @@ public class ServiceException extends RuntimeException implements Serializable {
     public ServiceException(String msg, Throwable cause) {
         super(msg, cause);
     }
-
-    @Override
-    public Throwable fillInStackTrace() { return this; }
 }

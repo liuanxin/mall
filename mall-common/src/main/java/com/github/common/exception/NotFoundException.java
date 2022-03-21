@@ -11,7 +11,4 @@ public class NotFoundException extends RuntimeException implements Serializable 
     public NotFoundException(String msg, Throwable cause) {
         super(msg, cause);
     }
-
-    @Override
-    public Throwable fillInStackTrace() { return this; }
 }

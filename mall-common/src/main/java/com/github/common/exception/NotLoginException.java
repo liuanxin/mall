@@ -15,7 +15,4 @@ public class NotLoginException extends RuntimeException implements Serializable 
     public NotLoginException(String msg, Throwable cause) {
         super(msg, cause);
     }
-
-    @Override
-    public Throwable fillInStackTrace() { return this; }
 }
