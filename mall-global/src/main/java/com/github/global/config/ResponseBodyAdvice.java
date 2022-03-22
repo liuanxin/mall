@@ -8,6 +8,7 @@ import com.github.common.util.U;
 import com.github.global.constant.GlobalConst;
 import javassist.ClassPool;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
@@ -28,6 +29,11 @@ import java.lang.reflect.Method;
 @ConditionalOnClass({ HttpServletResponse.class, ResponseBody.class })
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
 public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice {
+
+    @Value("${log.maxPrintLength:200000}")
+    private int maxPrintLength;
+    @Value("${log.printLength:1000}")
+    private int printLength;
 
     private final JsonDesensitization jsonDesensitization;
 
@@ -82,7 +88,7 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
                 if (U.greater0(startTimeMillis)) {
                     sbd.append(" time(").append(DateUtil.toHuman(System.currentTimeMillis() - startTimeMillis)).append(")");
                 }
-                sbd.append(" return(").append(json).append(")");
+                sbd.append(" return(").append(U.toStr(json, maxPrintLength, printLength)).append(")");
                 LogUtil.ROOT_LOG.info(sbd.toString());
             } finally {
                 if (notRequestInfo) {

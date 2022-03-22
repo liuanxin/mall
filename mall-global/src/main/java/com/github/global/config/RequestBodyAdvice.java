@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
+import com.github.common.util.U;
 import com.github.global.constant.GlobalConst;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +40,11 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Value("${log.printComplete:false}")
     private boolean printComplete;
 
+    @Value("${log.maxPrintLength:200000}")
+    private int maxPrintLength;
+    @Value("${log.printLength:1000}")
+    private int printLength;
+
     private final JsonDesensitization jsonDesensitization;
     private final ObjectMapper mapper;
 
@@ -69,7 +75,8 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                                 // 先转换成对象, 再输出成 string, 这样可以去掉空白符
                                 Object obj = mapper.readValue(data, Object.class);
                                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                                    LogUtil.ROOT_LOG.info("before body({})", jsonDesensitization.toJson(obj));
+                                    String json = jsonDesensitization.toJson(obj);
+                                    LogUtil.ROOT_LOG.info("before body({})", U.toStr(json, maxPrintLength, printLength));
                                 }
                             } catch (JsonProcessingException e) {
                                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
@@ -91,7 +98,8 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
         if (!printComplete) {
             if (!GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("after body({})", jsonDesensitization.toJson(body));
+                    String json = jsonDesensitization.toJson(body);
+                    LogUtil.ROOT_LOG.info("after body({})", U.toStr(json, maxPrintLength, printLength));
                 }
             }
         }
