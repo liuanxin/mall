@@ -452,6 +452,7 @@ public final class A {
     }
     /** 删除重复的项 */
     public static <T> Collection<T> removeDuplicate(Collection<T> array) {
+        // ImmutableSet.copyOf(array).asList(); // guava
         return new LinkedHashSet<>(array);
     }
 
