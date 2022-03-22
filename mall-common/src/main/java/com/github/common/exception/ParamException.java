@@ -21,7 +21,7 @@ public class ParamException extends RuntimeException {
 
 	public ParamException(String field, String message) {
 		super(message);
-		this.errorMap = A.maps(field, message);
+		this.errorMap = A.linkedMaps(field, message);
 	}
 
 	public ParamException(Map<String, String> errorMap) {
