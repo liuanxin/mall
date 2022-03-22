@@ -446,18 +446,6 @@ public final class A {
         return returnList;
     }
 
-    /** 数组去重返回 */
-    public static <T> Collection<T> removeDuplicate(T[] array) {
-        return removeDuplicate(Arrays.asList(array));
-    }
-    /** 删除重复的项 */
-    public static <T> Collection<T> removeDuplicate(Collection<T> array) {
-        Set<T> set = new LinkedHashSet<>(array);
-        array.clear();
-        array.addAll(set);
-        return array;
-    }
-
     /** 构造 HashMap, 必须保证每两个参数的类型是一致的! 当参数是奇数时, 最后一个 key 将会被忽略 */
     public static <K, V> HashMap<K, V> maps(Object... keysAndValues) {
         return (HashMap<K, V>) maps(new HashMap<>(), keysAndValues);
