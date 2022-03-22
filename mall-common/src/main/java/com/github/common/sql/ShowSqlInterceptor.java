@@ -30,7 +30,7 @@ public class ShowSqlInterceptor implements QueryInterceptor {
     private static final AtomicLong COUNTER = new AtomicLong(0L);
     /** 每条 sql 执行前记录时间戳, 如果使用 ThreadLocal 会有 pre 了但运行时异常不去 post 的情况 */
     private static final Cache<Thread, String> TIME_CACHE = CacheBuilder.newBuilder()
-            .expireAfterWrite(30, TimeUnit.MINUTES).build();
+            .expireAfterWrite(30, TimeUnit.MINUTES).maximumSize(50000L).build();
     private static final Pattern BLANK_REGEX = Pattern.compile("\\s{1,}");
 
     @Override
@@ -43,11 +43,10 @@ public class ShowSqlInterceptor implements QueryInterceptor {
         if (LogUtil.SQL_LOG.isDebugEnabled()) {
             String realSql = getRealSql(sql);
             if (U.isNotBlank(realSql)) {
-                Thread currentThread = Thread.currentThread();
                 long current = System.currentTimeMillis();
                 long counter = COUNTER.addAndGet(1);
 
-                TIME_CACHE.put(currentThread, counter + TIME_SPLIT + current);
+                TIME_CACHE.put(Thread.currentThread(), counter + TIME_SPLIT + current);
                 String dataSource = "";
                 if (U.isNotNull(query)) {
                     Session session = query.getSession();
@@ -83,7 +82,7 @@ public class ShowSqlInterceptor implements QueryInterceptor {
             if (U.isNotBlank(realSql)) {
                 Thread currentThread = Thread.currentThread();
                 String counterAndTime = TIME_CACHE.getIfPresent(currentThread);
-                if (U.isNotBlank(counterAndTime)) {
+                if (U.isNotNull(counterAndTime)) {
                     try {
                         String[] split = counterAndTime.split(TIME_SPLIT);
                         if (split.length == 2) {
