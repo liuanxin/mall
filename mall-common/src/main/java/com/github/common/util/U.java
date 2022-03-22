@@ -427,9 +427,9 @@ public final class U {
 
         int length = str.length();
         if (length > maxLen) {
-            int returnLength = leftRightLen * 2 + 5;
-            if (maxLen > returnLength) {
-                return str.substring(0, leftRightLen) + " ... " + str.substring(length - leftRightLen, length);
+            String append = " ... ";
+            if (maxLen > leftRightLen * 2 + append.length()) {
+                return str.substring(0, leftRightLen) + append + str.substring(length - leftRightLen, length);
             }
         }
         return str;
