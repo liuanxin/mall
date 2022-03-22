@@ -53,11 +53,11 @@ public class ShowSqlInterceptor implements QueryInterceptor {
                     if (U.isNotNull(session)) {
                         HostInfo hostInfo = session.getHostInfo();
                         if (U.isNotNull(hostInfo)) {
-                            dataSource = ", 数据源: " + hostInfo.getHost() + ":" + hostInfo.getPort() + "/" + hostInfo.getDatabase();
+                            dataSource = ", db: " + hostInfo.getHost() + ":" + hostInfo.getPort() + "/" + hostInfo.getDatabase();
                         }
                     }
                 }
-                LogUtil.SQL_LOG.debug("计数: {}{}, sql: {}", counter, dataSource, realSql);
+                LogUtil.SQL_LOG.debug("counter: {}{}, sql: {}", counter, dataSource, realSql);
             }
         }
         return null;
@@ -91,13 +91,13 @@ public class ShowSqlInterceptor implements QueryInterceptor {
 
                             StringBuilder sbd = new StringBuilder();
                             if (U.greater0(counter)) {
-                                sbd.append("计数: ").append(counter);
+                                sbd.append("counter: ").append(counter);
                             }
                             if (U.greater0(start)) {
-                                sbd.append(", 用时: ").append(DateUtil.toHuman(System.currentTimeMillis() - start));
+                                sbd.append(", use-time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start));
                             }
                             if (U.isNotNull(rs) && rs.hasRows()) {
-                                sbd.append(", 返回行数: ").append(rs.getRows().size());
+                                sbd.append(", return-size: ").append(rs.getRows().size());
                             }
                             LogUtil.SQL_LOG.debug(sbd.toString());
                         }

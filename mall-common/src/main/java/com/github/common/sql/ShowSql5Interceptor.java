@@ -26,7 +26,7 @@
 //    private static final AtomicLong COUNTER = new AtomicLong(0L);
 //    /** 每条 sql 执行前记录时间戳, 如果使用 ThreadLocal 会有 pre 了但运行时异常不去 post 的情况 */
 //    private static final Cache<Thread, String> TIME_CACHE = CacheBuilder.newBuilder()
-//            .expireAfterWrite(30, TimeUnit.MINUTES).build();
+//            .expireAfterWrite(30, TimeUnit.MINUTES).maximumSize(50000L).build();
 //    private static final Pattern BLANK_REGEX = Pattern.compile("\\s{1,}");
 //
 //    @Override
@@ -37,11 +37,10 @@
 //        if (LogUtil.SQL_LOG.isDebugEnabled()) {
 //            String realSql = getRealSql(sql, statement);
 //            if (U.isNotBlank(realSql)) {
-//                Thread currentThread = Thread.currentThread();
 //                long counter = COUNTER.addAndGet(1);
 //                long start = System.currentTimeMillis();
 //
-//                TIME_CACHE.put(currentThread, counter + TIME_SPLIT + start);
+//                TIME_CACHE.put(Thread.currentThread(), counter + TIME_SPLIT + start);
 //                String url = connection.getMetaData().getURL();
 //                connection.getHost() + ":" + connection.getSocksProxyPort()
 //                LogUtil.SQL_LOG.debug("counter: {}, data-source: {}, sql: {}", counter,
