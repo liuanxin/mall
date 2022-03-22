@@ -55,7 +55,7 @@ public class GlobalException {
     @ExceptionHandler(ServiceException.class)
     public ResponseEntity<JsonResult<Void>> service(ServiceException e) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("业务异常:({})", serviceExceptionTrack(e));
+            LogUtil.ROOT_LOG.debug("service exception:({})", serviceExceptionTrack(e));
         }
         int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.fail(e.getMessage()));
@@ -64,7 +64,7 @@ public class GlobalException {
     @ExceptionHandler(NotLoginException.class)
     public ResponseEntity<JsonResult<Void>> notLogin(NotLoginException e) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("没登录:({})", serviceExceptionTrack(e));
+            LogUtil.ROOT_LOG.debug("not login:({})", serviceExceptionTrack(e));
         }
         int status = returnStatusCode ? JsonCode.NOT_LOGIN.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.needLogin(e.getMessage()));
@@ -73,7 +73,7 @@ public class GlobalException {
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<JsonResult<Void>> forbidden(ForbiddenException e) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("没权限:({})", serviceExceptionTrack(e));
+            LogUtil.ROOT_LOG.debug("forbidden:({})", serviceExceptionTrack(e));
         }
         int status = returnStatusCode ? JsonCode.NOT_PERMISSION.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.needPermission(e.getMessage()));
@@ -82,7 +82,7 @@ public class GlobalException {
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<JsonResult<Void>> notFound(NotFoundException e) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("404:({})", serviceExceptionTrack(e));
+            LogUtil.ROOT_LOG.debug("not found:({})", serviceExceptionTrack(e));
         }
         int status = returnStatusCode ? JsonCode.NOT_FOUND.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.notFound(e.getMessage()));
@@ -91,7 +91,7 @@ public class GlobalException {
     @ExceptionHandler(ParamException.class)
     public ResponseEntity<JsonResult<Void>> param(ParamException e) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("参数验证不过:({})", serviceExceptionTrack(e));
+            LogUtil.ROOT_LOG.debug("param exception:({})", serviceExceptionTrack(e));
         }
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.badRequest(e.getMessage(), e.getErrorMap()));
@@ -100,7 +100,7 @@ public class GlobalException {
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<JsonResult<Void>> badRequest(BadRequestException e) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("错误的请求:({})", serviceExceptionTrack(e));
+            LogUtil.ROOT_LOG.debug("bad request:({})", serviceExceptionTrack(e));
         }
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.badRequest(e.getMessage()));
@@ -119,16 +119,14 @@ public class GlobalException {
     }
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<JsonResult<Void>> missParam(MissingServletRequestParameterException e) {
-        String msg = online ? "缺少必须的参数"
-                : String.format("缺少必须的参数(%s), 类型(%s)", e.getParameterName(), e.getParameterType());
-
+        String msg = online ? "miss param" : String.format("miss param(%s : %s)", e.getParameterType(), e.getParameterName());
         bindAndPrintLog(msg, e);
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.badRequest(msg));
     }
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<JsonResult<Void>> missHeader(MissingRequestHeaderException e) {
-        String msg = online ? "缺少必须的信息" : String.format("缺少头(%s)", e.getHeaderName());
+        String msg = online ? "miss header" : String.format("miss header(%s)", e.getHeaderName());
 
         bindAndPrintLog(msg, e);
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
@@ -143,8 +141,7 @@ public class GlobalException {
     }
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<JsonResult<Void>> notSupported(HttpRequestMethodNotSupportedException e) {
-        String msg = online ? "不支持此种方式"
-                : String.format("不支持此种方式: 当前(%s), 支持(%s)", e.getMethod(), A.toStr(e.getSupportedMethods()));
+        String msg = online ? "not support" : String.format("not support(%s), support(%s)", e.getMethod(), A.toStr(e.getSupportedMethods()));
         bindAndPrintLog(msg, e);
         int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.fail(msg));
@@ -152,7 +149,7 @@ public class GlobalException {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<JsonResult<Void>> uploadSizeExceeded(MaxUploadSizeExceededException e) {
         // 右移 20 位相当于除以两次 1024, 正好表示从字节到 Mb
-        String msg = String.format("上传文件太大! 请保持在 %sM 以内", (e.getMaxUploadSize() >> 20));
+        String msg = String.format("Upload File size exceeded the limit: %sM", (e.getMaxUploadSize() >> 20));
         bindAndPrintLog(msg, e);
         int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.fail(msg));
@@ -165,7 +162,7 @@ public class GlobalException {
     @ExceptionHandler(Throwable.class)
     public ResponseEntity<JsonResult<Void>> other(Throwable e) {
         if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-            LogUtil.ROOT_LOG.error("有错误", e);
+            LogUtil.ROOT_LOG.error("has exception", e);
         }
 
         Throwable cause = e.getCause();
