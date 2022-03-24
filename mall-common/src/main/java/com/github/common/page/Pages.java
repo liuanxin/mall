@@ -1,6 +1,7 @@
 package com.github.common.page;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.U;
 
@@ -47,5 +48,24 @@ public final class Pages {
         } else {
             return PageReturn.returnPage(pageInfo.getTotal(), pageInfo.getRecords());
         }
+    }
+
+    public static <T,S> PageReturn<T> returnPage(Page<S> page, Class<T> clazz) {
+        if (U.isNull(page)) {
+            return PageReturn.emptyReturn();
+        }
+
+        long total = page.getTotal();
+        if (U.less0(total)) {
+            return PageReturn.emptyReturn();
+        }
+
+        List<S> objList = page.getRecords();
+        if (A.isEmpty(objList)) {
+            return PageReturn.returnPage(total, Collections.emptyList());
+        }
+
+        List<T> list = JsonUtil.convertList(objList, clazz);
+        return PageReturn.returnPage(total, A.isEmpty(list) ? Collections.emptyList() : list);
     }
 }
