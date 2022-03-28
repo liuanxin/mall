@@ -37,7 +37,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
      * 当前端发过来的 RequestBody 数据跟相关的实体对应不上时, 是进不到 afterBodyRead 去的
      * 想要打印入参, 将此值设置为 true(因为复制了一遍字节码, 内存消耗会比 false 时多)
      */
-    @Value("${log.printComplete:true}")
+    @Value("${log.printComplete:false}")
     private boolean printComplete;
 
     @Value("${log.maxPrintLength:200000}")
