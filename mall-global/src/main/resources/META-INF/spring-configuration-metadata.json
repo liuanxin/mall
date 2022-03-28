@@ -27,8 +27,8 @@
     {
       "name": "log.printComplete",
       "type": "java.lang.Boolean",
-      "defaultValue": false,
-      "description": "使用 before 打印日志(如果转换失败会进不去 after, 但使用 before 时内存消耗会比较高)."
+      "defaultValue": true,
+      "description": "使用 before 打印日志(false 表示使用 after 打印, 但如果转换失败会进不去 after)."
     },
     {
       "name": "log.maxPrintLength",
