@@ -180,7 +180,7 @@ public class DateUtil {
         }
 
         boolean flag = (intervalMs < 0);
-        long ms = flag ? -intervalMs : intervalMs;
+        long ms = Math.abs(intervalMs);
 
         long year = ms / YEAR;
         long y = ms % YEAR;
@@ -201,22 +201,22 @@ public class DateUtil {
         if (flag) {
             sbd.append("-");
         }
-        if (year != 0) {
+        if (year > 0) {
             sbd.append(year).append(" 年 ");
         }
-        if (day != 0) {
+        if (day > 0) {
             sbd.append(day).append(" 天 ");
         }
-        if (hour != 0) {
+        if (hour > 0) {
             sbd.append(hour).append(" 小时 ");
         }
-        if (minute != 0) {
+        if (minute > 0) {
             sbd.append(minute).append(" 分 ");
         }
-        if (second != 0) {
+        if (second > 0) {
             sbd.append(second).append(" 秒 ");
         }
-        if (m != 0) {
+        if (m > 0) {
             sbd.append(m).append(" 毫秒");
         }
         return sbd.toString().trim();
