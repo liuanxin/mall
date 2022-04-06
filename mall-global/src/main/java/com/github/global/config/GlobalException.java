@@ -106,6 +106,10 @@ public class GlobalException {
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.badRequest(e.getMessage()));
     }
+    @ExceptionHandler(ForceReturnException.class)
+    public ResponseEntity forceReturn(ForceReturnException e) {
+        return e.getResponse();
+    }
 
 
     // 以下是 spring 的内部异常
@@ -161,32 +165,49 @@ public class GlobalException {
 
     /** 未知的所有其他异常 */
     @ExceptionHandler(Throwable.class)
-    public ResponseEntity<JsonResult> other(Throwable e) {
-        Throwable exception = ExceptionUtil.boxInnerException(e);
+    public ResponseEntity other(Throwable e) {
+        Throwable exception = innerException(1, e);
         if (exception instanceof BadRequestException) {
-            return badRequest((BadRequestException) e);
+            return badRequest((BadRequestException) exception);
         } else if (exception instanceof ForbiddenException) {
-            return forbidden((ForbiddenException) e);
+            return forbidden((ForbiddenException) exception);
+        } else if (exception instanceof ForceReturnException) {
+            return forceReturn((ForceReturnException) exception);
         } else if (exception instanceof NotFoundException) {
-            return notFound((NotFoundException) e);
+            return notFound((NotFoundException) exception);
         } else if (exception instanceof NotLoginException) {
-            return notLogin((NotLoginException) e);
+            return notLogin((NotLoginException) exception);
         } else if (exception instanceof ParamException) {
-            return param((ParamException) e);
+            return param((ParamException) exception);
         } else if (exception instanceof ServiceException) {
-            return service((ServiceException) e);
+            return service((ServiceException) exception);
         } else {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("has exception", e);
+                LogUtil.ROOT_LOG.error("has exception", exception);
             }
 
             String msg = U.returnMsg(exception, online);
             int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
-            return ResponseEntity.status(status).body(JsonResult.fail(msg, errorTrack(e)));
+            return ResponseEntity.status(status).body(JsonResult.fail(msg, errorTrack(exception)));
         }
     }
 
     // ==================================================
+
+    private Throwable innerException(int depth, Throwable e) {
+        Throwable cause = e.getCause();
+        if (cause == null || depth > 3
+                || e instanceof BadRequestException
+                || e instanceof ForbiddenException
+                || e instanceof ForceReturnException
+                || e instanceof NotFoundException
+                || e instanceof NotLoginException
+                || e instanceof ParamException
+                || e instanceof ServiceException) {
+            return e;
+        }
+        return innerException(depth + 1, cause);
+    }
 
     private void bindAndPrintLog(String msg, Exception e) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
