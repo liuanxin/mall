@@ -6,11 +6,11 @@ package com.github.mq.constant;
  *
  * 1. 初始 --> 绑定(binding) queue 到 exchange, 基于 routing_key
  *    交换机分为三种:
- *      + Fanout(不指定 routingKey, 所有跟它绑定的 queue 都会接收到)
- *      + Direct(全匹配 routingKey)
- *      + Topic(模糊匹配, # 匹配一个或多个, * 匹配一个)
- *    队列可以定义死信队列(使用 map("x-dead-letter-exchange", "交换机名",  "x-dead-letter-routing-key", "路由键") 来设置),
- *    消费时如果出现以下三种情况, 该消息会被丢进死信(未配置消息将会被丢弃)
+ *      + Fanout (不指定 routingKey, 所有跟它绑定的 queue 都会接收到)
+ *      + Direct (全匹配 routingKey)
+ *      + Topic  (模糊匹配, # 替换 0 个或多个单词, * 替换一个单词)
+ *    队列可以定义死信队列(使用 { "x-dead-letter-exchange" : "交换机名",  "x-dead-letter-routing-key" : "路由键" } 设置),
+ *    消费时如果出现以下三种情况, 该消息会被丢进死信(如果未配置, 消息将会被丢弃)
  *      + 消息被 channel.basicNack 或 channel.basicReject 且 requeue 的值是 false
  *      + 消息在队列的存活时间超出了设置的 ttl 时间(使用 map("x-message-ttl", 6000) 来设置, 单位毫秒)
  *      + 消息队列的数量达到了上限
