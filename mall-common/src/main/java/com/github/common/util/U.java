@@ -1026,6 +1026,7 @@ public final class U {
      * @param target 目标对象
      * @param ignoreAlready true: target 中的字段有值则不进行 set 操作
      */
+    @SuppressWarnings("DuplicatedCode")
     public static <S,T> void fillData(S source, T target, boolean ignoreAlready) {
         Class<?> tc = target.getClass();
         Method[] targetMethods = tc.getMethods();
