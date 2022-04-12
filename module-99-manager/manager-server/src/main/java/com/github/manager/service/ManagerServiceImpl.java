@@ -187,14 +187,14 @@ public class ManagerServiceImpl implements ManagerService {
         for (ManagerRole role : roles) {
             Long rid = role.getId();
 
-            if (A.isNotEmpty(menuMultiMap)) {
+            if (!menuMultiMap.isEmpty()) {
                 Collection<ManagerMenu> managerMenus = menuMultiMap.get(rid);
                 if (A.isNotEmpty(managerMenus)) {
                     role.setMenus(new ArrayList<>(managerMenus));
                 }
             }
 
-            if (A.isNotEmpty(permissionMultimap)) {
+            if (!permissionMultimap.isEmpty()) {
                 Collection<ManagerPermission> managerPermissions = permissionMultimap.get(rid);
                 if (A.isNotEmpty(managerPermissions)) {
                     role.setPermissions(new ArrayList<>(managerPermissions));

@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.function.Function;
 
 /** 集合相关的工具包 */
-@SuppressWarnings({ "rawtypes", "unchecked" })
+@SuppressWarnings({"rawtypes", "unchecked", "DuplicatedCode"})
 public final class A {
 
     private static final String SPLIT = ",";
@@ -17,7 +17,7 @@ public final class A {
         return !isArray(obj);
     }
 
-    public static boolean isEmpty(Object arrayOrCollectionOrMap) {
+    public static boolean isEmptyObj(Object arrayOrCollectionOrMap) {
         if (arrayOrCollectionOrMap == null) {
             return true;
         } else if (arrayOrCollectionOrMap.getClass().isArray()) {
@@ -30,8 +30,8 @@ public final class A {
             return false;
         }
     }
-    public static boolean isNotEmpty(Object arrayOrCollectionOrMap) {
-        return !isEmpty(arrayOrCollectionOrMap);
+    public static boolean isNotEmptyObj(Object arrayOrCollectionOrMap) {
+        return !isEmptyObj(arrayOrCollectionOrMap);
     }
 
     public static <T> boolean isEmpty(T[] array) {

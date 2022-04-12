@@ -136,12 +136,7 @@ public class HttpClientUtil {
         if (U.isBlank(url)) {
             return null;
         }
-
-        Map<String, Object> params = Collections.emptyMap();
-        if (A.isNotEmpty(param)) {
-            params = JsonUtil.convertType(param, new TypeReference<>() {});
-        }
-        return get(url, params);
+        return get(url, A.isEmptyObj(param) ? Collections.emptyMap() : JsonUtil.convertType(param, new TypeReference<>() {}));
     }
     /** 向指定 url 进行 get 请求. 有参数 */
     public static String get(String url, Map<String, Object> params) {

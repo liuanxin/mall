@@ -69,7 +69,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                         // Http Request 的 inputStream 读取过后再读取就会异常, 所以这样操作(两处都 new ByteArrayInputStream)
                         InputStream inputStream = inputMessage.getBody();
                         byte[] bytes = inputStream.readAllBytes();
-                        if (A.isNotEmpty(bytes)) {
+                        if (A.isNotEmptyObj(bytes)) {
                             String data = new String(bytes, StandardCharsets.UTF_8);
                             try {
                                 // 先转换成对象, 再输出成 string, 这样可以去掉空白符
