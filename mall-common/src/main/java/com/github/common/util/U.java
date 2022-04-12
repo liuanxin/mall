@@ -45,8 +45,8 @@ public final class U {
     private static final String PHONE = "^1[3-9]\\d{9}$";
     /** _abc-def@123-hij.uvw_xyz.com 是正确的, -123@xyz.com 不是 */
     private static final String EMAIL = "^\\w[\\w\\-]*@([\\w\\-]+\\.\\w+)+$";
-    /** ico, jpeg, jpg, bmp, png 后缀 */
-    private static final String IMAGE = "(?i)^(.*)\\.(ico|jpeg|jpg|bmp|png)$";
+    /** ico, jpeg, jpg, bmp, png, svg 后缀 */
+    private static final String IMAGE = "(?i)^(.*)\\.(ico|jpeg|jpg|bmp|png|svg)$";
     /** IPv4 地址 */
     private static final String IPV4 = "^([01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])(\\.([01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])){3}$";
     /** 身份证号码 */
