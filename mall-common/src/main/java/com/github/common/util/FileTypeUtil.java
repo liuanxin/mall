@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class FileTypeUtil {
 
     /** 魔数只读前 3 位 */
@@ -33,11 +34,10 @@ public class FileTypeUtil {
         return FileMagicNumber.hasPdf(getByteMagicNumber(bytes));
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static String getFileMagicNumber(File file) {
-        try (InputStream inputStream = new FileInputStream(file)) {
+        try (InputStream input = new FileInputStream(file)) {
             byte[] b = new byte[MAGIC_SIZE];
-            inputStream.read(b, 0, MAGIC_SIZE);
+            input.read(b, 0, MAGIC_SIZE);
             return toHex(b);
         } catch (Exception e) {
             return null;
@@ -49,6 +49,16 @@ public class FileTypeUtil {
             System.arraycopy(bytes, 0, b, 0, Math.min(bytes.length, MAGIC_SIZE));
             return toHex(b);
         } else {
+            return null;
+        }
+    }
+    /** stream 不负责关闭*/
+    public static String getStreamMagicNumber(InputStream input) {
+        try {
+            byte[] b = new byte[MAGIC_SIZE];
+            input.read(b, 0, MAGIC_SIZE);
+            return toHex(b);
+        } catch (Exception e) {
             return null;
         }
     }
