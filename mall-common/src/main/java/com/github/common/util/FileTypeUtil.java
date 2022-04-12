@@ -25,6 +25,14 @@ public class FileTypeUtil {
         return FileMagicNumber.hasImage(getByteMagicNumber(bytes));
     }
 
+    public static boolean isOffice(byte[] bytes) {
+        return FileMagicNumber.hasOffice(getByteMagicNumber(bytes));
+    }
+
+    public static boolean isPdf(byte[] bytes) {
+        return FileMagicNumber.hasPdf(getByteMagicNumber(bytes));
+    }
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static String getFileMagicNumber(File file) {
         try (InputStream inputStream = new FileInputStream(file)) {
@@ -35,18 +43,24 @@ public class FileTypeUtil {
             return null;
         }
     }
-
     public static String getByteMagicNumber(byte[] bytes) {
-        byte[] b = new byte[MAGIC_SIZE];
-        System.arraycopy(bytes, 0, b, 0, Math.min(bytes.length, MAGIC_SIZE));
-        return toHex(b);
-    }
-
-    private static String toHex(byte[] bytes) {
-        StringBuilder sbd = new StringBuilder();
-        for (byte b : bytes) {
-            sbd.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
+        if (bytes != null) {
+            byte[] b = new byte[MAGIC_SIZE];
+            System.arraycopy(bytes, 0, b, 0, Math.min(bytes.length, MAGIC_SIZE));
+            return toHex(b);
+        } else {
+            return null;
         }
-        return sbd.toString();
+    }
+    private static String toHex(byte[] bytes) {
+        if (bytes != null) {
+            StringBuilder sbd = new StringBuilder();
+            for (byte b : bytes) {
+                sbd.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
+            }
+            return sbd.toString();
+        } else {
+            return null;
+        }
     }
 }
