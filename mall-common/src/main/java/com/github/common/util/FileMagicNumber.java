@@ -13,10 +13,10 @@ public enum FileMagicNumber {
     BMP("424D36"),
     SVG("3C3F78"),
 
-    // doc xls ppt 都是一样的
-    DOC("D0CF11"),
-    // docx xlsx pptx 都是一新的
-    DOCX("504B03"),
+    /** doc xls ppt 都是一样的 */
+    OFFICE03("D0CF11"),
+    /** docx xlsx pptx 都是一新的 */
+    OFFICE07("504B03"),
 
     PDF("255044"),
 
@@ -48,12 +48,12 @@ public enum FileMagicNumber {
         return check(magicNumber, Collections.singletonList(PDF));
     }
     public static boolean hasOffice(String magicNumber) {
-        return check(magicNumber, Arrays.asList(DOC, DOCX));
+        return check(magicNumber, Arrays.asList(OFFICE03, OFFICE07));
     }
     public static boolean hasOffice03(String magicNumber) {
-        return check(magicNumber, Collections.singletonList(DOC));
+        return check(magicNumber, Collections.singletonList(OFFICE03));
     }
     public static boolean hasOffice07(String magicNumber) {
-        return check(magicNumber, Collections.singletonList(DOCX));
+        return check(magicNumber, Collections.singletonList(OFFICE07));
     }
 }

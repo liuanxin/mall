@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
-@SuppressWarnings("ResultOfMethodCallIgnored")
 public class FileTypeUtil {
 
     /** 魔数只读前 3 位 */
@@ -21,29 +20,72 @@ public class FileTypeUtil {
         } */
         return FileMagicNumber.hasImage(getFileMagicNumber(file));
     }
-
     public static boolean isImage(byte[] bytes) {
         return FileMagicNumber.hasImage(getByteMagicNumber(bytes));
     }
+    /**
+     * <pre>
+     * try (InputStream input = ...) {
+     *     if (isImage(input)) {
+     *         // do something
+     *     }
+     * }
+     * </pre>
+     */
+    public static boolean isImage(InputStream input) {
+        return FileMagicNumber.hasImage(getStreamMagicNumber(input));
+    }
 
+    public static boolean isOffice(File file) {
+        return FileMagicNumber.hasOffice(getFileMagicNumber(file));
+    }
     public static boolean isOffice(byte[] bytes) {
         return FileMagicNumber.hasOffice(getByteMagicNumber(bytes));
     }
+    /**
+     * <pre>
+     * try (InputStream input = ...) {
+     *     if (isOffice(input)) {
+     *         // do something
+     *     }
+     * }
+     * </pre>
+     */
+    public static boolean isOffice(InputStream input) {
+        return FileMagicNumber.hasOffice(getStreamMagicNumber(input));
+    }
 
+    public static boolean isPdf(File file) {
+        return FileMagicNumber.hasPdf(getFileMagicNumber(file));
+    }
     public static boolean isPdf(byte[] bytes) {
         return FileMagicNumber.hasPdf(getByteMagicNumber(bytes));
     }
+    /**
+     * <pre>
+     * try (InputStream input = ...) {
+     *     if (isPdf(input)) {
+     *         // do something
+     *     }
+     * }
+     * </pre>
+     */
+    public static boolean isPdf(InputStream input) {
+        return FileMagicNumber.hasPdf(getStreamMagicNumber(input));
+    }
 
-    public static String getFileMagicNumber(File file) {
+
+    private static String getFileMagicNumber(File file) {
         try (InputStream input = new FileInputStream(file)) {
             byte[] b = new byte[MAGIC_SIZE];
+            // noinspection ResultOfMethodCallIgnored
             input.read(b, 0, MAGIC_SIZE);
             return toHex(b);
         } catch (Exception e) {
             return null;
         }
     }
-    public static String getByteMagicNumber(byte[] bytes) {
+    private static String getByteMagicNumber(byte[] bytes) {
         if (bytes != null) {
             byte[] b = new byte[MAGIC_SIZE];
             System.arraycopy(bytes, 0, b, 0, Math.min(bytes.length, MAGIC_SIZE));
@@ -52,10 +94,10 @@ public class FileTypeUtil {
             return null;
         }
     }
-    /** stream 不负责关闭*/
-    public static String getStreamMagicNumber(InputStream input) {
+    private static String getStreamMagicNumber(InputStream input) {
         try {
             byte[] b = new byte[MAGIC_SIZE];
+            // noinspection ResultOfMethodCallIgnored
             input.read(b, 0, MAGIC_SIZE);
             return toHex(b);
         } catch (Exception e) {

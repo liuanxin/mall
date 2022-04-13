@@ -67,24 +67,25 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                     @Override
                     public InputStream getBody() throws IOException {
                         // Http Request 的 inputStream 读取过后再读取就会异常, 所以这样操作(两处都 new ByteArrayInputStream)
-                        InputStream inputStream = inputMessage.getBody();
-                        byte[] bytes = inputStream.readAllBytes();
-                        if (A.isNotEmptyObj(bytes)) {
-                            String data = new String(bytes, StandardCharsets.UTF_8);
-                            try {
-                                // 先转换成对象, 再输出成 string, 这样可以去掉空白符
-                                Object obj = mapper.readValue(data, Object.class);
-                                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                                    String json = jsonDesensitization.toJson(obj);
-                                    LogUtil.ROOT_LOG.info("before body({})", U.toStr(json, maxPrintLength, printLength));
-                                }
-                            } catch (JsonProcessingException e) {
-                                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                                    LogUtil.ROOT_LOG.error("@RequestBody({}) has not json data", data, e);
+                        try (InputStream inputStream = inputMessage.getBody()) {
+                            byte[] bytes = inputStream.readAllBytes();
+                            if (A.isNotEmptyObj(bytes)) {
+                                String data = new String(bytes, StandardCharsets.UTF_8);
+                                try {
+                                    // 先转换成对象, 再输出成 string, 这样可以去掉空白符
+                                    Object obj = mapper.readValue(data, Object.class);
+                                    if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                                        String json = jsonDesensitization.toJson(obj);
+                                        LogUtil.ROOT_LOG.info("before body({})", U.toStr(json, maxPrintLength, printLength));
+                                    }
+                                } catch (JsonProcessingException e) {
+                                    if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                                        LogUtil.ROOT_LOG.error("@RequestBody({}) has not json data", data, e);
+                                    }
                                 }
                             }
+                            return new ByteArrayInputStream(bytes);
                         }
-                        return new ByteArrayInputStream(bytes);
                     }
                 };
             }
