@@ -34,7 +34,7 @@ public enum FileMagicNumber {
         if (U.isNotBlank(magicNumber)) {
             String upperCase = magicNumber.toUpperCase();
             for (FileMagicNumber value : magicNumberList) {
-                if (upperCase.startsWith(value.magicNumber)) {
+                if (U.isNotBlank(value.magicNumber) && upperCase.startsWith(value.magicNumber.toUpperCase())) {
                     return true;
                 }
             }

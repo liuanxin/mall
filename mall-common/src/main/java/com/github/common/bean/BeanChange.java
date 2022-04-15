@@ -94,6 +94,9 @@ public final class BeanChange {
     }
 
     private static Object getField(String fieldName, Class<?> clazz, Object obj) {
+        if (U.isNull(obj)) {
+            return null;
+        }
         String key = fieldName + "-" + clazz.getName();
         Method method = METHOD_CACHE_MAP.getIfPresent(key);
         if (U.isNull(method)) {
