@@ -15,20 +15,33 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class JsonModule {
 
     /** 全局序列化反序列化模块 */
     public static final SimpleModule GLOBAL_MODULE = new SimpleModule()
-            .addSerializer(BigDecimal.class, BigDecimalSerializer.instance)
+            .addSerializer(BigDecimal.class, BigDecimalSerializer.INSTANCE)
 
-            .addDeserializer(BigDecimal.class, BigDecimalDeserializer.instance)
-            .addDeserializer(Date.class, DateDeserializer.instance);
+            .addDeserializer(Boolean.class, BooleanDeserializer.INSTANCE)
+            .addDeserializer(boolean.class, BoolDeserializer.INSTANCE)
+            .addDeserializer(BigDecimal.class, BigDecimalDeserializer.INSTANCE)
+            .addDeserializer(Date.class, DateDeserializer.INSTANCE);
 
 
     /** 脱敏用到的序列化模块 */
     public static final SimpleModule DES_MODULE = new SimpleModule()
             .addSerializer(String.class, StringDesensitization.instance);
+
+
+    private static final Set<String> TRUES = new HashSet<>(4, 1);
+    static {
+        TRUES.add("true");
+        TRUES.add("1");
+        TRUES.add("on");
+        TRUES.add("yes");
+    }
 
 
     /** 字符串脱敏 */
@@ -44,7 +57,7 @@ public final class JsonModule {
 
     /** 序列化 BigDecimal 小数位不足 2 位的返回 2 位 */
     public static class BigDecimalSerializer extends JsonSerializer<BigDecimal> {
-        public static final BigDecimalSerializer instance = new BigDecimalSerializer();
+        public static final BigDecimalSerializer INSTANCE = new BigDecimalSerializer();
 
         @Override
         public void serialize(BigDecimal value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
@@ -64,7 +77,7 @@ public final class JsonModule {
 
     /** 反序列化 Date, 序列化使用全局配置, 或者属性上的 @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8") 注解 */
     public static class DateDeserializer extends JsonDeserializer<Date> {
-        public static final DateDeserializer instance = new DateDeserializer();
+        public static final DateDeserializer INSTANCE = new DateDeserializer();
 
         @Override
         public Date deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
@@ -73,9 +86,31 @@ public final class JsonModule {
         }
     }
 
+    /** 反序列化 Boolean, 返回 null、true 或 false */
+    public static class BooleanDeserializer extends JsonDeserializer<Boolean> {
+        public static final BooleanDeserializer INSTANCE = new BooleanDeserializer();
+
+        @Override
+        public Boolean deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+            String text = p.getText();
+            return U.isBlank(text) ? null : TRUES.contains(text.toLowerCase());
+        }
+    }
+
+    /** 反序列化 boolean, 返回 true 或 false */
+    public static class BoolDeserializer extends JsonDeserializer<Boolean> {
+        public static final BoolDeserializer INSTANCE = new BoolDeserializer();
+
+        @Override
+        public Boolean deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+            String text = p.getText();
+            return U.isNotBlank(text) && TRUES.contains(text.toLowerCase());
+        }
+    }
+
     /** 反序列化 BigDecimal */
     public static class BigDecimalDeserializer extends JsonDeserializer<BigDecimal> {
-        public static final BigDecimalDeserializer instance = new BigDecimalDeserializer();
+        public static final BigDecimalDeserializer INSTANCE = new BigDecimalDeserializer();
 
         @Override
         public BigDecimal deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
