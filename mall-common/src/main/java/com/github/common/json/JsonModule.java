@@ -15,8 +15,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 public final class JsonModule {
 
@@ -33,15 +31,6 @@ public final class JsonModule {
     /** 脱敏用到的序列化模块 */
     public static final SimpleModule DES_MODULE = new SimpleModule()
             .addSerializer(String.class, StringDesensitization.instance);
-
-
-    private static final Set<String> TRUES = new HashSet<>(4, 1);
-    static {
-        TRUES.add("true");
-        TRUES.add("1");
-        TRUES.add("on");
-        TRUES.add("yes");
-    }
 
 
     /** 字符串脱敏 */
@@ -92,8 +81,7 @@ public final class JsonModule {
 
         @Override
         public Boolean deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            String text = p.getText();
-            return U.isBlank(text) ? null : TRUES.contains(text.toLowerCase());
+            return U.getBoolean(p.getText());
         }
     }
 
@@ -103,8 +91,7 @@ public final class JsonModule {
 
         @Override
         public Boolean deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            String text = p.getText();
-            return U.isNotBlank(text) && TRUES.contains(text.toLowerCase());
+            return U.getBool(p.getText());
         }
     }
 

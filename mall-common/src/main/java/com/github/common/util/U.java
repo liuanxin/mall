@@ -71,6 +71,14 @@ public final class U {
 
     private static final String TMP = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+    public static final Set<String> TRUES = new HashSet<>(4, 1);
+    static {
+        TRUES.add("true");
+        TRUES.add("1");
+        TRUES.add("on");
+        TRUES.add("yes");
+    }
+
     /** 生成指定位数的随机数: 纯数字 */
     public static String random(int length) {
         if (length <= 0) {
@@ -600,6 +608,13 @@ public final class U {
     }
     public static boolean isNotEqualsIgnoreCase(String str1, String str2) {
         return !isEqualsIgnoreCase(str1, str2);
+    }
+
+    public static Boolean getBoolean(Object obj) {
+        return U.isNull(obj) ? null : TRUES.contains(obj.toString().toLowerCase());
+    }
+    public static boolean getBool(Object obj) {
+        return U.isNotNull(obj) && TRUES.contains(obj.toString().toLowerCase());
     }
 
     public static boolean isTrue(Boolean flag) {
