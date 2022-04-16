@@ -588,23 +588,13 @@ public final class U {
         }
     }
     public static boolean isEquals(Object obj1, Object obj2) {
-        if (obj1 == obj2) {
-            return true;
-        } else if (obj1 != null && obj2 != null) {
-            return obj1.equals(obj2);
-        } else {
-            return false;
-        }
+        return Objects.equals(obj1, obj2);
     }
     public static boolean isNotEquals(Object obj1, Object obj2) {
         return !isEquals(obj1, obj2);
     }
     public static boolean isEqualsIgnoreCase(String str1, String str2) {
-        if (str1 != null && str2 != null) {
-            return str1.equalsIgnoreCase(str2);
-        } else {
-            return false;
-        }
+        return isNotNull(str1) && str1.equalsIgnoreCase(str2);
     }
     public static boolean isNotEqualsIgnoreCase(String str1, String str2) {
         return !isEqualsIgnoreCase(str1, str2);

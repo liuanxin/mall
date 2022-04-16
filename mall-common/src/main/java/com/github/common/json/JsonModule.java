@@ -22,8 +22,6 @@ public final class JsonModule {
     public static final SimpleModule GLOBAL_MODULE = new SimpleModule()
             .addSerializer(BigDecimal.class, BigDecimalSerializer.INSTANCE)
 
-            .addDeserializer(Boolean.class, BooleanDeserializer.INSTANCE)
-            .addDeserializer(boolean.class, BoolDeserializer.INSTANCE)
             .addDeserializer(BigDecimal.class, BigDecimalDeserializer.INSTANCE)
             .addDeserializer(Date.class, DateDeserializer.INSTANCE);
 
@@ -72,26 +70,6 @@ public final class JsonModule {
         public Date deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             Date date = DateUtil.parse(p.getText().trim());
             return (U.isNotNull(date) && date.getTime() == 0) ? null : date;
-        }
-    }
-
-    /** 反序列化 Boolean, 返回 null、true 或 false */
-    public static class BooleanDeserializer extends JsonDeserializer<Boolean> {
-        public static final BooleanDeserializer INSTANCE = new BooleanDeserializer();
-
-        @Override
-        public Boolean deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return U.getBoolean(p.getText());
-        }
-    }
-
-    /** 反序列化 boolean, 返回 true 或 false */
-    public static class BoolDeserializer extends JsonDeserializer<Boolean> {
-        public static final BoolDeserializer INSTANCE = new BoolDeserializer();
-
-        @Override
-        public Boolean deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return U.getBool(p.getText());
         }
     }
 
