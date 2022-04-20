@@ -12,6 +12,7 @@ import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.U;
 
 import java.io.IOException;
+import java.lang.annotation.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
@@ -31,14 +32,48 @@ public final class JsonModule {
             .addSerializer(String.class, StringDesensitization.instance);
 
 
+    /** 脱敏注解, 只用在 String 类型上 */
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Documented
+    public @interface Sensitive {
+        int start();
+        int end();
+    }
+
     /** 字符串脱敏 */
     public static class StringDesensitization extends JsonSerializer<String> {
         public static final StringDesensitization instance = new StringDesensitization();
 
         @Override
         public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-            String key = gen.getOutputContext().getCurrentName();
-            gen.writeString(DesensitizationUtil.des(key, value));
+            if (U.isNull(value)) {
+                gen.writeNull();
+                return;
+            }
+            if (U.isBlank(value)) {
+                gen.writeString(U.EMPTY);
+                return;
+            }
+
+            String fieldName = gen.getOutputContext().getCurrentName();
+            try {
+                Class<?> clazz = gen.getCurrentValue().getClass();
+                Sensitive sensitive = clazz.getDeclaredField(fieldName).getAnnotation(Sensitive.class);
+                if (U.isNotNull(sensitive)) {
+                    int length = value.length();
+                    int start = Math.max(0, sensitive.start());
+                    int end = Math.min(length, sensitive.end());
+
+                    if (start > 0 && end < length && end > start) {
+                        gen.writeString(value.substring(0, start) + " *** " + value.substring(end, length));
+                        return;
+                    }
+                }
+            } catch (Exception ignore) {
+            }
+
+            gen.writeString(DesensitizationUtil.des(fieldName, value));
         }
     }
 
@@ -50,7 +85,7 @@ public final class JsonModule {
         public void serialize(BigDecimal value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
             int minScale = 2;
             if (U.isNull(value)) {
-                gen.writeString(U.EMPTY);
+                gen.writeNull();
             } else if (value.scale() < minScale) {
                 // 忽略小数位后的值, 有值就进 1 则使用 RoundingMode.UP
                 gen.writeString(value.setScale(minScale, RoundingMode.DOWN).toString());
