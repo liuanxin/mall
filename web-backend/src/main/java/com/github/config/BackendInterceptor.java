@@ -19,7 +19,7 @@ public class BackendInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) {
         bindParam();
-        // RequestUtils.handleLocal("lang");
+        // RequestUtils.handleLocal(null);
         checkLoginAndPermission(handler);
         return true;
     }

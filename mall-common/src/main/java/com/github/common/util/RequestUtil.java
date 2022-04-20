@@ -409,13 +409,13 @@ public final class RequestUtil {
                 LogUtil.ROOT_LOG.error("parse Local exception", e);
             }
         }
-
         if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
             locale = request.getLocale();
         }
         if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
             locale = DEFAULT_LOCALE;
         }
+
         LocaleContextHolder.setLocale(locale);
         LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
         if (U.isNotNull(localeResolver)) {
