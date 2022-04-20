@@ -3,7 +3,6 @@ package com.github.common.util;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
 import javax.servlet.http.Cookie;
@@ -39,8 +38,6 @@ public final class RequestUtil {
     private static final String HTTPS = "https:" + SCHEME;
     private static final String URL_SPLIT = "/";
     private static final String WWW = "www.";
-
-    private static final Locale DEFAULT_LOCALE = Locale.SIMPLIFIED_CHINESE; // Locale.getDefault();
 
     /**
      * 获取真实客户端 ip, 关于 X-Forwarded-For 参考: http://zh.wikipedia.org/wiki/X-Forwarded-For<br>
@@ -371,56 +368,6 @@ public final class RequestUtil {
         String param = formatParam();
         String head = formatHeader();
         return new LogUtil.RequestLogContext(method, url, param, head);
-    }
-
-    /**
-     * 基于下面的优先级依次获取语言
-     * 1. 头或参数里的 langParamName(默认是 lang)
-     * 2. 头里的 Accept-Language
-     * 3. request.getLocale()
-     * 4. 简体中文
-     *
-     * 手动处理时使用 {@link LocaleContextHolder#getLocale()} 或 {@link RequestContextUtils#getLocale(HttpServletRequest)}
-     */
-    public static void handleLocal(String langParamName) {
-        HttpServletRequest request = getRequest();
-        if (U.isNull(request)) {
-            return;
-        }
-
-        if (U.isBlank(langParamName)) {
-            langParamName = "lang";
-        }
-        String lan = request.getHeader(langParamName);
-        if (U.isBlank(lan)) {
-            lan = request.getParameter(langParamName);
-        }
-        if (U.isBlank(lan)) {
-            lan = request.getHeader("Accept-Language");
-        }
-
-        Locale locale = null;
-        try {
-            if (U.isNotBlank(lan)) {
-                locale = Locale.forLanguageTag(lan);
-            }
-        } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("parse Local exception", e);
-            }
-        }
-        if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
-            locale = request.getLocale();
-        }
-        if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
-            locale = DEFAULT_LOCALE;
-        }
-
-        LocaleContextHolder.setLocale(locale);
-        LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
-        if (U.isNotNull(localeResolver)) {
-            localeResolver.setLocale(request, getResponse(), locale);
-        }
     }
 
 
