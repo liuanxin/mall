@@ -119,8 +119,32 @@ public class MqReceiverHandler {
         }
     }
 
+//    @SuppressWarnings("rawtypes")
     private void doDataConsume(String json, String msgId, String queueName, String businessType, String desc,
                                long deliveryTag, Channel channel, Consumer<String> consumer) {
+        if (U.isBlank(msgId)) {
+            // 从消息体里面获取 msgId
+//            Map map = JsonUtil.toObject(json, Map.class);
+//            if (A.isNotEmpty(map)) {
+//                msgId = U.toStr(map.get("message_id"));
+//                if (U.isBlank(msgId)) {
+//                    msgId = U.toStr(map.get("msg_id"));
+//                }
+//                if (U.isBlank(msgId)) {
+//                    msgId = U.toStr(map.get("messageId"));
+//                }
+//                if (U.isBlank(msgId)) {
+//                    msgId = U.toStr(map.get("msgId"));
+//                }
+//                if (U.isBlank(msgId)) {
+                    if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                        LogUtil.ROOT_LOG.info("{}消费数据({})时没有消息 id", desc, json);
+                    }
+                    return;
+//                }
+//            }
+        }
+
         MqReceive model = mqReceiveService.queryByMsg(msgId);
         boolean hasExists = U.isNotNull(model);
         if (hasExists) {
