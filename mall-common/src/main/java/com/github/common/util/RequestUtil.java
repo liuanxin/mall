@@ -1,7 +1,6 @@
 package com.github.common.util;
 
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.LocaleResolver;
@@ -250,7 +249,7 @@ public final class RequestUtil {
     /** 从 cookie 中获取值, 为空就从请求头中取, 为空再从参数中取 */
     public static String getCookieOrHeaderOrParam(String name) {
         String value = getCookieValue(name);
-        return U.isEmpty(value) ? getHeaderOrParam(name) : value;
+        return U.isBlank(value) ? getHeaderOrParam(name) : value;
     }
 
     /** 先从请求头中查, 为空再从参数中查 */
@@ -261,10 +260,10 @@ public final class RequestUtil {
         }
 
         String value = request.getHeader(param);
-        if (U.isEmpty(value)) {
+        if (U.isBlank(value)) {
             value = request.getParameter(param);
         }
-        return U.isEmpty(value) ? U.EMPTY : value.trim();
+        return U.isBlank(value) ? U.EMPTY : value.trim();
     }
 
     /** 从 cookie 中获取值 */
@@ -376,9 +375,9 @@ public final class RequestUtil {
 
     /**
      * 基于下面的优先级依次获取语言
-     * 1. 头里的 langParamName(默认是 lang)
-     * 2. 参数里的 langParamName(默认是 lang)
-     * 3. request.getLocale() 头里的 Accept-Language
+     * 1. 头或参数里的 langParamName(默认是 lang)
+     * 2. 头里的 Accept-Language
+     * 3. request.getLocale()
      * 4. 简体中文
      *
      * 手动处理时使用 {@link LocaleContextHolder#getLocale()} 或 {@link RequestContextUtils#getLocale(HttpServletRequest)}
@@ -392,12 +391,18 @@ public final class RequestUtil {
         if (U.isBlank(langParamName)) {
             langParamName = "lang";
         }
+        String lan = request.getHeader(langParamName);
+        if (U.isBlank(lan)) {
+            lan = request.getParameter(langParamName);
+        }
+        if (U.isBlank(lan)) {
+            lan = request.getHeader("Accept-Language");
+        }
 
         Locale locale = null;
         try {
-            String lan = getHeaderOrParam(langParamName);
             if (U.isNotBlank(lan)) {
-                locale = StringUtils.parseLocale(lan);
+                locale = Locale.forLanguageTag(lan);
             }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
@@ -405,10 +410,10 @@ public final class RequestUtil {
             }
         }
 
-        if (U.isNull(locale) || U.isBlank(locale.getCountry())) {
+        if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
             locale = request.getLocale();
         }
-        if (U.isNull(locale) || U.isBlank(locale.getCountry())) {
+        if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
             locale = DEFAULT_LOCALE;
         }
         LocaleContextHolder.setLocale(locale);

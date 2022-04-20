@@ -21,7 +21,7 @@ public class ManagerSessionUtil {
 
     /** 验证图片验证码 */
     public static boolean checkImageCode(String code) {
-        if (U.isEmpty(code)) {
+        if (U.isBlank(code)) {
             return false;
         }
 

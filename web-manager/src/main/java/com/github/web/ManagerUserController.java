@@ -38,7 +38,7 @@ public class ManagerUserController {
     @ApiMethod(value = "登录", index = 0)
     @PostMapping("/login")
     public JsonResult<ManagerUserRes> login(@ApiParam("用户名") String userName, @ApiParam("密码") String password) {
-        U.assertException(U.isEmpty(userName) || U.isEmpty(password), "请输入用户名或密码");
+        U.assertException(U.isBlank(userName) || U.isBlank(password), "请输入用户名或密码");
 
         ManagerUser user = adminService.getUser(userName);
         U.assertNil(user, "用户名或密码有误");
