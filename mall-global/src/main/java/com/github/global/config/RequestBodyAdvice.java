@@ -56,8 +56,8 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override
     public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
                                            Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
-        if (printComplete) {
-            if (!GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
+        if (LogUtil.ROOT_LOG.isInfoEnabled() && !GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
+            if (printComplete) {
                 return new HttpInputMessage() {
                     @Override
                     public HttpHeaders getHeaders() {
@@ -73,15 +73,10 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                                 String data = new String(bytes, StandardCharsets.UTF_8);
                                 try {
                                     // 先转换成对象, 再输出成 string, 这样可以去掉空白符
-                                    Object obj = mapper.readValue(data, Object.class);
-                                    if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                                        String json = jsonDesensitization.toJson(obj);
-                                        LogUtil.ROOT_LOG.info("before body({})", U.toStr(json, maxPrintLength, printLength));
-                                    }
+                                    String json = jsonDesensitization.toJson(mapper.readValue(data, Object.class));
+                                    LogUtil.ROOT_LOG.info("before body({})", U.toStr(json, maxPrintLength, printLength));
                                 } catch (JsonProcessingException e) {
-                                    if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                                        LogUtil.ROOT_LOG.error("@RequestBody({}) has not json data", data, e);
-                                    }
+                                    LogUtil.ROOT_LOG.error("@RequestBody({}) has not json data", data, e);
                                 }
                             }
                             return new ByteArrayInputStream(bytes);
@@ -96,12 +91,10 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override
     public Object afterBodyRead(Object body, HttpInputMessage inputMessage, MethodParameter parameter,
                                 Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
-        if (!printComplete) {
-            if (!GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
-                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    String json = jsonDesensitization.toJson(body);
-                    LogUtil.ROOT_LOG.info("after body({})", U.toStr(json, maxPrintLength, printLength));
-                }
+        if (LogUtil.ROOT_LOG.isInfoEnabled() && !GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
+            if (!printComplete) {
+                String json = jsonDesensitization.toJson(body);
+                LogUtil.ROOT_LOG.info("after body({})", U.toStr(json, maxPrintLength, printLength));
             }
         }
         return super.afterBodyRead(body, inputMessage, parameter, targetType, converterType);
