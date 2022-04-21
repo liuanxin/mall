@@ -59,7 +59,7 @@ public final class JsonModule {
                     if (start > 0 && start < length) {
                         sbd.append(value, 0, start).append(" ***");
                     }
-                    if (end > 0 && end < length) {
+                    if (end > 0 && end > start && end < length) {
                         sbd.append(" ").append(value, end, length);
                     }
                     String text = sbd.toString();

@@ -2,12 +2,17 @@ package com.github.common.util;
 
 import com.github.common.Const;
 
+import java.util.Arrays;
+import java.util.List;
+
 /** 脱敏工具类 */
 public final class DesensitizationUtil {
 
+    private static final List<String> SENSITIVE_LIST = Arrays.asList("*", "**", "****", "*****");
+
     public static String des(String key, String value) {
         if (U.isBlank(key) || U.isBlank(value)) {
-            return value;
+            return SENSITIVE_LIST.get(U.RANDOM.nextInt(SENSITIVE_LIST.size()));
         }
 
         String lower = key.toLowerCase();
@@ -28,7 +33,7 @@ public final class DesensitizationUtil {
                 return U.foggyIdCard(value);
             }
             default: {
-                return U.foggyValue(value, 1000, 200);
+                return U.foggyValue(value, 30, 10);
             }
         }
     }
