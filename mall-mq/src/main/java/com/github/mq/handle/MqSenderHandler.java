@@ -11,7 +11,6 @@ import com.github.mq.constant.SelfCorrelationData;
 import com.github.mq.model.MqSend;
 import com.github.mq.service.MqSendService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.core.ReturnedMessage;
@@ -24,7 +23,6 @@ import org.springframework.context.annotation.Configuration;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
-@Slf4j
 @RequiredArgsConstructor
 @Configuration
 @ConditionalOnClass(RabbitTemplate.class)
@@ -108,12 +106,12 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
     @Override
     public void confirm(CorrelationData correlationData, boolean ack, String cause) {
         if (ack) {
-            if (log.isDebugEnabled()) {
-                log.debug("消息({})到 exchange 成功", JsonUtil.toJson(correlationData));
+            if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+                LogUtil.ROOT_LOG.debug("消息({})到 exchange 成功", JsonUtil.toJson(correlationData));
             }
         } else {
-            if (log.isErrorEnabled()) {
-                log.error("消息({})到 exchange 失败, 原因({})", JsonUtil.toJson(correlationData), cause);
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("消息({})到 exchange 失败, 原因({})", JsonUtil.toJson(correlationData), cause);
             }
             if (correlationData instanceof SelfCorrelationData) {
                 SelfCorrelationData data = (SelfCorrelationData) correlationData;
@@ -139,16 +137,16 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
     发布消息, rabbitmq 的投递路径是:
       producer -> exchange -- (routing_key) --> queue -> consumer
 
-    ConfirmCallback#confirm : 消息跟 exchange 交互时调用, 成功到达则 ack 为 true, 此时还无法确定消息有没有到达 queue
-    ReturnCallback#returnedMessage : 消息 routing 不到 queue 时调用(需要设置 spring.rabbitmq.template.mandatory = true 默认会将消息丢弃)
+    ConfirmCallback#confirm        : 消息跟 exchange 交互时触发回调, 成功到达则 ack 为 true, 此时还无法确定消息有没有到达 queue
+    ReturnCallback#returnedMessage : 消息 routing 不到 queue 时触发回调(需要设置 spring.rabbitmq.template.mandatory = true, 默认会将消息丢弃)
     */
 
     @Override
     public void returnedMessage(ReturnedMessage msg) {
         Message message = msg.getMessage();
         String replyText = msg.getReplyText();
-        if (log.isErrorEnabled()) {
-            log.error("消息({})无法到队列: 响应码({}) 响应文本({}) 交换机({}) 路由键({})",
+        if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+            LogUtil.ROOT_LOG.error("消息({})无法到队列: 响应码({}) 响应文本({}) 交换机({}) 路由键({})",
                     JsonUtil.toJson(message), msg.getReplyCode(), replyText, msg.getExchange(), msg.getRoutingKey());
         }
         String msgId = message.getMessageProperties().getMessageId();
