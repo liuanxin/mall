@@ -12,7 +12,6 @@ import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.U;
 
 import java.io.IOException;
-import java.lang.annotation.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
@@ -32,15 +31,6 @@ public final class JsonModule {
             .addSerializer(String.class, StringDesensitization.instance);
 
 
-    /** 脱敏注解, 只用在 String 类型上 */
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    @Documented
-    public @interface Sensitive {
-        int start();
-        int end();
-    }
-
     /** 字符串脱敏 */
     public static class StringDesensitization extends JsonSerializer<String> {
         public static final StringDesensitization instance = new StringDesensitization();
@@ -59,14 +49,22 @@ public final class JsonModule {
             String fieldName = gen.getOutputContext().getCurrentName();
             try {
                 Class<?> clazz = gen.getCurrentValue().getClass();
-                Sensitive sensitive = clazz.getDeclaredField(fieldName).getAnnotation(Sensitive.class);
+                JsonSensitive sensitive = clazz.getDeclaredField(fieldName).getAnnotation(JsonSensitive.class);
                 if (U.isNotNull(sensitive)) {
                     int length = value.length();
                     int start = Math.max(0, sensitive.start());
                     int end = Math.min(length, sensitive.end());
 
-                    if (start > 0 && end < length && end > start) {
-                        gen.writeString(value.substring(0, start) + " *** " + value.substring(end, length));
+                    StringBuilder sbd = new StringBuilder();
+                    if (start > 0 && start < length) {
+                        sbd.append(value, 0, start).append(" ***");
+                    }
+                    if (end > 0 && end < length) {
+                        sbd.append(" ").append(value, end, length);
+                    }
+                    String text = sbd.toString();
+                    if (U.isNotBlank(text)) {
+                        gen.writeString(text);
                         return;
                     }
                 }
