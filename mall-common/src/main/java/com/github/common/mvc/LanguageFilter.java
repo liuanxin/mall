@@ -15,7 +15,6 @@ import java.util.Locale;
 /**
  * 基于下面的优先级依次获取语言
  *
- * 1. 头里的 langParamName
  * 1. 参数里的 langParamName
  * 2. 头里的 Accept-Language
  * 3. request.getLocale()
@@ -40,10 +39,7 @@ public class LanguageFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
 
         String lanParam = U.defaultIfBlank(languageParam, "lang");
-        String lan = request.getHeader(lanParam);
-        if (U.isBlank(lan)) {
-            lan = request.getParameter(lanParam);
-        }
+        String lan = request.getParameter(lanParam);
         if (U.isBlank(lan)) {
             lan = request.getHeader("Accept-Language");
         }
