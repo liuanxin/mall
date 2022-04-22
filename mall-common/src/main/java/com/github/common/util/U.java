@@ -42,7 +42,7 @@ public final class U {
     /** 递归时的最大深度, 如果数据本身有自己引用自己, 加一个深度避免无限递归 */
     public static final int MAX_DEPTH = 10;
 
-    /** 手机号. 见: https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%86%85%E5%9C%B0%E7%A7%BB%E5%8A%A8%E7%BB%88%E7%AB%AF%E9%80%9A%E8%AE%AF%E5%8F%B7%E6%AE%B5 */
+    /** 手机号. 见 <a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%86%85%E5%9C%B0%E7%A7%BB%E5%8A%A8%E7%BB%88%E7%AB%AF%E9%80%9A%E8%AE%AF%E5%8F%B7%E6%AE%B5">https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%86%85%E5%9C%B0%E7%A7%BB%E5%8A%A8%E7%BB%88%E7%AB%AF%E9%80%9A%E8%AE%AF%E5%8F%B7%E6%AE%B5</a> */
     private static final String PHONE = "^1[3-9]\\d{9}$";
     /** _abc-def@123-hij.uvw_xyz.com 是正确的, -123@xyz.com 不是 */
     private static final String EMAIL = "^\\w[\\w\\-]*@([\\w\\-]+\\.\\w+)+$";
@@ -55,7 +55,7 @@ public final class U {
 
     /** 中文 */
     private static final String CHINESE = "[\\u4e00-\\u9fa5]";
-    /** 是否是移动端: https://gist.github.com/dalethedeveloper/1503252 */
+    /** 是否是移动端. 见 <a href="https://gist.github.com/dalethedeveloper/1503252">https://gist.github.com/dalethedeveloper/1503252</a> */
     private static final String MOBILE = "(?i)Mobile|iP(hone|od|ad)|Android|BlackBerry|Blazer|PSP|UCWEB|IEMobile|Kindle|NetFront|Silk-Accelerated|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Dol(f|ph)in|Skyfire|Zune";
     /** 是否是 pc 端 */
     private static final String PC = "(?i)AppleWebKit|Mozilla|Chrome|Safari|MSIE|Windows NT";
@@ -890,20 +890,8 @@ public final class U {
         return src + "/";
     }
 
-    /** 属性转换成方法, 加上 get 并首字母大写 */
-    public static String fieldToMethod(String field) {
-        if (isBlank(field)) {
-            return EMPTY;
-        }
-        field = field.trim();
-        if (isBlank(field)) {
-            return EMPTY;
-        }
-        return  "get" + field.substring(0, 1).toUpperCase() + field.substring(1);
-    }
-
     /**
-     * 调用对象的属性对应的 get 方法
+     * 调用对象的属性对应的 get 方法并将返回值用 String 返回
      *
      * @param data  对象
      * @param field 属性名
@@ -971,7 +959,7 @@ public final class U {
         return getAllMethodWithDepth(clazz, 0);
     }
     private static Set<Method> getAllMethodWithDepth(Class<?> clazz, int depth) {
-        if (clazz.getName().equals(Object.class.getName())) {
+        if (clazz == Object.class) {
             return Collections.emptySet();
         }
 
@@ -980,7 +968,7 @@ public final class U {
         methodSet.addAll(Arrays.asList(clazz.getMethods()));
 
         Class<?> superclass = clazz.getSuperclass();
-        if (superclass.getName().equals(Object.class.getName())) {
+        if (superclass == Object.class) {
             return methodSet;
         }
 
@@ -993,126 +981,15 @@ public final class U {
         return methodSet;
     }
 
-    /**
-     * <pre>
-     * 将 source 中字段的值填充到 target 中, 如果已经有值了就忽略 set
-     *
-     * if (target.getXyz() != null) {
-     *     Object xyz = source.getXyz();
-     *     if (xyz != null) {
-     *         target.setXyz(xyz);
-     *     }
-     * }
-     *
-     * PS: 字段类型如果是基础数据类型, 会有默认值: boolean 是 false, int、long、float、double 是 0
-     * 因此这时候判断不是空(上面的 target.getXyz() != null)时将总是返回 true, 因此请使用包装类型
-     * </pre>
-     *
-     * @param source 源对象
-     * @param target 目标对象
-     */
-    public static <S,T> void fillData(S source, T target) {
-        fillData(source, target, true);
-    }
-
-    /**
-     * 将 source 中字段的值填充到 target 中
-     *
-     * if (ignoreAlready) {
-     *     if (target.getXyz() != null) {
-     *         Object xyz = source.getXyz();
-     *         if (xyz != null) {
-     *             target.setXyz(xyz);
-     *         }
-     *     }
-     * } else {
-     *     Object xyz = source.getXyz();
-     *     if (xyz != null) {
-     *         target.setXyz(xyz);
-     *     }
-     * }
-     *
-     * @param source 源对象
-     * @param target 目标对象
-     * @param ignoreAlready true: target 中的字段有值则不进行 set 操作
-     */
-    @SuppressWarnings("DuplicatedCode")
-    public static <S,T> void fillData(S source, T target, boolean ignoreAlready) {
-        Class<?> tc = target.getClass();
-        Method[] targetMethods = tc.getMethods();
-
-        Map<String, Method> targetMethodMap = new HashMap<>();
-        for (Method method : targetMethods) {
-            targetMethodMap.put(method.getName(), method);
-        }
-
-        Class<?> sc = source.getClass();
-        Method[] sourceMethods = sc.getMethods();
-        Map<String, Method> sourceMethodMap = new HashMap<>();
-        for (Method method : sourceMethods) {
-            sourceMethodMap.put(method.getName(), method);
-        }
-        for (Method method : targetMethods) {
-            String methodName = method.getName();
-            if (methodName.startsWith("set")) {
-                // boolean 的 get 方法是 isXxx(), 其他(包括 Boolean)都是 getXxx()
-                String getMethodName = method.getReturnType().getName().equals(boolean.class.getName())
-                        ? ("is" + methodName.substring(2)) : ("get" + methodName.substring(3));
-                if (sourceMethodMap.containsKey(getMethodName)) {
-                    if (ignoreAlready) {
-                        try {
-                            Object oldResult = targetMethodMap.get(getMethodName).invoke(target);
-                            if (oldResult != null) {
-                                continue;
-                            }
-                        } catch (Exception e) {
-                            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                                LogUtil.ROOT_LOG.error("call({}) method({}) exception", tc.getName(), getMethodName, e);
-                            }
-                            continue;
-                        }
-                    }
-
-                    Object targetObj;
-                    try {
-                        targetObj = sourceMethodMap.get(getMethodName).invoke(source);
-                    } catch (Exception e) {
-                        if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                            LogUtil.ROOT_LOG.error("call({}) method({}) exception", sc.getName(), getMethodName, e);
-                        }
-                        continue;
-                    }
-                    if (targetObj != null) {
-                        try {
-                            method.invoke(target, targetObj);
-                        } catch (Exception e) {
-                            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                                LogUtil.ROOT_LOG.error("call({}) method({}) exception", tc.getName(), getMethodName, e);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     /** 调用对象的公有方法. 异常将被忽略并返回 null */
     public static Object invokeMethod(Object obj, String method, Object... param) {
-        if (isNotNull(obj) && isNotBlank(method)) {
-            Class<?> clazz = obj.getClass();
+        Method m = getMethod(obj, method);
+        if (isNotNull(m)) {
             try {
-                return clazz.getDeclaredMethod(method).invoke(obj, param);
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                return m.invoke(obj, param);
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("call({}) method({}) exception", clazz.getName(), method, e);
-                }
-            }
-            // getMethod 会将从父类继承过来的 public 方法也查询出来
-            try {
-                return clazz.getMethod(method).invoke(obj, param);
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("call({}) method({}) exception", clazz.getName(), method, e);
+                    LogUtil.ROOT_LOG.error("call({}) method({}) exception", obj.getClass().getName(), method, e);
                 }
             }
         }
@@ -1128,7 +1005,7 @@ public final class U {
         }
 
         Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
-        String key = clazz + "->" + method;
+        String key = clazz.getName() + "->" + method;
         Method m = METHOD_MAP.get(key);
         if (isNotNull(m)) {
             return m;
@@ -1163,7 +1040,7 @@ public final class U {
         }
 
         Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
-        String key = clazz + "->" + field;
+        String key = clazz.getName() + "->" + field;
         Field f = FIELD_MAP.get(key);
         if (isNotNull(f)) {
             return f;

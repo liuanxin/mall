@@ -37,15 +37,17 @@ public class ExportCsv {
             if (A.isNotEmpty(dataList)) {
                 Set<String> titles = titleMap.keySet();
                 for (Object data : dataList) {
-                    if (sbd.length() > 0) {
-                        sbd.append(WRAP);
-                    }
-                    i = 0;
-                    for (String title : titles) {
-                        sbd.append(handleCsvContent(U.getFieldMethod(data, title)));
-                        i++;
-                        if (i != titleMap.size()) {
-                            sbd.append(SPLIT);
+                    if (U.isNotNull(data)) {
+                        if (sbd.length() > 0) {
+                            sbd.append(WRAP);
+                        }
+                        i = 0;
+                        for (String title : titles) {
+                            sbd.append(handleCsvContent(U.getFieldMethod(data, title)));
+                            i++;
+                            if (i != titleMap.size()) {
+                                sbd.append(SPLIT);
+                            }
                         }
                     }
                 }
@@ -73,14 +75,16 @@ public class ExportCsv {
         StringBuilder sbd = new StringBuilder();
         if (titles != null && titles.size() > 0 && dataList != null && dataList.size() > 0) {
             for (Object data : dataList) {
-                sbd.append(WRAP);
+                if (U.isNotNull(data)) {
+                    sbd.append(WRAP);
 
-                int i = 0;
-                for (String title : titles) {
-                    sbd.append(handleCsvContent(U.getFieldMethod(data, title)));
-                    i++;
-                    if (i != titles.size()) {
-                        sbd.append(SPLIT);
+                    int i = 0;
+                    for (String title : titles) {
+                        sbd.append(handleCsvContent(U.getFieldMethod(data, title)));
+                        i++;
+                        if (i != titles.size()) {
+                            sbd.append(SPLIT);
+                        }
                     }
                 }
             }
