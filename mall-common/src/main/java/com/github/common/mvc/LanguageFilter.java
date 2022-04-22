@@ -46,7 +46,6 @@ public class LanguageFilter implements Filter {
                 if (U.isBlank(lan)) {
                     lan = request.getHeader(lanParam);
                 }
-
                 Locale locale = null;
                 try {
                     if (U.isNotBlank(lan)) {
@@ -57,23 +56,23 @@ public class LanguageFilter implements Filter {
                         LogUtil.ROOT_LOG.error("parse Local exception", e);
                     }
                 }
-
                 if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
                     locale = request.getLocale();
                 }
+
                 if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
-                    locale = Locale.SIMPLIFIED_CHINESE;
-                }
-                if (U.isNotNull(locale)) {
+                    return Locale.SIMPLIFIED_CHINESE;
+                } else {
                     // 中文就使用简体中文, 英文就使用美式英文(如果有具体的 zh_CN、zh_TW、en_GB、en_US、en_CA 就不应用这样处理)
                     String language = locale.getLanguage();
                     if ("zh".equalsIgnoreCase(language)) {
-                        locale = Locale.SIMPLIFIED_CHINESE;
+                        return Locale.SIMPLIFIED_CHINESE;
                     } else if ("en".equalsIgnoreCase(language)) {
-                        locale = Locale.US;
+                        return Locale.US;
+                    } else {
+                        return locale;
                     }
                 }
-                return locale;
             }
         };
 
