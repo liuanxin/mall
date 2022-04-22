@@ -31,7 +31,7 @@ public final class JsonModule {
             .addSerializer(String.class, GlobalLogSensitiveSerializer.INSTANCE);
 
 
-    /** 全局日志脱敏 */
+    /** 脱敏主要用在 日志打印 和 某些业务接口上, 当前序列化处理器用在日志打印上 */
     public static class GlobalLogSensitiveSerializer extends JsonSerializer<String> {
         public static final GlobalLogSensitiveSerializer INSTANCE = new GlobalLogSensitiveSerializer();
 

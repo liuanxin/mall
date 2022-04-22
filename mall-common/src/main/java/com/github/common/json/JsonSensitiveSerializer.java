@@ -8,7 +8,7 @@ import com.github.common.util.U;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
-/** 脱敏主要用在 日志打印 和 某些业务接口上, 当前序列化处理器用在业务接口上, 在需要做脱敏的  */
+/** 脱敏主要用在 日志打印 和 某些业务接口上, 当前序列化处理器用在业务接口上, 在需要做脱敏的实体的 String 类型上标 JsonSensitive 注解 */
 public class JsonSensitiveSerializer extends JsonSerializer<String> {
 
     @Override
