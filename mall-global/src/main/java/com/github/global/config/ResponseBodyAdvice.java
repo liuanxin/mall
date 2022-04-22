@@ -35,7 +35,7 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
     @Value("${log.printLength:1000}")
     private int printLength;
 
-    private final JsonDesensitization jsonDesensitization;
+    private final GlobalLogHandler logHandler;
 
     @Override
     protected void beforeBodyWriteInternal(MappingJacksonValue bodyContainer, MediaType contentType, MethodParameter parameter,
@@ -45,7 +45,7 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
             if (GlobalConst.EXCLUDE_PATH_SET.contains(uri)) {
                 return;
             }
-            String json = jsonDesensitization.toJson(bodyContainer.getValue());
+            String json = logHandler.toJson(bodyContainer.getValue());
             if (U.isBlank(json)) {
                 return;
             }

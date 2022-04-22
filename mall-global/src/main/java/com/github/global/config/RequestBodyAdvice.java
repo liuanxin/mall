@@ -45,7 +45,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Value("${log.printLength:1000}")
     private int printLength;
 
-    private final JsonDesensitization jsonDesensitization;
+    private final GlobalLogHandler logHandler;
     private final ObjectMapper mapper;
 
     @Override
@@ -73,7 +73,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                                 String data = new String(bytes, StandardCharsets.UTF_8);
                                 try {
                                     // 先转换成对象, 再输出成 string, 这样可以去掉空白符
-                                    String json = jsonDesensitization.toJson(mapper.readValue(data, Object.class));
+                                    String json = logHandler.toJson(mapper.readValue(data, Object.class));
                                     LogUtil.ROOT_LOG.info("before body({})", U.toStr(json, maxPrintLength, printLength));
                                 } catch (JsonProcessingException e) {
                                     LogUtil.ROOT_LOG.error("@RequestBody({}) has not json data", data, e);
@@ -93,7 +93,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                                 Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
         if (LogUtil.ROOT_LOG.isInfoEnabled() && !GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
             if (!printComplete) {
-                String json = jsonDesensitization.toJson(body);
+                String json = logHandler.toJson(body);
                 LogUtil.ROOT_LOG.info("after body({})", U.toStr(json, maxPrintLength, printLength));
             }
         }

@@ -12,7 +12,6 @@ import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.U;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
@@ -27,14 +26,14 @@ public final class JsonModule {
             .addDeserializer(Date.class, DateDeserializer.INSTANCE);
 
 
-    /** 脱敏用到的序列化模块 */
-    public static final SimpleModule DES_MODULE = new SimpleModule()
-            .addSerializer(String.class, StringDesensitization.instance);
+    /** 日志脱敏用到的序列化模块 */
+    public static final SimpleModule LOG_SENSITIVE_MODULE = new SimpleModule()
+            .addSerializer(String.class, GlobalLogSensitiveSerializer.INSTANCE);
 
 
-    /** 字符串脱敏 */
-    public static class StringDesensitization extends JsonSerializer<String> {
-        public static final StringDesensitization instance = new StringDesensitization();
+    /** 全局日志脱敏 */
+    public static class GlobalLogSensitiveSerializer extends JsonSerializer<String> {
+        public static final GlobalLogSensitiveSerializer INSTANCE = new GlobalLogSensitiveSerializer();
 
         @Override
         public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
@@ -47,34 +46,7 @@ public final class JsonModule {
                 return;
             }
 
-            String fieldName = gen.getOutputContext().getCurrentName();
-            try {
-                Field field = U.getFieldInfo(gen.getCurrentValue(), fieldName);
-                if (U.isNotNull(field)) {
-                    JsonSensitive sensitive = field.getAnnotation(JsonSensitive.class);
-                    if (U.isNotNull(sensitive)) {
-                        int length = value.length();
-                        int start = Math.max(0, sensitive.start());
-                        int end = Math.min(length, sensitive.end());
-
-                        StringBuilder sbd = new StringBuilder();
-                        if (start > 0 && start < length) {
-                            sbd.append(value, 0, start).append(" ***");
-                        }
-                        if (end > 0 && end > start && end < length) {
-                            sbd.append(" ").append(value, end, length);
-                        }
-                        String text = sbd.toString();
-                        if (U.isNotBlank(text)) {
-                            gen.writeString(text);
-                            return;
-                        }
-                    }
-                }
-            } catch (Exception ignore) {
-            }
-
-            gen.writeString(DesensitizationUtil.des(fieldName, value));
+            gen.writeString(DesensitizationUtil.des(gen.getOutputContext().getCurrentName(), value));
         }
     }
 

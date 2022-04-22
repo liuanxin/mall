@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConditionalOnClass(ObjectMapper.class)
 @AutoConfigureAfter(JacksonAutoConfiguration.class)
-public class JsonDesensitization {
+public class GlobalLogHandler {
 
     /** 是否进行脱敏 */
     @Value("${json.hasDesensitization:false}")
@@ -26,16 +26,16 @@ public class JsonDesensitization {
 
 
     private final ObjectMapper objectMapper;
-    private final ObjectMapper desObjectMapper;
+    private final ObjectMapper logDesObjectMapper;
 
-    public JsonDesensitization(ObjectMapper objectMapper) {
+    public GlobalLogHandler(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
 
-        this.desObjectMapper = objectMapper.copy();
+        this.logDesObjectMapper = objectMapper.copy();
         // NON_NULL  : null 值不序列化
         // NON_EMPTY : null、空字符串、长度为 0 的 list、长度为 0 的 map 都不序列化
-        this.desObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        this.desObjectMapper.registerModule(JsonModule.DES_MODULE);
+        this.logDesObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        this.logDesObjectMapper.registerModule(JsonModule.LOG_SENSITIVE_MODULE);
     }
 
     public String toJson(Object data) {
@@ -48,7 +48,7 @@ public class JsonDesensitization {
             json = (String) data;
         } else {
             try {
-                json = (hasDesensitization ? desObjectMapper : objectMapper).writeValueAsString(data);
+                json = (hasDesensitization ? logDesObjectMapper : objectMapper).writeValueAsString(data);
             } catch (Exception e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                     LogUtil.ROOT_LOG.error("data desensitization exception", e);

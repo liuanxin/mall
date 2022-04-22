@@ -10,14 +10,14 @@
       "name": "json.hasDesensitization",
       "type": "java.lang.Boolean",
       "defaultValue": false,
-      "sourceType": "com.github.global.config.JsonDesensitization",
+      "sourceType": "com.github.global.config.GlobalLogHandler",
       "description": "是否进行脱敏."
     },
     {
       "name": "json.hasCompress",
       "type": "java.lang.Boolean",
       "defaultValue": false,
-      "sourceType": "com.github.global.config.JsonDesensitization",
+      "sourceType": "com.github.global.config.GlobalLogHandler",
       "description": "是否进行数据压缩."
     },
     {

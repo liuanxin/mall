@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -78,6 +79,10 @@ public final class U {
         TRUES.add("on");
         TRUES.add("yes");
     }
+
+    private static final Map<String, Method> METHOD_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, Field> FIELD_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, Class<?>> FIELD_CLASS_MAP = new ConcurrentHashMap<>();
 
     /** 生成指定位数的随机数: 纯数字 */
     public static String random(int length) {
@@ -905,7 +910,7 @@ public final class U {
      * @return 如果属性是枚举则调用枚举的 getValue 方法, 如果是日期则格式化, 否则返回此属性值的 toString 方法
      */
     @SuppressWarnings("rawtypes")
-    public static String getField(Object data, String field) {
+    public static String getFieldMethod(Object data, String field) {
         if (isNull(data) || isBlank(field)) {
             return EMPTY;
         }
@@ -1114,35 +1119,66 @@ public final class U {
         return null;
     }
 
-    public static Field getFieldInfo(Object obj, String field) {
-        if (isNull(obj) || isBlank(field)) {
-            return null;
-        }
-
-        Class<?> clazz = obj.getClass();
-        try {
-            return clazz.getDeclaredField(field);
-        } catch (NoSuchFieldException ignore) {
-        }
-        try {
-            return clazz.getField(field);
-        } catch (NoSuchFieldException ignore) {
-        }
-
-        return null;
+    public static Method getMethod(Object obj, String method) {
+        return getMethod(obj, method, 0);
     }
-    public static Class<?> getFieldType(Object obj, String field, int depth) {
+    public static Method getMethod(Object obj, String method, int depth) {
+        if (isNull(obj) || isBlank(method)) {
+            return null;
+        }
+
+        Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
+        String key = clazz + "->" + method;
+        Method m = METHOD_MAP.get(key);
+        if (isNotNull(m)) {
+            return m;
+        }
+
+        try {
+            Method md = clazz.getDeclaredMethod(method);
+            METHOD_MAP.put(key, md);
+            return md;
+        } catch (NoSuchMethodException ignore) {
+        }
+        try {
+            Method md = clazz.getMethod(method);
+            METHOD_MAP.put(key, md);
+            return md;
+        } catch (NoSuchMethodException ignore) {
+        }
+
+        Class<?> superclass = clazz.getSuperclass();
+        if (superclass == Object.class) {
+            return null;
+        }
+        return (depth <= MAX_DEPTH) ? getMethod(superclass, method, depth + 1) : null;
+    }
+
+    public static Field getField(Object obj, String field) {
+        return getField(obj, field, 0);
+    }
+    public static Field getField(Object obj, String field, int depth) {
         if (isNull(obj) || isBlank(field)) {
             return null;
         }
 
-        Class<?> clazz = obj.getClass();
+        Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
+        String key = clazz + "->" + field;
+        Field f = FIELD_MAP.get(key);
+        if (isNotNull(f)) {
+            return f;
+        }
+
         try {
-            return clazz.getDeclaredField(field).getType();
+            Field fd = clazz.getDeclaredField(field);
+            FIELD_MAP.put(key, fd);
+            return fd;
         } catch (NoSuchFieldException ignore) {
         }
         try {
-            return clazz.getField(field).getType();
+            Field fd = clazz.getField(field);
+            FIELD_MAP.put(key, fd);
+            return fd;
         } catch (NoSuchFieldException ignore) {
         }
 
@@ -1150,7 +1186,41 @@ public final class U {
         if (superclass == Object.class) {
             return null;
         }
-        return (depth <= MAX_DEPTH) ? getFieldType(superclass, field, depth + 1) : null;
+        return (depth <= MAX_DEPTH) ? getField(superclass, field, depth + 1) : null;
+    }
+
+    public static Class<?> getFieldClass(Object obj, String field) {
+        return getFieldClass(obj, field, 0);
+    }
+    public static Class<?> getFieldClass(Object obj, String field, int depth) {
+        if (isNull(obj) || isBlank(field)) {
+            return null;
+        }
+
+        Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
+        String key = clazz + "->" + field;
+        Class<?> c = FIELD_CLASS_MAP.get(key);
+        if (isNotNull(c)) {
+            return c;
+        }
+        try {
+            Class<?> cs = clazz.getDeclaredField(field).getType();
+            FIELD_CLASS_MAP.put(key, cs);
+            return cs;
+        } catch (NoSuchFieldException ignore) {
+        }
+        try {
+            Class<?> cs = clazz.getField(field).getType();
+            FIELD_CLASS_MAP.put(key, cs);
+            return cs;
+        } catch (NoSuchFieldException ignore) {
+        }
+
+        Class<?> superclass = clazz.getSuperclass();
+        if (superclass == Object.class) {
+            return null;
+        }
+        return (depth <= MAX_DEPTH) ? getFieldClass(superclass, field, depth + 1) : null;
     }
 
     /** 转换成 id=123&name=xyz&name=opq */
