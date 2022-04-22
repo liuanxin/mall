@@ -37,52 +37,57 @@ public class LanguageFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) req;
-        HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
+        HttpServletRequest httpRequest = (HttpServletRequest) req;
+        Locale locale = handleLocale(httpRequest);
+
+        HttpServletRequestWrapper request = new HttpServletRequestWrapper(httpRequest) {
             @Override
             public Locale getLocale() {
-                String lanParam = U.defaultIfBlank(languageParam, "lang");
-                String lan = request.getParameter(lanParam);
-                if (U.isBlank(lan)) {
-                    lan = request.getHeader(lanParam);
-                }
-                Locale locale = null;
-                try {
-                    if (U.isNotBlank(lan)) {
-                        locale = Locale.forLanguageTag(lan);
-                    }
-                } catch (Exception e) {
-                    if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                        LogUtil.ROOT_LOG.error("parse Local exception", e);
-                    }
-                }
-                if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
-                    locale = request.getLocale();
-                }
-
-                if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
-                    return Locale.SIMPLIFIED_CHINESE;
-                } else {
-                    // 中文就使用简体中文, 英文就使用美式英文(如果有具体的 zh_CN、zh_TW、en_GB、en_US、en_CA 就不应用这样处理)
-                    String language = locale.getLanguage();
-                    if ("zh".equalsIgnoreCase(language)) {
-                        return Locale.SIMPLIFIED_CHINESE;
-                    } else if ("en".equalsIgnoreCase(language)) {
-                        return Locale.US;
-                    } else {
-                        return locale;
-                    }
-                }
+                return locale;
             }
         };
 
-        Locale locale = wrapper.getLocale();
         LocaleContextHolder.setLocale(locale);
         LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
         if (U.isNotNull(localeResolver)) {
             localeResolver.setLocale(request, (HttpServletResponse) res, locale);
         }
-        chain.doFilter(wrapper, res);
+        chain.doFilter(request, res);
+    }
+
+    private Locale handleLocale(HttpServletRequest request) {
+        String lanParam = U.defaultIfBlank(languageParam, "lang");
+        String lan = request.getParameter(lanParam);
+        if (U.isBlank(lan)) {
+            lan = request.getHeader(lanParam);
+        }
+        Locale locale = null;
+        try {
+            if (U.isNotBlank(lan)) {
+                locale = Locale.forLanguageTag(lan);
+            }
+        } catch (Exception e) {
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("parse Local exception", e);
+            }
+        }
+        if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
+            locale = request.getLocale();
+        }
+
+        if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
+            return Locale.SIMPLIFIED_CHINESE;
+        } else {
+            // 中文就使用简体中文, 英文就使用美式英文(如果有具体的 zh_CN、zh_TW、en_GB、en_US、en_CA 就不应用这样处理)
+            String language = locale.getLanguage();
+            if ("zh".equalsIgnoreCase(language)) {
+                return Locale.SIMPLIFIED_CHINESE;
+            } else if ("en".equalsIgnoreCase(language)) {
+                return Locale.US;
+            } else {
+                return locale;
+            }
+        }
     }
 
     @Override
