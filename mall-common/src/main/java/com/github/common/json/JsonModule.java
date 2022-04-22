@@ -12,6 +12,7 @@ import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.U;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
@@ -48,24 +49,26 @@ public final class JsonModule {
 
             String fieldName = gen.getOutputContext().getCurrentName();
             try {
-                Class<?> clazz = gen.getCurrentValue().getClass();
-                JsonSensitive sensitive = clazz.getDeclaredField(fieldName).getAnnotation(JsonSensitive.class);
-                if (U.isNotNull(sensitive)) {
-                    int length = value.length();
-                    int start = Math.max(0, sensitive.start());
-                    int end = Math.min(length, sensitive.end());
+                Field field = U.getFieldInfo(gen.getCurrentValue(), fieldName);
+                if (U.isNotNull(field)) {
+                    JsonSensitive sensitive = field.getAnnotation(JsonSensitive.class);
+                    if (U.isNotNull(sensitive)) {
+                        int length = value.length();
+                        int start = Math.max(0, sensitive.start());
+                        int end = Math.min(length, sensitive.end());
 
-                    StringBuilder sbd = new StringBuilder();
-                    if (start > 0 && start < length) {
-                        sbd.append(value, 0, start).append(" ***");
-                    }
-                    if (end > 0 && end > start && end < length) {
-                        sbd.append(" ").append(value, end, length);
-                    }
-                    String text = sbd.toString();
-                    if (U.isNotBlank(text)) {
-                        gen.writeString(text);
-                        return;
+                        StringBuilder sbd = new StringBuilder();
+                        if (start > 0 && start < length) {
+                            sbd.append(value, 0, start).append(" ***");
+                        }
+                        if (end > 0 && end > start && end < length) {
+                            sbd.append(" ").append(value, end, length);
+                        }
+                        String text = sbd.toString();
+                        if (U.isNotBlank(text)) {
+                            gen.writeString(text);
+                            return;
+                        }
                     }
                 }
             } catch (Exception ignore) {

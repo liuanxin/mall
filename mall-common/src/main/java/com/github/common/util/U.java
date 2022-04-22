@@ -1114,8 +1114,25 @@ public final class U {
         return null;
     }
 
+    public static Field getFieldInfo(Object obj, String field) {
+        if (isNull(obj) || isBlank(field)) {
+            return null;
+        }
+
+        Class<?> clazz = obj.getClass();
+        try {
+            return clazz.getDeclaredField(field);
+        } catch (NoSuchFieldException ignore) {
+        }
+        try {
+            return clazz.getField(field);
+        } catch (NoSuchFieldException ignore) {
+        }
+
+        return null;
+    }
     public static Class<?> getFieldType(Object obj, String field, int depth) {
-        if (isBlank(field)) {
+        if (isNull(obj) || isBlank(field)) {
             return null;
         }
 
