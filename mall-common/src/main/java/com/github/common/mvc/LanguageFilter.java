@@ -78,7 +78,7 @@ public class LanguageFilter implements Filter {
         if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
             return Locale.SIMPLIFIED_CHINESE;
         } else {
-            // 中文就使用简体中文, 英文就使用美式英文(如果有具体的 zh_CN、zh_TW、en_GB、en_US、en_CA 就不应用这样处理)
+            // 中文就使用 zh_CN, 英文就使用 en_US (如果还有具体的 zh_TW, en_GB、en_CA 就不应用这样处理)
             String language = locale.getLanguage();
             if ("zh".equalsIgnoreCase(language)) {
                 return Locale.SIMPLIFIED_CHINESE;
