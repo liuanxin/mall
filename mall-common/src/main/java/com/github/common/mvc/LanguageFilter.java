@@ -62,13 +62,13 @@ public class LanguageFilter implements Filter {
             lan = request.getHeader(lanParam);
         }
         Locale locale = null;
-        try {
-            if (U.isNotBlank(lan)) {
+        if (U.isNotBlank(lan)) {
+            try {
                 locale = Locale.forLanguageTag(lan);
-            }
-        } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("parse Local exception", e);
+            } catch (Exception e) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error("parse Local exception", e);
+                }
             }
         }
         if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
