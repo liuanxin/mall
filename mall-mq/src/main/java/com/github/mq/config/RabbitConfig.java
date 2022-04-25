@@ -58,22 +58,22 @@ public class RabbitConfig {
         for (Exchange exchange : exchangeMap.values()) {
             rabbitAdmin.declareExchange(exchange);
         }
-        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("定义 RabbitMQ 路由({} 个: {})", exchangeMap.size(), exchangeMap.keySet());
+        if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+            LogUtil.ROOT_LOG.info("declare RabbitMQ exchange({} 个: {})", exchangeMap.size(), exchangeMap.keySet());
         }
 
         for (Queue queue : queueMap.values()) {
             rabbitAdmin.declareQueue(queue);
         }
-        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("定义 RabbitMQ 队列({} 个: {})", queueMap.size(), queueMap.keySet());
+        if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+            LogUtil.ROOT_LOG.info("declare RabbitMQ queue({} 个: {})", queueMap.size(), queueMap.keySet());
         }
 
         for (Binding binding : bindingMap.values()) {
             rabbitAdmin.declareBinding(binding);
         }
-        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("定义 RabbitMQ 绑定({} 个: {})", bindingMap.size(), bindingMap.keySet());
+        if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+            LogUtil.ROOT_LOG.info("declare RabbitMQ binding({} 个: {})", bindingMap.size(), bindingMap.keySet());
         }
         return rabbitAdmin;
     }
