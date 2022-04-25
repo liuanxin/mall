@@ -50,10 +50,8 @@ public class RabbitConfig {
                 queueMap.put(queueName, queue);
             }
 
-            Binding binding = bindingMap.get(bindingName);
-            if (U.isNull(binding)) {
-                binding = BindingBuilder.bind(queue).to(exchange).with(routingKey).noargs();
-                bindingMap.put(bindingName, binding);
+            if (!bindingMap.containsKey(bindingName)) {
+                bindingMap.put(bindingName, BindingBuilder.bind(queue).to(exchange).with(routingKey).noargs());
             }
         }
 
