@@ -50,14 +50,8 @@ public class ValidationUtil {
     }
 
     static String getParamField(Class<?> clazz, String field) {
-        if (U.isNotNull(clazz) && U.isNotBlank(field)) {
-            try {
-                JsonProperty property = AnnotationUtils.findAnnotation(clazz.getDeclaredField(field), JsonProperty.class);
-                // 属性上如果没有标 @JsonProperty 注解就返回属性名
-                return U.isNull(property) ? field : property.value();
-            } catch (Exception ignore) {
-            }
-        }
-        return field;
+        JsonProperty property = AnnotationUtils.findAnnotation(U.getField(clazz, field), JsonProperty.class);
+        // 属性上如果没有标 @JsonProperty 注解就返回属性名
+        return U.isNull(property) ? field : property.value();
     }
 }

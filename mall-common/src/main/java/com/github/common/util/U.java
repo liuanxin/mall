@@ -932,7 +932,7 @@ public final class U {
         return getAllFieldWithDepth(clazz, 0);
     }
     private static Set<Field> getAllFieldWithDepth(Class<?> clazz, int depth) {
-        if (clazz.getName().equals(Object.class.getName())) {
+        if (clazz == Object.class) {
             return Collections.emptySet();
         }
 
@@ -941,7 +941,7 @@ public final class U {
         fieldSet.addAll(Arrays.asList(clazz.getFields()));
 
         Class<?> superclass = clazz.getSuperclass();
-        if (superclass.getName().equals(Object.class.getName())) {
+        if (superclass == Object.class) {
             return fieldSet;
         }
 
@@ -1000,11 +1000,15 @@ public final class U {
         return getMethod(obj, method, 0);
     }
     public static Method getMethod(Object obj, String method, int depth) {
+        // noinspection DuplicatedCode
         if (isNull(obj) || isBlank(method)) {
             return null;
         }
 
         Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
+        if (clazz == Object.class) {
+            return null;
+        }
         String key = clazz.getName() + "->" + method;
         Method m = METHOD_MAP.get(key);
         if (isNotNull(m)) {
@@ -1035,11 +1039,15 @@ public final class U {
         return getField(obj, field, 0);
     }
     public static Field getField(Object obj, String field, int depth) {
+        // noinspection DuplicatedCode
         if (isNull(obj) || isBlank(field)) {
             return null;
         }
 
         Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
+        if (clazz == Object.class) {
+            return null;
+        }
         String key = clazz.getName() + "->" + field;
         Field f = FIELD_MAP.get(key);
         if (isNotNull(f)) {
@@ -1070,11 +1078,15 @@ public final class U {
         return getFieldClass(obj, field, 0);
     }
     public static Class<?> getFieldClass(Object obj, String field, int depth) {
+        // noinspection DuplicatedCode
         if (isNull(obj) || isBlank(field)) {
             return null;
         }
 
         Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
+        if (clazz == Object.class) {
+            return null;
+        }
         String key = clazz + "->" + field;
         Class<?> c = FIELD_CLASS_MAP.get(key);
         if (isNotNull(c)) {
