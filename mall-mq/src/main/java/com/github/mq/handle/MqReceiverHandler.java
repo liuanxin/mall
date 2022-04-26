@@ -2,6 +2,7 @@ package com.github.mq.handle;
 
 import com.github.common.date.DateUtil;
 import com.github.common.json.JsonUtil;
+import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.github.mq.constant.MqData;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 @RequiredArgsConstructor
@@ -119,30 +121,14 @@ public class MqReceiverHandler {
         }
     }
 
-//    @SuppressWarnings("rawtypes")
-    private void doDataConsume(String json, String msgId, String queueName, String businessType, String desc,
+    private void doDataConsume(String json, String messageId, String queueName, String businessType, String desc,
                                long deliveryTag, Channel channel, Consumer<String> consumer) {
+        String msgId = getMsgId(messageId, json);
         if (U.isBlank(msgId)) {
-            // 从消息体里面获取 msgId
-//            Map map = JsonUtil.toObject(json, Map.class);
-//            if (A.isNotEmpty(map)) {
-//                msgId = U.toStr(map.get("message_id"));
-//                if (U.isBlank(msgId)) {
-//                    msgId = U.toStr(map.get("msg_id"));
-//                }
-//                if (U.isBlank(msgId)) {
-//                    msgId = U.toStr(map.get("messageId"));
-//                }
-//                if (U.isBlank(msgId)) {
-//                    msgId = U.toStr(map.get("msgId"));
-//                }
-//                if (U.isBlank(msgId)) {
-                    if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                        LogUtil.ROOT_LOG.info("{}消费数据({})时没有消息 id", desc, json);
-                    }
-                    return;
-//                }
-//            }
+            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                LogUtil.ROOT_LOG.info("{}消费数据({})时没有消息 id", desc, json);
+            }
+            return;
         }
 
         MqReceive model = mqReceiveService.queryByMsg(msgId);
@@ -191,6 +177,30 @@ public class MqReceiverHandler {
                 mqReceiveService.add(model);
             }
         }
+    }
+
+    @SuppressWarnings("rawtypes")
+    private String getMsgId(String msgId, String json) {
+        if (U.isNotBlank(msgId)) {
+            return msgId;
+        }
+        // 从消息体里面获取 msgId
+        Map map = JsonUtil.toObject(json, Map.class);
+        if (A.isEmpty(map)) {
+            return null;
+        }
+
+        msgId = U.toStr(map.get("message_id"));
+        if (U.isBlank(msgId)) {
+            msgId = U.toStr(map.get("msg_id"));
+        }
+        if (U.isBlank(msgId)) {
+            msgId = U.toStr(map.get("messageId"));
+        }
+        if (U.isBlank(msgId)) {
+            msgId = U.toStr(map.get("msgId"));
+        }
+        return msgId;
     }
 
     private void ack(Channel channel, long deliveryTag, String errorDesc) {
