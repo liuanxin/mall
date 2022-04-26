@@ -72,7 +72,7 @@ public class MqReceiverHandler {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("开始消费 mq({}), 消息发送时间({})", desc, DateUtil.formatDateTimeMs(selfData.getSendTime()));
             }
-            String msgId = messageProperties.getMessageId();
+            String msgId = getMsgId(messageProperties.getMessageId(), json);
             doDataConsume(json, msgId, mqInfo.getQueueName(), mqInfo.name().toLowerCase(), desc, deliveryTag, channel, consumer);
         } finally {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
@@ -111,7 +111,7 @@ public class MqReceiverHandler {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("开始消费 mq({})", desc);
             }
-            String msgId = messageProperties.getMessageId();
+            String msgId = getMsgId(messageProperties.getMessageId(), json);
             doDataConsume(json, msgId, queueName, mqInfo.name().toLowerCase(), desc, deliveryTag, channel, consumer);
         } finally {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
@@ -121,9 +121,8 @@ public class MqReceiverHandler {
         }
     }
 
-    private void doDataConsume(String json, String messageId, String queueName, String businessType, String desc,
+    private void doDataConsume(String json, String msgId, String queueName, String businessType, String desc,
                                long deliveryTag, Channel channel, Consumer<String> consumer) {
-        String msgId = getMsgId(messageId, json);
         if (U.isBlank(msgId)) {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("{}消费数据({})时没有消息 id", desc, json);
