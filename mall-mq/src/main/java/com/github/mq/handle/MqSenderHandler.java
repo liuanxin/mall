@@ -1,6 +1,5 @@
 package com.github.mq.handle;
 
-import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.ApplicationContexts;
 import com.github.common.util.LogUtil;
@@ -39,18 +38,18 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
      * 使用 {@link MqReceiverHandler#doConsume} 处理消息
      */
     public void doProvide(MqInfo mqInfo, String searchKey, String json) {
-        String msgId = String.valueOf(IdWorker.getId());
+        String msgId = U.uuid16();
         String traceId = LogUtil.getTraceId();
         MqData data = new MqData();
         data.setSendTime(new Date());
         data.setMqInfo(mqInfo.name().toLowerCase());
         data.setJson(json);
-        provide(searchKey, new SelfCorrelationData(msgId, traceId, mqInfo, JsonUtil.toJson(data)));
+        provide(searchKey, new SelfCorrelationData(U.uuid16(), traceId, mqInfo, JsonUtil.toJson(data)));
     }
 
     /** 用这个发送的 mq 消息, 使用 {@link MqReceiverHandler#doConsumeJustJson} 处理消息 */
     public void doProvideJustJson(MqInfo mqInfo, String searchKey, String json) {
-        provide(searchKey, new SelfCorrelationData(String.valueOf(IdWorker.getId()), LogUtil.getTraceId(), mqInfo, json));
+        provide(searchKey, new SelfCorrelationData(U.uuid16(), LogUtil.getTraceId(), mqInfo, json));
     }
 
     private void provide(String searchKey, SelfCorrelationData correlationData) {
@@ -66,7 +65,6 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         MqSend model = mqSendService.queryByMsgId(msgId);
         if (U.isNull(model)) {
             model = new MqSend();
-            model.setId(IdWorker.getId());
             model.setMsgId(msgId);
             model.setSearchKey(searchKey);
             model.setBusinessType(mqInfo.name().toLowerCase());
