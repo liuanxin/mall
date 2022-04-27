@@ -228,26 +228,22 @@ public class GlobalException {
         }
     }
     private List<String> errorTrack(Throwable e) {
-        if (online) {
-            return null;
-        }
-
-        List<String> errorList = new ArrayList<>();
-        errorList.add(e.getMessage().trim());
-        for (StackTraceElement trace : e.getStackTrace()) {
-            errorList.add(trace.toString().trim());
-        }
-        return errorList;
+        return online ? null : collectTrack(e);
     }
-    private String serviceExceptionTrack(Throwable e) {
+    private List<String> collectTrack(Throwable e) {
         List<String> exceptionList = new ArrayList<>();
-        exceptionList.add(e.getMessage());
+        exceptionList.add(e.getMessage().trim());
         for (StackTraceElement trace : e.getStackTrace()) {
             String msg = trace.toString().trim();
             if (msg.startsWith(Const.BASE_PACKAGE)) {
                 exceptionList.add(msg);
+            } else if (!"...".equals(A.last(exceptionList))) {
+                exceptionList.add("...");
             }
         }
-        return Joiner.on(",").join(exceptionList);
+        return exceptionList;
+    }
+    private String serviceExceptionTrack(Throwable e) {
+        return Joiner.on(",").join(collectTrack(e));
     }
 }
