@@ -35,19 +35,18 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
 
         if (obj instanceof String) {
             handleString((String) obj, gen);
+            return;
         }
-
-        else if (obj instanceof Number) {
+        if (obj instanceof Number) {
             handleNumber((Number) obj, gen);
+            return;
         }
-
-        else if (obj instanceof Date) {
+        if (obj instanceof Date) {
             handleDate((Date) obj, gen, provider);
+            return;
         }
 
-        else {
-            throw new RuntimeException("Annotation @JsonSensitive can not used on types other than String Number Date");
-        }
+        throw new RuntimeException("Annotation @JsonSensitive can not used on types other than String Number Date");
     }
 
     private void handleString(String value, JsonGenerator gen) throws IOException {
@@ -81,49 +80,52 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
 
     private void handleNumber(Number value, JsonGenerator gen) throws IOException {
         JsonSensitive sensitive = getAnnotationOnField(gen);
-        double randomNumber = U.callIfNotNull(sensitive, JsonSensitive::randomNumber, 0D);
-
-        if (value instanceof BigDecimal || value instanceof Double || value instanceof Float) {
-            double d = randomNumber > 0 ? RANDOM.nextDouble(randomNumber) : value.doubleValue();
-            int digitsNumber = U.callIfNotNull(sensitive, JsonSensitive::digitsNumber, 0);
-            // BigDecimal 或 float 或 double 使用 String 序列化
-            gen.writeString(BigDecimal.valueOf(d).setScale(digitsNumber, RoundingMode.DOWN).toString());
+        if (U.isNotNull(sensitive)) {
+            double randomNumber = Math.abs(sensitive.randomNumber());
+            if (value instanceof BigDecimal || value instanceof Double || value instanceof Float) {
+                double d = (randomNumber != 0) ? RANDOM.nextDouble(randomNumber) : value.doubleValue();
+                int digitsNumber = Math.abs(sensitive.digitsNumber());
+                // BigDecimal 或 float 或 double 使用 String 序列化
+                gen.writeString(BigDecimal.valueOf(d).setScale(digitsNumber, RoundingMode.DOWN).toString());
+                return;
+            }
+            if (value instanceof BigInteger || value instanceof Long) {
+                long l = (randomNumber != 0) ? RANDOM.nextLong((long) randomNumber) : value.longValue();
+                // long 或 BigInt 使用 String 序列化
+                gen.writeString(String.valueOf(l));
+                return;
+            }
+            if (value instanceof Integer || value instanceof Short) {
+                int i = (randomNumber != 0) ? RANDOM.nextInt((int) randomNumber) : value.intValue();
+                gen.writeNumber(i);
+                return;
+            }
         }
-
-        else if (value instanceof BigInteger || value instanceof Long) {
-            long l = randomNumber > 0 ? RANDOM.nextLong((long) randomNumber) : value.longValue();
-            // long 或 BigInt 使用 String 序列化
-            gen.writeString(String.valueOf(l));
-        }
-
-        else if (value instanceof Integer || value instanceof Short) {
-            gen.writeNumber(randomNumber > 0 ? RANDOM.nextInt((int) randomNumber) : value.intValue());
-        }
-
-        else {
-            gen.writeString(value.toString());
-        }
+        gen.writeString(value.toString());
     }
 
     private void handleDate(Date value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         Field field = getAnnotationField(gen);
         JsonSensitive sensitive = U.isNull(field) ? null : field.getAnnotation(JsonSensitive.class);
-        long randomNumber = U.callIfNotNull(sensitive, JsonSensitive::randomDate, 0L);
-        if (randomNumber > 0) {
-            long time = value.getTime();
-            long randomTime = RANDOM.nextLong(randomNumber);
-            value.setTime((randomTime > time) ? (randomTime - time) : (time - randomTime));
-        }
+        if (U.isNotNull(sensitive)) {
+            long randomDateTimeMillis = Math.abs(sensitive.randomDateTimeMillis());
+            if (randomDateTimeMillis != 0) {
+                long time = value.getTime();
+                long randomTime = RANDOM.nextLong(randomDateTimeMillis);
+                value.setTime((randomTime > time) ? (randomTime - time) : (time - randomTime));
 
-        if (!provider.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
-            JsonFormat jsonFormat = field.getAnnotation(JsonFormat.class);
-            if (U.isNotNull(jsonFormat)) {
-                JsonFormat.Value format = new JsonFormat.Value(jsonFormat);
-                Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
-                SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
-                df.setTimeZone(format.hasTimeZone() ? format.getTimeZone() : provider.getTimeZone());
-                gen.writeString(df.format(value));
-                return;
+                if (!provider.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
+                    JsonFormat jsonFormat = field.getAnnotation(JsonFormat.class);
+                    if (U.isNotNull(jsonFormat)) {
+                        // @see com.fasterxml.jackson.databind.ser.std.DateSerializer
+                        JsonFormat.Value format = new JsonFormat.Value(jsonFormat);
+                        Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
+                        SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+                        df.setTimeZone(format.hasTimeZone() ? format.getTimeZone() : provider.getTimeZone());
+                        gen.writeString(df.format(value));
+                        return;
+                    }
+                }
             }
         }
         provider.defaultSerializeDateValue(value, gen);
