@@ -4,11 +4,11 @@ import com.github.common.date.DateUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 /** 定时任务 --> 示例 */
-@Component
+@Configuration
 @RequiredArgsConstructor
 public class CronTask {
 

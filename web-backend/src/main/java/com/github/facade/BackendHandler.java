@@ -1,7 +1,7 @@
 package com.github.facade;
 
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
-@Component
+@Configuration
 public class BackendHandler {
 }

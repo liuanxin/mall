@@ -6,14 +6,14 @@ import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.github.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.support.CronTrigger;
-import org.springframework.stereotype.Component;
 
 /** 动态设置运行时间的定时任务 --> 示例 */
-@Component
+@Configuration
 @RequiredArgsConstructor
 public class DynamicCronTask implements SchedulingConfigurer {
 
