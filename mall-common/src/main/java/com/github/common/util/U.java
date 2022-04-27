@@ -80,9 +80,8 @@ public final class U {
         TRUES.add("yes");
     }
 
-    private static final Map<String, Method> METHOD_MAP = new ConcurrentHashMap<>();
-    private static final Map<String, Field> FIELD_MAP = new ConcurrentHashMap<>();
-    private static final Map<String, Class<?>> FIELD_CLASS_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, Method> METHOD_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Field> FIELD_CACHE = new ConcurrentHashMap<>();
 
     /** 生成指定位数的随机数: 纯数字 */
     public static String random(int length) {
@@ -1010,20 +1009,20 @@ public final class U {
             return null;
         }
         String key = clazz.getName() + "->" + method;
-        Method m = METHOD_MAP.get(key);
+        Method m = METHOD_CACHE.get(key);
         if (isNotNull(m)) {
             return m;
         }
 
         try {
             Method md = clazz.getDeclaredMethod(method);
-            METHOD_MAP.put(key, md);
+            METHOD_CACHE.put(key, md);
             return md;
         } catch (NoSuchMethodException ignore) {
         }
         try {
             Method md = clazz.getMethod(method);
-            METHOD_MAP.put(key, md);
+            METHOD_CACHE.put(key, md);
             return md;
         } catch (NoSuchMethodException ignore) {
         }
@@ -1049,20 +1048,20 @@ public final class U {
             return null;
         }
         String key = clazz.getName() + "->" + field;
-        Field f = FIELD_MAP.get(key);
+        Field f = FIELD_CACHE.get(key);
         if (isNotNull(f)) {
             return f;
         }
 
         try {
             Field fd = clazz.getDeclaredField(field);
-            FIELD_MAP.put(key, fd);
+            FIELD_CACHE.put(key, fd);
             return fd;
         } catch (NoSuchFieldException ignore) {
         }
         try {
             Field fd = clazz.getField(field);
-            FIELD_MAP.put(key, fd);
+            FIELD_CACHE.put(key, fd);
             return fd;
         } catch (NoSuchFieldException ignore) {
         }
@@ -1072,44 +1071,6 @@ public final class U {
             return null;
         }
         return (depth <= MAX_DEPTH) ? getField(superclass, field, depth + 1) : null;
-    }
-
-    public static Class<?> getFieldClass(Object obj, String field) {
-        return getFieldClass(obj, field, 0);
-    }
-    public static Class<?> getFieldClass(Object obj, String field, int depth) {
-        // noinspection DuplicatedCode
-        if (isNull(obj) || isBlank(field)) {
-            return null;
-        }
-
-        Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
-        if (clazz == Object.class) {
-            return null;
-        }
-        String key = clazz + "->" + field;
-        Class<?> c = FIELD_CLASS_MAP.get(key);
-        if (isNotNull(c)) {
-            return c;
-        }
-        try {
-            Class<?> cs = clazz.getDeclaredField(field).getType();
-            FIELD_CLASS_MAP.put(key, cs);
-            return cs;
-        } catch (NoSuchFieldException ignore) {
-        }
-        try {
-            Class<?> cs = clazz.getField(field).getType();
-            FIELD_CLASS_MAP.put(key, cs);
-            return cs;
-        } catch (NoSuchFieldException ignore) {
-        }
-
-        Class<?> superclass = clazz.getSuperclass();
-        if (superclass == Object.class) {
-            return null;
-        }
-        return (depth <= MAX_DEPTH) ? getFieldClass(superclass, field, depth + 1) : null;
     }
 
     /** 转换成 id=123&name=xyz&name=opq */
