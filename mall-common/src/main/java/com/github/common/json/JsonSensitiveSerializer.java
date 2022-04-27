@@ -1,7 +1,9 @@
 package com.github.common.json;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.github.common.util.U;
 
@@ -10,7 +12,9 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -102,18 +106,34 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
     }
 
     private void handleDate(Date value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        JsonSensitive sensitive = getAnnotationOnField(gen);
+        Field field = getAnnotationField(gen);
+        JsonSensitive sensitive = U.isNull(field) ? null : field.getAnnotation(JsonSensitive.class);
         long randomNumber = U.callIfNotNull(sensitive, JsonSensitive::randomDate, 0L);
         if (randomNumber > 0) {
             long time = value.getTime();
             long randomTime = RANDOM.nextLong(randomNumber);
             value.setTime((randomTime > time) ? (randomTime - time) : (time - randomTime));
         }
+
+        if (!provider.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
+            JsonFormat jsonFormat = field.getAnnotation(JsonFormat.class);
+            if (U.isNotNull(jsonFormat)) {
+                JsonFormat.Value format = new JsonFormat.Value(jsonFormat);
+                Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
+                SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+                df.setTimeZone(format.hasTimeZone() ? format.getTimeZone() : provider.getTimeZone());
+                gen.writeString(df.format(value));
+                return;
+            }
+        }
         provider.defaultSerializeDateValue(value, gen);
     }
 
     private JsonSensitive getAnnotationOnField(JsonGenerator gen) {
-        Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
+        Field field = getAnnotationField(gen);
         return U.isNull(field) ? null : field.getAnnotation(JsonSensitive.class);
+    }
+    private Field getAnnotationField(JsonGenerator gen) {
+        return U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
     }
 }
