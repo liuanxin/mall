@@ -72,7 +72,7 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
             }
             String text = sbd.toString();
             if (U.isNotBlank(text)) {
-                gen.writeString(text);
+                gen.writeString(text.trim());
                 return;
             }
         }
