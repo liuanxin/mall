@@ -86,8 +86,8 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
         if (value instanceof BigDecimal || value instanceof Double || value instanceof Float) {
             double d = randomNumber > 0 ? RANDOM.nextDouble(randomNumber) : value.doubleValue();
             int digitsNumber = U.callIfNotNull(sensitive, JsonSensitive::digitsNumber, 0);
-            gen.writeString(BigDecimal.valueOf(d).setScale(digitsNumber, RoundingMode.HALF_UP).toString());
             // BigDecimal 或 float 或 double 使用 String 序列化
+            gen.writeString(BigDecimal.valueOf(d).setScale(digitsNumber, RoundingMode.DOWN).toString());
         }
 
         else if (value instanceof BigInteger || value instanceof Long) {
