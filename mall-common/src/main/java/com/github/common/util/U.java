@@ -935,10 +935,7 @@ public final class U {
             return Collections.emptySet();
         }
 
-        Set<Field> fieldSet = new LinkedHashSet<>();
-        fieldSet.addAll(Arrays.asList(clazz.getDeclaredFields()));
-        fieldSet.addAll(Arrays.asList(clazz.getFields()));
-
+        Set<Field> fieldSet = new LinkedHashSet<>(Arrays.asList(clazz.getDeclaredFields()));
         Class<?> superclass = clazz.getSuperclass();
         if (superclass == Object.class) {
             return fieldSet;
@@ -962,10 +959,7 @@ public final class U {
             return Collections.emptySet();
         }
 
-        Set<Method> methodSet = new LinkedHashSet<>();
-        methodSet.addAll(Arrays.asList(clazz.getDeclaredMethods()));
-        methodSet.addAll(Arrays.asList(clazz.getMethods()));
-
+        Set<Method> methodSet = new LinkedHashSet<>(Arrays.asList(clazz.getDeclaredMethods()));
         Class<?> superclass = clazz.getSuperclass();
         if (superclass == Object.class) {
             return methodSet;
