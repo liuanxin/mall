@@ -1,5 +1,6 @@
 package com.github;
 
+import com.github.common.date.DateUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,12 +17,16 @@ public class WebManagerApplication extends SpringBootServletInitializer {
     }
 
     public static void main(String[] args) {
+        long ms = System.currentTimeMillis();
         ApplicationContext ctx = new SpringApplicationBuilder().sources(WebManagerApplication.class).run(args);
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
             String[] activeProfiles = ctx.getEnvironment().getActiveProfiles();
             if (A.isNotEmpty(activeProfiles)) {
                 LogUtil.ROOT_LOG.info("current profile : ({})", A.toStr(activeProfiles));
             }
+        }
+        if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+            LogUtil.ROOT_LOG.info("运行成功, 耗时({})", DateUtil.toHuman(System.currentTimeMillis() - ms));
         }
     }
 }
