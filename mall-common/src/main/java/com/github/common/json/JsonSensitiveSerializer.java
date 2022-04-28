@@ -106,22 +106,24 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
 
     private void handleDate(Date value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         Field field = getAnnotationField(gen);
-        JsonSensitive sensitive = U.isNull(field) ? null : field.getAnnotation(JsonSensitive.class);
-        if (U.isNotNull(sensitive)) {
-            long randomDateTimeMillis = Math.abs(sensitive.randomDateTimeMillis());
-            if (randomDateTimeMillis != 0) {
-                value.setTime(Math.abs(value.getTime() - Math.max(1L, RANDOM.nextLong(randomDateTimeMillis))));
+        if (U.isNotNull(field)) {
+            JsonSensitive sensitive = field.getAnnotation(JsonSensitive.class);
+            if (U.isNotNull(sensitive)) {
+                long randomDateTimeMillis = Math.abs(sensitive.randomDateTimeMillis());
+                if (randomDateTimeMillis != 0) {
+                    value.setTime(Math.abs(value.getTime() - Math.max(1L, RANDOM.nextLong(randomDateTimeMillis))));
 
-                if (!provider.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
-                    JsonFormat jsonFormat = field.getAnnotation(JsonFormat.class);
-                    if (U.isNotNull(jsonFormat)) {
-                        // @see com.fasterxml.jackson.databind.ser.std.DateSerializer
-                        JsonFormat.Value format = new JsonFormat.Value(jsonFormat);
-                        Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
-                        SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
-                        df.setTimeZone(format.hasTimeZone() ? format.getTimeZone() : provider.getTimeZone());
-                        gen.writeString(df.format(value));
-                        return;
+                    if (!provider.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
+                        JsonFormat jsonFormat = field.getAnnotation(JsonFormat.class);
+                        if (U.isNotNull(jsonFormat)) {
+                            // @see com.fasterxml.jackson.databind.ser.std.DateSerializer
+                            JsonFormat.Value format = new JsonFormat.Value(jsonFormat);
+                            Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
+                            SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+                            df.setTimeZone(format.hasTimeZone() ? format.getTimeZone() : provider.getTimeZone());
+                            gen.writeString(df.format(value));
+                            return;
+                        }
                     }
                 }
             }
