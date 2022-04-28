@@ -83,20 +83,20 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
         if (U.isNotNull(sensitive)) {
             double randomNumber = Math.abs(sensitive.randomNumber());
             if (value instanceof BigDecimal || value instanceof Double || value instanceof Float) {
-                double d = (randomNumber != 0) ? Math.max(1D, RANDOM.nextDouble(randomNumber)) : value.doubleValue();
+                double d = (randomNumber != 0) ? RANDOM.nextDouble(randomNumber) : value.doubleValue();
                 int digitsNumber = Math.abs(sensitive.digitsNumber());
                 // BigDecimal 或 float 或 double 使用 String 序列化
                 gen.writeString(BigDecimal.valueOf(d).setScale(digitsNumber, RoundingMode.DOWN).toString());
                 return;
             }
             if (value instanceof BigInteger || value instanceof Long) {
-                long l = (randomNumber != 0) ?  Math.max(1L, RANDOM.nextLong((long) randomNumber)) : value.longValue();
+                long l = (randomNumber != 0) ?  RANDOM.nextLong((long) randomNumber) : value.longValue();
                 // long 或 BigInt 使用 String 序列化
                 gen.writeString(String.valueOf(l));
                 return;
             }
             if (value instanceof Integer || value instanceof Short) {
-                int i = (randomNumber != 0) ? Math.max(1, RANDOM.nextInt((int) randomNumber)) : value.intValue();
+                int i = (randomNumber != 0) ? RANDOM.nextInt((int) randomNumber) : value.intValue();
                 gen.writeNumber(i);
                 return;
             }
