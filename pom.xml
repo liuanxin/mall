@@ -43,7 +43,7 @@
     </modules>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
 
         <!-- 所有的版本都在此处统一控制, 不要在其他地方设置! -->
 

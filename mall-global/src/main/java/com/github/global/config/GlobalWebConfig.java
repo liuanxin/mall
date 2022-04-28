@@ -39,7 +39,7 @@ public class GlobalWebConfig {
         return filterBean;
     }
 
-    @ConditionalOnProperty(prefix = "http", name = "language.handle", value = "true")
+    @ConditionalOnProperty(prefix = "http", name = "language.handle", havingValue = "true")
     @Bean
     @Order(3)
     public FilterRegistrationBean<LanguageFilter> languageFilter() {

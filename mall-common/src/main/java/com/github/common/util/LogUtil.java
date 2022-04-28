@@ -51,10 +51,14 @@ public final class LogUtil {
     /** 将 请求上下文信息 放进日志上下文 */
     public static void putContext(String traceId, RequestLogContext logContextInfo) {
         bindBasicInfo(traceId);
-        MDC.put(REQUEST_INFO, logContextInfo.requestInfo());
+        if (U.isNotNull(logContextInfo)) {
+            MDC.put(REQUEST_INFO, " " + logContextInfo.requestInfo());
+        }
     }
     public static void putIp(String ip) {
-        MDC.put(REAL_IP, ip);
+        if (U.isNotBlank(ip)) {
+            MDC.put(REAL_IP, " " + ip);
+        }
     }
     public static void putUser(String user) {
         if (U.isNotBlank(user)) {
@@ -73,10 +77,10 @@ public final class LogUtil {
         return U.toStr(MDC.get(TRACE_ID)).trim();
     }
     public static String getIp() {
-        return MDC.get(REAL_IP);
+        return MDC.get(REAL_IP).trim();
     }
     public static String getUser() {
-        return MDC.get(USER);
+        return MDC.get(USER).trim();
     }
 
 
