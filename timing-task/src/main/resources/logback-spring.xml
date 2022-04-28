@@ -84,7 +84,7 @@
     <!-- 输出到文件的地址 -->
     <property name="FILE_PATH" value="${filePath}/${applicationName}-${applicationProfile}"/>
     <!-- 输出到文件时的格式 -->
-    <property name="LOG_PATTERN" value="[%X{Record_Time}%d{yyyy-MM-dd HH:mm:ss.SSS}] [${applicationName}] [${PID} : %t : %logger{4.22} : %p] [%class{30}#%method\\(%file:%line\\)]%X{Real_Ip}%X{User}%X{Request_Info} %m%X{Trace_Id}%n"/>
+    <property name="LOG_PATTERN" value="[%X{Record_Time}%d{yyyy-MM-dd HH:mm:ss.SSS}] [${applicationName}] [${PID} : %t : %logger{4.22} : %p] [%class{30}#%method\\(%file:%line\\)] [%X{Real_Ip}%X{User}%X{Request_Info} %m%X{Trace_Id}]%n"/>
 
     <!-- 非开发、非生产: 输出到文件 -->
     <springProfile name="!(dev | prod)">
