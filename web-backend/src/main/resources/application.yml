@@ -19,12 +19,11 @@ spring:
   redis:
     host: dev-redis
     port: 6379
-  jackson:
-    # 将驼峰(userName)转成下划线(user_name)返回
-    property-naming-strategy: com.fasterxml.jackson.databind.PropertyNamingStrategy.SnakeCaseStrategy
+#  jackson:
+#    # 将驼峰转成下划线返回(userName --> user_name)
+#    property-naming-strategy: com.fasterxml.jackson.databind.PropertyNamingStrategy.SnakeCaseStrategy
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/test?useAffectedRows=true&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&autoReconnect=true&failOverReadOnly=false&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&queryInterceptors=com.github.common.sql.ShowSqlInterceptor
-    driverClassName: com.mysql.jdbc.Driver
+    url: jdbc:mysql://dev-db:3306/test?useAffectedRows=true&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&autoReconnect=true&failOverReadOnly=false&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&queryInterceptors=com.github.common.sql.ShowSqlInterceptor
     username: root
     password: root
     hikari:
