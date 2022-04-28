@@ -18,7 +18,7 @@
       level: info          # 项目的日志级别, 默认是 debug
       sqlLevel: info       # sql 日志级别, 高于 debug 级别的将不输出 sql 语句, 默认是 debug
       thirdLevel: error    # 第三方日志级别, 默认是 warn
-      filePath: /opt/logs  # 文件存放目录, 默认是 ~/logs
+      filePath: /opt/logs  # 文件存放目录, 默认是 ~/logs, 生成的文件名为 ${spring.application.name}-${spring.profiles.active}
       maxHistory: 30       # 文件最大保存天数, 默认是 15
 
     当下的日志策略是:
@@ -27,7 +27,7 @@
       生产(prod)环境:       项目的 info、warn 异步输出到一个文件, 项目的 error 和 第三方包的 error 异步输出到另一个文件
     -->
     <springProperty scope="context" name="applicationProfile" source="spring.profiles.active" defaultValue="dev"/>
-    <springProperty scope="context" name="applicationName" source="spring.application.name" defaultValue="log"/>
+    <springProperty scope="context" name="applicationName" source="spring.application.name" defaultValue="access"/>
 
     <springProperty scope="context" name="logLevel" source="log.level" defaultValue="debug"/>
     <springProperty scope="context" name="sqlLevel" source="log.sqlLevel" defaultValue="debug"/>
@@ -85,12 +85,6 @@
     <!-- 输出到文件时的格式 -->
     <property name="LOG_PATTERN" value="[%X{Record_Time}%d{yyyy-MM-dd HH:mm:ss.SSS}] [${applicationName}] [${PID} : %t : %logger{4.22} : %p] [%class{30}#%method\\(%file:%line\\)]%X{Real_Ip}%X{User}%X{Request_Info} %m%X{Trace_Id}%n"/>
 
-    <!--
-    除开发和生产以外的其他环境
-
-    用 & 貌似有问题. 见:
-    https://docs.spring.io/spring-framework/docs/5.3.1/reference/html/core.html#beans-definition-profiles-java
-    -->
     <springProfile name="!(dev | prod)">
         <appender name="PROJECT" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <file>${FILE_PATH}.log</file>

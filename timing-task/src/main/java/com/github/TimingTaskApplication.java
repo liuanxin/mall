@@ -1,5 +1,6 @@
 package com.github;
 
+import com.github.common.date.DateUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import org.springframework.boot.WebApplicationType;
@@ -13,6 +14,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class TimingTaskApplication {
 
     public static void main(String[] args) {
+        long ms = System.currentTimeMillis();
         ApplicationContext ctx = new SpringApplicationBuilder(TimingTaskApplication.class)
                 .web(WebApplicationType.NONE).run(args);
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
@@ -20,6 +22,9 @@ public class TimingTaskApplication {
             if (A.isNotEmpty(activeProfiles)) {
                 LogUtil.ROOT_LOG.debug("current profile : ({})", A.toStr(activeProfiles));
             }
+        }
+        if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+            LogUtil.ROOT_LOG.info("run success, use time({})", DateUtil.toHuman(System.currentTimeMillis() - ms));
         }
     }
 }

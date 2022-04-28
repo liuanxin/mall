@@ -26,7 +26,7 @@ public class WebManagerApplication extends SpringBootServletInitializer {
             }
         }
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-            LogUtil.ROOT_LOG.info("运行成功, 耗时({})", DateUtil.toHuman(System.currentTimeMillis() - ms));
+            LogUtil.ROOT_LOG.info("run success, use time({})", DateUtil.toHuman(System.currentTimeMillis() - ms));
         }
     }
 }
