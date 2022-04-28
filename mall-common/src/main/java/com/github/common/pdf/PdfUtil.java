@@ -117,64 +117,62 @@ public class PdfUtil {
     }
 
     private static void writePdf(PrintInfo template, Map<String, Object> data, OutputStream outputStream) throws DocumentException {
-        Document document;
-        if (template.hasSize()) {
-            document = new Document(new Rectangle(template.getWidth(), template.getHeight()));
-        } else {
-            document = new Document();
-        }
+        Document document = template.hasSize()
+                ? new Document(new Rectangle(template.getWidth(), template.getHeight()))
+                : new Document();
+        try {
+            PdfWriter writer = PdfWriter.getInstance(document, outputStream);
+            if (template.hasWatermark()) {
+                writer.setPageEvent(new WatermarkEvent(template.getWatermark()));
+            }
+            document.open();
+            PdfContentByte canvas = writer.getDirectContent();
 
-        PdfWriter writer = PdfWriter.getInstance(document, outputStream);
-        if (template.hasWatermark()) {
-            writer.setPageEvent(new WatermarkEvent(template.getWatermark()));
-        }
-        document.open();
-        PdfContentByte canvas = writer.getDirectContent();
+            float offsetX = toFloat(template.getOffsetX(), 0);
+            float offsetY = toFloat(template.getOffsetY(), 0);
 
-        float offsetX = toFloat(template.getOffsetX(), 0);
-        float offsetY = toFloat(template.getOffsetY(), 0);
+            String dynamicContentKey = template.getDynamicContentKey();
+            List<?> placeContent = placeContent(data, dynamicContentKey);
 
-        String dynamicContentKey = template.getDynamicContentKey();
-        List<?> placeContent = placeContent(data, dynamicContentKey);
+            List<?> list = template.pageList(data);
+            if (list != null) {
+                PrintInfo.TableDynamicHead tableHead = template.getDynamicHead();
+                List<PrintInfo.TableContent> tableContent = template.getDynamicContent();
+                if (tableHead != null && tableContent != null && tableContent.size() > 0) {
 
-        List<?> list = template.pageList(data);
-        if (list != null) {
-            PrintInfo.TableDynamicHead tableHead = template.getDynamicHead();
-            List<PrintInfo.TableContent> tableContent = template.getDynamicContent();
-            if (tableHead != null && tableContent != null && tableContent.size() > 0) {
+                    int total = list.size();
+                    int pageCount = toInt(tableHead.getSinglePageCount(), 10);
+                    int loopCount = (total % pageCount == 0) ? total / pageCount : (total / pageCount) + 1;
+                    loopCount = Math.max(Math.max(loopCount, placeContent.size()), 1);
 
-                int total = list.size();
-                int pageCount = toInt(tableHead.getSinglePageCount(), 10);
-                int loopCount = (total % pageCount == 0) ? total / pageCount : (total / pageCount) + 1;
-                loopCount = Math.max(Math.max(loopCount, placeContent.size()), 1);
+                    for (int i = 0; i < loopCount; i++) {
+                        int fromIndex = pageCount * i;
+                        boolean notLastPage = (i + 1 != loopCount);
+                        int toIndex = notLastPage ? (fromIndex + pageCount) : total;
+                        draw(i, loopCount, data, template, offsetX, offsetY, canvas);
+                        drawPlaceContent(template, canvas, offsetX, offsetY, placeContent, total, loopCount, i);
 
+                        List<?> pageDataList = list.subList(fromIndex, toIndex);
+                        drawDynamicTable(i * pageCount, total, pageDataList, tableHead, tableContent, offsetX, offsetY, canvas);
+                        if (notLastPage) {
+                            document.newPage();
+                        }
+                    }
+                }
+            } else {
+                int loopCount = placeContent.size();
                 for (int i = 0; i < loopCount; i++) {
-                    int fromIndex = pageCount * i;
-                    boolean notLastPage = (i + 1 != loopCount);
-                    int toIndex = notLastPage ? (fromIndex + pageCount) : total;
-                    draw(i, loopCount, data, template, offsetX, offsetY, canvas);
-                    drawPlaceContent(template, canvas, offsetX, offsetY, placeContent, total, loopCount, i);
-
-                    List<?> pageDataList = list.subList(fromIndex, toIndex);
-                    drawDynamicTable(i * pageCount, total, pageDataList, tableHead, tableContent, offsetX, offsetY, canvas);
-                    if (notLastPage) {
+                    drawPlaceContent(template, canvas, offsetX, offsetY, placeContent, loopCount, loopCount, i);
+                    draw(0, 1, data, template, offsetX, offsetY, canvas);
+                    if (i + 1 != loopCount) {
                         document.newPage();
                     }
                 }
             }
-        } else {
-            int loopCount = placeContent.size();
-            for (int i = 0; i < loopCount; i++) {
-                drawPlaceContent(template, canvas, offsetX, offsetY, placeContent, loopCount, loopCount, i);
-                draw(0, 1, data, template, offsetX, offsetY, canvas);
-                if (i + 1 != loopCount) {
-                    document.newPage();
-                }
-            }
+            document.add(new Chunk(""));
+        } finally {
+            document.close();
         }
-
-        document.add(new Chunk(""));
-        document.close();
     }
 
     private static void drawPlaceContent(PrintInfo template, PdfContentByte canvas, float offsetX, float offsetY,
