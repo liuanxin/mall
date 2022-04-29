@@ -82,7 +82,12 @@ public final class RequestUtil {
             return ip.split(",")[0].trim();
         }
 
-        return request.getRemoteAddr().split(",")[0].trim();
+        ip = request.getRemoteAddr();
+        if (U.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
+            return ip.split(",")[0].trim();
+        }
+
+        return "";
     }
 
     /** 获取请求协议, 通常是 http 和 https 两种. https 需要在 nginx 配置中添加 proxy_set_header X-Forwarded-Proto $scheme; 配置 */
