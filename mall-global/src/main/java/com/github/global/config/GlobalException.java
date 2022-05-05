@@ -230,9 +230,6 @@ public class GlobalException {
             }
         }
     }
-    private List<String> errorTrack(Throwable e) {
-        return online ? null : collectTrack(e);
-    }
     private List<String> collectTrack(Throwable e) {
         List<String> exceptionList = new ArrayList<>();
         exceptionList.add(e.getMessage().trim());
