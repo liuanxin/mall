@@ -162,33 +162,36 @@ public class GlobalException {
 
     // 以上是 spring 的内部异常
 
+    private ResponseEntity exception(Throwable e) {
+        if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+            LogUtil.ROOT_LOG.error("has exception", e);
+        }
+        int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
+        String msg = U.returnMsg(e, online);
+        List<String> errorList = (online ? null : collectTrack(e));
+        return ResponseEntity.status(status).body(JsonResult.fail(msg, errorList));
+    }
 
     /** 未知的所有其他异常 */
     @ExceptionHandler(Throwable.class)
-    public ResponseEntity other(Throwable e) {
-        Throwable exception = innerException(1, e);
-        if (exception instanceof BadRequestException) {
-            return badRequest((BadRequestException) exception);
-        } else if (exception instanceof ForbiddenException) {
-            return forbidden((ForbiddenException) exception);
-        } else if (exception instanceof ForceReturnException) {
-            return forceReturn((ForceReturnException) exception);
-        } else if (exception instanceof NotFoundException) {
-            return notFound((NotFoundException) exception);
-        } else if (exception instanceof NotLoginException) {
-            return notLogin((NotLoginException) exception);
-        } else if (exception instanceof ParamException) {
-            return param((ParamException) exception);
-        } else if (exception instanceof ServiceException) {
-            return service((ServiceException) exception);
+    public ResponseEntity other(Throwable throwable) {
+        Throwable e = innerException(1, throwable);
+        if (e instanceof BadRequestException) {
+            return badRequest((BadRequestException) e);
+        } else if (e instanceof ForbiddenException) {
+            return forbidden((ForbiddenException) e);
+        } else if (e instanceof ForceReturnException) {
+            return forceReturn((ForceReturnException) e);
+        } else if (e instanceof NotFoundException) {
+            return notFound((NotFoundException) e);
+        } else if (e instanceof NotLoginException) {
+            return notLogin((NotLoginException) e);
+        } else if (e instanceof ParamException) {
+            return param((ParamException) e);
+        } else if (e instanceof ServiceException) {
+            return service((ServiceException) e);
         } else {
-            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("has exception", exception);
-            }
-
-            String msg = U.returnMsg(exception, online);
-            int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
-            return ResponseEntity.status(status).body(JsonResult.fail(msg, errorTrack(exception)));
+            return exception(e);
         }
     }
 
