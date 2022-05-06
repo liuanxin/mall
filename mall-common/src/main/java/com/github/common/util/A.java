@@ -79,42 +79,39 @@ public final class A {
     public static String toStr(Collection<?> collection, String split) {
         if (isEmpty(collection)) {
             return U.EMPTY;
-        } else {
-            StringBuilder sbd = new StringBuilder();
-            int i = 0;
-            for (Object obj : collection) {
-                if (i > 0) {
-                    sbd.append(split);
-                }
-                sbd.append(obj);
-                i++;
-            }
-            return sbd.toString();
         }
+
+        StringJoiner joiner = new StringJoiner(split);
+        for (Object obj : collection) {
+            if (U.isNotNull(obj)) {
+                joiner.add(obj.toString());
+            }
+        }
+        return joiner.toString();
     }
     public static String toString(Object arrayOrCollection) {
         return toString(arrayOrCollection, SPLIT);
     }
     public static String toString(Object arrayOrCollection, String split) {
-        if (arrayOrCollection != null) {
-            if (arrayOrCollection.getClass().isArray()) {
-                StringBuilder sbd = new StringBuilder();
-                int len = Array.getLength(arrayOrCollection);
-                for (int i = 0; i < len; i++) {
-                    if (i > 0) {
-                        sbd.append(split);
-                    }
-                    sbd.append(U.toStr(Array.get(arrayOrCollection, i)));
-                }
-                return sbd.toString();
-            } else if (arrayOrCollection instanceof Collection) {
-                return toStr((Collection<?>) arrayOrCollection, split);
-            } else {
-                return arrayOrCollection.toString();
-            }
-        } else {
+        if (U.isNull(arrayOrCollection)) {
             return U.EMPTY;
         }
+
+        if (arrayOrCollection.getClass().isArray()) {
+            StringJoiner joiner = new StringJoiner(split);
+            int len = Array.getLength(arrayOrCollection);
+            for (int i = 0; i < len; i++) {
+                Object obj = Array.get(arrayOrCollection, i);
+                if (U.isNotNull(obj)) {
+                    joiner.add(obj.toString());
+                }
+            }
+            return joiner.toString();
+        }
+        if (arrayOrCollection instanceof Collection) {
+            return toStr((Collection<?>) arrayOrCollection, split);
+        }
+        return arrayOrCollection.toString();
     }
 
     public static String toStr(Object[] array) {
@@ -125,14 +122,14 @@ public final class A {
             return U.EMPTY;
         }
 
-        StringBuilder sbd = new StringBuilder();
-        for (int i = 0; i < array.length; i++) {
-            if (i > 0) {
-                sbd.append(split);
+        StringJoiner joiner = new StringJoiner(split);
+        int len = array.length;
+        for (Object obj : array) {
+            if (U.isNotNull(obj)) {
+                joiner.add(obj.toString());
             }
-            sbd.append(array[i]);
         }
-        return sbd.toString();
+        return joiner.toString();
     }
 
     public static <K, T> Map<K, T> listToMap(Collection<T> list, Function<? super T, K> func) {

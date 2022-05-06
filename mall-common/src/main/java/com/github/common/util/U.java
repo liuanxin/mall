@@ -1073,21 +1073,16 @@ public final class U {
             return EMPTY;
         }
 
-        StringBuilder sbd = new StringBuilder();
-        int i = 0;
+        StringJoiner joiner = new StringJoiner("&");
         for (Map.Entry<String, ?> entry : params.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
             if (isNotBlank(key) && isNotNull(value)) {
-                if (i > 0) {
-                    sbd.append("&");
-                }
                 String v = "password".equalsIgnoreCase(key) ? "***" : A.toString(value);
-                sbd.append(key).append("=").append(v);
-                i++;
+                joiner.add(key + "=" + v);
             }
         }
-        return sbd.toString();
+        return joiner.toString();
     }
 
     /** 获取指定类所在 jar 包的地址 */

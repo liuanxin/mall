@@ -3,10 +3,7 @@ package com.github.common.export.csv;
 import com.github.common.util.A;
 import com.github.common.util.U;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ExportCsv {
 
@@ -57,18 +54,13 @@ public class ExportCsv {
     }
 
     public static String writeCsvHead(LinkedHashMap<String, String> titleMap) {
-        StringBuilder sbd = new StringBuilder();
+        StringJoiner joiner = new StringJoiner(SPLIT);
         if (titleMap != null && titleMap.size() > 0) {
-            int i = 0;
             for (String title : titleMap.values()) {
-                sbd.append(handleCsvContent(title));
-                i++;
-                if (i != titleMap.size()) {
-                    sbd.append(SPLIT);
-                }
+                joiner.add(handleCsvContent(title));
             }
         }
-        return sbd.toString();
+        return joiner.toString();
     }
 
     public static String writeCsvContent(LinkedHashSet<String> titles, List<?> dataList) {
