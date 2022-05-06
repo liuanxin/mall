@@ -57,10 +57,17 @@ public class JsonUtil {
     }
 
     public static void globalConfig(ObjectMapper objectMapper) {
-        // 时间格式. 要想自定义在字段上标 @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8") 即可
+        // 默认时间格式. 要自定义在字段上标 @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8") 即可
         SimpleDateFormat dateFormat = new SimpleDateFormat(DateFormatType.YYYY_MM_DD_HH_MM_SS.getValue());
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
         objectMapper.setDateFormat(dateFormat);
+
+        // 日期不用 utc 方式显示(utc 是一个整数值)
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        // 日期不用 utc 方式显示(utc 是一个整数值)
+        objectMapper.disable(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS);
+        // 不确定的属性项上不要失败
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
         // 不确定值的枚举返回 null
         objectMapper.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL);
@@ -71,13 +78,6 @@ public class JsonUtil {
         // 允许字符串中包含未加引号的控制字符(值小于 32 的 ASCII 字符, 包括制表符和换行字符)
         // json 标准要求所有控制符必须使用引号, 因此默认是 false, 遇到此类字符时会抛出异常
         // objectMapper.enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature());
-
-        // 日期不用 utc 方式显示(utc 是一个整数值)
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        objectMapper.disable(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS);
-        // 不确定的属性项上不要失败
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
         objectMapper.registerModule(JsonModule.GLOBAL_MODULE);
     }
 
