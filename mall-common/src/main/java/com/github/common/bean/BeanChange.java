@@ -85,7 +85,7 @@ public final class BeanChange {
             Collections.sort(fieldList);
             List<String> values = new ArrayList<>();
             for (ChangeData cd : fieldList) {
-                values.add(cd.getValue());
+                values.add(cd.value());
             }
             return Joiner.on("; ").join(values).trim();
         }
