@@ -45,7 +45,7 @@ public final class BeanChange {
             return DEL;
         }
 
-        Map<Integer, String> fieldMap = new LinkedHashMap<>();
+        List<ChangeData> fieldList = new ArrayList<>();
         Class<?> clazz = oldObj.getClass();
         for (Field field : U.getAllField(clazz)) {
             String fieldName = field.getName();
@@ -76,17 +76,16 @@ public final class BeanChange {
                 if (oldValue != newValue) {
                     String value = compareValue(getValue(oldValue, dateFormat), getValue(newValue, dateFormat), name, map);
                     if (U.isNotBlank(value)) {
-                        fieldMap.put(order, value);
+                        fieldList.add(new ChangeData(order, value));
                     }
                 }
             }
         }
-        if (A.isNotEmpty(fieldMap)) {
-            List<Integer> keys = new ArrayList<>(fieldMap.keySet());
-            Collections.sort(keys);
+        if (A.isNotEmpty(fieldList)) {
+            Collections.sort(fieldList);
             List<String> values = new ArrayList<>();
-            for (Integer key : keys) {
-                values.add(fieldMap.get(key));
+            for (ChangeData cd : fieldList) {
+                values.add(cd.getValue());
             }
             return Joiner.on("; ").join(values).trim();
         }
