@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 @AllArgsConstructor
@@ -86,6 +87,27 @@ public class RedissonService {
 
 
     /**
+     * 用 redis 获取分布式锁后运行并返回(释放不用调用方处理)
+     * <pre>
+     *
+     * String key = "xxx";
+     * return lockAndRun(key, () -> {
+     *     // 获取到锁之后的处理
+     *     return xxx;
+     * });
+     * </pre>
+     * @param key 键
+     */
+    public <T> T lockAndRun(String key, Supplier<T> supplier) {
+        lock(key);
+        try {
+            return supplier.get();
+        } finally {
+            unlock(key);
+        }
+    }
+
+    /**
      * 用 redis 获取分布式锁
      * <pre>
      *
@@ -123,6 +145,30 @@ public class RedissonService {
      */
     public void lock(String key, int lockTime, TimeUnit unit) {
         redisson.getLock(key).lock(lockTime, unit);
+    }
+
+
+    /**
+     * 用 redis 获取分布式锁, 获取成功则运行并返回(释放不用调用方处理)
+     * <pre>
+     *
+     * String key = "xxx";
+     * return tryLockAndRun(key, () -> {
+     *     // 获取到锁之后的处理
+     *     return xxx;
+     * });
+     * </pre>
+     * @param key 键
+     */
+    public <T> T tryLockAndRun(String key, Supplier<T> supplier) {
+        if (tryLock(key)) {
+            try {
+                return supplier.get();
+            } finally {
+                unlock(key);
+            }
+        }
+        return null;
     }
 
     /**

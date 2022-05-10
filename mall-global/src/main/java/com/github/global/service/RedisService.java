@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.script.RedisScript;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 @AllArgsConstructor
@@ -57,6 +58,17 @@ public class RedisService {
         redisTemplate.delete(key);
     }
 
+
+    public <T> T tryLockAndRun(String key, String value, Supplier<T> supplier) {
+        if (tryLock(key, value)) {
+            try {
+                return supplier.get();
+            } finally {
+                unlock(key, value);
+            }
+        }
+        return null;
+    }
 
     /**
      * <pre>
