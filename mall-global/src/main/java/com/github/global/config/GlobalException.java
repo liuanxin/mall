@@ -117,7 +117,6 @@ public class GlobalException {
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<JsonResult> noHandler(NoHandlerFoundException e) {
         String msg = online ? "404" : String.format("404(%s %s)", e.getHttpMethod(), e.getRequestURL());
-
         bindAndPrintLog(msg, e);
         int status = returnStatusCode ? JsonCode.NOT_FOUND.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.notFound(msg));
@@ -132,7 +131,6 @@ public class GlobalException {
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<JsonResult> missHeader(MissingRequestHeaderException e) {
         String msg = online ? "miss header" : String.format("miss header(%s)", e.getHeaderName());
-
         bindAndPrintLog(msg, e);
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.badRequest(msg));

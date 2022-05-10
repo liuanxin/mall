@@ -33,7 +33,7 @@ public final class DesensitizationUtil {
                 return U.foggyIdCard(value);
             }
             default: {
-                return U.foggyValue(value, 30, 10);
+                return U.foggyValue(value, 300, 100);
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.github.global.dynamic;
 
+import com.github.common.util.U;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.keygen.SelectKeyGenerator;
@@ -110,18 +111,7 @@ public class ClientRouterInterceptor implements Interceptor {
             return null;
         }
 
-        Method method;
-        try {
-            method = clazz.getDeclaredMethod(methodName);
-        } catch (NoSuchMethodException | SecurityException e) {
-            method = null;
-        }
-        if (method == null) {
-            try {
-                method = clazz.getMethod(methodName);
-            } catch (NoSuchMethodException | SecurityException ignore) {
-            }
-        }
+        Method method = U.getMethod(clazz, methodName);
 
         DatabaseRouter router = null;
         if (method != null) {
