@@ -39,7 +39,7 @@ public final class U {
     public static final String BLANK = " ";
     private static final String LIKE = "%";
 
-    /** 递归时的最大深度, 如果数据本身有自己引用自己, 加一个深度避免无限递归 */
+    /** 递归时的最大深度, 避免无限递归 */
     public static final int MAX_DEPTH = 10;
 
     /** 手机号. 见 <a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%86%85%E5%9C%B0%E7%A7%BB%E5%8A%A8%E7%BB%88%E7%AB%AF%E9%80%9A%E8%AE%AF%E5%8F%B7%E6%AE%B5">https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%86%85%E5%9C%B0%E7%A7%BB%E5%8A%A8%E7%BB%88%E7%AB%AF%E9%80%9A%E8%AE%AF%E5%8F%B7%E6%AE%B5</a> */
@@ -80,7 +80,9 @@ public final class U {
         TRUES.add("yes");
     }
 
+    private static final Map<String, List<Method>> METHODS_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, Method> METHOD_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, List<Field>> FIELDS_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, Field> FIELD_CACHE = new ConcurrentHashMap<>();
 
     /** 生成指定位数的随机数: 纯数字 */
@@ -989,10 +991,58 @@ public final class U {
         return null;
     }
 
+    public static List<Method> getMethods(Object obj) {
+        return getMethods(obj, 0);
+    }
+    private static List<Method> getMethods(Object obj, int depth) {
+        // noinspection DuplicatedCode
+        if (isNull(obj)) {
+            return Collections.emptyList();
+        }
+
+        Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
+        if (clazz == Object.class) {
+            return Collections.emptyList();
+        }
+        String key = clazz.getName();
+        List<Method> list = METHODS_CACHE.get(key);
+        if (A.isNotEmpty(list)) {
+            return list;
+        }
+
+        Set<Method> ms = new LinkedHashSet<>();
+        Set<String> mns = new HashSet<>();
+        try {
+            for (Method method : clazz.getDeclaredMethods()) {
+                ms.add(method);
+                mns.add(method.getName());
+            }
+        } catch (SecurityException ignore) {
+        }
+        if (ms.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Method> methods = new ArrayList<>(ms);
+        Class<?> superclass = clazz.getSuperclass();
+        if (superclass != Object.class && depth <= MAX_DEPTH) {
+            List<Method> methodList = getMethods(superclass, depth + 1);
+            if (A.isNotEmpty(methodList)) {
+                for (Method method : methodList) {
+                    if (!mns.contains(method.getName())) {
+                        methods.add(method);
+                    }
+                }
+            }
+        }
+        METHODS_CACHE.put(key, methods);
+        return methods;
+    }
+
     public static Method getMethod(Object obj, String method) {
         return getMethod(obj, method, 0);
     }
-    public static Method getMethod(Object obj, String method, int depth) {
+    private static Method getMethod(Object obj, String method, int depth) {
         // noinspection DuplicatedCode
         if (isNull(obj) || isBlank(method)) {
             return null;
@@ -1028,10 +1078,51 @@ public final class U {
         return (depth <= MAX_DEPTH) ? getMethod(superclass, method, depth + 1) : null;
     }
 
+    public static List<Field> getFields(Object obj) {
+        return getFields(obj, 0);
+    }
+    private static List<Field> getFields(Object obj, int depth) {
+        // noinspection DuplicatedCode
+        if (isNull(obj)) {
+            return Collections.emptyList();
+        }
+
+        Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
+        if (clazz == Object.class) {
+            return Collections.emptyList();
+        }
+        String key = clazz.getName();
+        List<Field> fl = FIELDS_CACHE.get(key);
+        if (isNotNull(fl)) {
+            return fl;
+        }
+
+        Set<Field> fs = new LinkedHashSet<>();
+        try {
+            fs.addAll(Arrays.asList(clazz.getDeclaredFields()));
+        } catch (SecurityException ignore) {
+        }
+        if (fs.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Field> fields = new ArrayList<>(fs);
+        FIELDS_CACHE.put(key, fields);
+
+        Class<?> superclass = clazz.getSuperclass();
+        if (superclass != Object.class && depth <= MAX_DEPTH) {
+            List<Field> fieldList = getFields(superclass, depth + 1);
+            if (A.isNotEmpty(fieldList)) {
+                fields.addAll(fieldList);
+                return fields;
+            }
+        }
+        return fields;
+    }
+
     public static Field getField(Object obj, String field) {
         return getField(obj, field, 0);
     }
-    public static Field getField(Object obj, String field, int depth) {
+    private static Field getField(Object obj, String field, int depth) {
         // noinspection DuplicatedCode
         if (isNull(obj) || isBlank(field)) {
             return null;
