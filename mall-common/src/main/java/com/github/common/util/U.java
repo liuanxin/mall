@@ -1010,26 +1010,26 @@ public final class U {
             return list;
         }
 
-        Set<Method> ms = new LinkedHashSet<>();
-        Set<String> mns = new HashSet<>();
+        Set<Method> methodSet = new LinkedHashSet<>();
+        Set<String> methodNameSet = new HashSet<>();
         try {
             for (Method method : clazz.getDeclaredMethods()) {
-                ms.add(method);
-                mns.add(method.getName());
+                methodSet.add(method);
+                methodNameSet.add(method.getName());
             }
         } catch (SecurityException ignore) {
         }
-        if (ms.isEmpty()) {
+        if (methodSet.isEmpty()) {
             return Collections.emptyList();
         }
 
-        List<Method> methods = new ArrayList<>(ms);
+        List<Method> methods = new ArrayList<>(methodSet);
         Class<?> superclass = clazz.getSuperclass();
         if (superclass != Object.class && depth <= MAX_DEPTH) {
             List<Method> methodList = getMethods(superclass, depth + 1);
             if (A.isNotEmpty(methodList)) {
                 for (Method method : methodList) {
-                    if (!mns.contains(method.getName())) {
+                    if (!methodNameSet.contains(method.getName())) {
                         methods.add(method);
                     }
                 }
@@ -1097,25 +1097,33 @@ public final class U {
             return fl;
         }
 
-        Set<Field> fs = new LinkedHashSet<>();
+        Set<Field> fieldSet = new LinkedHashSet<>();
+        Set<String> fieldNameSet = new HashSet<>();
         try {
-            fs.addAll(Arrays.asList(clazz.getDeclaredFields()));
+            for (Field field : clazz.getDeclaredFields()) {
+                fieldSet.add(field);
+                fieldNameSet.add(field.getName());
+            }
         } catch (SecurityException ignore) {
         }
-        if (fs.isEmpty()) {
+        if (fieldSet.isEmpty()) {
             return Collections.emptyList();
         }
-        List<Field> fields = new ArrayList<>(fs);
-        FIELDS_CACHE.put(key, fields);
 
+        List<Field> fields = new ArrayList<>(fieldSet);
         Class<?> superclass = clazz.getSuperclass();
         if (superclass != Object.class && depth <= MAX_DEPTH) {
             List<Field> fieldList = getFields(superclass, depth + 1);
             if (A.isNotEmpty(fieldList)) {
                 fields.addAll(fieldList);
-                return fields;
+                for (Field field : fieldList) {
+                    if (!fieldNameSet.contains(field.getName())) {
+                        fields.add(field);
+                    }
+                }
             }
         }
+        FIELDS_CACHE.put(key, fields);
         return fields;
     }
 
