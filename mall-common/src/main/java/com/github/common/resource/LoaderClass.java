@@ -6,7 +6,6 @@ import com.github.common.util.U;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ public final class LoaderClass {
     }
 
     /** 基于指定的类(会基于此类来获取类加载器), 在指定的包名下获取所有的实现了 Serializable 接口的类 */
-    public static List<Class> getSerializableClassList(Class clazz, String classPackage) {
+    public static List<Class> getClassList(Class clazz, String classPackage) {
         return getClassList(clazz, classPackage, false);
     }
 
@@ -46,7 +45,7 @@ public final class LoaderClass {
                             if (wasEnum) {
                                 aClass = getEnum(file.getName(), classPackage);
                             } else {
-                                aClass = getSerializableClass(file.getName(), classPackage);
+                                aClass = getClass(file.getName(), classPackage);
                             }
                             if (aClass != null) {
                                 classList.add(aClass);
@@ -64,7 +63,7 @@ public final class LoaderClass {
                             if (wasEnum) {
                                 aClass = getEnum(name.substring(name.lastIndexOf("/") + 1), classPackage);
                             } else {
-                                aClass = getSerializableClass(name.substring(name.lastIndexOf("/") + 1), classPackage);
+                                aClass = getClass(name.substring(name.lastIndexOf("/") + 1), classPackage);
                             }
                             if (aClass != null) {
                                 classList.add(aClass);
@@ -96,14 +95,11 @@ public final class LoaderClass {
         }
         return null;
     }
-    private static Class<?> getSerializableClass(String name, String classPackage) {
+    private static Class<?> getClass(String name, String classPackage) {
         if (U.isNotBlank(name)) {
             String className = classPackage + "." + name.replace(".class", "");
             try {
-                Class<?> clazz = Class.forName(className);
-                if (Serializable.class.isAssignableFrom(clazz)) {
-                    return clazz;
-                }
+                return Class.forName(className);
             } catch (ClassNotFoundException e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                     LogUtil.ROOT_LOG.error("can't load class file({})", className, e);

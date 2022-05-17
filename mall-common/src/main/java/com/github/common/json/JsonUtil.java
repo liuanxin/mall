@@ -2,12 +2,7 @@ package com.github.common.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.type.CollectionType;
-import com.fasterxml.jackson.databind.type.MapType;
+import com.fasterxml.jackson.databind.*;
 import com.github.common.date.DateFormatType;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
@@ -16,6 +11,7 @@ import com.github.common.util.U;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class JsonUtil {
 
@@ -36,6 +32,7 @@ public class JsonUtil {
         <version>???</version>
     </dependency>
     */
+    private static final Map<String, JavaType> TYPE_CACHE = new ConcurrentHashMap<>();
 
     private static final ObjectMapper OBJECT_MAPPER = new RenderObjectMapper();
 
@@ -81,6 +78,7 @@ public class JsonUtil {
         objectMapper.registerModule(JsonModule.GLOBAL_MODULE);
     }
 
+
     /** 对象转换, 失败将会返回 null */
     public static <S,T> T convert(S source, Class<T> clazz) {
         return convert(source, clazz, false, false);
@@ -88,6 +86,14 @@ public class JsonUtil {
     /** 集合转换, 失败将会返回空集合 */
     public static <S,T> List<T> convertList(Collection<S> sourceList, Class<T> clazz) {
         return convertList(sourceList, clazz, false, false);
+    }
+    /** 键值对转换, 失败将会返回空键值对 */
+    public static <SK,SV,K,V> Map<K,V> convertMap(Map<SK,SV> sourceMap, Class<K> keyClass, Class<V> valueClass) {
+        return convertMap(sourceMap, keyClass, valueClass, false, false);
+    }
+    /** 对象转换, 失败将会返回 null */
+    public static <T,S> T convertType(S source, TypeReference<T> type) {
+        return convertType(source, type, false, false);
     }
 
     /**
@@ -97,6 +103,7 @@ public class JsonUtil {
      * @param ignoreTargetAnnotation true 表示忽略 target 类属性上的 @Json... 注解
      */
     public static <S,T> T convert(S source, Class<T> clazz, boolean ignoreSourceAnnotation, boolean ignoreTargetAnnotation) {
+        // noinspection DuplicatedCode
         if (U.isNull(source)) {
             return null;
         }
@@ -133,7 +140,8 @@ public class JsonUtil {
      * @param ignoreSourceAnnotation true 表示忽略 source 类属性上的 @JsonProperty 等注解
      * @param ignoreTargetAnnotation true 表示忽略 target 类属性上的 @JsonProperty 等注解
      */
-    public static <S,T> List<T> convertList(Collection<S> sourceList, Class<T> clazz, boolean ignoreSourceAnnotation, boolean ignoreTargetAnnotation) {
+    public static <S,T> List<T> convertList(Collection<S> sourceList, Class<T> clazz,
+                                            boolean ignoreSourceAnnotation, boolean ignoreTargetAnnotation) {
         if (A.isEmpty(sourceList)) {
             return Collections.emptyList();
         }
@@ -147,18 +155,57 @@ public class JsonUtil {
             }
             return Collections.emptyList();
         }
-
         if (U.isBlank(json)) {
             return Collections.emptyList();
         }
+
+        String key = clazz.getName();
         try {
             ObjectMapper mapper = (ignoreTargetAnnotation ? IGNORE_OBJECT_MAPPER : EMPTY_OBJECT_MAPPER);
-            return mapper.readValue(json, mapper.getTypeFactory().constructCollectionType(List.class, clazz));
+            return mapper.readValue(json, TYPE_CACHE.computeIfAbsent(key,
+                    fun -> mapper.getTypeFactory().constructCollectionType(List.class, clazz)));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("List({}) to List<{}> exception", U.compress(json), clazz.getName(), e);
+                LogUtil.ROOT_LOG.error("List({}) to List<{}> exception", U.compress(json), key, e);
             }
             return Collections.emptyList();
+        }
+    }
+    /**
+     * 键值对转换, 失败将会返回空键值对
+     *
+     * @param ignoreSourceAnnotation true 表示忽略 source 类属性上的 @JsonProperty 等注解
+     * @param ignoreTargetAnnotation true 表示忽略 target 类属性上的 @JsonProperty 等注解
+     */
+    public static <SK,SV,K,V> Map<K,V> convertMap(Map<SK,SV> sourceMap, Class<K> keyClass, Class<V> valueClass,
+                                                  boolean ignoreSourceAnnotation, boolean ignoreTargetAnnotation) {
+        if (A.isEmpty(sourceMap)) {
+            return Collections.emptyMap();
+        }
+
+        String json;
+        try {
+            json = (ignoreSourceAnnotation ? IGNORE_OBJECT_MAPPER : EMPTY_OBJECT_MAPPER).writeValueAsString(sourceMap);
+        } catch (Exception e) {
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("Map({}) to json exception", U.compress(sourceMap.toString()), e);
+            }
+            return Collections.emptyMap();
+        }
+        if (U.isBlank(json)) {
+            return Collections.emptyMap();
+        }
+
+        String key = keyClass.getName() + ", " + valueClass.getName();
+        try {
+            ObjectMapper mapper = (ignoreTargetAnnotation ? IGNORE_OBJECT_MAPPER : EMPTY_OBJECT_MAPPER);
+            return mapper.readValue(json, TYPE_CACHE.computeIfAbsent(key,
+                    fun -> mapper.getTypeFactory().constructMapType(LinkedHashMap.class, keyClass, valueClass)));
+        } catch (Exception e) {
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("List({}) to List<{}> exception", U.compress(json), key, e);
+            }
+            return Collections.emptyMap();
         }
     }
 
@@ -170,12 +217,52 @@ public class JsonUtil {
     public static <S,T> List<T> convertListIgnoreAnnotation(Collection<S> sourceList, Class<T> clazz) {
         return convertList(sourceList, clazz, true, true);
     }
-
-    public static <T,S> T convertType(S source, TypeReference<T> type) {
+    /** 键值对转换(忽略 class 类属性上的 @Json... 注解), 失败将会返回空键值对 */
+    public static <SK,SV,K,V> Map<K,V> convertMapIgnoreAnnotation(Map<SK,SV> sourceMap, Class<K> keyClass, Class<V> valueClass) {
+        return convertMap(sourceMap, keyClass, valueClass, true, true);
+    }
+    /** 对象转换(忽略 class 类属性上的 @Json... 注解), 失败将会返回 null */
+    public static <T,S> T convertTypeIgnoreAnnotation(S source, TypeReference<T> type) {
+        return convertType(source, type, true, true);
+    }
+    /**
+     * 对象转换, 失败将会返回 null
+     *
+     * @param ignoreSourceAnnotation true 表示忽略 source 类属性上的 @Json... 注解
+     * @param ignoreTargetAnnotation true 表示忽略 target 类属性上的 @Json... 注解
+     */
+    public static <S,T> T convertType(S source, TypeReference<T> type,
+                                      boolean ignoreSourceAnnotation, boolean ignoreTargetAnnotation) {
+        // noinspection DuplicatedCode
         if (U.isNull(source)) {
             return null;
         }
-        return toObjectType((source instanceof String) ? ((String) source) : toJsonNil(source), type);
+
+        String json;
+        if (source instanceof String) {
+            json = (String) source;
+        } else {
+            try {
+                json = (ignoreSourceAnnotation ? IGNORE_OBJECT_MAPPER : EMPTY_OBJECT_MAPPER).writeValueAsString(source);
+            } catch (Exception e) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error("obj({}) to json exception", U.compress(source.toString()), e);
+                }
+                return null;
+            }
+        }
+
+        if (U.isBlank(json)) {
+            return null;
+        }
+        try {
+            return (ignoreTargetAnnotation ? IGNORE_OBJECT_MAPPER : EMPTY_OBJECT_MAPPER).readValue(json, type);
+        } catch (IOException e) {
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("json({}) to obj({}) exception", U.compress(json), type.getClass().getName(), e);
+            }
+            return null;
+        }
     }
 
     /** 对象转换成 json 字符串 */
@@ -252,11 +339,13 @@ public class JsonUtil {
         if (U.isBlank(json)) {
             return Collections.emptyList();
         }
+
+        String key = clazz.getName();
         try {
-            CollectionType type = OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, clazz);
-            return OBJECT_MAPPER.readValue(json, type);
+            return OBJECT_MAPPER.readValue(json, TYPE_CACHE.computeIfAbsent(key,
+                    fun -> OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, clazz)));
         } catch (Exception e) {
-            throw new RuntimeException(String.format("json(%s) to List<%s> exception", U.compress(json), clazz.getName()), e);
+            throw new RuntimeException(String.format("json(%s) to List<%s> exception", U.compress(json), key), e);
         }
     }
     /** 将 json 字符串转换为指定的命令, 转换失败则返回空集合 */
@@ -264,43 +353,46 @@ public class JsonUtil {
         if (U.isBlank(json)) {
             return Collections.emptyList();
         }
+
+        String key = clazz.getName();
         try {
-            return OBJECT_MAPPER.readValue(json, OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, clazz));
+            return OBJECT_MAPPER.readValue(json, TYPE_CACHE.computeIfAbsent(clazz.getName(),
+                    fun -> OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, clazz)));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("json({}) to List<{}> exception", U.compress(json), clazz.getName(), e);
+                LogUtil.ROOT_LOG.error("json({}) to List<{}> exception", U.compress(json), key, e);
             }
             return Collections.emptyList();
         }
     }
 
     /** 将 json 字符串转换为指定的数组列表 */
-    public static <K, V> Map<K, V> toMap(String json, Class<K> keyClass, Class<V> valueClass) {
+    public static <K, V> Map<K, V> toMap(String json, final Class<K> keyClass, final Class<V> valueClass) {
         if (U.isBlank(json)) {
             return Collections.emptyMap();
         }
 
+        String key = keyClass.getName() + ", " + valueClass.getName();
         try {
-            MapType type = OBJECT_MAPPER.getTypeFactory().constructMapType(Map.class, keyClass, valueClass);
-            return OBJECT_MAPPER.readValue(json, type);
+            return OBJECT_MAPPER.readValue(json, TYPE_CACHE.computeIfAbsent(key,
+                    fun -> OBJECT_MAPPER.getTypeFactory().constructMapType(LinkedHashMap.class, keyClass, valueClass)));
         } catch (Exception e) {
-            throw new RuntimeException(String.format("json(%s) to Map<%s, %s> exception",
-                    U.compress(json), keyClass.getName(), valueClass.getName()), e);
+            throw new RuntimeException(String.format("json(%s) to Map<%s> exception", U.compress(json), key), e);
         }
     }
     /** 将 json 字符串转换为指定的数组列表 */
-    public static <K, V> Map<K, V> toMapNil(String json, Class<K> keyClass, Class<V> valueClass) {
+    public static <K, V> Map<K, V> toMapNil(String json, final Class<K> keyClass, final Class<V> valueClass) {
         if (U.isBlank(json)) {
             return Collections.emptyMap();
         }
 
+        String key = keyClass.getName() + ", " + valueClass.getName();
         try {
-            MapType type = OBJECT_MAPPER.getTypeFactory().constructMapType(Map.class, keyClass, valueClass);
-            return OBJECT_MAPPER.readValue(json, type);
+            return OBJECT_MAPPER.readValue(json, TYPE_CACHE.computeIfAbsent(key,
+                    fun -> OBJECT_MAPPER.getTypeFactory().constructMapType(LinkedHashMap.class, keyClass, valueClass)));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("json({}) to Map<{}, {}> exception",
-                        U.compress(json), keyClass.getName(), valueClass.getName(), e);
+                LogUtil.ROOT_LOG.error("json({}) to Map<{}> exception", U.compress(json), key, e);
             }
             return Collections.emptyMap();
         }
