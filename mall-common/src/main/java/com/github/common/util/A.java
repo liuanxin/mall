@@ -77,14 +77,22 @@ public final class A {
         return toStr(collection, SPLIT);
     }
     public static String toStr(Collection<?> collection, String split) {
+        return toStr(collection, split, true, false);
+    }
+    public static String toStr(Collection<?> collection, String split, boolean ignoreNull, boolean ignoreBlank) {
         if (isEmpty(collection)) {
             return U.EMPTY;
         }
 
         StringJoiner joiner = new StringJoiner(split);
         for (Object obj : collection) {
-            if (U.isNotNull(obj)) {
-                joiner.add(obj.toString());
+            if (U.isNull(obj) && !ignoreNull) {
+                joiner.add(null);
+            } else {
+                String str = obj.toString();
+                if (U.isNotBlank(str) || !ignoreBlank) {
+                    joiner.add(str);
+                }
             }
         }
         return joiner.toString();
@@ -118,6 +126,9 @@ public final class A {
         return toStr(array, SPLIT);
     }
     public static String toStr(Object[] array, String split) {
+        return toStr(array, split, true, false);
+    }
+    public static String toStr(Object[] array, String split, boolean ignoreNull, boolean ignoreBlank) {
         if (isEmpty(array)) {
             return U.EMPTY;
         }
@@ -125,8 +136,13 @@ public final class A {
         StringJoiner joiner = new StringJoiner(split);
         int len = array.length;
         for (Object obj : array) {
-            if (U.isNotNull(obj)) {
-                joiner.add(obj.toString());
+            if (U.isNull(obj) && !ignoreNull) {
+                joiner.add(null);
+            } else {
+                String str = obj.toString();
+                if (U.isNotBlank(str) || !ignoreBlank) {
+                    joiner.add(str);
+                }
             }
         }
         return joiner.toString();

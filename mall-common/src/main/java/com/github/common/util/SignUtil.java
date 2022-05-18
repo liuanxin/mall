@@ -72,7 +72,7 @@ public final class SignUtil {
      * <pre>
      * 收到请求时使用默认的密钥检查参数是否正常
      *
-     * 比如实际要发送的数据是: id=123&type=2&phone=13012345678&name=xx&desc=中文
+     * 想要发送的数据是: id=123&type=2&phone=13012345678&name=xx&desc=中文
      *
      * 计算:
      *   参数名排序后: desc=中文&id=123&name=xx&phone=13012345678&type=2
@@ -80,8 +80,7 @@ public final class SignUtil {
      *   全部拼起来后: desc=中文&id=123&name=xx&phone=13012345678&type=2&af7b78e6e02249b398f9819947fdaf21
      *   上面的 md5 : 27cbbf74d8e68058fca0ce99ca596555
      *
-     * 想要发送的数据是: id=123&type=2&phone=13012345678&name=xx&desc=中文
-     * 最后发送的参数是: id=123&type=2&phone=13012345678&name=xx&desc=中文&sign=27cbbf74d8e68058fca0ce99ca596555
+     * 最终发送的数据是: id=123&type=2&phone=13012345678&name=xx&desc=中文&sign=27cbbf74d8e68058fca0ce99ca596555
      * </pre>
      */
     public static void checkSign(Map<String, String[]> parameterMap) {
