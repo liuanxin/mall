@@ -44,15 +44,15 @@ import static com.github.mq.constant.MqConst.*;
 @RequiredArgsConstructor
 public enum MqInfo {
 
-    EXAMPLE(EXAMPLE_DESC, ExchangeTypes.DIRECT, EXAMPLE_EXCHANGE, EXAMPLE_KEY, EXAMPLE_QUEUE, Map.of(
+    EXAMPLE(EXAMPLE_DESC, ExchangeTypes.DIRECT, EXAMPLE_EXCHANGE, false, EXAMPLE_KEY, EXAMPLE_QUEUE, Map.of(
             DEAD_EXCHANGE, DEAD_EXAMPLE_EXCHANGE,
             DEAD_ROUTE_KEY, DEAD_EXAMPLE_KEY
     )),
-    EXAMPLE_DEAD(DEAD_EXAMPLE_DESC, ExchangeTypes.DIRECT, EXAMPLE_EXCHANGE, DEAD_EXAMPLE_KEY, DEAD_EXAMPLE_QUEUE, Map.of(
+    EXAMPLE_DEAD(DEAD_EXAMPLE_DESC, ExchangeTypes.DIRECT, EXAMPLE_EXCHANGE, false, DEAD_EXAMPLE_KEY, DEAD_EXAMPLE_QUEUE, Map.of(
             DEAD_EXCHANGE, DEAD_EXAMPLE_EXCHANGE,
             DEAD_ROUTE_KEY, DEAD_DEAD_EXAMPLE_KEY
     )),
-    EXAMPLE_DEAD_DEAD(DEAD_DEAD_EXAMPLE_DESC, ExchangeTypes.DIRECT, EXAMPLE_EXCHANGE, DEAD_DEAD_EXAMPLE_KEY, DEAD_DEAD_EXAMPLE_QUEUE, Map.of(
+    EXAMPLE_DEAD_DEAD(DEAD_DEAD_EXAMPLE_DESC, ExchangeTypes.DIRECT, EXAMPLE_EXCHANGE, false, DEAD_DEAD_EXAMPLE_KEY, DEAD_DEAD_EXAMPLE_QUEUE, Map.of(
             DEAD_EXCHANGE, DEAD_EXAMPLE_EXCHANGE,
             DEAD_ROUTE_KEY, DEAD_EXAMPLE_KEY,
             DELAY, EXAMPLE_DEAD_DEAD_DELAY_MS
@@ -62,6 +62,8 @@ public enum MqInfo {
     private final String desc;
     private final String exchangeType;
     private final String exchangeName;
+    /** 是否是延迟交换机, 如果设置为 true 需要安装 delay 插件, 见: https://www.rabbitmq.com/community-plugins.html */
+    private final boolean delayExchange;
     private final String routingKey;
     private final String queueName;
     private final Map<String, Object> args;

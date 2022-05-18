@@ -39,7 +39,11 @@ public class RabbitConfig {
             Exchange exchange = exchangeMap.get(exchangeName);
             if (U.isNull(exchange)) {
                 // 持久化(durable 是 true), 不自动删除(autoDelete 是 false)
-                exchange = new ExchangeBuilder(exchangeName, exchangeType).build();
+                ExchangeBuilder exchangeBuilder = new ExchangeBuilder(exchangeName, exchangeType);
+                if (mqInfo.isDelayExchange()) {
+                    exchangeBuilder.delayed();
+                }
+                exchange = exchangeBuilder.build();
                 exchangeMap.put(exchangeName, exchange);
             }
 

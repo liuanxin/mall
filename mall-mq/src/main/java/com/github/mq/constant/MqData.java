@@ -14,5 +14,7 @@ public class MqData implements Serializable {
 
     private String mqInfo;
 
+    private String traceId;
+
     private String json;
 }

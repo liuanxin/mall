@@ -38,20 +38,38 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
      * 使用 {@link MqReceiverHandler#doConsume} 处理消息
      */
     public void doProvide(MqInfo mqInfo, String searchKey, String json) {
-        String msgId = U.uuid16();
-        String traceId = LogUtil.getTraceId();
-        MqData data = new MqData();
-        data.setSendTime(new Date());
-        data.setMqInfo(mqInfo.name().toLowerCase());
-        data.setJson(json);
-        provide(searchKey, new SelfCorrelationData(U.uuid16(), traceId, mqInfo, JsonUtil.toJson(data)));
+        doProvide(mqInfo, searchKey, json, 0);
     }
 
     /** 用这个发送的 mq 消息, 使用 {@link MqReceiverHandler#doConsumeJustJson} 处理消息 */
     public void doProvideJustJson(MqInfo mqInfo, String searchKey, String json) {
-        provide(searchKey, new SelfCorrelationData(U.uuid16(), LogUtil.getTraceId(), mqInfo, json));
+        doProvideJustJson(mqInfo, searchKey, json, 0);
     }
 
+    /**
+     * 用这个发送的 mq 信息, 实际发送的是 {@link MqData} 对象, 里面有「发送时间、队列信息」信息.
+     * 使用 {@link MqReceiverHandler#doConsume} 处理消息
+     *
+     * @param delayMs 延迟发送毫秒数, 需要安装 delay 插件, 见: https://www.rabbitmq.com/community-plugins.html
+     */
+    public void doProvide(MqInfo mqInfo, String searchKey, String json, int delayMs) {
+        String traceId = LogUtil.getTraceId();
+        MqData data = new MqData();
+        data.setSendTime(new Date());
+        data.setMqInfo(mqInfo.name().toLowerCase());
+        data.setTraceId(traceId);
+        data.setJson(json);
+        provide(searchKey, new SelfCorrelationData(U.uuid16(), traceId, mqInfo, JsonUtil.toJson(data), delayMs));
+    }
+
+    /**
+     * 用这个发送的 mq 消息, 使用 {@link MqReceiverHandler#doConsumeJustJson} 处理消息
+     *
+     * @param delayMs 延迟发送毫秒数, 需要安装 delay 插件, 见: https://www.rabbitmq.com/community-plugins.html
+     */
+    public void doProvideJustJson(MqInfo mqInfo, String searchKey, String json, int delayMs) {
+        provide(searchKey, new SelfCorrelationData(U.uuid16(), LogUtil.getTraceId(), mqInfo, json, delayMs));
+    }
     private void provide(String searchKey, SelfCorrelationData correlationData) {
         String msgId = correlationData.getId();
         String traceId = correlationData.getTraceId();
@@ -90,7 +108,12 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         Message msg = MessageBuilder.withBody(json.getBytes(StandardCharsets.UTF_8))
                 .setMessageId(msgId).setCorrelationId(traceId).build();
         try {
-            rabbitTemplate.convertAndSend(exchangeName, routingKey, msg, correlationData);
+            int delayMs = correlationData.getDelayMs();
+            if (delayMs > 0) {
+                rabbitTemplate.convertAndSend(exchangeName, routingKey, msg, new DelayMessage(delayMs), correlationData);
+            } else {
+                rabbitTemplate.convertAndSend(exchangeName, routingKey, msg, correlationData);
+            }
         } catch (Exception e) {
             MqSend errorModel = new MqSend();
             errorModel.setId(model.getId());
@@ -111,9 +134,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("消息({})到 exchange 失败, 原因({})", JsonUtil.toJson(correlationData), cause);
             }
-            if (correlationData instanceof SelfCorrelationData) {
-                SelfCorrelationData data = (SelfCorrelationData) correlationData;
-
+            if (correlationData instanceof SelfCorrelationData data) {
                 // 从记录中获取重试次数
                 MqSend mqSend = mqSendService.queryByMsgId(correlationData.getId());
                 if (U.isNotNull(mqSend) && U.greater0(mqSend.getRetryCount())) {
