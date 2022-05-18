@@ -30,6 +30,15 @@ public class RedissonService {
     private final RedissonClient redisson;
 
 
+    /** 从 redis 中删值, 对应命令: DEL key */
+    public void delete(String key) {
+        redisson.getBucket(key, USE_CODEC).delete();
+    }
+    /** 从 redis 中删值, value 非 string 时尽量用这个. 对应命令: UNLINK key */
+    public void unlink(String key) {
+        redisson.getBucket(key, USE_CODEC).unlink();
+    }
+
     /** 往 redis 中放值, 对应命令: SET key value */
     public <T> void set(String key, T value) {
         redisson.getBucket(key, USE_CODEC).set(value);
@@ -79,10 +88,6 @@ public class RedissonService {
     /** 从 redis 中取值, 对应命令: GET key */
     public <T> T get(String key) {
         return (T) redisson.getBucket(key, USE_CODEC).get();
-    }
-    /** 从 redis 中删值, 对应命令: DEL key */
-    public void delete(String key) {
-        redisson.getBucket(key, USE_CODEC).delete();
     }
 
 
@@ -265,7 +270,7 @@ public class RedissonService {
     public <T> void rightPush(String key, T value) {
         redisson.getDeque(key, USE_CODEC).add(value);
     }
-    /** 向 list 取值(从左边出), 对应命令: LPOP key value */
+    /** 向 list 取值(从左边出), 对应命令: LPOP key */
     public <T> T leftPop(String key) {
         return (T) redisson.getDeque(key, USE_CODEC).pollFirst();
     }
@@ -289,7 +294,7 @@ public class RedissonService {
     public long setSize(String key) {
         return redisson.getSet(key, USE_CODEC).size();
     }
-    /** 将指定的 set 存进 redis 并返回成功条数: SADD key v1 v2 v3 ... */
+    /** 将指定的 set 存进 redis 并返回成功条数, 对应命令: SADD key v1 v2 v3 ... */
     public <T> boolean setAdd(String key, Collection<T> set) {
         return A.isNotEmpty(set) && redisson.getSet(key, USE_CODEC).addAll(set);
     }
@@ -317,24 +322,24 @@ public class RedissonService {
     public <T> void hashPutAll(String key, Map<String, T> hashMap) {
         redisson.getMap(key, USE_CODEC).putAll(hashMap);
     }
-    /** 写一个 hash, 对应命令: HSET key field value */
+    /** 写 hash, 对应命令: HSET key field value */
     public <T> void hashPut(String key, String hashKey, T hashValue) {
         redisson.getMap(key, USE_CODEC).put(hashKey, hashValue);
     }
-    /** 写一个 hash, 只有 hash 中没有这个 key 才能写成功, 有了就不写, 对应命令: HSETNX key field value */
+    /** 写 hash, 只有 hash 中没有这个 key 才能写成功, 有了就不写, 对应命令: HSETNX key field value */
     public <T> void hashPutIfAbsent(String key, String hashKey, T hashValue) {
         redisson.getMap(key, USE_CODEC).putIfAbsent(hashKey, hashValue);
     }
-    /** 获取一个 hash 的长度, 对应命令: HLEN key */
+    /** 获取 hash 的长度, 对应命令: HLEN key */
     public int hashSize(String key) {
         return redisson.getMap(key, USE_CODEC).size();
     }
-    /** 获取一个 hash 的值, 对应命令: HGETALL key */
+    /** 获取 hash, 对应命令: HGETALL key */
     public <T> Map<String, T> hashGetAll(String key) {
         RMap<String, T> map = redisson.getMap(key, USE_CODEC);
         return map.readAllMap();
     }
-    /** 获取一个 hash 中指定 key 的值, 对应命令: HGET key field */
+    /** 获取 hash 中指定 key 的值, 对应命令: HGET key field */
     public <T> T hashGet(String key, String hashKey) {
         return (T) redisson.getMap(key, USE_CODEC).get(hashKey);
     }
