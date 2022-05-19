@@ -174,14 +174,16 @@ now="$(date '+%Y-%m-%d-%H-%M-%S')"
 branch="$(git rev-parse --abbrev-ref HEAD)"
 latest_commit="$(git log --format=format:'%H' | head -n 1)"
 docker_image="ip:port/${branch}/项目名:${now}:${latest_commit}"
+docker_need_pass="0"
 docker_user="xx"
 docker_pass="xxx"
 
-mvn clean compile \
-    -DsendCredentialsOverHttp=true jib:build \
-    -Djib.to.image=${docker_image} \
-    -Djib.to.auth.username=${docker_user} \
-    -Djib.to.auth.password=${docker_pass}"
+if [ "${docker_need_pass}" == "1" ]; then
+    mvn clean compile -DsendCredentialsOverHttp=true jib:build -Djib.to.image=${docker_image} \
+        -Djib.to.auth.username=${docker_user} -Djib.to.auth.password=${docker_pass}
+else
+    mvn clean compile -DsendCredentialsOverHttp=true jib:build -Djib.to.image=${docker_image}
+fi
 ```
 
 ~
