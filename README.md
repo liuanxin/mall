@@ -167,7 +167,7 @@ public class DemoRes {
 > 项目使用 [google-jib](https://github.com/GoogleContainerTools/jib) 进行打包构建,
 > 可以使用 `mvn clean compile -DsendCredentialsOverHttp=true jib:build` 命令推到 docker 服务器,
 > 默认的 url 地址是 `/项目包/项目名:版本`, 如果要自定义可以用命令行参数的方式, 建议用下面的 bash 脚本
-> 
+
 ```bash
 # 用「/所在分支/项目名:时间:最新的 commit-hash」做为 docker 服务器的 url 地址
 now="$(date '+%Y-%m-%d-%H-%M-%S')"
