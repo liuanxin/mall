@@ -75,7 +75,7 @@ public class DateUtil {
             long ms = U.toLong(source);
             if (ms > 0) {
                 // 时间戳如果只到秒(比如 php)就乘以 1000
-                return new Date((String.valueOf(ms).length() < 13) ? TimeUnit.SECONDS.toMillis(ms) : ms);
+                return new Date((Long.toString(ms).length() < 13) ? TimeUnit.SECONDS.toMillis(ms) : ms);
             }
 
             for (DateFormatType type : DateFormatType.values()) {

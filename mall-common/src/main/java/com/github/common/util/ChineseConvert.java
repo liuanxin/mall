@@ -95,7 +95,7 @@ public final class ChineseConvert {
                 sbd.append(NEGATIVE);
             }
             for (int i = 0; i < leftLen; i++) {
-                int number = U.toInt(String.valueOf(left.charAt(i)));
+                int number = U.toInt(left.charAt(i));
                 sbd.append(NUM[number]).append(INTEGER[leftLen - i - 1]);
             }
         }
@@ -104,7 +104,7 @@ public final class ChineseConvert {
         if (rightLong > 0) {
             sbd.append(SPLIT);
             for (int i = 0; i < rightLen; i++) {
-                int number = U.toInt(String.valueOf(right.charAt(i)));
+                int number = U.toInt(right.charAt(i));
                 sbd.append(NUM[number]).append(DECIMAL[i]);
             }
         } else if (rightLong == 0) {

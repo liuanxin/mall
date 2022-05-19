@@ -142,7 +142,7 @@ public final class U {
                     }
 
                     // 如果传递过来的值跟枚举的 ordinal(数字. 表示枚举所在的索引) 相同则返回
-                    // if (source.equalsIgnoreCase(String.valueOf(em.ordinal()))) return em;
+                    // if (source.equalsIgnoreCase(toStr(em.ordinal()))) return em;
                 }
             }
         }

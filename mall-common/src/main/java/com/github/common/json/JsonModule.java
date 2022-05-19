@@ -46,7 +46,7 @@ public final class JsonModule {
                 return;
             }
 
-            gen.writeString(DesensitizationUtil.des(gen.getOutputContext().getCurrentName(), value));
+            gen.writeString(DesensitizationUtil.desKeyAndValue(gen.getOutputContext().getCurrentName(), value));
         }
     }
 

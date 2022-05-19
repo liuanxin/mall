@@ -111,7 +111,7 @@ public final class SecurityCodeUtil {
         int y = heightCount - 5;
         StringBuilder sbd = new StringBuilder();
         for (int i = 0; i < loop; i++) {
-            String value = String.valueOf(str.charAt(RANDOM.nextInt(str.length())));
+            String value = U.toStr(str.charAt(RANDOM.nextInt(str.length())));
             // 字体大小
             graphics.setFont(new Font(FONTS[RANDOM.nextInt(FONTS.length)], Font.BOLD, heightCount - RANDOM.nextInt(8)));
             graphics.drawString(value, (i + 1) * x, y);

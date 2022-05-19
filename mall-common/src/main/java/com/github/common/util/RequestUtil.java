@@ -325,7 +325,7 @@ public final class RequestUtil {
         while (headers.hasMoreElements()) {
             String headName = headers.nextElement();
             sbd.append("<");
-            sbd.append(headName).append(" : ").append(DesensitizationUtil.des(headName, request.getHeader(headName)));
+            sbd.append(headName).append(" : ").append(DesensitizationUtil.desKeyAndValue(headName, request.getHeader(headName)));
             sbd.append(">");
         }
         return sbd.toString();
