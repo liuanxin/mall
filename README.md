@@ -169,6 +169,8 @@ public class DemoRes {
 > 默认的 url 地址是 `/项目包/项目名:版本`, 如果要自定义可以用命令行参数的方式, 建议用下面的 bash 脚本
 
 ```bash
+#!/usr/bin/env bash
+
 # 用「/所在分支/项目名:时间:最新的 commit-hash」做为 docker 服务器的 url 地址
 now="$(date '+%Y-%m-%d-%H-%M-%S')"
 branch="$(git rev-parse --abbrev-ref HEAD)"
@@ -178,6 +180,7 @@ docker_need_pass="0"
 docker_user="xx"
 docker_pass="xxx"
 
+# 编译并推镜像到服务器
 if [ "${docker_need_pass}" == "1" ]; then
     mvn clean compile -DsendCredentialsOverHttp=true jib:build -Djib.to.image=${docker_image} \
         -Djib.to.auth.username=${docker_user} -Djib.to.auth.password=${docker_pass}
