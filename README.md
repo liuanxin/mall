@@ -161,4 +161,27 @@ public class DemoRes {
    另外, 不要使用 not null default '0000-00-00 00:00:00' 这种做法, 这是一个无效日期,  
    在 mysql 8 中需要开启 `SET SQL_MODE='ALLOW_INVALID_DATES'` 才能写入, 此时这个字段允许 null 就好了(**NULL 并不会导致索引失效**)
 
+
+### 推镜像到 docker 服务器
+
+> 项目使用 [google-jib](https://github.com/GoogleContainerTools/jib) 进行打包构建,
+> 可以使用 `mvn clean compile -DsendCredentialsOverHttp=true jib:build` 命令推到 docker 服务器,
+> 默认的 url 地址是 `/项目包/项目名:版本`, 如果要自定义可以用命令行参数的方式, 建议用下面的 bash 脚本
+> 
+```bash
+# 用「/所在分支/项目名:时间:最新的 commit-hash」做为 docker 服务器的 url 地址
+now="$(date '+%Y-%m-%d-%H-%M-%S')"
+branch="$(git rev-parse --abbrev-ref HEAD)"
+latest_commit="$(git log --format=format:'%H' | head -n 1)"
+docker_image="ip:port/${branch}/项目名:${now}:${latest_commit}"
+docker_user="xx"
+docker_pass="xxx"
+
+mvn clean compile \
+    -DsendCredentialsOverHttp=true jib:build \
+    -Djib.to.image=${docker_image} \
+    -Djib.to.auth.username=${docker_user} \
+    -Djib.to.auth.password=${docker_pass}"
+```
+
 ~
