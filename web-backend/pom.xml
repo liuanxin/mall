@@ -100,6 +100,12 @@
                             <password>xx</password>
                         </auth>-->
                     </from>
+                    <!--
+                    docker_image="ip:port/$(git branch - -show-current)/项目名-$(date '+%Y-%m-%d-%H-%M-%S')-$(git log - -format=format:'%H' | head -n 1)"
+                    mvn clean compile jib:build -Djib.to.image=${docker_image}
+
+                    最终推到 docker 私服的 "分支名/项目名-年-月-日-时-分-秒-sha" 上
+                    -->
                     <to>
                         <image>${docker-repository}/${project.groupId}/${project.artifactId}-${project.version}</image>
                         <!--<auth>

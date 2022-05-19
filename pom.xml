@@ -67,7 +67,7 @@
         <mybatis-plus.version>3.4.3.4</mybatis-plus.version>
 
         <api-document.version>0.8.2</api-document.version>
-        <jib-maven-plugin.version>3.1.4</jib-maven-plugin.version>
+        <jib-maven-plugin.version>3.2.1</jib-maven-plugin.version>
         <flatten-maven-plugin.version>1.2.7</flatten-maven-plugin.version>
 
         <docker-repository>ip:port</docker-repository>
