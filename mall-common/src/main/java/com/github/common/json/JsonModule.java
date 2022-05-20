@@ -37,16 +37,7 @@ public final class JsonModule {
 
         @Override
         public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-            if (U.isNull(value)) {
-                gen.writeNull();
-                return;
-            }
-            if (U.isBlank(value)) {
-                gen.writeString(U.EMPTY);
-                return;
-            }
-
-            gen.writeString(DesensitizationUtil.desKeyAndValue(gen.getOutputContext().getCurrentName(), value));
+            gen.writeString(DesensitizationUtil.desKey(gen.getOutputContext().getCurrentName(), value));
         }
     }
 

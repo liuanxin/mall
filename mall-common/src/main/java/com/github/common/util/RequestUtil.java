@@ -324,9 +324,8 @@ public final class RequestUtil {
         Enumeration<String> headers = request.getHeaderNames();
         while (headers.hasMoreElements()) {
             String headName = headers.nextElement();
-            sbd.append("<");
-            sbd.append(headName).append(" : ").append(DesensitizationUtil.desKeyAndValue(headName, request.getHeader(headName)));
-            sbd.append(">");
+            String value = request.getHeader(headName);
+            sbd.append("<").append(headName).append(" : ").append(DesensitizationUtil.desKey(headName, value)).append(">");
         }
         return sbd.toString();
     }

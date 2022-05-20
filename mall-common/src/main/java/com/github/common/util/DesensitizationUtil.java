@@ -18,7 +18,7 @@ public final class DesensitizationUtil {
     private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
     /** 基于 key 脱敏 */
-    public static String desKeyAndValue(String key, String value) {
+    public static String desKey(String key, String value) {
         if (U.isBlank(key) || U.isBlank(value)) {
             return SENSITIVE_LIST.get(U.RANDOM.nextInt(SENSITIVE_LIST.size()));
         }
