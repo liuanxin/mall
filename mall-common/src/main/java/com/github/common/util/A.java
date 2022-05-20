@@ -20,15 +20,17 @@ public final class A {
     public static boolean isEmptyObj(Object arrayOrCollectionOrMap) {
         if (arrayOrCollectionOrMap == null) {
             return true;
-        } else if (arrayOrCollectionOrMap.getClass().isArray()) {
-            return Array.getLength(arrayOrCollectionOrMap) == 0;
-        } else if (arrayOrCollectionOrMap instanceof Collection) {
-            return ((Collection<?>) arrayOrCollectionOrMap).isEmpty();
-        } else if (arrayOrCollectionOrMap instanceof Map) {
-            return ((Map) arrayOrCollectionOrMap).isEmpty();
-        } else {
-            return false;
         }
+        if (arrayOrCollectionOrMap.getClass().isArray()) {
+            return Array.getLength(arrayOrCollectionOrMap) == 0;
+        }
+        if (arrayOrCollectionOrMap instanceof Collection c) {
+            return c.isEmpty();
+        }
+        if (arrayOrCollectionOrMap instanceof Map m) {
+            return m.isEmpty();
+        }
+        return false;
     }
     public static boolean isNotEmptyObj(Object arrayOrCollectionOrMap) {
         return !isEmptyObj(arrayOrCollectionOrMap);
@@ -116,8 +118,8 @@ public final class A {
             }
             return joiner.toString();
         }
-        if (arrayOrCollection instanceof Collection) {
-            return toStr((Collection<?>) arrayOrCollection, split);
+        if (arrayOrCollection instanceof Collection c) {
+            return toStr(c, split);
         }
         return arrayOrCollection.toString();
     }
@@ -508,8 +510,7 @@ public final class A {
         }
 
         // 当类型为 List 时, 直接取得最后一个元素
-        if (collection instanceof List) {
-            List<T> list = (List<T>) collection;
+        if (collection instanceof List<T> list) {
             return list.get(list.size() - 1);
         }
         // 其他类型通过 iterator 滚动到最后一个元素

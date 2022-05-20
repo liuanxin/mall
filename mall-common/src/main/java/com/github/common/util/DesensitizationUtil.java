@@ -36,7 +36,7 @@ public final class DesensitizationUtil {
         };
     }
 
-    /** 字符串脱敏 */
+    /** 字符串脱敏, 将开始索引和结束索引之间的字符替换成「***」 */
     public static String desString(String value, int startIndex, int endIndex) {
         int start = Math.max(0, startIndex);
         int end = Math.max(0, endIndex);
@@ -44,16 +44,16 @@ public final class DesensitizationUtil {
 
         StringBuilder sbd = new StringBuilder();
         if (start < length) {
-            sbd.append(value, 0, start);
+            sbd.append(value, 0, start).append(" ");
         }
-        sbd.append(" ***");
-        if (end > 0 && length > (start + end + 5)) {
+        sbd.append("***");
+        if (end > 0 && length > (start + end + 3)) {
             sbd.append(" ").append(value, length - end, length);
         }
         return sbd.toString().trim();
     }
 
-    /** 数字脱敏, 浮点数随机 */
+    /** 数字脱敏, 浮点数随机且指定小数位并输出成字符串, 大数随机并输出成字符串, 小数随机 */
     public static Object descNumber(Number value, double randomNumber, int digitsNumber) {
         double random = Math.abs(randomNumber);
         if (value instanceof BigDecimal || value instanceof Double || value instanceof Float) {
