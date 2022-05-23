@@ -74,18 +74,18 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
             if (U.isNotNull(sensitive)) {
                 long randomDateTimeMillis = sensitive.randomDateTimeMillis();
                 if (randomDateTimeMillis != 0) {
-                    DesensitizationUtil.descDate(value, sensitive.randomDateTimeMillis());
-                    if (!provider.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
-                        JsonFormat jsonFormat = field.getAnnotation(JsonFormat.class);
-                        if (U.isNotNull(jsonFormat)) {
-                            // @see com.fasterxml.jackson.databind.ser.std.DateSerializer
-                            JsonFormat.Value format = new JsonFormat.Value(jsonFormat);
-                            Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
-                            SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
-                            df.setTimeZone(format.hasTimeZone() ? format.getTimeZone() : provider.getTimeZone());
-                            gen.writeString(df.format(value));
-                            return;
-                        }
+                    DesensitizationUtil.descDate(value, randomDateTimeMillis);
+                }
+                if (!provider.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
+                    JsonFormat jsonFormat = field.getAnnotation(JsonFormat.class);
+                    if (U.isNotNull(jsonFormat)) {
+                        // @see com.fasterxml.jackson.databind.ser.std.DateSerializer
+                        JsonFormat.Value format = new JsonFormat.Value(jsonFormat);
+                        Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
+                        SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+                        df.setTimeZone(format.hasTimeZone() ? format.getTimeZone() : provider.getTimeZone());
+                        gen.writeString(df.format(value));
+                        return;
                     }
                 }
             }

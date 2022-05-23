@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.common.util.LogUtil;
+import com.github.common.util.U;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -263,7 +264,7 @@ public class PrintInfo {
             if (obj != null) {
                 String trim = obj.toString().trim();
                 for (PlaceholderType value : values()) {
-                    if (trim.equals(String.valueOf(value.code)) || trim.equals(value.name())) {
+                    if (trim.equals(U.toStr(value.code)) || trim.equals(value.name())) {
                         return value;
                     }
                 }
