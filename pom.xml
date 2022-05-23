@@ -47,28 +47,27 @@
 
         <!-- 所有的版本都在此处统一控制, 不要在其他地方设置! -->
 
-        <guava.version>31.0.1-jre</guava.version>
-        <joda.version>2.10.13</joda.version>
-        <javassist.version>3.28.0-GA</javassist.version>
+        <guava.version>31.1-jre</guava.version>
+        <joda.version>2.10.14</joda.version>
+        <javassist.version>3.29.0-GA</javassist.version>
         <okhttp.version>3.14.9</okhttp.version>
-        <poi-ooxml.version>5.1.0</poi-ooxml.version>
-        <easyexcel.version>3.0.4</easyexcel.version>
-        <opencsv.version>5.5.2</opencsv.version>
+        <poi-ooxml.version>5.2.2</poi-ooxml.version>
+        <easyexcel.version>3.1.0</easyexcel.version>
+        <opencsv.version>5.6</opencsv.version>
 
-        <itextpdf.version>5.5.13.2</itextpdf.version>
+        <itextpdf.version>5.5.13.3</itextpdf.version>
         <itext-asian.version>5.2.0</itext-asian.version>
         <!-- https://kb.itextpdf.com/home/it7kb/installation-guidelines/installing-itext-7-for-java -->
-        <itext.version>7.2.0</itext.version>
+        <itext.version>7.2.2</itext.version>
 
         <elasticsearch.version>7.11.2</elasticsearch.version>
-        <redisson.version>3.16.4</redisson.version>
-        <hikaricp.version>5.0.0</hikaricp.version>
+        <redisson.version>3.17.1</redisson.version>
+        <hikaricp.version>5.0.1</hikaricp.version>
         <!--<mysql.version>5.1.49 | 8.0.27</mysql.version>-->
-        <mybatis-plus.version>3.4.3.4</mybatis-plus.version>
+        <mybatis-plus.version>3.5.1</mybatis-plus.version>
 
         <api-document.version>0.8.2</api-document.version>
         <jib-maven-plugin.version>3.2.1</jib-maven-plugin.version>
-        <flatten-maven-plugin.version>1.2.7</flatten-maven-plugin.version>
 
         <docker-repository>ip:port</docker-repository>
     </properties>
@@ -340,28 +339,6 @@
                     <groupId>com.google.cloud.tools</groupId>
                     <artifactId>jib-maven-plugin</artifactId>
                     <version>${jib-maven-plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>flatten-maven-plugin</artifactId>
-                    <version>${flatten-maven-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <id>flatten</id>
-                            <phase>process-resources</phase>
-                            <goals>
-                                <goal>flatten</goal>
-                            </goals>
-                        </execution>
-                        <execution>
-                            <id>flatten.clean</id>
-                            <phase>clean</phase>
-                            <goals>
-                                <goal>clean</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
