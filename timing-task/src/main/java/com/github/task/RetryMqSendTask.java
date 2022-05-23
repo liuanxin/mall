@@ -51,7 +51,8 @@ public class RetryMqSendTask implements SchedulingConfigurer {
                 }
             } finally {
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("处理 job 结束({}), 耗时: ({})", BUSINESS_DESC, DateUtil.toHuman(System.currentTimeMillis() - start));
+                    LogUtil.ROOT_LOG.info("处理 job 结束({}), 耗时: ({})",
+                            BUSINESS_DESC, DateUtil.toHuman(System.currentTimeMillis() - start));
                 }
                 LogUtil.unbind();
             }

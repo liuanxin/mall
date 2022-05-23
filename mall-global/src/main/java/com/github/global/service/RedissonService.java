@@ -9,6 +9,7 @@ import org.redisson.client.codec.StringCodec;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
@@ -59,7 +60,7 @@ public class RedissonService {
 
     /** 设置超时时间, 对应命令: PEXPIRE key ms */
     public void expire(String key, long time, TimeUnit unit) {
-        redisson.getBucket(key, USE_CODEC).expire(time, unit);
+        redisson.getBucket(key, USE_CODEC).expire(Duration.of(time, unit.toChronoUnit()));
     }
 
     /** 获取键的存活时间, 单位: 毫秒, 对应命令: PTTL key */
