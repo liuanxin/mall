@@ -123,13 +123,8 @@
                             <arg>/bin/sh</arg>
                             <arg>-c</arg>
                             <arg>
-                                exec java $JAVA_OPTS \
-                                    -server \
-                                    -Dfile.encoding=UTF-8 \
+                                exec java $JAVA_OPTS  -server -Dfile.encoding=UTF-8 \
                                     -Djava.security.egd=file:/dev/./urandom \
-                                    -verbose:gc \
-                                    -XX:+PrintGCDetails \
-                                    -Xloggc:/var/log/gc.log \
                                     -cp $( cat /app/jib-classpath-file ) \
                                     $( cat /app/jib-main-class-file )
                             </arg>
