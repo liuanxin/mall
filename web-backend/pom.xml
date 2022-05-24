@@ -113,11 +113,7 @@
                             <jvmFlag>-server</jvmFlag>
                             <jvmFlag>-Dfile.encoding=UTF-8</jvmFlag>
                             <jvmFlag>-Djava.security.egd=file:/dev/./urandom</jvmFlag>
-                            <jvmFlag>-verbose:gc</jvmFlag>
-                            <jvmFlag>-XX:+PrintGCDetails</jvmFlag>
-                            <jvmFlag>-XX:+PrintGCDateStamps</jvmFlag>
-                            <jvmFlag>-XX:+PrintGCTimeStamps</jvmFlag>
-                            <jvmFlag>-Xloggc:/var/log/gc.log</jvmFlag>
+                            <jvmFlag>-Xlog:gc*=info:file=/var/log/gc.log</jvmFlag>
                         </jvmFlags>-->
                         <entrypoint>
                             <arg>/bin/sh</arg>
@@ -132,8 +128,6 @@
                             <!--<arg>
                                 exec java $JAVA_OPTS \
                                 -server -Dfile.encoding=UTF-8 -Djava.security.egd=file:/dev/./urandom \
-                                -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps \
-                                -Xloggc:/var/log/gc.log \
                                 -cp /app/resources:/app/classes:/app/libs/* \
                                 ${main-class}
                             </arg>-->
