@@ -180,7 +180,7 @@ docker_need_pass="0"
 docker_user="xx"
 docker_pass="xxx"
 
-# 编译并推镜像到服务器
+# 编译并推镜像到服务器. 注意: 使用了 jib:build 选项就需要指定 jib.to.image
 if [ "${docker_need_pass}" == "1" ]; then
     mvn clean compile -DsendCredentialsOverHttp=true jib:build -Djib.to.image=${docker_image} \
         -Djib.to.auth.username=${docker_user} -Djib.to.auth.password=${docker_pass}

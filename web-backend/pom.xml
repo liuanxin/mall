@@ -101,7 +101,7 @@
                         </auth>-->
                     </from>
                     <to>
-                        <image>${docker-repository}/${project.groupId}/${project.artifactId}-${project.version}</image>
+                        <image>${docker-repository}/${project.artifactId}:${project.version}</image>
                         <!--<auth>
                             <username>xxx</username>
                             <password>xxx</password>
@@ -124,11 +124,14 @@
                             <arg>-c</arg>
                             <arg>
                                 exec java $JAVA_OPTS \
-                                -server -Dfile.encoding=UTF-8 -Djava.security.egd=file:/dev/./urandom \
-                                -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps \
-                                -Xloggc:/var/log/gc.log \
-                                -cp $( cat /app/jib-classpath-file ) \
-                                $( cat /app/jib-main-class-file )
+                                    -server \
+                                    -Dfile.encoding=UTF-8 \
+                                    -Djava.security.egd=file:/dev/./urandom \
+                                    -verbose:gc \
+                                    -XX:+PrintGCDetails \
+                                    -Xloggc:/var/log/gc.log \
+                                    -cp $( cat /app/jib-classpath-file ) \
+                                    $( cat /app/jib-main-class-file )
                             </arg>
 
                             <!--<arg>
@@ -148,10 +151,8 @@
                 -->
                 <!--<executions>
                     <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
+                        <phase>package</phase>
+                        <goals><goal>build</goal></goals>
                     </execution>
                 </executions>-->
             </plugin>
