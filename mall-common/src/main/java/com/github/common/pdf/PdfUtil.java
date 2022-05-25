@@ -131,15 +131,12 @@ public class PdfUtil {
             float offsetX = toFloat(template.getOffsetX(), 0);
             float offsetY = toFloat(template.getOffsetY(), 0);
 
-            String dynamicContentKey = template.getDynamicContentKey();
-            List<?> placeContent = placeContent(data, dynamicContentKey);
-
+            List<?> placeContent = placeContent(data, template.getDynamicContentKey());
             List<?> list = template.pageList(data);
             if (list != null) {
                 PrintInfo.TableDynamicHead tableHead = template.getDynamicHead();
                 List<PrintInfo.TableContent> tableContent = template.getDynamicContent();
                 if (tableHead != null && tableContent != null && tableContent.size() > 0) {
-
                     int total = list.size();
                     int pageCount = toInt(tableHead.getSinglePageCount(), 10);
                     int loopCount = (total % pageCount == 0) ? total / pageCount : (total / pageCount) + 1;
