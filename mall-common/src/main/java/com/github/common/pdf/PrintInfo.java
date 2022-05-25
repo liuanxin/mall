@@ -38,6 +38,9 @@ public class PrintInfo {
     /** 水印信息 */
     private WatermarkInfo watermark;
 
+    /** 重复次数 */
+    private Integer repeatCount = 1;
+
     /** 需要做分页的表格头, 一个模板只能有一个分页 */
     private TableDynamicHead dynamicHead;
     /** 需要做分页的表格内容, 一个模板只能有一个分页 */

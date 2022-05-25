@@ -132,6 +132,7 @@ public class PdfUtil {
             float offsetY = toFloat(template.getOffsetY(), 0);
 
             List<?> placeContent = placeContent(data, template.getDynamicContentKey());
+            int repeatCount = Math.max(1, template.getRepeatCount());
             List<?> list = template.pageList(data);
             if (list != null) {
                 PrintInfo.TableDynamicHead tableHead = template.getDynamicHead();
@@ -143,26 +144,30 @@ public class PdfUtil {
                     loopCount = Math.max(Math.max(loopCount, placeContent.size()), 1);
 
                     for (int i = 0; i < loopCount; i++) {
-                        int fromIndex = pageCount * i;
-                        boolean notLastPage = (i + 1 != loopCount);
-                        int toIndex = notLastPage ? (fromIndex + pageCount) : total;
-                        draw(i, loopCount, data, template, offsetX, offsetY, canvas);
-                        drawPlaceContent(template, canvas, offsetX, offsetY, placeContent, total, loopCount, i);
+                        for (int j = 0; j < repeatCount; j++) {
+                            int fromIndex = pageCount * i;
+                            boolean notLastPage = (i + 1 != loopCount);
+                            int toIndex = notLastPage ? (fromIndex + pageCount) : total;
+                            draw(i, loopCount, data, template, offsetX, offsetY, canvas);
+                            drawPlaceContent(template, canvas, offsetX, offsetY, placeContent, total, loopCount, i);
 
-                        List<?> pageDataList = list.subList(fromIndex, toIndex);
-                        drawDynamicTable(i * pageCount, total, pageDataList, tableHead, tableContent, offsetX, offsetY, canvas);
-                        if (notLastPage) {
-                            document.newPage();
+                            List<?> pageDataList = list.subList(fromIndex, toIndex);
+                            drawDynamicTable(i * pageCount, total, pageDataList, tableHead, tableContent, offsetX, offsetY, canvas);
+                            if (notLastPage || repeatCount > 1) {
+                                document.newPage();
+                            }
                         }
                     }
                 }
             } else {
                 int loopCount = placeContent.size();
                 for (int i = 0; i < loopCount; i++) {
-                    drawPlaceContent(template, canvas, offsetX, offsetY, placeContent, loopCount, loopCount, i);
-                    draw(0, 1, data, template, offsetX, offsetY, canvas);
-                    if (i + 1 != loopCount) {
-                        document.newPage();
+                    for (int j = 0; j < repeatCount; j++) {
+                        drawPlaceContent(template, canvas, offsetX, offsetY, placeContent, loopCount, loopCount, i);
+                        draw(0, 1, data, template, offsetX, offsetY, canvas);
+                        if (i + 1 != loopCount || repeatCount > 1) {
+                            document.newPage();
+                        }
                     }
                 }
             }
