@@ -1,7 +1,6 @@
 package com.github.common.resource;
 
 import com.github.common.Const;
-import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.google.common.base.CaseFormat;
 
@@ -67,10 +66,7 @@ public final class CollectEnumUtil {
             if (U.isNotNull(result)) {
                 return result;
             }
-        } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-                LogUtil.ROOT_LOG.debug("call ({}) method({}) exception", enumClass, METHOD, e);
-            }
+        } catch (Exception ignore) {
         }
 
         List<Map<String, Object>> returnList = new ArrayList<>();
