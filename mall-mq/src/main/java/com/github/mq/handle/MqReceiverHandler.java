@@ -189,17 +189,19 @@ public class MqReceiverHandler {
             return null;
         }
 
-        msgId = U.toStr(map.get("message_id"));
-        if (U.isBlank(msgId)) {
-            msgId = U.toStr(map.get("msg_id"));
+        String messageId = U.toStr(map.get("msgId"));
+        if (U.isNotBlank(messageId)) {
+            return messageId;
         }
-        if (U.isBlank(msgId)) {
-            msgId = U.toStr(map.get("messageId"));
+        messageId = U.toStr(map.get("messageId"));
+        if (U.isNotBlank(messageId)) {
+            return messageId;
         }
-        if (U.isBlank(msgId)) {
-            msgId = U.toStr(map.get("msgId"));
+        messageId = U.toStr(map.get("message_id"));
+        if (U.isNotBlank(messageId)) {
+            return messageId;
         }
-        return msgId;
+        return U.toStr(map.get("msg_id"));
     }
 
     private void ack(Channel channel, long deliveryTag, String errorDesc) {
