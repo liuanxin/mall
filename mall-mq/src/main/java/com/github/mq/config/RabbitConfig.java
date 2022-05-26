@@ -1,7 +1,6 @@
 package com.github.mq.config;
 
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
 import com.github.mq.constant.MqInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.core.*;
@@ -30,33 +29,26 @@ public class RabbitConfig {
         Map<String, Queue> queueMap = new LinkedHashMap<>();
         Map<String, Binding> bindingMap = new LinkedHashMap<>();
         for (MqInfo mqInfo : MqInfo.values()) {
-            String exchangeType = mqInfo.getExchangeType();
-            String exchangeName = mqInfo.getExchangeName();
-            String routingKey = mqInfo.getRoutingKey();
-            String queueName = mqInfo.getQueueName();
-            String bindingName = String.format("(%s -- %s --> %s)", exchangeName, routingKey, queueName);
+            final String exchangeType = mqInfo.getExchangeType();
+            final String exchangeName = mqInfo.getExchangeName();
+            final String routingKey = mqInfo.getRoutingKey();
+            final String queueName = mqInfo.getQueueName();
+            final Map<String, Object> args = mqInfo.getArgs();
+            final String bindingName = String.format("(%s -- %s --> %s)", exchangeName, routingKey, queueName);
 
-            Exchange exchange = exchangeMap.get(exchangeName);
-            if (U.isNull(exchange)) {
+            final Exchange exchange = exchangeMap.computeIfAbsent(exchangeName, key -> {
                 // 持久化(durable 是 true), 不自动删除(autoDelete 是 false)
-                ExchangeBuilder exchangeBuilder = new ExchangeBuilder(exchangeName, exchangeType);
+                ExchangeBuilder exchangeBuilder = new ExchangeBuilder(key, exchangeType);
                 if (mqInfo.isDelayExchange()) {
                     exchangeBuilder.delayed();
                 }
-                exchange = exchangeBuilder.build();
-                exchangeMap.put(exchangeName, exchange);
-            }
+                return exchangeBuilder.build();
+            });
 
-            Queue queue = queueMap.get(queueName);
-            if (U.isNull(queue)) {
-                // 持久化(durable 是 true), 不自动删除(autoDelete 是 false)
-                queue = QueueBuilder.durable(queueName).withArguments(mqInfo.getArgs()).build();
-                queueMap.put(queueName, queue);
-            }
+            // 持久化(durable 是 true), 不自动删除(autoDelete 是 false)
+            final Queue queue = queueMap.computeIfAbsent(queueName, key -> QueueBuilder.durable(key).withArguments(args).build());
 
-            if (!bindingMap.containsKey(bindingName)) {
-                bindingMap.put(bindingName, BindingBuilder.bind(queue).to(exchange).with(routingKey).noargs());
-            }
+            bindingMap.computeIfAbsent(bindingName, k -> BindingBuilder.bind(queue).to(exchange).with(routingKey).noargs());
         }
 
         for (Exchange exchange : exchangeMap.values()) {
