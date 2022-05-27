@@ -36,10 +36,12 @@ public class MqReceiverHandler {
      * <p>
      * 消费成功时: 发送 ack 并写记录(状态为成功)
      * 消费失败时:
-     * 未达到上限则 nack(重回队列) 并写记录(状态为失败)
-     * 已达到上限则 ack 并写记录(状态为失败)
+     *   未达到上限则 nack(重回队列) 并写记录(状态为失败)
+     *   已达到上限则 ack 并写记录(状态为失败)
      * <p>
      * 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
+     *
+     * @param consumer 业务处理时异常会自动发送 nack, 无异常 或 异常次数超过指定数量 时会发送 ack
      */
     public void doConsume(Message message, Channel channel, Consumer<String> consumer) {
         long start = System.currentTimeMillis();
@@ -72,8 +74,8 @@ public class MqReceiverHandler {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("开始消费 mq({}), 消息发送时间({})", desc, DateUtil.formatDateTimeMs(selfData.getSendTime()));
             }
-            String msgId = getMsgId(messageProperties.getMessageId(), json);
-            doDataConsume(json, msgId, mqInfo.getQueueName(), mqInfo.name().toLowerCase(), desc, deliveryTag, channel, consumer);
+            // msgId 放在 messageId, traceId 放在 correlationId
+            doDataConsume(json, messageProperties.getMessageId(), mqInfo, desc, deliveryTag, channel, consumer);
         } finally {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("消费 mq{} 结束, 耗时: ({})", (U.isBlank(desc) ? "" : String.format("(%s)", desc)),
@@ -88,17 +90,19 @@ public class MqReceiverHandler {
      * <p>
      * 消费成功时: 发送 ack 并写记录(状态为成功)
      * 消费失败时:
-     * 未达到上限则 nack(重回队列) 并写记录(状态为失败)
-     * 已达到上限则 ack 并写记录(状态为失败)
+     *   未达到上限则 nack(重回队列) 并写记录(状态为失败)
+     *   已达到上限则 ack 并写记录(状态为失败)
      * <p>
      * 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
+     *
+     * @param consumer 业务处理时异常会自动发送 nack, 无异常 或 异常次数超过指定数量 时会发送 ack
      */
-    public void doConsumeJustJson(String queueName, MqInfo mqInfo, String desc,
-                                  Message message, Channel channel, Consumer<String> consumer) {
+    public void doConsumeJustJson(MqInfo mqInfo, Message message, Channel channel, Consumer<String> consumer) {
         long start = System.currentTimeMillis();
+        String desc = mqInfo.getDesc();
         try {
             MessageProperties messageProperties = message.getMessageProperties();
-            // traceId 放在 correlationId
+            // msgId 放在 messageId, traceId 放在 correlationId
             LogUtil.bindBasicInfo(messageProperties.getCorrelationId());
 
             long deliveryTag = messageProperties.getDeliveryTag();
@@ -111,8 +115,8 @@ public class MqReceiverHandler {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("开始消费 mq({})", desc);
             }
-            String msgId = getMsgId(messageProperties.getMessageId(), json);
-            doDataConsume(json, msgId, queueName, mqInfo.name().toLowerCase(), desc, deliveryTag, channel, consumer);
+            // msgId 放在 messageId, traceId 放在 correlationId
+            doDataConsume(json, messageProperties.getMessageId(), mqInfo, desc, deliveryTag, channel, consumer);
         } finally {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("消费 mq{} 结束, 耗时: ({})", desc, DateUtil.toHuman(System.currentTimeMillis() - start));
@@ -121,8 +125,10 @@ public class MqReceiverHandler {
         }
     }
 
-    private void doDataConsume(String json, String msgId, String queueName, String businessType, String desc,
+    private void doDataConsume(String json, String messageId, MqInfo mqInfo, String desc,
                                long deliveryTag, Channel channel, Consumer<String> consumer) {
+        String msgId = getMsgId(messageId, json);
+        String businessType = mqInfo.name().toLowerCase();
         if (U.isBlank(msgId)) {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("{}消费数据({})时没有消息 id", desc, json);
