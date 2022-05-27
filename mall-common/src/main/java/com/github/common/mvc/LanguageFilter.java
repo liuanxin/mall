@@ -31,14 +31,9 @@ public class LanguageFilter implements Filter {
     }
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        Filter.super.init(filterConfig);
-    }
-
-    @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) req;
-        Locale locale = handleLocale(httpRequest);
+        final Locale locale = handleLocale(httpRequest);
 
         HttpServletRequestWrapper request = new HttpServletRequestWrapper(httpRequest) {
             @Override
@@ -77,21 +72,13 @@ public class LanguageFilter implements Filter {
 
         if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
             return Locale.SIMPLIFIED_CHINESE;
-        } else {
-            // 中文就使用 zh_CN, 英文就使用 en_US (如果还有具体的 zh_TW, en_GB、en_CA 就不应用这样处理)
-            String language = locale.getLanguage();
-            if ("zh".equalsIgnoreCase(language)) {
-                return Locale.SIMPLIFIED_CHINESE;
-            } else if ("en".equalsIgnoreCase(language)) {
-                return Locale.US;
-            } else {
-                return locale;
-            }
         }
-    }
-
-    @Override
-    public void destroy() {
-        Filter.super.destroy();
+        // 中文就使用 zh_CN, 英文就使用 en_US (如果还有具体的 zh_TW, en_GB、en_CA 就不应用这样处理)
+        String language = locale.getLanguage().toLowerCase();
+        return switch (language) {
+            case "zh" -> Locale.SIMPLIFIED_CHINESE;
+            case "en" -> Locale.US;
+            default -> locale;
+        };
     }
 }
