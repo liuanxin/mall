@@ -250,7 +250,7 @@ public final class A {
         return returnMap;
     }
 
-    /** 用指定的列将 List 转换成 HashMap, 其中 map 的 value 是一个 Set */
+    /** 用指定的列将 List 转换成 HashMap, 其中 map 的 value 是一个 LinkedHashSet */
     public static <K, T> Map<K, Set<T>> listToMapSet(Collection<T> list, Function<? super T, K> func) {
         Map<K, Set<T>> returnMap = new HashMap<>();
         if (isNotEmpty(list)) {
@@ -270,7 +270,7 @@ public final class A {
         }
         return returnMap;
     }
-    /** 用指定的列将 List 转换成 LinkedHashMap, 其中 map 的 value 是一个 Set */
+    /** 用指定的列将 List 转换成 LinkedHashMap, 其中 map 的 value 是一个 LinkedHashSet */
     public static <K, T> Map<K, Set<T>> listToLinkedMapSet(Collection<T> list, Function<? super T, K> func) {
         Map<K, Set<T>> returnMap = new LinkedHashMap<>();
         if (isNotEmpty(list)) {
@@ -379,7 +379,7 @@ public final class A {
         return returnMap;
     }
 
-    /** 用两个指定列将 List 转换成 HashMap, 其中 map 的 value 是一个 Set */
+    /** 用两个指定列将 List 转换成 HashMap, 其中 map 的 value 是一个 LinkedHashSet */
     public static <T, K, V> Map<K, Set<V>> listToMapKeyValueSet(Collection<T> list, Function<? super T, K> keyFun,
                                                                 Function<? super T, V> valueFun) {
         Map<K, Set<V>> returnMap = new HashMap<>();
@@ -403,7 +403,7 @@ public final class A {
         }
         return returnMap;
     }
-    /** 用两个指定列将 List 转换成 LinkedHashMap, 其中 map 的 value 是一个 List */
+    /** 用两个指定列将 List 转换成 LinkedHashMap, 其中 map 的 value 是一个 LinkedHashSet */
     public static <T, K, V> Map<K, Set<V>> listToLinkedMapKeyValueSet(Collection<T> list, Function<? super T, K> keyFun,
                                                                       Function<? super T, V> valueFun) {
         Map<K, Set<V>> returnMap = new LinkedHashMap<>();
@@ -486,12 +486,12 @@ public final class A {
     }
 
     /** 数组去重返回 */
-    public static <T> Collection<T> duplicate(T[] array) {
+    public static <T> List<T> duplicate(T[] array) {
         return duplicate(Arrays.asList(array));
     }
     /** 删除重复的项 */
-    public static <T> Collection<T> duplicate(Collection<T> array) {
-        return new LinkedHashSet<>(array);
+    public static <T> List<T> duplicate(Collection<T> array) {
+        return new ArrayList(new LinkedHashSet<>(array));
     }
 
     /** 构造 HashMap, 必须保证每两个参数的类型是一致的! 当参数是奇数时, 最后一个 key 将会被忽略 */
@@ -548,6 +548,10 @@ public final class A {
     public static <T> T last(T[] array) {
         return isEmpty(array) ? null : array[array.length - 1];
     }
+    /** 获取数组指定索引的值 */
+    public static <T> T getIndex(T[] array, int index) {
+        return (isEmpty(array) || index < 0 || index >= array.length) ? null : array[index];
+    }
 
     /** 获取集合的第一个元素 */
     public static <T> T first(Collection<T> collection) {
@@ -570,6 +574,26 @@ public final class A {
             if (!iterator.hasNext()) {
                 return current;
             }
+        }
+    }
+    /** 获取集合指定下标的值 */
+    public static <T> T getIndex(Collection<T> collection, int index) {
+        if (isEmpty(collection) || index < 0 || index >= collection.size()) {
+            return null;
+        }
+        // 当类型为 List 时, 直接取最后一个元素
+        if (collection instanceof List<T> list) {
+            return list.get(index);
+        }
+
+        int i = 0;
+        Iterator<T> iterator = collection.iterator();
+        while (true) {
+            T current = iterator.next();
+            if (index == i) {
+                return current;
+            }
+            i++;
         }
     }
 
