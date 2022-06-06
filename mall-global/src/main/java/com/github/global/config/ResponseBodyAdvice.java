@@ -50,12 +50,12 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
                 return;
             }
 
-            boolean notRequestInfo = LogUtil.hasNotRequestInfo();
+            boolean logNotStart = LogUtil.hasNotStart();
             try {
-                if (notRequestInfo) {
+                if (logNotStart) {
                     String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
-                    LogUtil.putContext(traceId, RequestUtil.logContextInfo());
-                    LogUtil.putIp(RequestUtil.getRealIp());
+                    String realIp = RequestUtil.getRealIp();
+                    LogUtil.putContext(traceId, realIp, RequestUtil.logContextInfo());
                 }
                 StringBuilder sbd = new StringBuilder();
 
@@ -91,7 +91,7 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
                 sbd.append(" return(").append(U.toStr(json, maxPrintLength, printLength)).append(")");
                 LogUtil.ROOT_LOG.info(sbd.toString());
             } finally {
-                if (notRequestInfo) {
+                if (logNotStart) {
                     LogUtil.unbind();
                 }
             }

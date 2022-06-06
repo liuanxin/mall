@@ -47,8 +47,8 @@ public class ManagerInterceptor implements HandlerInterceptor {
 
     private void bindParam() {
         String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
-        LogUtil.putContext(traceId, RequestUtil.logContextInfo());
-        LogUtil.putIp(RequestUtil.getRealIp());
+        String realIp = RequestUtil.getRealIp();
+        LogUtil.putContext(traceId, realIp, RequestUtil.logContextInfo());
         LogUtil.putUser(ManagerSessionUtil.getUserInfo());
     }
 

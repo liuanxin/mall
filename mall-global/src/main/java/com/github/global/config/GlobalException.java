@@ -213,16 +213,16 @@ public class GlobalException {
     private void bindAndPrintLog(String msg, Exception e) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
             // 当没有进到全局拦截器就抛出的异常, 需要这么处理才能在日志中输出整个上下文信息
-            boolean notRequestInfo = LogUtil.hasNotRequestInfo();
+            boolean logNotStart = LogUtil.hasNotStart();
             try {
-                if (notRequestInfo) {
+                if (logNotStart) {
                     String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
-                    LogUtil.putContext(traceId, RequestUtil.logContextInfo());
-                    LogUtil.putIp(RequestUtil.getRealIp());
+                    String realIp = RequestUtil.getRealIp();
+                    LogUtil.putContext(traceId, realIp, RequestUtil.logContextInfo());
                 }
                 LogUtil.ROOT_LOG.debug(msg, e);
             } finally {
-                if (notRequestInfo) {
+                if (logNotStart) {
                     LogUtil.unbind();
                 }
             }

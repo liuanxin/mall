@@ -34,28 +34,22 @@ public final class LogUtil {
 
     /** 将 跟踪号 和 接收到请求的时间 放进日志上下文 */
     public static void bindBasicInfo(String traceId) {
-        if (U.isBlank(MDC.get(START_REQUEST_TIME))) {
+        if (hasNotStart()) {
             Date now = new Date();
             MDC.put(START_REQUEST_TIME, U.toStr(now.getTime()));
             MDC.put(RECEIVE_TIME, DateUtil.formatDateTimeMs(now) + " -> ");
         }
-        if (U.isBlank(MDC.get(TRACE_ID))) {
+        if (hasNotTraceId()) {
             // xml 中没有加空格, 在值的前面加一个空格
             MDC.put(TRACE_ID, " " + U.defaultIfBlank(traceId, U.uuid16()));
         }
     }
-    /** 日志上下文中没有 请求上下文信息 则返回 true */
-    public static boolean hasNotRequestInfo() {
-        return U.isBlank(MDC.get(REQUEST_INFO));
-    }
     /** 将 请求上下文信息 放进日志上下文 */
-    public static void putContext(String traceId, RequestLogContext logContextInfo) {
+    public static void putContext(String traceId, String ip, RequestLogContext logContextInfo) {
         bindBasicInfo(traceId);
         if (U.isNotNull(logContextInfo)) {
             MDC.put(REQUEST_INFO, " " + logContextInfo.requestInfo());
         }
-    }
-    public static void putIp(String ip) {
         if (U.isNotBlank(ip)) {
             MDC.put(REAL_IP, " " + ip);
         }
@@ -66,8 +60,11 @@ public final class LogUtil {
         }
     }
 
-    public static void unbind() {
-        MDC.clear();
+    public static boolean hasNotStart() {
+        return U.lessAndEquals0(getStartMilli());
+    }
+    public static boolean hasNotTraceId() {
+        return U.isBlank(getTraceId());
     }
 
     public static long getStartMilli() {
@@ -81,6 +78,10 @@ public final class LogUtil {
     }
     public static String getUser() {
         return MDC.get(USER).trim();
+    }
+
+    public static void unbind() {
+        MDC.clear();
     }
 
 
