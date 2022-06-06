@@ -221,12 +221,7 @@ public final class A {
                 if (U.isNotNull(obj)) {
                     K k = func.apply(obj);
                     if (U.isNotNull(k)) {
-                        List<T> array = returnMap.get(k);
-                        if (U.isNull(array)) {
-                            array = new ArrayList<>();
-                            returnMap.put(k, array);
-                        }
-                        array.add(obj);
+                        returnMap.computeIfAbsent(k, k1 -> new ArrayList<>()).add(obj);
                     }
                 }
             }
@@ -241,12 +236,7 @@ public final class A {
                 if (U.isNotNull(obj)) {
                     K k = func.apply(obj);
                     if (U.isNotNull(k)) {
-                        List<T> array = returnMap.get(k);
-                        if (U.isNull(array)) {
-                            array = new ArrayList<>();
-                            returnMap.put(k, array);
-                        }
-                        array.add(obj);
+                        returnMap.computeIfAbsent(k, k1 -> new ArrayList<>()).add(obj);
                     }
                 }
             }
@@ -262,12 +252,7 @@ public final class A {
                 if (U.isNotNull(obj)) {
                     K k = func.apply(obj);
                     if (U.isNotNull(k)) {
-                        Set<T> array = returnMap.get(k);
-                        if (isEmpty(array)) {
-                            array = new LinkedHashSet<>();
-                            returnMap.put(k, array);
-                        }
-                        array.add(obj);
+                        returnMap.computeIfAbsent(k, k1 -> new LinkedHashSet<>()).add(obj);
                     }
                 }
             }
@@ -282,12 +267,7 @@ public final class A {
                 if (U.isNotNull(obj)) {
                     K k = func.apply(obj);
                     if (U.isNotNull(k)) {
-                        Set<T> array = returnMap.get(k);
-                        if (isEmpty(array)) {
-                            array = new LinkedHashSet<>();
-                            returnMap.put(k, array);
-                        }
-                        array.add(obj);
+                        returnMap.computeIfAbsent(k, k1 -> new LinkedHashSet<>()).add(obj);
                     }
                 }
             }
@@ -345,12 +325,7 @@ public final class A {
                     if (U.isNotNull(k)) {
                         V v = valueFun.apply(obj);
                         if (U.isNotNull(v)) {
-                            List<V> array = returnMap.get(k);
-                            if (U.isNull(array)) {
-                                array = new ArrayList<>();
-                                returnMap.put(k, array);
-                            }
-                            array.add(v);
+                            returnMap.computeIfAbsent(k, k1 -> new ArrayList<>()).add(v);
                         }
                     }
                 }
@@ -369,12 +344,7 @@ public final class A {
                     if (U.isNotNull(k)) {
                         V v = valueFun.apply(obj);
                         if (U.isNotNull(v)) {
-                            List<V> array = returnMap.get(k);
-                            if (U.isNull(array)) {
-                                array = new ArrayList<>();
-                                returnMap.put(k, array);
-                            }
-                            array.add(v);
+                            returnMap.computeIfAbsent(k, k1 -> new ArrayList<>()).add(v);
                         }
                     }
                 }
@@ -394,12 +364,7 @@ public final class A {
                     if (U.isNotNull(k)) {
                         V v = valueFun.apply(obj);
                         if (U.isNotNull(v)) {
-                            Set<V> array = returnMap.get(k);
-                            if (isEmpty(array)) {
-                                array = new LinkedHashSet<>();
-                                returnMap.put(k, array);
-                            }
-                            array.add(v);
+                            returnMap.computeIfAbsent(k, k1 -> new LinkedHashSet<>()).add(v);
                         }
                     }
                 }
@@ -418,12 +383,7 @@ public final class A {
                     if (U.isNotNull(k)) {
                         V v = valueFun.apply(obj);
                         if (U.isNotNull(v)) {
-                            Set<V> array = returnMap.get(k);
-                            if (isEmpty(array)) {
-                                array = new LinkedHashSet<>();
-                                returnMap.put(k, array);
-                            }
-                            array.add(v);
+                            returnMap.computeIfAbsent(k, k1 -> new LinkedHashSet<>()).add(v);
                         }
                     }
                 }
