@@ -41,7 +41,7 @@ public final class LogUtil {
         }
         if (U.isBlank(MDC.get(TRACE_ID))) {
             // xml 中没有加空格, 在值的前面加一个空格
-            MDC.put(TRACE_ID, " " + (U.isBlank(traceId) ? U.uuid16() : traceId));
+            MDC.put(TRACE_ID, " " + U.defaultIfBlank(traceId, U.uuid16()));
         }
     }
     /** 日志上下文中没有 请求上下文信息 则返回 true */

@@ -250,8 +250,7 @@ public final class RequestUtil {
 
     /** 从 cookie 中获取值, 为空就从请求头中取, 为空再从参数中取 */
     public static String getCookieOrHeaderOrParam(String name) {
-        String value = getCookieValue(name);
-        return U.isBlank(value) ? getHeaderOrParam(name) : value;
+        return U.defaultIfBlank(getCookieValue(name), getHeaderOrParam(name));
     }
 
     /** 先从请求头中查, 为空再从参数中查 */
@@ -260,12 +259,7 @@ public final class RequestUtil {
         if (U.isNull(request)) {
             return U.EMPTY;
         }
-
-        String value = request.getHeader(param);
-        if (U.isBlank(value)) {
-            value = request.getParameter(param);
-        }
-        return U.isBlank(value) ? U.EMPTY : value.trim();
+        return U.defaultIfBlank(U.defaultIfBlank(request.getHeader(param), request.getParameter(param)), U.EMPTY);
     }
 
     /** 从 cookie 中获取值 */
