@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 @ConditionalOnClass(RabbitListener.class)
 public class MqReceiverHandler {
 
-    @Value("${mq.consumerRetryCount:10}")
+    @Value("${mq.consumerRetryCount:5}")
     private int consumerRetryCount;
 
     private final MqReceiveService mqReceiveService;
@@ -137,10 +137,8 @@ public class MqReceiverHandler {
         }
 
         MqReceive model = mqReceiveService.queryByMsg(msgId);
-        boolean hasExists = U.isNotNull(model);
-        if (hasExists) {
-            model.setRetryCount(model.getRetryCount() + 1);
-        } else {
+        boolean needAdd = U.isNull(model);
+        if (needAdd) {
             model = new MqReceive();
             model.setMsgId(msgId);
             model.setBusinessType(businessType);
@@ -176,10 +174,11 @@ public class MqReceiverHandler {
                 model.setRemark(String.format("消费(%s)失败(%s)", desc, failMsg));
             }
         } finally {
-            if (hasExists) {
-                mqReceiveService.updateById(model);
-            } else {
+            if (needAdd) {
                 mqReceiveService.add(model);
+            } else {
+                model.setRetryCount(model.getRetryCount() + 1);
+                mqReceiveService.updateById(model);
             }
         }
     }

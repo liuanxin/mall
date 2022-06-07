@@ -27,7 +27,7 @@ import java.util.Date;
 @ConditionalOnClass(RabbitTemplate.class)
 public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTemplate.ReturnsCallback {
 
-    @Value("${mq.providerRetryCount:5}")
+    @Value("${mq.providerRetryCount:3}")
     private int maxRetryCount;
 
     private final RabbitTemplate rabbitTemplate;
@@ -137,15 +137,18 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
             if (correlationData instanceof SelfCorrelationData data) {
                 // 从记录中获取重试次数
                 MqSend mqSend = mqSendService.queryByMsgId(correlationData.getId());
-                if (U.isNotNull(mqSend) && U.greater0(mqSend.getRetryCount())) {
-                    if (mqSend.getRetryCount() < maxRetryCount) {
-                        // 重试
-                        ApplicationContexts.getBean(MqSenderHandler.class).provide("", data);
-                    } else {
-                        mqSend.setStatus(1);
-                        mqSend.setFailType(2);
-                        mqSend.setRemark(String.format("%s发送失败且重试(%s)达到上限", data.getMqInfo().showDesc(), maxRetryCount));
-                        mqSendService.updateById(mqSend);
+                if (U.isNotNull(mqSend)) {
+                    Integer retryCount = mqSend.getRetryCount();
+                    if (U.greater0(retryCount)) {
+                        if (retryCount < maxRetryCount) {
+                            // 重试
+                            ApplicationContexts.getBean(MqSenderHandler.class).provide("", data);
+                        } else {
+                            mqSend.setStatus(1);
+                            mqSend.setFailType(2);
+                            mqSend.setRemark(String.format("%s发送失败且重试(%s)达到上限", data.getMqInfo().showDesc(), maxRetryCount));
+                            mqSendService.updateById(mqSend);
+                        }
                     }
                 }
             }
