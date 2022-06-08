@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.common.exception.ParamException;
 import com.github.common.util.A;
 import com.github.common.util.U;
-import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -29,8 +28,7 @@ public class ValidationUtil {
 
         Multimap<String, String> fieldErrorMap = ArrayListMultimap.create();
         for (ObjectError error : bindingResult.getAllErrors()) {
-            if (error instanceof FieldError) {
-                FieldError fieldError = (FieldError) error;
+            if (error instanceof FieldError fieldError) {
                 fieldErrorMap.put(getParamField(clazz, fieldError.getField()), fieldError.getDefaultMessage());
             }
         }
@@ -42,8 +40,8 @@ public class ValidationUtil {
         if (A.isNotEmpty(fieldErrorMap)) {
             for (Map.Entry<String, Collection<String>> entry : fieldErrorMap.entrySet()) {
                 List<String> list = new ArrayList<>(entry.getValue());
-                Collections.sort(list);
-                errorMap.put(entry.getKey(), Joiner.on(",").join(list));
+                list.sort(null);
+                errorMap.put(entry.getKey(), A.toStr(list));
             }
         }
         return errorMap;
