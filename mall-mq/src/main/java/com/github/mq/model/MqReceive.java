@@ -17,6 +17,9 @@ public class MqReceive implements Serializable {
     /** 消息 id --> msg_id */
     private String msgId;
 
+    /** 搜索键 --> search_key */
+    private String searchKey;
+
     /** 业务场景 --> business_type */
     private String businessType;
 

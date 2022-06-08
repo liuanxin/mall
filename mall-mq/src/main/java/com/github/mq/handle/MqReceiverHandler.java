@@ -20,7 +20,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.function.Function;
 
 @RequiredArgsConstructor
 @Configuration
@@ -43,9 +43,9 @@ public class MqReceiverHandler {
      * <p>
      * 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
      *
-     * @param consumer 业务处理时异常会自动发送 nack, 无异常 或 异常次数超过指定数量 时会发送 ack
+     * @param fun 业务处理时异常会自动发送 nack, 无异常 或 异常次数超过指定数量 时会发送 ack, 入参是数据对应的 json, 返回 searchKey
      */
-    public void doConsume(Message message, Channel channel, Consumer<String> consumer) {
+    public void doConsume(Message message, Channel channel, Function<String, String> fun) {
         long start = System.currentTimeMillis();
         String desc = "";
         try {
@@ -82,7 +82,7 @@ public class MqReceiverHandler {
                 LogUtil.ROOT_LOG.info("开始消费 mq({} : {}), 消息发送时间({})", desc, msgId, DateUtil.formatDateTimeMs(selfData.getSendTime()));
             }
             // msgId 放在 messageId, traceId 放在 correlationId
-            handleData(json, msgId, mqInfo, desc, deliveryTag, channel, consumer);
+            handleData(json, msgId, mqInfo, desc, deliveryTag, channel, fun);
         } finally {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("消费 mq{} 结束, 耗时: ({})", (U.isBlank(desc) ? "" : String.format("(%s)", desc)),
@@ -102,9 +102,9 @@ public class MqReceiverHandler {
      * <p>
      * 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
      *
-     * @param consumer 业务处理时异常会自动发送 nack, 无异常 或 异常次数超过指定数量 时会发送 ack
+     * @param fun 业务处理时异常会自动发送 nack, 无异常 或 异常次数超过指定数量 时会发送 ack, 入参是数据对应的 json, 返回 searchKey
      */
-    public void doConsumeJustJson(MqInfo mqInfo, Message message, Channel channel, Consumer<String> consumer) {
+    public void doConsumeJustJson(MqInfo mqInfo, Message message, Channel channel, Function<String, String> fun) {
         long start = System.currentTimeMillis();
         String desc = mqInfo.getDesc();
         try {
@@ -128,7 +128,7 @@ public class MqReceiverHandler {
                 LogUtil.ROOT_LOG.info("开始消费 mq({} : {})", desc, msgId);
             }
             // msgId 放在 messageId, traceId 放在 correlationId
-            handleData(json, msgId, mqInfo, desc, deliveryTag, channel, consumer);
+            handleData(json, msgId, mqInfo, desc, deliveryTag, channel, fun);
         } finally {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("消费 mq{} 结束, 耗时: ({})", desc, DateUtil.toHuman(System.currentTimeMillis() - start));
@@ -139,10 +139,10 @@ public class MqReceiverHandler {
 
     /** 在每一个节点都要确保会发送 ack 或 nack */
     private void handleData(String json, String msgId, MqInfo mqInfo, String desc,
-                            long deliveryTag, Channel channel, Consumer<String> consumer) {
+                            long deliveryTag, Channel channel, Function<String, String> fun) {
         if (redissonService.tryLock(msgId)) {
             try {
-                doDataConsume(json, msgId, mqInfo.name().toLowerCase(), desc, deliveryTag, channel, consumer);
+                doDataConsume(json, msgId, mqInfo.name().toLowerCase(), desc, deliveryTag, channel, fun);
             } finally {
                 redissonService.unlock(msgId);
             }
@@ -152,7 +152,7 @@ public class MqReceiverHandler {
     }
 
     private void doDataConsume(String json, String msgId, String businessType, String desc,
-                               long deliveryTag, Channel channel, Consumer<String> consumer) {
+                               long deliveryTag, Channel channel, Function<String, String> fun) {
         MqReceive model = null;
         boolean needAdd = false;
         boolean ack = true;
@@ -174,7 +174,7 @@ public class MqReceiverHandler {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("{}消费数据({})", desc, json);
             }
-            consumer.accept(json);
+            model.setSearchKey(U.toStr(fun.apply(json)));
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("{}消费成功", desc);
             }

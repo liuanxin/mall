@@ -29,9 +29,6 @@ public class MqSend implements Serializable {
     /** 重试次数, 需要重试则改为 0 --> retry_count */
     private Integer retryCount;
 
-    /** 错误类型(0.无错, 1.连接失败, 2.到交换机失败, 3.到队列失败) --> fail_type */
-    private Integer failType;
-
     /** 消息内容 --> msg */
     private String msg;
 

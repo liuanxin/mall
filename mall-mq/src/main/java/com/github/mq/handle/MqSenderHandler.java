@@ -53,13 +53,15 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
      * @param delayMs 延迟发送毫秒数, 需要安装 delay 插件, 见: https://www.rabbitmq.com/community-plugins.html
      */
     public void doProvide(MqInfo mqInfo, String searchKey, String json, int delayMs) {
+        String msgId = U.uuid16();
         String traceId = LogUtil.getTraceId();
+
         MqData data = new MqData();
         data.setSendTime(new Date());
         data.setMqInfo(mqInfo.name().toLowerCase());
         data.setTraceId(traceId);
         data.setJson(json);
-        provide(searchKey, new SelfCorrelationData(U.uuid16(), traceId, mqInfo, JsonUtil.toJson(data), delayMs));
+        provide(searchKey, new SelfCorrelationData(msgId, traceId, mqInfo, JsonUtil.toJson(data), delayMs));
     }
 
     /**
@@ -68,7 +70,9 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
      * @param delayMs 延迟发送毫秒数, 需要安装 delay 插件, 见: https://www.rabbitmq.com/community-plugins.html
      */
     public void doProvideJustJson(MqInfo mqInfo, String searchKey, String json, int delayMs) {
-        provide(searchKey, new SelfCorrelationData(U.uuid16(), LogUtil.getTraceId(), mqInfo, json, delayMs));
+        String msgId = U.uuid16();
+        String traceId = LogUtil.getTraceId();
+        provide(searchKey, new SelfCorrelationData(msgId, traceId, mqInfo, json, delayMs));
     }
     private void provide(String searchKey, SelfCorrelationData correlationData) {
         String msgId = correlationData.getId();
@@ -88,7 +92,6 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
             model.setBusinessType(mqInfo.name().toLowerCase());
             // 先写成功, 后面异常时写失败
             model.setStatus(2);
-            model.setFailType(0);
             model.setRetryCount(0);
             model.setMsg(json);
             model.setRemark(String.format("发送消息(%s)", desc));
@@ -97,7 +100,6 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
             MqSend update = new MqSend();
             update.setId(model.getId());
             update.setStatus(2);
-            update.setFailType(0);
             update.setRetryCount(model.getRetryCount() + 1);
             update.setRemark(String.format("消息(%s)重试", desc));
             mqSendService.updateById(update);
@@ -118,7 +120,6 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
             MqSend errorModel = new MqSend();
             errorModel.setId(model.getId());
             errorModel.setStatus(1);
-            errorModel.setFailType(1);
             errorModel.setRemark(String.format("连接 mq 失败(%s)", desc));
             mqSendService.updateById(errorModel);
         }
@@ -134,10 +135,10 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("消息({})到 exchange 失败, 原因({})", JsonUtil.toJson(correlationData), cause);
             }
-            if (correlationData instanceof SelfCorrelationData data) {
-                // 从记录中获取重试次数
-                MqSend mqSend = mqSendService.queryByMsgId(correlationData.getId());
-                if (U.isNotNull(mqSend)) {
+            // 从记录中获取重试次数
+            MqSend mqSend = mqSendService.queryByMsgId(correlationData.getId());
+            if (U.isNotNull(mqSend)) {
+                if (correlationData instanceof SelfCorrelationData data) {
                     Integer retryCount = mqSend.getRetryCount();
                     if (U.greater0(retryCount)) {
                         // 如果重试次数未达到设定的值则进行重试
@@ -145,13 +146,16 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                             ApplicationContexts.getBean(MqSenderHandler.class).provide("", data);
                         } else {
                             mqSend.setStatus(1);
-                            mqSend.setFailType(2);
                             mqSend.setRemark(String.format("发送(%s)失败且重试(%s)达到上限(%s)",
                                     data.getMqInfo().showDesc(), retryCount, maxRetryCount));
                             mqSendService.updateById(mqSend);
                         }
+                        return;
                     }
                 }
+                mqSend.setStatus(1);
+                mqSend.setRemark("消息到交换机失败");
+                mqSendService.updateById(mqSend);
             }
         }
     }
@@ -176,8 +180,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
 
         MqSend model = new MqSend();
         model.setStatus(1);
-        model.setFailType(3);
-        model.setRemark(replyText);
+        model.setRemark("消息到队列时失败: " + replyText);
         mqSendService.updateByMsgId(msgId, model);
     }
 }
