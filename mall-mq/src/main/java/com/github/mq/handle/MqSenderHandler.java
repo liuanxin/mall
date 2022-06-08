@@ -27,7 +27,7 @@ import java.util.Date;
 @ConditionalOnClass(RabbitTemplate.class)
 public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTemplate.ReturnsCallback {
 
-    @Value("${mq.providerRetryCount:3}")
+    @Value("${mq.providerRetryCount:2}")
     private int maxRetryCount;
 
     private final RabbitTemplate rabbitTemplate;
