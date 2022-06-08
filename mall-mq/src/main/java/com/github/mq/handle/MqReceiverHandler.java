@@ -163,8 +163,8 @@ public class MqReceiverHandler {
 
         // 成功了就只写一次消费成功, 失败了也只写一次, 上面不写初始, 少操作一次 db
         boolean ack = true;
-        String ackErrorMsg = null;
-        Integer currentRetryCount = model.getRetryCount();
+        String ackMsg = "";
+        int currentRetryCount = U.toInt(model.getRetryCount());
         try {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("{}消费数据({})", desc, json);
@@ -175,8 +175,7 @@ public class MqReceiverHandler {
             }
 
             model.setStatus(2);
-            model.setRemark(String.format("消费(%s)成功", desc));
-            ackErrorMsg = String.format("%s消费成功, 发送 ack 时异常", desc);
+            ackMsg = desc + "消费成功";
         } catch (Exception e) {
             String failMsg = e.getMessage();
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
@@ -185,14 +184,13 @@ public class MqReceiverHandler {
             model.setStatus(1);
             // 如果重试次数达到设定的值则发送 ack, 否则发送 nack
             if (currentRetryCount > consumerRetryCount) {
-                model.setRemark(String.format("消费(%s)失败(%s)且重试(%s)达到上限(%s)", desc, failMsg, currentRetryCount, consumerRetryCount));
-                ackErrorMsg = String.format("%s消费失败且重试(%s)达到上限(%s), 发送 ack 时异常", desc, currentRetryCount, consumerRetryCount);
+                ackMsg = String.format("消费(%s)失败且重试(%s)达到上限(%s)", desc, currentRetryCount, consumerRetryCount);
             } else {
-                model.setRemark(String.format("消费(%s)失败(%s)", desc, failMsg));
                 ack = false;
-                ackErrorMsg = String.format("%s消费失败, 发送 nack 时异常", desc);
+                ackMsg = desc + "消费失败";
             }
         } finally {
+            model.setRemark(ackMsg);
             if (needAdd) {
                 mqReceiveService.add(model);
             } else {
@@ -201,9 +199,9 @@ public class MqReceiverHandler {
             }
 
             if (ack) {
-                ack(channel, deliveryTag, U.defaultIfBlank(ackErrorMsg, "发送 ack 时异常"));
+                ack(channel, deliveryTag, ackMsg + ", 发送 ack 时异常");
             } else {
-                nack(channel, deliveryTag, U.defaultIfBlank(ackErrorMsg, "发送 nack 时异常"));
+                nack(channel, deliveryTag, ackMsg + ", 发送 nack 时异常");
             }
         }
     }
