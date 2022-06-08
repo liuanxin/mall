@@ -174,20 +174,20 @@ public class GlobalException {
     @ExceptionHandler(Throwable.class)
     public ResponseEntity other(Throwable throwable) {
         Throwable e = innerException(1, throwable);
-        if (e instanceof BadRequestException) {
-            return badRequest((BadRequestException) e);
-        } else if (e instanceof ForbiddenException) {
-            return forbidden((ForbiddenException) e);
-        } else if (e instanceof ForceReturnException) {
-            return forceReturn((ForceReturnException) e);
-        } else if (e instanceof NotFoundException) {
-            return notFound((NotFoundException) e);
-        } else if (e instanceof NotLoginException) {
-            return notLogin((NotLoginException) e);
-        } else if (e instanceof ParamException) {
-            return param((ParamException) e);
-        } else if (e instanceof ServiceException) {
-            return service((ServiceException) e);
+        if (e instanceof BadRequestException bre) {
+            return badRequest(bre);
+        } else if (e instanceof ForbiddenException fe) {
+            return forbidden(fe);
+        } else if (e instanceof ForceReturnException fre) {
+            return forceReturn(fre);
+        } else if (e instanceof NotFoundException nfe) {
+            return notFound(nfe);
+        } else if (e instanceof NotLoginException nle) {
+            return notLogin(nle);
+        } else if (e instanceof ParamException pe) {
+            return param(pe);
+        } else if (e instanceof ServiceException se) {
+            return service(se);
         } else {
             return exception(e);
         }

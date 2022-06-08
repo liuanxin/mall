@@ -132,11 +132,11 @@ public class StyleCellHandler implements CellWriteHandler {
 
         // 设置标题行背景
         int r = TITLE_RGB[0], g = TITLE_RGB[1], b = TITLE_RGB[2];
-        if (style instanceof XSSFCellStyle) {
+        if (style instanceof XSSFCellStyle x) {
             IndexedColorMap colorMap = new DefaultIndexedColorMap();
-            ((XSSFCellStyle) style).setFillForegroundColor(new XSSFColor(new java.awt.Color(r, g, b), colorMap));
-        } else if (workbook instanceof HSSFWorkbook) {
-            HSSFPalette palette = ((HSSFWorkbook) workbook).getCustomPalette();
+            x.setFillForegroundColor(new XSSFColor(new java.awt.Color(r, g, b), colorMap));
+        } else if (workbook instanceof HSSFWorkbook h) {
+            HSSFPalette palette = h.getCustomPalette();
             HSSFColor color = palette.findSimilarColor(r, g, b);
             if (color == null) {
                 short replaceIndex = IndexedColors.LAVENDER.getIndex();

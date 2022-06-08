@@ -109,8 +109,8 @@ public class JsonUtil {
         }
 
         String json;
-        if (source instanceof String) {
-            json = (String) source;
+        if (source instanceof String s) {
+            json = s;
         } else {
             try {
                 json = (ignoreSourceAnnotation ? IGNORE_OBJECT_MAPPER : EMPTY_OBJECT_MAPPER).writeValueAsString(source);
@@ -239,8 +239,8 @@ public class JsonUtil {
         }
 
         String json;
-        if (source instanceof String) {
-            json = (String) source;
+        if (source instanceof String s) {
+            json = s;
         } else {
             try {
                 json = (ignoreSourceAnnotation ? IGNORE_OBJECT_MAPPER : EMPTY_OBJECT_MAPPER).writeValueAsString(source);
@@ -281,8 +281,8 @@ public class JsonUtil {
         if (U.isNull(obj)) {
             return null;
         }
-        if (obj instanceof String) {
-            return (String) obj;
+        if (obj instanceof String s) {
+            return s;
         }
         try {
             return OBJECT_MAPPER.writeValueAsString(obj);

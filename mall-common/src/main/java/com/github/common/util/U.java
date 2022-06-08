@@ -211,8 +211,8 @@ public final class U {
         }
 
         Object tmp = null;
-        if (obj instanceof Map) {
-            tmp = getEnumInMap((Map) obj);
+        if (obj instanceof Map m) {
+            tmp = getEnumInMap(m);
         } else {
             String tmpStr = obj.toString().trim();
             if (tmpStr.startsWith("{") && tmpStr.endsWith("}")) {
@@ -291,8 +291,8 @@ public final class U {
         if (isNull(obj)) {
             return 0;
         }
-        if (obj instanceof Number) {
-            return ((Number) obj).intValue();
+        if (obj instanceof Number n) {
+            return n.intValue();
         }
         try {
             return Integer.parseInt(obj.toString().trim());
@@ -306,8 +306,8 @@ public final class U {
         if (isNull(obj)) {
             return 0L;
         }
-        if (obj instanceof Number) {
-            return ((Number) obj).longValue();
+        if (obj instanceof Number n) {
+            return n.longValue();
         }
         try {
             return Long.parseLong(obj.toString().trim());
@@ -321,8 +321,8 @@ public final class U {
         if (isNull(obj)) {
             return 0F;
         }
-        if (obj instanceof Number) {
-            return ((Number) obj).floatValue();
+        if (obj instanceof Number n) {
+            return n.floatValue();
         }
         try {
             return Float.parseFloat(obj.toString().trim());
@@ -336,8 +336,8 @@ public final class U {
         if (isNull(obj)) {
             return 0D;
         }
-        if (obj instanceof Number) {
-            return ((Number) obj).doubleValue();
+        if (obj instanceof Number n) {
+            return n.doubleValue();
         }
         try {
             return Double.parseDouble(obj.toString().trim());
@@ -350,8 +350,8 @@ public final class U {
         if (isNull(obj)) {
             return false;
         }
-        if (obj instanceof Number) {
-            double num = ((Number) obj).doubleValue();
+        if (obj instanceof Number n) {
+            double num = n.doubleValue();
             return Math.abs(num - Math.round(num)) < Double.MIN_VALUE;
         }
         try {
@@ -649,17 +649,17 @@ public final class U {
             return true;
         }
 
-        if (obj instanceof String) {
-            String str = ( (String) obj ).trim();
+        if (obj instanceof String s) {
+            String str = s.trim();
             return str.isEmpty() || str.equalsIgnoreCase("null") || str.equalsIgnoreCase("undefined");
-        } else if (obj instanceof Optional) {
-            return ((Optional<?>) obj).isEmpty();
+        } else if (obj instanceof Optional o) {
+            return o.isEmpty();
         } else if (obj.getClass().isArray()) {
             return Array.getLength(obj) == 0;
-        } else if (obj instanceof Collection) {
-            return ((Collection<?>) obj).isEmpty();
-        } else if (obj instanceof Map) {
-            return ((Map<?, ?>) obj).isEmpty();
+        } else if (obj instanceof Collection c) {
+            return c.isEmpty();
+        } else if (obj instanceof Map m) {
+            return m.isEmpty();
         } else {
             return false;
         }
@@ -905,8 +905,8 @@ public final class U {
         }
 
         Object value;
-        if (data instanceof Map) {
-            value = ((Map) data).get(field);
+        if (data instanceof Map m) {
+            value = m.get(field);
         } else {
             try {
                 value = new PropertyDescriptor(field, data.getClass()).getReadMethod().invoke(data);
@@ -920,9 +920,9 @@ public final class U {
         } else if (value.getClass().isEnum()) {
             // 如果是枚举, 则调用其 getValue 方法, getValue 没有值则使用枚举的 name
             return toStr(defaultIfNull(invokeMethod(value, "getValue"), value));
-        } else if (value instanceof Date) {
+        } else if (value instanceof Date d) {
             // 如果是日期, 则格式化
-            return toStr(DateUtil.formatDateTime((Date) value));
+            return toStr(DateUtil.formatDateTime(d));
         } else {
             return toStr(value);
         }

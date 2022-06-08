@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-@SuppressWarnings({"rawtypes", "unchecked"})
+@SuppressWarnings({"unchecked", "PatternVariableCanBeUsed", "DuplicatedCode"})
 public class PdfUtil {
 
     private static final Pattern CN_PATTERN = Pattern.compile("[\\u4e00-\\u9fa5]");
@@ -184,8 +184,8 @@ public class PdfUtil {
                 && dynamicContentList != null && !dynamicContentList.isEmpty()) {
             for (PrintInfo.DataContent dataContent : dynamicContentList) {
                 Object obj = placeContent.get(i);
-                if (obj instanceof Map) {
-                    writeDataContent(i, total, canvas, offsetX, offsetY, dataContent, (Map<String, Object>) obj);
+                if (obj instanceof Map m) {
+                    writeDataContent(i, total, canvas, offsetX, offsetY, dataContent, m);
                 }
             }
         }
@@ -194,8 +194,8 @@ public class PdfUtil {
     private static List<?> placeContent(Map<String, Object> data, String dynamicContentKey) {
         Object dynamicContent = data.get(dynamicContentKey);
         List<?> placeContent;
-        if ((dynamicContent instanceof List)) {
-            placeContent = (List) dynamicContent;
+        if (dynamicContent instanceof List l) {
+            placeContent = l;
         } else {
             if (dynamicContent != null) {
                 if (LogUtil.ROOT_LOG.isWarnEnabled()) {
@@ -258,7 +258,7 @@ public class PdfUtil {
         PrintInfo.PlaceholderType fieldType = dataContent.getFieldType();
         if (fieldType != null) {
             switch (fieldType) {
-                case LINE:
+                case LINE -> {
                     float lineGray = toFloat(dataContent.getLineGray(), 0);
                     float lineWidth = toFloat(dataContent.getLineWidth(), 0);
                     List<List<Float>> lineTrack = dataContent.getLineTrack();
@@ -281,7 +281,8 @@ public class PdfUtil {
                         canvas.stroke();
                     }
                     return;
-                case BARCODE:
+                }
+                case BARCODE -> {
                     float textSize = toFloat(dataContent.getBarCodeTextSize(), 10);
                     float baseLine = toBaseLine(dataContent.getBarCodeBaseLine());
                     float codeWidth = toFloat(dataContent.getCodeWidth(), 160);
@@ -298,7 +299,8 @@ public class PdfUtil {
                         }
                     }
                     return;
-                case QRCODE:
+                }
+                case QRCODE -> {
                     float qrCodeWidth = toFloat(dataContent.getCodeWidth(), 80);
                     float qrCodeHeight = toFloat(dataContent.getCodeHeight(), 80);
                     Image qrCode = generateQrCode(qrCodeWidth, qrCodeHeight, value);
@@ -313,15 +315,10 @@ public class PdfUtil {
                         }
                     }
                     return;
-                case INDEX:
-                    value = prefix + (page + 1) + suffix;
-                    break;
-                case COUNT:
-                    value = prefix + len + suffix;
-                    break;
-                case INDEX_COUNT:
-                    value = prefix + (page + 1) + "/" + len + suffix;
-                    break;
+                }
+                case INDEX -> value = prefix + (page + 1) + suffix;
+                case COUNT -> value = prefix + len + suffix;
+                case INDEX_COUNT -> value = prefix + (page + 1) + "/" + len + suffix;
             }
         }
 
@@ -418,12 +415,11 @@ public class PdfUtil {
                                           List<PrintInfo.TableContent> tableContentList, List<?> list,
                                           PdfPTable table, int contentHeight, int size, int i, int lineStart) {
         Object obj = list.get(i);
-        if (obj instanceof Map) {
-            Map<String, Object> map = (Map<String, Object>) obj;
+        if (obj instanceof Map m) {
             for (PrintInfo.TableContent tableContent : tableContentList) {
                 String prefix = toStr(tableContent.getValuePrefix());
                 String suffix = toStr(tableContent.getValueSuffix());
-                String value = prefix + toStr(map.get(toStr(tableContent.getFieldName()))) + suffix;
+                String value = prefix + toStr(m.get(toStr(tableContent.getFieldName()))) + suffix;
                 value = handleSpace(value, toBoolean(tableContent.getSpace(), false));
 
                 int maxCount = toInt(tableContent.getMaxCount(), 0);
@@ -446,7 +442,7 @@ public class PdfUtil {
                 boolean fontBold = toBoolean(tableContent.getFontBold(), false);
                 if (fieldType != null) {
                     switch (fieldType) {
-                        case BARCODE:
+                        case BARCODE -> {
                             float textSize = toFloat(tableContent.getBarCodeTextSize(), 10);
                             float baseLine = toBaseLine(tableContent.getBarCodeBaseLine());
                             float codeWidth = toFloat(tableContent.getCodeWidth(), 160);
@@ -455,30 +451,28 @@ public class PdfUtil {
                             if (barCode != null) {
                                 cell.setImage(barCode);
                             }
-                            break;
-                        case QRCODE:
+                        }
+                        case QRCODE -> {
                             float qrCodeWidth = toFloat(tableContent.getCodeWidth(), 80);
                             float qrCodeHeight = toFloat(tableContent.getCodeHeight(), 80);
                             Image qrCode = generateQrCode(qrCodeWidth, qrCodeHeight, value);
                             if (qrCode != null) {
                                 cell.setImage(qrCode);
                             }
-                            break;
-                        case INDEX:
+                        }
+                        case INDEX -> {
                             String lineIndex = prefix + (lineStart + i + 1) + suffix;
                             cell.setPhrase(generateValue(toStr(lineIndex), fontBold, toFont(lineIndex, fontBold, fontSize, color)));
-                            break;
-                        case COUNT:
+                        }
+                        case COUNT -> {
                             String lineCount = prefix + size + suffix;
                             cell.setPhrase(generateValue(toStr(lineCount), fontBold, toFont(lineCount, fontBold, fontSize, color)));
-                            break;
-                        case INDEX_COUNT:
+                        }
+                        case INDEX_COUNT -> {
                             String lineIndexCount = prefix + (lineStart + i + 1) + "/" + size + suffix;
                             cell.setPhrase(generateValue(toStr(lineIndexCount), fontBold, toFont(lineIndexCount, fontBold, fontSize, color)));
-                            break;
-                        default:
-                            cell.setPhrase(generateValue(toStr(value), fontBold, toFont(value, fontBold, fontSize, color)));
-                            break;
+                        }
+                        default -> cell.setPhrase(generateValue(toStr(value), fontBold, toFont(value, fontBold, fontSize, color)));
                     }
                 } else {
                     cell.setPhrase(generateValue(toStr(value), fontBold, toFont(value, fontBold, fontSize, color)));

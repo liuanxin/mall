@@ -44,8 +44,8 @@ public class GlobalLogHandler {
         }
 
         String json;
-        if (data instanceof String) {
-            json = (String) data;
+        if (data instanceof String s) {
+            json = s;
         } else {
             try {
                 json = (hasDesensitization ? logDesObjectMapper : objectMapper).writeValueAsString(data);

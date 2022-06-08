@@ -253,8 +253,8 @@ public class ExportExcel {
      * </pre>
      */
     public static void dispose(Workbook workbook) {
-        if (U.isNotNull(workbook) && workbook instanceof SXSSFWorkbook) {
-            ((SXSSFWorkbook) workbook).dispose();
+        if (workbook instanceof SXSSFWorkbook s) {
+            s.dispose();
         }
     }
 

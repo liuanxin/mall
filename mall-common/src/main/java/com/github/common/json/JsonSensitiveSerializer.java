@@ -28,16 +28,16 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
             return;
         }
 
-        if (obj instanceof String) {
-            handleString((String) obj, gen);
+        if (obj instanceof String s) {
+            handleString(s, gen);
             return;
         }
-        if (obj instanceof Number number) {
-            handleNumber((Number) obj, gen);
+        if (obj instanceof Number n) {
+            handleNumber(n, gen);
             return;
         }
-        if (obj instanceof Date) {
-            handleDate((Date) obj, gen, provider);
+        if (obj instanceof Date d) {
+            handleDate(d, gen, provider);
             return;
         }
 

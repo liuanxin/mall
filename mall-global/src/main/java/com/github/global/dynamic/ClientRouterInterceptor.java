@@ -95,8 +95,8 @@ public class ClientRouterInterceptor implements Interceptor {
         if (cacheRouter == NIL_OBJ) {
             return null;
         }
-        if (cacheRouter instanceof DatabaseRouter) {
-            return (DatabaseRouter) cacheRouter;
+        if (cacheRouter instanceof DatabaseRouter dr) {
+            return dr;
         }
 
         // 比如: com.github.user.repository.UserMapper.selectByExample

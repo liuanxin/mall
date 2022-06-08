@@ -126,11 +126,11 @@ public final class BeanChange {
     private static String getValue(Object obj, String dateFormat) {
         if (U.isNull(obj)) {
             return null;
-        } else if (obj instanceof Date) {
+        } else if (obj instanceof Date d) {
             if (U.isBlank(dateFormat)) {
-                return DateUtil.formatDateTime((Date) obj);
+                return DateUtil.formatDateTime(d);
             } else {
-                return DateUtil.format((Date) obj, dateFormat);
+                return DateUtil.format(d, dateFormat);
             }
         } else {
             return U.toStr(obj);
