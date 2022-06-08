@@ -129,7 +129,7 @@ public class JsonUtil {
             return (ignoreTargetAnnotation ? IGNORE_OBJECT_MAPPER : EMPTY_OBJECT_MAPPER).readValue(json, clazz);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("json({}) to obj({}) exception", U.compress(json), clazz.getName(), e);
+                LogUtil.ROOT_LOG.error("json({}) to Class({}) exception", U.compress(json), clazz.getName(), e);
             }
             return null;
         }
@@ -166,7 +166,7 @@ public class JsonUtil {
                     fun -> mapper.getTypeFactory().constructCollectionType(List.class, clazz)));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("List({}) to List<{}> exception", U.compress(json), key, e);
+                LogUtil.ROOT_LOG.error("json({}) to List<{}> exception", U.compress(json), key, e);
             }
             return Collections.emptyList();
         }
@@ -203,7 +203,7 @@ public class JsonUtil {
                     fun -> mapper.getTypeFactory().constructMapType(LinkedHashMap.class, keyClass, valueClass)));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("List({}) to List<{}> exception", U.compress(json), key, e);
+                LogUtil.ROOT_LOG.error("json({}) to List<{}> exception", U.compress(json), key, e);
             }
             return Collections.emptyMap();
         }
@@ -259,7 +259,7 @@ public class JsonUtil {
             return (ignoreTargetAnnotation ? IGNORE_OBJECT_MAPPER : EMPTY_OBJECT_MAPPER).readValue(json, type);
         } catch (IOException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("json({}) to obj({}) exception", U.compress(json), type.getClass().getName(), e);
+                LogUtil.ROOT_LOG.error("json({}) to Class({}) exception", U.compress(json), type.getClass().getName(), e);
             }
             return null;
         }
@@ -273,7 +273,7 @@ public class JsonUtil {
         try {
             return OBJECT_MAPPER.writeValueAsString(obj);
         } catch (Exception e) {
-            throw new RuntimeException("object(" + U.compress(obj.toString()) + ") to json exception.", e);
+            throw new RuntimeException(String.format("object(%s) to json exception.", U.compress(obj.toString())), e);
         }
     }
     /** 对象转换成 json 字符串 */
@@ -288,7 +288,7 @@ public class JsonUtil {
             return OBJECT_MAPPER.writeValueAsString(obj);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("Object(" + U.compress(obj.toString()) + ") to json exception", e);
+                LogUtil.ROOT_LOG.error("Object({}) to json exception", U.compress(obj.toString()), e);
             }
             return null;
         }
@@ -302,7 +302,7 @@ public class JsonUtil {
         try {
             return OBJECT_MAPPER.readValue(json, clazz);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("json(%s) to Object(%s) exception", U.compress(json), clazz.getName()), e);
+            throw new RuntimeException(String.format("json(%s) to Class(%s) exception", U.compress(json), clazz.getName()), e);
         }
     }
     /** 将 json 字符串转换为对象, 当转换异常时, 返回 null */
@@ -314,7 +314,7 @@ public class JsonUtil {
             return OBJECT_MAPPER.readValue(json, clazz);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("json({}) to obj({}) exception", U.compress(json), clazz.getName(), e);
+                LogUtil.ROOT_LOG.error("json({}) to Class({}) exception", U.compress(json), clazz.getName(), e);
             }
             return null;
         }
@@ -328,7 +328,7 @@ public class JsonUtil {
             return OBJECT_MAPPER.readValue(json, type);
         } catch (IOException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("json({}) to obj({}) exception", U.compress(json), type.getClass().getName(), e);
+                LogUtil.ROOT_LOG.error("json({}) to Class({}) exception", U.compress(json), type.getClass().getName(), e);
             }
             return null;
         }
