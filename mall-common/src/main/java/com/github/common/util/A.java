@@ -462,7 +462,7 @@ public final class A {
     }
 
     /** 将 List 分割成多个 List */
-    public static <T> List<List<T>> split(List<T> list, int singleSize) {
+    public static <T> List<List<T>> split(Collection<T> list, int singleSize) {
         List<List<T>> returnList = new ArrayList<>();
         if (isNotEmpty(list) && singleSize > 0) {
             int size = list.size();
@@ -478,7 +478,7 @@ public final class A {
                     innerLoop = size;
                 }
                 for (; j < innerLoop; j++) {
-                    innerList.add(list.get(j));
+                    innerList.add(getIndex(list, j));
                 }
                 returnList.add(innerList);
             }
@@ -491,8 +491,8 @@ public final class A {
         return duplicate(Arrays.asList(array));
     }
     /** 删除重复的项 */
-    public static <T> List<T> duplicate(Collection<T> array) {
-        return new ArrayList(new LinkedHashSet<>(array));
+    public static <T> List<T> duplicate(Collection<T> list) {
+        return new ArrayList(new LinkedHashSet<>(list));
     }
 
     /** 构造 HashMap, 必须保证每两个参数的类型是一致的! 当参数是奇数时, 最后一个 key 将会被忽略 */
