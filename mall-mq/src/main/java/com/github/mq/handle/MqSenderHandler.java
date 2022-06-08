@@ -140,13 +140,14 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                 if (U.isNotNull(mqSend)) {
                     Integer retryCount = mqSend.getRetryCount();
                     if (U.greater0(retryCount)) {
+                        // 如果重试次数未达到设定的值则进行重试
                         if (retryCount < maxRetryCount) {
-                            // 重试
                             ApplicationContexts.getBean(MqSenderHandler.class).provide("", data);
                         } else {
                             mqSend.setStatus(1);
                             mqSend.setFailType(2);
-                            mqSend.setRemark(String.format("%s发送失败且重试(%s)达到上限", data.getMqInfo().showDesc(), maxRetryCount));
+                            mqSend.setRemark(String.format("发送(%s)失败且重试(%s)达到上限(%s)",
+                                    data.getMqInfo().showDesc(), retryCount, maxRetryCount));
                             mqSendService.updateById(mqSend);
                         }
                     }
