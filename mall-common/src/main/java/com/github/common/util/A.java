@@ -182,6 +182,29 @@ public final class A {
         return joiner.toString();
     }
 
+    /** 数组转成集合 */
+    public static <T> List<T> arrayToList(Object array) {
+        if (U.isNull(array)) {
+            return Collections.emptyList();
+        }
+        if (array instanceof List l) {
+            return (List<T>) l;
+        }
+        if (!array.getClass().isArray()) {
+            throw new IllegalArgumentException("不是数据: " + array);
+        }
+        int length = Array.getLength(array);
+        if (length == 0) {
+            return Collections.emptyList();
+        }
+
+        List<T> returnList = new ArrayList<>();
+        for (int i = 0; i < length; i++) {
+            returnList.add((T) Array.get(array, i));
+        }
+        return returnList;
+    }
+
     /** 用指定的方法将 List 转换成 HashMap(过滤 key 和 value 为空), 如果同样的 key 有多个值, 后面将覆盖前面 */
     public static <K, T> Map<K, T> listToMap(Collection<T> list, Function<? super T, K> func) {
         return listToMap(new HashMap<>(), list, func, 0);
@@ -429,7 +452,7 @@ public final class A {
         return returnMap;
     }
 
-    /** 将 List 中指定的方法收集了并返回(过滤 key 和 value 为空) */
+    /** 将 List 中指定的方法收集了并返回(过滤空) */
     public static <T, R> List<R> collect(Collection<T> list, Function<T, R> func) {
         List<R> returnList = new ArrayList<>();
         if (isNotEmpty(list)) {
@@ -445,7 +468,7 @@ public final class A {
         return returnList;
     }
 
-    /** 将 List 中指定的方法收集了去重并返回(过滤 key 和 value 为空) */
+    /** 将 List 中指定的方法收集了去重并返回(过滤空) */
     public static <T, R> List<R> collectDistinct(Collection<T> list, Function<T, R> func) {
         Set<R> returnSet = new LinkedHashSet<>();
         if (isNotEmpty(list)) {
