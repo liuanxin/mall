@@ -1,6 +1,5 @@
 package com.github.task;
 
-import com.github.common.date.DateUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
@@ -12,15 +11,14 @@ import com.github.mq.service.MqSendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
-import org.springframework.scheduling.support.CronTrigger;
 
 import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
+@SuppressWarnings("NullableProblems")
 public class RetryMqSendTask implements SchedulingConfigurer {
 
     /** 当前定时任务的业务说明 */
@@ -31,66 +29,28 @@ public class RetryMqSendTask implements SchedulingConfigurer {
     @Value("mq.singleRetryCount:20")
     private int mqSingleRetryCount;
 
+    @Value("mq.maxRetryCount:5")
+    private int maxRetryCount;
+
     private final RedissonService redissonService;
     private final MqSendService mqSendService;
     private final MqSenderHandler mqSenderHandler;
 
     @Override
-    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-        Runnable task = () -> {
-            long start = System.currentTimeMillis();
-            try {
-                LogUtil.bindBasicInfo(U.uuid16());
-                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("{}开始", BUSINESS_DESC);
-                }
-                handlerBusiness();
-            } catch (Exception e) {
-                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error(BUSINESS_DESC + "异常", e);
-                }
-            } finally {
-                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("处理 job 结束({}), 耗时: ({})",
-                            BUSINESS_DESC, DateUtil.toHuman(System.currentTimeMillis() - start));
-                }
-                LogUtil.unbind();
-            }
-        };
-
-        Trigger trigger = (triggerContext) -> {
-            // 从数据库读取 cron 表达式
-            String cron = ""; // commonService.getAbcCron();
-            if (U.isBlank(cron)) {
-                // 如果没有, 给一个默认值.
-                cron = CRON;
-            }
-
-            // 如果设置的表达式有误也使用默认的
-            CronTrigger cronTrigger;
-            try {
-                cronTrigger = new CronTrigger(cron);
-            } catch (Exception e) {
-                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("{}的表达式有误, 使用默认值({})", BUSINESS_DESC, CRON, e);
-                }
-                cronTrigger = new CronTrigger(CRON);
-            }
-            return cronTrigger.nextExecutionTime(triggerContext);
-        };
-        taskRegistrar.addTriggerTask(task, trigger);
+    public void configureTasks(ScheduledTaskRegistrar schedule) {
+        DynamicCronUtil.runTask(schedule, BUSINESS_DESC, CRON, this::handlerBusiness);
     }
 
     /** 操作具体的业务 */
-    private void handlerBusiness() {
+    public boolean handlerBusiness() {
         for (;;) {
-            List<MqSend> mqSendList = mqSendService.queryRetryMsg(5, mqSingleRetryCount);
+            List<MqSend> mqSendList = mqSendService.queryRetryMsg(maxRetryCount, mqSingleRetryCount);
             if (A.isNotEmpty(mqSendList)) {
-                return;
+                return true;
             }
             retrySend(mqSendList);
             if (mqSendList.size() < mqSingleRetryCount) {
-                return;
+                return true;
             }
         }
     }
