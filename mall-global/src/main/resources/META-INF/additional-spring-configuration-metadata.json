@@ -21,6 +21,27 @@
       "description": "是否进行数据压缩."
     },
     {
+      "name": "json.cutJson",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "sourceType": "com.github.global.config.GlobalLogHandler",
+      "description": "json 是否进行截断."
+    },
+    {
+      "name": "json.cutJsonMax",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "sourceType": "com.github.global.config.GlobalLogHandler",
+      "description": "json 长度大于这个值才进行截断."
+    },
+    {
+      "name": "json.cutJsonLeftRightLen",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "sourceType": "com.github.global.config.GlobalLogHandler",
+      "description": "json 截断时只取这个值左右的位数."
+    },
+    {
       "name": "res.returnStatusCode",
       "type": "java.lang.Boolean",
       "defaultValue": false,

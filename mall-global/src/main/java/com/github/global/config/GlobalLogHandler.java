@@ -24,6 +24,18 @@ public class GlobalLogHandler {
     @Value("${json.hasCompress:false}")
     private boolean hasCompress;
 
+    /** json 是否进行截断 */
+    @Value("${json.cutJson:false}")
+    private boolean cutJson;
+
+    /** json 长度大于这个值才进行截断 */
+    @Value("${json.cutJsonMax:5000}")
+    private int cutJsonMax;
+
+    /** json 截断时只取这个值左右的位数 */
+    @Value("${json.cutJsonLeftRightLen:200}")
+    private int cutJsonLeftRightLen;
+
 
     private final ObjectMapper objectMapper;
     private final ObjectMapper logDesObjectMapper;
@@ -57,6 +69,7 @@ public class GlobalLogHandler {
             }
         }
 
-        return (hasCompress && U.isNotBlank(json)) ? U.compress(json) : json;
+        String str = hasCompress ? U.compress(json) : json;
+        return cutJson ? U.toStr(str, cutJsonMax, cutJsonLeftRightLen) : str;
     }
 }
