@@ -90,8 +90,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
             model.setMsgId(msgId);
             model.setSearchKey(searchKey);
             model.setBusinessType(mqInfo.name().toLowerCase());
-            // 先写成功, 后面异常时写失败
-            model.setStatus(2);
+            model.setStatus(0);
             model.setRetryCount(0);
             model.setMsg(json);
             model.setRemark(String.format("发送消息(%s)", desc));
@@ -99,29 +98,40 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         } else {
             MqSend update = new MqSend();
             update.setId(model.getId());
-            update.setStatus(2);
             update.setRetryCount(model.getRetryCount() + 1);
             update.setRemark(String.format("消息(%s)重试", desc));
             mqSendService.updateById(update);
         }
 
-        // msgId 放在 messageId, traceId 放在 correlationId
-        // 默认是持久化的 setDeliveryMode(MessageDeliveryMode.PERSISTENT)
-        Message msg = MessageBuilder.withBody(json.getBytes(StandardCharsets.UTF_8))
-                .setMessageId(msgId).setCorrelationId(traceId).build();
+        boolean hasChange = false;
+        int status = model.getStatus();
+        String remark = model.getRemark();
         try {
+            // msgId 放在 messageId, traceId 放在 correlationId
+            // 默认是持久化的 setDeliveryMode(MessageDeliveryMode.PERSISTENT)
+            Message msg = MessageBuilder.withBody(json.getBytes(StandardCharsets.UTF_8))
+                    .setMessageId(msgId).setCorrelationId(traceId).build();
             int delayMs = correlationData.getDelayMs();
             if (delayMs > 0) {
                 rabbitTemplate.convertAndSend(exchangeName, routingKey, msg, new DelayMessage(delayMs), correlationData);
             } else {
                 rabbitTemplate.convertAndSend(exchangeName, routingKey, msg, correlationData);
             }
+            hasChange = true;
+            status = 2;
+            remark = String.format("消息(%s)发送成功", desc);
         } catch (Exception e) {
-            MqSend errorModel = new MqSend();
-            errorModel.setId(model.getId());
-            errorModel.setStatus(1);
-            errorModel.setRemark(String.format("连接 mq 失败(%s)", desc));
-            mqSendService.updateById(errorModel);
+            hasChange = true;
+            status = 1;
+            remark = String.format("连接 mq 失败(%s)", desc);
+        } finally {
+            if (hasChange) {
+                MqSend update = new MqSend();
+                update.setId(model.getId());
+                model.setStatus(status);
+                model.setRemark(remark);
+                mqSendService.updateById(update);
+            }
         }
     }
 
@@ -139,23 +149,21 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
             MqSend mqSend = mqSendService.queryByMsgId(correlationData.getId());
             if (U.isNotNull(mqSend)) {
                 if (correlationData instanceof SelfCorrelationData data) {
-                    Integer retryCount = mqSend.getRetryCount();
-                    if (U.greater0(retryCount)) {
-                        // 如果重试次数未达到设定的值则进行重试
-                        if (retryCount < maxRetryCount) {
-                            ApplicationContexts.getBean(MqSenderHandler.class).provide("", data);
-                        } else {
-                            mqSend.setStatus(1);
-                            mqSend.setRemark(String.format("发送(%s)失败且重试(%s)达到上限(%s)",
-                                    data.getMqInfo().showDesc(), retryCount, maxRetryCount));
-                            mqSendService.updateById(mqSend);
-                        }
-                        return;
+                    int retryCount = U.toInt(mqSend.getRetryCount());
+                    // 如果重试次数未达到设定的值则进行重试
+                    if (retryCount < maxRetryCount) {
+                        ApplicationContexts.getBean(MqSenderHandler.class).provide("", data);
+                    } else {
+                        mqSend.setStatus(1);
+                        mqSend.setRemark(String.format("发送(%s)失败且重试(%s)达到上限(%s)",
+                                data.getMqInfo().showDesc(), retryCount, maxRetryCount));
+                        mqSendService.updateById(mqSend);
                     }
+                } else {
+                    mqSend.setStatus(1);
+                    mqSend.setRemark("消息到交换机失败");
+                    mqSendService.updateById(mqSend);
                 }
-                mqSend.setStatus(1);
-                mqSend.setRemark("消息到交换机失败");
-                mqSendService.updateById(mqSend);
             }
         }
     }
