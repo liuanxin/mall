@@ -157,7 +157,7 @@ public class MqReceiverHandler {
         boolean needAdd = false;
         boolean ack = true;
         String remark = "";
-        int status = 0;
+        int status = 2;
         int currentRetryCount = 0;
         try {
             model = mqReceiveService.queryByMsg(msgId);
@@ -179,10 +179,8 @@ public class MqReceiverHandler {
                 LogUtil.ROOT_LOG.info("{}消费成功", desc);
             }
 
-            status = 2;
             remark = desc + "消费成功";
         } catch (Exception e) {
-            String failMsg = e.getMessage();
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("{}消费失败", desc, e);
             }
@@ -190,9 +188,9 @@ public class MqReceiverHandler {
             // 如果重试次数未达到设定的值则 nack 进行重试, 否则发送 ack
             if (currentRetryCount < consumerRetryCount) {
                 ack = false;
-                remark = desc + "消费失败";
+                remark = String.format("%s消费失败(%s)", desc, e.getMessage());
             } else {
-                remark = String.format("消费(%s)失败且重试(%s)达到上限(%s)", desc, currentRetryCount, consumerRetryCount);
+                remark = String.format("%s消费失败(%s)且重试(%s)达到上限(%s)", desc, e.getMessage(), currentRetryCount, consumerRetryCount);
             }
         } finally {
             // 成功了就只写一次消费成功, 失败了也只写一次, 上面不写初始, 少操作一次 db
