@@ -8,11 +8,22 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ThreadFactory;
 
 @SuppressWarnings("DuplicatedCode")
 public final class AsyncUtil {
 
-    public static Runnable wrapRun(Runnable runnable) {
+    /**
+     * 直接用 Executors 的静态方法生成的线程池, 想要线程池里的线程共享主线程的上下文, 构造时使用此方法生成的 ThreadFactory<p/>
+     *
+     * 如 <code>Executors.newSingleThreadExecutor(AsyncUtil.wrapThreadFactory())</code>
+     */
+    public static ThreadFactory wrapThreadFactory() {
+        return runnable -> new Thread(wrapRunContext(runnable));
+    }
+
+    /** 线程想要共享主线程的上下文, 使用此方法 */
+    public static Runnable wrapRunContext(Runnable runnable) {
         if (U.isNull(runnable)) {
             return null;
         }
@@ -50,7 +61,8 @@ public final class AsyncUtil {
         }
     }
 
-    public static <T> Callable<T> wrapCall(Callable<T> callable) {
+    /** 回调线程想要共享主线程的上下文, 使用此方法 */
+    public static <T> Callable<T> wrapCallContext(Callable<T> callable) {
         if (U.isNull(callable)) {
             return null;
         }
