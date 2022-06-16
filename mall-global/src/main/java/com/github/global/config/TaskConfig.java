@@ -21,9 +21,13 @@ import java.util.concurrent.Executor;
  */
 @Configuration
 @EnableAsync
+@SuppressWarnings("JavadocReference")
 public class TaskConfig implements AsyncConfigurer {
 
-    /** @see org.springframework.boot.autoconfigure.task.TaskExecutionProperties */
+    /**
+     * @see org.springframework.boot.autoconfigure.task.TaskExecutionProperties
+     * @see org.springframework.aop.interceptor.AsyncExecutionInterceptor#determineAsyncExecutor
+     */
     @SuppressWarnings("NullableProblems")
     @Override
     public Executor getAsyncExecutor() {
