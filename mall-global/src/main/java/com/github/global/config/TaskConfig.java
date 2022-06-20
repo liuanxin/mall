@@ -31,14 +31,14 @@ public class TaskConfig implements AsyncConfigurer {
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        // 如果 cpu 核心是  2, 则最前面的  2 个异步处理, 接下来的  496 个放进队列, 之后的 2 个( 4 -  2)异步处理, 再往后的拒绝
-        // 如果 cpu 核心是  4, 则最前面的  4 个异步处理, 接下来的  992 个放进队列, 之后的 2 个( 6 -  4)异步处理, 再往后的拒绝
-        // 如果 cpu 核心是  8, 则最前面的  8 个异步处理, 接下来的 1984 个放进队列, 之后的 2 个(10 -  8)异步处理, 再往后的拒绝
-        // 如果 cpu 核心是 16, 则最前面的 16 个异步处理, 接下来的 3968 个放进队列, 之后的 2 个(18 - 16)异步处理, 再往后的拒绝
-        // 如果 cpu 核心是 32, 则最前面的 32 个异步处理, 接下来的 7936 个放进队列, 之后的 2 个(34 - 32)异步处理, 再往后的拒绝
-        executor.setCorePoolSize(U.PROCESSORS);
+        // 如果 cpu 核心是  2, 则最前面的  1 个异步处理, 接下来的  128 个放进队列, 之后的 3 个( 4 -  1)异步处理, 再往后的拒绝
+        // 如果 cpu 核心是  4, 则最前面的  3 个异步处理, 接下来的  256 个放进队列, 之后的 3 个( 6 -  3)异步处理, 再往后的拒绝
+        // 如果 cpu 核心是  8, 则最前面的  7 个异步处理, 接下来的  512 个放进队列, 之后的 3 个(10 -  7)异步处理, 再往后的拒绝
+        // 如果 cpu 核心是 16, 则最前面的 15 个异步处理, 接下来的 1024 个放进队列, 之后的 3 个(18 - 15)异步处理, 再往后的拒绝
+        // 如果 cpu 核心是 32, 则最前面的 31 个异步处理, 接下来的 2048 个放进队列, 之后的 3 个(34 - 31)异步处理, 再往后的拒绝
+        executor.setCorePoolSize(U.PROCESSORS - 1);
         executor.setMaxPoolSize(U.PROCESSORS + 2);
-        executor.setQueueCapacity((U.PROCESSORS << 8) - (U.PROCESSORS << 3));
+        executor.setQueueCapacity(U.PROCESSORS << 6);
         executor.setThreadNamePrefix("task-executor-");
         // 见: https://moelholm.com/blog/2017/07/24/spring-43-using-a-taskdecorator-to-copy-mdc-data-to-async-threads
         executor.setTaskDecorator(AsyncUtil::wrapRunContext);
