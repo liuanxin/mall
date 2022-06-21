@@ -44,11 +44,6 @@ public class CorsFilter implements Filter {
     }
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        Filter.super.init(filterConfig);
-    }
-
-    @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
@@ -106,16 +101,11 @@ public class CorsFilter implements Filter {
         String scheme = request.getScheme();
         int port = request.getServerPort();
         sbd.append(scheme).append("://").append(request.getServerName());
-        boolean http = ("http".equals(scheme) && port != 80);
-        boolean https = ("https".equals(scheme) && port != 80 && port != 443);
-        if (http || https) {
-            sbd.append(':').append(port);
+        boolean httpNeedAppendPort = ("http".equals(scheme) && port != 80);
+        boolean httpsNeedAppendPort = ("https".equals(scheme) && port != 80 && port != 443);
+        if (httpNeedAppendPort || httpsNeedAppendPort) {
+            sbd.append(":").append(port);
         }
         return sbd.toString();
-    }
-
-    @Override
-    public void destroy() {
-        Filter.super.destroy();
     }
 }
