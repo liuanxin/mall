@@ -27,10 +27,10 @@ public class TaskConfig implements AsyncConfigurer {
     @Value("asyncTask.corePoolSize:0")
     private int corePoolSize;
 
-    @Value("task.maxPoolSize:0")
+    @Value("asyncTask.maxPoolSize:0")
     private int maxPoolSize;
 
-    @Value("task.queueCapacity:0")
+    @Value("asyncTask.queueCapacity:0")
     private int queueCapacity;
 
     /**
