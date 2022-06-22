@@ -41,12 +41,12 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         doProvide(mqInfo, searchKey, json, 0);
     }
 
-    /** 用这个发送的 mq 消息, 使用 {@link MqReceiverHandler#doConsumeJustJson} 处理消息 */
-    public void doProvideJustJson(MqInfo mqInfo, String searchKey, String json) {
-        doProvideJustJson(mqInfo, searchKey, json, 0);
-    }
-
-    /** @param delayMs 延迟发送毫秒数, 需要安装 delay 插件, 见: https://www.rabbitmq.com/community-plugins.html */
+    /**
+     * 用这个发送的 mq 信息, 实际发送的是 {@link MqData} 对象, 里面有「发送时间、队列信息」信息.
+     * 使用 {@link MqReceiverHandler#doConsume} 处理消息
+     *
+     * @param delayMs 延迟发送毫秒数, 需要安装 delay 插件, 见: https://www.rabbitmq.com/community-plugins.html
+     */
     public void doProvide(MqInfo mqInfo, String searchKey, String json, int delayMs) {
         String msgId = U.uuid16();
         String traceId = LogUtil.getTraceId();
@@ -59,6 +59,11 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         provide(searchKey, new SelfCorrelationData(msgId, traceId, mqInfo, JsonUtil.toJson(data), delayMs));
     }
 
+    /** 用这个发送的 mq 消息, 使用 {@link MqReceiverHandler#doConsumeJustJson} 处理消息 */
+    public void doProvideJustJson(MqInfo mqInfo, String searchKey, String json) {
+        doProvideJustJson(mqInfo, searchKey, json, 0);
+    }
+
     /**
      * 用这个发送的 mq 消息, 使用 {@link MqReceiverHandler#doConsumeJustJson} 处理消息
      *
@@ -69,6 +74,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         String traceId = LogUtil.getTraceId();
         provide(searchKey, new SelfCorrelationData(msgId, traceId, mqInfo, json, delayMs));
     }
+
     private void provide(String searchKey, SelfCorrelationData correlationData) {
         String msgId = correlationData.getId();
         String traceId = correlationData.getTraceId();
@@ -134,11 +140,11 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
     public void confirm(CorrelationData correlationData, boolean ack, String cause) {
         if (ack) {
             if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-                LogUtil.ROOT_LOG.debug("消息({})到 exchange 成功", JsonUtil.toJson(correlationData));
+                LogUtil.ROOT_LOG.debug("消息({})到交换机成功", JsonUtil.toJson(correlationData));
             }
         } else {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("消息({})到 exchange 失败, 原因({})", JsonUtil.toJson(correlationData), cause);
+                LogUtil.ROOT_LOG.error("消息({})到交换机失败, 原因({})", JsonUtil.toJson(correlationData), cause);
             }
             // 从记录中获取重试次数
             MqSend mqSend = mqSendService.queryByMsgId(correlationData.getId());
