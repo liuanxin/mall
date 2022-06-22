@@ -46,12 +46,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         doProvideJustJson(mqInfo, searchKey, json, 0);
     }
 
-    /**
-     * 用这个发送的 mq 信息, 实际发送的是 {@link MqData} 对象, 里面有「发送时间、队列信息」信息.
-     * 使用 {@link MqReceiverHandler#doConsume} 处理消息
-     *
-     * @param delayMs 延迟发送毫秒数, 需要安装 delay 插件, 见: https://www.rabbitmq.com/community-plugins.html
-     */
+    /** @param delayMs 延迟发送毫秒数, 需要安装 delay 插件, 见: https://www.rabbitmq.com/community-plugins.html */
     public void doProvide(MqInfo mqInfo, String searchKey, String json, int delayMs) {
         String msgId = U.uuid16();
         String traceId = LogUtil.getTraceId();

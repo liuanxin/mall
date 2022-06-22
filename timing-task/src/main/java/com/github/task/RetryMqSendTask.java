@@ -21,13 +21,9 @@ import java.util.List;
 @SuppressWarnings("NullableProblems")
 public class RetryMqSendTask implements SchedulingConfigurer {
 
-    /**
-     * 当前定时任务的业务说明
-     */
+    /** 当前定时任务的业务说明 */
     private static final String BUSINESS_DESC = "重试 mq 发送";
-    /**
-     * 当前任务的默认表达式
-     */
+    /** 当前任务的默认表达式 */
     private static final String CRON = "13 0/5 * * * *";
 
     @Value("mq.singleRetryCount:20")
