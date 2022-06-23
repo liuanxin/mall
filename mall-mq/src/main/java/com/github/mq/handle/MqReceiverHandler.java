@@ -10,7 +10,6 @@ import com.github.mq.constant.MqData;
 import com.github.mq.constant.MqInfo;
 import com.github.mq.model.MqReceive;
 import com.github.mq.service.MqReceiveService;
-import com.rabbitmq.client.Channel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
@@ -34,48 +33,47 @@ public class MqReceiverHandler {
     private final RedissonService redissonService;
 
     /**
-     * 消息处理, 需要设置 spring.rabbitmq.listener.simple.acknowledge-mode = manual 才可以手动处理 ack
-     * <p>
-     * 消费成功时: 发送 ack 并写记录(状态为成功)
-     * 消费失败时:
-     *   未达到上限则 nack(重回队列) 并写记录(状态为失败)
-     *   已达到上限则 ack 并写记录(状态为失败)
-     * <p>
-     * 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
+     * 消息处理. 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
      *
-     * @param fun 业务处理时异常会自动发送 nack, 无异常 或 异常次数超过指定数量 时会发送 ack, 入参是数据对应的 json, 返回 searchKey
+     * @param fun 业务处理: 入参是数据对应的 json, 返回 searchKey
      */
-    public void doConsume(MqInfo mqInfo, Message message, Channel channel, Function<String, String> fun) {
+    public void doConsume(MqInfo mqInfo, Message message, Function<String, String> fun) {
         long start = System.currentTimeMillis();
         String desc = mqInfo.showDesc();
         try {
             // msgId 放在 messageId, traceId 放在 correlationId
             MessageProperties messageProperties = message.getMessageProperties();
             LogUtil.bindBasicInfo(messageProperties.getCorrelationId());
-            long deliveryTag = messageProperties.getDeliveryTag();
 
-            MqData selfData = JsonUtil.toObject(new String(message.getBody()), MqData.class);
-            if (U.isNull(selfData)) {
-                ack(desc, "", channel, deliveryTag, "消费数据为空.");
+            String data = new String(message.getBody());
+            MqData mqData = JsonUtil.toObject(data, MqData.class);
+            if (U.isNull(mqData)) {
+                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                    LogUtil.ROOT_LOG.info("消费 {} 数据({})为空", desc, data);
+                }
                 return;
             }
-
-            String json = selfData.getJson();
+            String json = mqData.getJson();
+            // noinspection DuplicatedCode
             if (U.isBlank(json)) {
-                ack(desc, "", channel, deliveryTag, String.format("消费 %s 数据 json 为空.", desc));
+                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                    LogUtil.ROOT_LOG.info("消费 {} 数据({})是空的", desc, data);
+                }
                 return;
             }
-
             String msgId = getMsgId(messageProperties.getMessageId(), json);
             if (U.isBlank(msgId)) {
-                ack(desc, msgId, channel, deliveryTag, String.format("消费(%s)数据(%s)时没有消息 id.", desc, json));
+                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                    LogUtil.ROOT_LOG.info("消费 {} 数据({})没有消息 id", desc, data);
+                }
                 return;
             }
+
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info("开始消费 mq({} : {}), 消息发送时间({})", desc, msgId, DateUtil.formatDateTimeMs(selfData.getSendTime()));
+                LogUtil.ROOT_LOG.info("开始消费 {} 数据({}), 消息发送时间({})", desc, msgId, DateUtil.formatDateTimeMs(mqData.getSendTime()));
             }
             // msgId 放在 messageId, traceId 放在 correlationId
-            handleData(json, msgId, mqInfo, desc, deliveryTag, channel, fun);
+            handleData(json, msgId, mqInfo, desc, fun);
         } finally {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("消费 {} 结束, 耗时: ({})", desc, DateUtil.toHuman(System.currentTimeMillis() - start));
@@ -85,18 +83,11 @@ public class MqReceiverHandler {
     }
 
     /**
-     * 消息处理(仅 json 消息), 需要设置 spring.rabbitmq.listener.simple.acknowledge-mode = manual 才可以手动处理 ack
-     * <p>
-     * 消费成功时: 发送 ack 并写记录(状态为成功)
-     * 消费失败时:
-     *   未达到上限则 nack(重回队列) 并写记录(状态为失败)
-     *   已达到上限则 ack 并写记录(状态为失败)
-     * <p>
-     * 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
+     * 消息处理(仅 json 消息). 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
      *
-     * @param fun 业务处理时异常会自动发送 nack, 无异常 或 异常次数超过指定数量 时会发送 ack, 入参是数据对应的 json, 返回 searchKey
+     * @param fun 业务处理: 入参是数据对应的 json, 返回 searchKey
      */
-    public void doConsumeJustJson(MqInfo mqInfo, Message message, Channel channel, Function<String, String> fun) {
+    public void doConsumeJustJson(MqInfo mqInfo, Message message, Function<String, String> fun) {
         long start = System.currentTimeMillis();
         String desc = mqInfo.getDesc();
         try {
@@ -104,20 +95,27 @@ public class MqReceiverHandler {
             // msgId 放在 messageId, traceId 放在 correlationId
             LogUtil.bindBasicInfo(messageProperties.getCorrelationId());
 
-            long deliveryTag = messageProperties.getDeliveryTag();
             String json = new String(message.getBody());
+            // noinspection DuplicatedCode
             if (U.isBlank(json)) {
-                ack(desc, "", channel, deliveryTag, String.format("消费 %s 时为空.", desc));
+                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                    LogUtil.ROOT_LOG.info("消费 {} 数据({})是空的", desc, json);
+                }
+                return;
+            }
+            String msgId = getMsgId(messageProperties.getMessageId(), json);
+            if (U.isBlank(msgId)) {
+                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                    LogUtil.ROOT_LOG.info("消费 {} 数据({})没有消息 id", desc, json);
+                }
                 return;
             }
 
-            String msgId = getMsgId(messageProperties.getMessageId(), json);
-            if (U.isBlank(msgId)) {
-                ack(desc, msgId, channel, deliveryTag, String.format("消费 %s 数据(%s), 没有消息 id.", desc, json));
-                return;
+            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                LogUtil.ROOT_LOG.info("开始消费 {} 数据({})", desc, msgId);
             }
             // msgId 放在 messageId, traceId 放在 correlationId
-            handleData(json, msgId, mqInfo, desc, deliveryTag, channel, fun);
+            handleData(json, msgId, mqInfo, desc, fun);
         } finally {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("消费 {} 结束, 耗时: ({})", desc, DateUtil.toHuman(System.currentTimeMillis() - start));
@@ -127,21 +125,21 @@ public class MqReceiverHandler {
     }
 
     /** 在每一个节点都要确保会发送 ack 或 nack */
-    private void handleData(String json, String msgId, MqInfo mqInfo, String desc,
-                            long deliveryTag, Channel channel, Function<String, String> fun) {
+    private void handleData(String json, String msgId, MqInfo mqInfo, String desc, Function<String, String> fun) {
         if (redissonService.tryLock(msgId)) {
             try {
-                doDataConsume(json, msgId, mqInfo.name().toLowerCase(), desc, deliveryTag, channel, fun);
+                doDataConsume(json, msgId, mqInfo.name().toLowerCase(), desc, fun);
             } finally {
                 redissonService.unlock(msgId);
             }
         } else {
-            ack(desc, msgId, channel, deliveryTag, String.format("消费 %s 数据(%s), 数据正在被处理, 无需重复消费.", desc, msgId));
+            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                LogUtil.ROOT_LOG.info("消费 {} 数据({}), 正在处理", desc, msgId);
+            }
         }
     }
 
-    private void doDataConsume(String json, String msgId, String businessType, String desc,
-                               long deliveryTag, Channel channel, Function<String, String> fun) {
+    private void doDataConsume(String json, String msgId, String businessType, String desc, Function<String, String> fun) {
         MqReceive model = null;
         boolean needAdd = false;
         boolean ack = true;
@@ -174,9 +172,7 @@ public class MqReceiverHandler {
                 LogUtil.ROOT_LOG.error("消费 {} 数据({})失败", desc, msgId, e);
             }
             status = 1;
-            // 如果重试次数未达到设定的值则 nack 进行重试, 否则发送 ack
             if (currentRetryCount < consumerRetryCount) {
-                ack = false;
                 remark = String.format("消费 %s 数据(%s)失败(%s)", desc, msgId, e.getMessage());
             } else {
                 remark = String.format("消费 %s 数据(%s)失败(%s)且重试(%s)达到上限(%s)",
@@ -193,12 +189,6 @@ public class MqReceiverHandler {
                     model.setRetryCount(currentRetryCount + 1);
                     mqReceiveService.updateById(model);
                 }
-            }
-
-            if (ack) {
-                ack(desc, msgId, channel, deliveryTag, remark);
-            } else {
-                nack(desc, msgId, channel, deliveryTag, remark);
             }
         }
     }
@@ -227,31 +217,5 @@ public class MqReceiverHandler {
             return messageId;
         }
         return U.toStr(map.get("msg_id"));
-    }
-
-    private void ack(String desc, String msgId, Channel channel, long deliveryTag, String sendRemark) {
-        try {
-            if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-                LogUtil.ROOT_LOG.debug("消费 {} 数据({}), 发送 ack, 理由({})", desc, msgId, sendRemark);
-            }
-            channel.basicAck(deliveryTag, false);
-        } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("消费 {} 数据({}), 发送 ack, 理由({}), 异常", desc, msgId, sendRemark, e);
-            }
-        }
-    }
-
-    private void nack(String desc, String msgId, Channel channel, long deliveryTag, String sendRemark) {
-        try {
-            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info("消费 {} 数据({}), 发送 nack, 理由({})", desc, msgId, sendRemark);
-            }
-            channel.basicNack(deliveryTag, false, true);
-        } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("消费 {} 数据({}), 发送 nack, 理由({}), 异常", desc, msgId, sendRemark, e);
-            }
-        }
     }
 }

@@ -6,8 +6,8 @@ import com.github.common.util.U;
 import com.github.global.service.RedissonService;
 import com.github.mq.constant.MqInfo;
 import com.github.mq.handle.MqSenderHandler;
-import com.github.mq.model.MqSend;
-import com.github.mq.service.MqSendService;
+import com.github.mq.model.MqReceive;
+import com.github.mq.service.MqReceiveService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -19,12 +19,12 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 @SuppressWarnings("NullableProblems")
-public class RetryMqSendTask implements SchedulingConfigurer {
+public class RetryMqReceiveTask implements SchedulingConfigurer {
 
     /** 当前定时任务的业务说明 */
-    private static final String BUSINESS_DESC = "重试 mq 发送";
+    private static final String BUSINESS_DESC = "重试 mq 消费";
     /** 当前任务的默认表达式 */
-    private static final String CRON = "13 0/2 * * * *";
+    private static final String CRON = "23 0/2 * * * *";
 
     @Value("mq.retryLimit:20")
     private int mqRetryLimit;
@@ -33,7 +33,7 @@ public class RetryMqSendTask implements SchedulingConfigurer {
     private int maxRetryCount;
 
     private final RedissonService redissonService;
-    private final MqSendService mqSendService;
+    private final MqReceiveService mqReceiveService;
     private final MqSenderHandler mqSenderHandler;
 
     @Override
@@ -41,44 +41,43 @@ public class RetryMqSendTask implements SchedulingConfigurer {
         DynamicCronUtil.runTask(schedule, BUSINESS_DESC, CRON, this::handlerBusiness);
     }
 
-    /**
-     * 操作具体的业务
-     */
+    /** 操作具体的业务 */
     public boolean handlerBusiness() {
         for (;;) {
-            List<MqSend> mqSendList = mqSendService.queryRetryMsg(maxRetryCount, mqRetryLimit);
-            if (A.isNotEmpty(mqSendList)) {
+            List<MqReceive> mqReceiveList = mqReceiveService.queryRetryMsg(maxRetryCount, mqRetryLimit);
+            if (A.isNotEmpty(mqReceiveList)) {
                 return true;
             }
-            for (MqSend mqSend : mqSendList) {
-                retrySend(mqSend);
+            for (MqReceive mqReceive : mqReceiveList) {
+                retrySend(mqReceive);
             }
-            if (mqSendList.size() < mqRetryLimit) {
+            if (mqReceiveList.size() < mqRetryLimit) {
                 return true;
             }
         }
     }
 
-    private void retrySend(MqSend mqSend) {
-        MqInfo mqInfo = MqInfo.from(mqSend.getBusinessType());
+    private void retrySend(MqReceive mqReceive) {
+        MqInfo mqInfo = MqInfo.from(mqReceive.getBusinessType());
         if (U.isNull(mqInfo)) {
             // 没有 mq-info 的数据直接置为成功, 无法重试
-            MqSend update = new MqSend();
-            update.setId(mqSend.getId());
+            MqReceive update = new MqReceive();
+            update.setId(mqReceive.getId());
             update.setStatus(2);
-            update.setRemark(mqSend.getRemark() + ";;没有这个 business_type 的场景");
-            mqSendService.updateById(update);
+            update.setRemark(mqReceive.getRemark() + ";;没有这个 business_type 的场景");
+            mqReceiveService.updateById(update);
             return;
         }
 
-        String msgId = mqSend.getMsgId();
+        String msgId = mqReceive.getMsgId();
         if (redissonService.tryLock(msgId)) {
             try {
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                     LogUtil.ROOT_LOG.info("{} --> {}", BUSINESS_DESC, msgId);
                 }
                 try {
-                    mqSenderHandler.doProvide(mqInfo, null, mqSend.getMsg());
+                    // receive 失败重试时, 也是往 mq 里面发
+                    mqSenderHandler.doProvideJustJson(mqInfo, null, mqReceive.getMsg());
                     if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                         LogUtil.ROOT_LOG.info("{} --> {} 成功", BUSINESS_DESC, msgId);
                     }
@@ -97,10 +96,10 @@ public class RetryMqSendTask implements SchedulingConfigurer {
             LogUtil.ROOT_LOG.info("{} --> {} 正在运行", BUSINESS_DESC, msgId);
         }
         // msgId 的数据只需要有一条在处理, 当前数据直接置为成功, 无需重试
-        MqSend update = new MqSend();
-        update.setId(mqSend.getId());
+        MqReceive update = new MqReceive();
+        update.setId(mqReceive.getId());
         update.setStatus(2);
-        update.setRemark(mqSend.getRemark() + ";;同 msg_id 的任务正在执行");
-        mqSendService.updateById(update);
+        update.setRemark(mqReceive.getRemark() + ";;同 msg_id 的任务正在执行");
+        mqReceiveService.updateById(update);
     }
 }

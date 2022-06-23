@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 public class MqReceiveService {
@@ -38,5 +40,13 @@ public class MqReceiveService {
                 .select(MqReceive::getId, MqReceive::getRetryCount)
                 .eq(MqReceive::getMsgId, msgId);
         return Pages.returnOne(mqReceiveDao.selectPage(Pages.paramOnlyLimit(1), query));
+    }
+
+    public List<MqReceive> queryRetryMsg(int maxRetryCount, int limit) {
+        LambdaQueryWrapper<MqReceive> query = Wrappers.lambdaQuery(MqReceive.class)
+                .eq(MqReceive::getStatus, 1)
+                .lt(MqReceive::getRetryCount, maxRetryCount)
+                .orderByAsc(MqReceive::getUpdateTime);
+        return Pages.returnList(mqReceiveDao.selectPage(Pages.paramOnlyLimit(limit), query));
     }
 }
