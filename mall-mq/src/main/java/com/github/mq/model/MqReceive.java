@@ -3,6 +3,7 @@ package com.github.mq.model;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -10,6 +11,7 @@ import java.util.Date;
 @Data
 @TableName("t_mq_receive")
 public class MqReceive implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private Long id;
@@ -23,10 +25,10 @@ public class MqReceive implements Serializable {
     /** 业务场景 --> business_type */
     private String businessType;
 
-    /** 状态(0.初始, 1.失败, 2.成功) --> status */
+    /** 0.初始, 1.失败, 2.成功(需要重试则改为 1) --> status */
     private Integer status;
 
-    /** 重试次数 --> retry_count */
+    /** 重试次数(需要重试则改为 0) --> retry_count */
     private Integer retryCount;
 
     /** 消息内容 --> msg */

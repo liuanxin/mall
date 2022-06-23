@@ -23,10 +23,10 @@ public class MqSend implements Serializable {
     /** 业务场景 --> business_type */
     private String businessType;
 
-    /** 状态(0.初始, 1.失败, 2.成功), 需要重试则改为 1 --> status */
+    /** 0.初始, 1.失败, 2.成功(需要重试则改为 1) --> status */
     private Integer status;
 
-    /** 重试次数, 需要重试则改为 0 --> retry_count */
+    /** 重试次数(需要重试则改为 0) --> retry_count */
     private Integer retryCount;
 
     /** 消息内容 --> msg */

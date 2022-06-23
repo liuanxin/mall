@@ -34,16 +34,9 @@ import static com.github.mq.constant.MqConst.*;
  * 4. 消费 mq 消息
  *     private final MqReceiverHandler handler;
  *
- *     // 用 doProvide 发送的 mq, 使用这个方式进行消费
  *     &#064;RabbitListener(queues = MqConst.xxx)
- *     public void xxx(Message message, Channel channel) {
- *         handler.doConsume(message, channel, this::business);
- *     }
- *
- *     // 用 doProvideJustJson 发送的 mq, 使用这个方式进行消费
- *     &#064;RabbitListener(queues = MqConst.xxx)
- *     public void yyy(Message message, Channel channel) {
- *         handler.doConsumeJustJson(message, channel, this::business);
+ *     public void xxx(Message message) {
+ *         handler.doConsume(MqInfo.xxx, message, this::business);
  *     }
  *
  *     // 入参是 mq 中的数据, 返回是处理完之后需要存到表里的搜索键

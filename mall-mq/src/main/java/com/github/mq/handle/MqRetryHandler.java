@@ -59,14 +59,16 @@ public class MqRetryHandler {
             return;
         }
 
-        String msgId = mqReceive.getMsgId();
-        if (sendMsg(msgId, desc, mqReceive.getSearchKey(), mqInfo, mqReceive.getMsg())) {
+        if (sendMsg(mqReceive.getMsgId(), desc, mqReceive.getSearchKey(), mqInfo, mqReceive.getMsg())) {
+            // 如果发到 mq 成功, 则将接收消息置为成功
+            MqReceive update = new MqReceive();
+            update.setId(mqReceive.getId());
+            update.setStatus(2);
+            update.setRemark(mqReceive.getRemark() + ";;重试时发到 mq 成功");
+            mqReceiveService.updateById(update);
             return;
         }
 
-        if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-            LogUtil.ROOT_LOG.info("{} --> {} 正在运行", desc, msgId);
-        }
         // msgId 的数据只需要有一条在处理, 当前数据直接置为成功, 无需重试
         MqReceive update = new MqReceive();
         update.setId(mqReceive.getId());
@@ -103,14 +105,10 @@ public class MqRetryHandler {
             return;
         }
 
-        String msgId = mqSend.getMsgId();
-        if (sendMsg(msgId, desc, mqSend.getSearchKey(), mqInfo, mqSend.getMsg())) {
+        if (sendMsg(mqSend.getMsgId(), desc, mqSend.getSearchKey(), mqInfo, mqSend.getMsg())) {
             return;
         }
 
-        if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-            LogUtil.ROOT_LOG.info("{} --> {} 正在运行", desc, msgId);
-        }
         // msgId 的数据只需要有一条在处理, 当前数据直接置为成功, 无需重试
         MqSend update = new MqSend();
         update.setId(mqSend.getId());
@@ -125,21 +123,20 @@ public class MqRetryHandler {
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                     LogUtil.ROOT_LOG.info("{} --> {}", desc, msgId);
                 }
-                try {
-                    mqSenderHandler.doProvideJustJson(msgId, mqInfo, searchKey, json);
-                    if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                        LogUtil.ROOT_LOG.info("{} --> {} 成功", desc, msgId);
-                    }
-                } catch (Exception e) {
-                    if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                        LogUtil.ROOT_LOG.error("{} --> {} 异常", desc, msgId, e);
-                    }
+                mqSenderHandler.doProvideJustJson(msgId, mqInfo, searchKey, json);
+                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                    LogUtil.ROOT_LOG.info("{} --> {} 成功", desc, msgId);
+                }
+            } catch (Exception e) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error("{} --> {} 异常", desc, msgId, e);
                 }
             } finally {
                 redissonService.unlock(msgId);
             }
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
 }

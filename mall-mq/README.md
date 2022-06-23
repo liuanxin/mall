@@ -10,25 +10,31 @@
 private final MqSenderHandler handler;
 
 public void xxx() {
-    // 发布到 mq 的实体
-    XXX&lt;YYY&gt; req = ...;
-    handler.doProvide(MqInfo.xxx, JsonUtil.toJson(req));
+    // 发布到 mq 的数据
+    String json = ...
+    // 用这个方式发送到 mq 的数据, 会包括「发送时间、队列信息、traceId」等信息
+    handler.doProvide(MqInfo.xxx, json);
+}
+
+public void yyy() {
+    // 发布到 mq 的数据
+    String json = ...
+    // 用这个方式发送到 mq 的数据, 只会将 json 的信息发过去
+    handler.doProvideJustJson(MqInfo.xxx, json);
 }
 ```
 4. 消费 mq 消息
 ```java
 private final MqReceiverHandler handler;
-private final XxxService xxxService;
 
 @RabbitListener(queues = MqConst.xxx)
-public void onReceive(Message message, Channel channel) {
-    handler.doConsume(message, channel, this::business);
+public void onReceive(Message message) {
+    handler.doConsume(MqInfo.xxx, message, this::business);
 }
+
+/** 入参是 mq 中的数据, 返回是处理完之后需要存到表里的搜索键 */
 public void business(String json) {
-    XXX&lt;YYY&gt; req = JsonUtil.convertType(json, new TypeReference&lt;XXX&lt;YYY&gt;&gt;() {});
-    // 从 mq 接收到的实体
-    if (req != null) {
-        xxxService.xxx(req);
-    }
+    // ...
+    return searchKey;
 }
 ```

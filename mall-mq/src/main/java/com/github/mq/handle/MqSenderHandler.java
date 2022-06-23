@@ -33,17 +33,13 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
     private final RabbitTemplate rabbitTemplate;
     private final MqSendService mqSendService;
 
-    /**
-     * 用这个发送的 mq 信息, 实际发送的是 {@link MqData} 对象, 里面有「发送时间、队列信息」信息.
-     * 使用 {@link MqReceiverHandler#doConsume} 处理消息
-     */
+    /** 用这个发送的 mq 信息, 实际发送的是 {@link MqData} 对象, 里面有「发送时间、队列信息」信息 */
     public void doProvide(MqInfo mqInfo, String searchKey, String json) {
         doProvide(mqInfo, searchKey, json, 0);
     }
 
     /**
-     * 用这个发送的 mq 信息, 实际发送的是 {@link MqData} 对象, 里面有「发送时间、队列信息」信息.
-     * 使用 {@link MqReceiverHandler#doConsume} 处理消息
+     * 用这个发送的 mq 信息, 实际发送的是 {@link MqData} 对象, 里面有「发送时间、队列信息」信息
      *
      * @param delayMs 延迟发送毫秒数, 需要安装 delay 插件, 见: https://www.rabbitmq.com/community-plugins.html
      */
@@ -62,13 +58,13 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         provide(searchKey, new SelfCorrelationData(msgId, traceId, mqInfo, JsonUtil.toJson(data), delayMs));
     }
 
-    /** 用这个发送的 mq 消息, 使用 {@link MqReceiverHandler#doConsumeJustJson} 处理消息 */
+    /** 发送 mq 消息, 不包「发送时间、队列信息」这些内容 */
     public void doProvideJustJson(MqInfo mqInfo, String searchKey, String json) {
         doProvideJustJson(mqInfo, searchKey, json, 0);
     }
 
     /**
-     * 用这个发送的 mq 消息, 使用 {@link MqReceiverHandler#doConsumeJustJson} 处理消息
+     * 发送 mq 消息, 不包「发送时间、队列信息」这些内容
      *
      * @param delayMs 延迟发送毫秒数, 需要安装 delay 插件, 见: https://www.rabbitmq.com/community-plugins.html
      */
@@ -81,7 +77,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         provide(searchKey, new SelfCorrelationData(msgId, traceId, mqInfo, json, delayMs));
     }
 
-    /** 指定 msgId 发送 mq 消息, 一般用于重试. 用这个发送的 mq 消息, 使用 {@link MqReceiverHandler#doConsumeJustJson} 处理消息 */
+    /** 指定 msgId 发送 mq 消息(发送的 mq 消息不包「发送时间、队列信息」这些内容), 一般用于重试 */
     public void doProvideJustJson(String msgId, MqInfo mqInfo, String searchKey, String json) {
         if (U.isNull(mqInfo)) {
             return;

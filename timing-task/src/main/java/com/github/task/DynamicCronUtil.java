@@ -1,6 +1,5 @@
 package com.github.task;
 
-import com.github.common.date.DateUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
@@ -55,7 +54,6 @@ public class DynamicCronUtil {
         }
 
         schedule.addTriggerTask(() -> {
-            long start = System.currentTimeMillis();
             try {
                 LogUtil.bindBasicInfo(U.uuid16());
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
@@ -63,11 +61,11 @@ public class DynamicCronUtil {
                 }
                 boolean flag = func.apply(desc);
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("定时任务({})结束({}), 耗时({})", desc, flag, DateUtil.toHuman(System.currentTimeMillis() - start));
+                    LogUtil.ROOT_LOG.info("定时任务({})结束, 执行({})", desc, flag);
                 }
             } catch (Exception e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("定时任务({})异常, 用时({})", desc, DateUtil.toHuman(System.currentTimeMillis() - start), e);
+                    LogUtil.ROOT_LOG.error("定时任务({})异常", desc, e);
                 }
             } finally {
                 LogUtil.unbind();
@@ -75,4 +73,3 @@ public class DynamicCronUtil {
         }, (triggerContext) -> new CronTrigger(cron).nextExecutionTime(triggerContext));
     }
 }
-
