@@ -57,7 +57,9 @@ public class MqReceiverHandler {
             }
 
             // 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
-            String msgId = getMsgId(messageProperties.getMessageId(), json);
+            MqData mqData = JsonUtil.toObject(json, MqData.class);
+            String dataJson = U.isNull(mqData) ? json : mqData.getJson();
+            String msgId = getMsgId(messageProperties.getMessageId(), dataJson);
             if (U.isBlank(msgId)) {
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                     LogUtil.ROOT_LOG.info("消费 {} 数据({})没有消息 id", desc, json);
@@ -65,20 +67,22 @@ public class MqReceiverHandler {
                 return;
             }
 
-            handleData(msgId, json, mqInfo, desc, fun);
+            handleData(msgId, mqData, json, mqInfo, desc, fun);
         } finally {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info("消费 {} 结束, 耗时: ({})", desc, DateUtil.toHuman(System.currentTimeMillis() - start));
+                long now = System.currentTimeMillis();
+                LogUtil.ROOT_LOG.info("消费 {} 结束, 耗时: ({})", desc, DateUtil.toHuman(now - start));
             }
             LogUtil.unbind();
         }
     }
 
     /** 在每一个节点都要确保会发送 ack 或 nack */
-    private void handleData(String msgId, String json, MqInfo mqInfo, String desc, Function<String, String> fun) {
+    private void handleData(String msgId, MqData mqData, String json, MqInfo mqInfo,
+                            String desc, Function<String, String> fun) {
         if (redissonService.tryLock(msgId)) {
             try {
-                doDataConsume(msgId, json, mqInfo.name().toLowerCase(), desc, fun);
+                doDataConsume(msgId, mqData, json, mqInfo.name().toLowerCase(), desc, fun);
             } finally {
                 redissonService.unlock(msgId);
             }
@@ -89,7 +93,8 @@ public class MqReceiverHandler {
         }
     }
 
-    private void doDataConsume(String msgId, String json, String businessType, String desc, Function<String, String> fun) {
+    private void doDataConsume(String msgId, MqData mqData, String json, String businessType,
+                               String desc, Function<String, String> fun) {
         MqReceive model = null;
         boolean needAdd = false;
         String remark = "";
@@ -110,7 +115,9 @@ public class MqReceiverHandler {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("开始消费 {} 数据({})", desc, json);
             }
-            model.setSearchKey(U.toStr(fun.apply(json)));
+            String dataJson = U.isNull(mqData) ? json : mqData.getJson();
+            String searchKey = fun.apply(dataJson);
+            model.setSearchKey(U.toStr(searchKey));
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("消费 {} 数据({})成功", desc, msgId);
             }
@@ -151,10 +158,8 @@ public class MqReceiverHandler {
             return msgId;
         }
 
-        MqData mqData = JsonUtil.toObject(json, MqData.class);
-        String dataJson = U.isNull(mqData) ? json : mqData.getJson();
         // 从消息体里面获取 msgId
-        Map<String, Object> map = JsonUtil.toObject(dataJson, Map.class);
+        Map<String, Object> map = JsonUtil.toObject(json, Map.class);
         if (A.isEmpty(map)) {
             return null;
         }
