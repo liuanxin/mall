@@ -115,16 +115,19 @@ public class MqReceiverHandler {
                 LogUtil.ROOT_LOG.info("消费 {} 数据({})成功", desc, msgId);
             }
 
-            remark = desc + "消费成功";
+            String oldRemark = model.getRemark();
+            remark = (U.isBlank(oldRemark) ? "" : (oldRemark + ";;")) + desc + "消费成功";
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("消费 {} 数据({})失败", desc, msgId, e);
             }
             status = 1;
+            String oldRemark = U.isNull(model) ? null : model.getRemark();
+            String appendRemark = U.isBlank(oldRemark) ? "" : (oldRemark + ";;");
             if (currentRetryCount < consumerRetryCount) {
-                remark = String.format("消费 %s 数据(%s)失败(%s)", desc, msgId, e.getMessage());
+                remark = appendRemark + String.format("消费 %s 数据(%s)失败(%s)", desc, msgId, e.getMessage());
             } else {
-                remark = String.format("消费 %s 数据(%s)失败(%s)且重试(%s)达到上限(%s)",
+                remark = appendRemark + String.format("消费 %s 数据(%s)失败(%s)且重试(%s)达到上限(%s)",
                         desc, msgId, e.getMessage(), currentRetryCount, consumerRetryCount);
             }
         } finally {
