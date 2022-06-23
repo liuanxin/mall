@@ -19,9 +19,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MqRetryHandler {
 
-    private static final String MQ_RECEIVE_DESC = "重试 mq 消费";
-    private static final String MQ_SEND_DESC = "重试 mq 发送";
-
     @Value("mq.retryLimit:20")
     private int mqRetryLimit;
 
@@ -34,6 +31,7 @@ public class MqRetryHandler {
     private final MqSenderHandler mqSenderHandler;
 
 
+    /** 处理消费重试(将失败的重发到队列) */
     public boolean handlerReceive(String desc) {
         for (;;) {
             List<MqReceive> mqReceiveList = mqReceiveService.queryRetryMsg(maxRetryCount, mqRetryLimit);
@@ -48,7 +46,6 @@ public class MqRetryHandler {
             }
         }
     }
-
     private void retrySingle(String desc, MqReceive mqReceive) {
         // noinspection DuplicatedCode
         MqInfo mqInfo = MqInfo.from(mqReceive.getBusinessType());
@@ -63,25 +60,7 @@ public class MqRetryHandler {
         }
 
         String msgId = mqReceive.getMsgId();
-        if (redissonService.tryLock(msgId)) {
-            try {
-                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("{} --> {}", desc, msgId);
-                }
-                try {
-                    // receive 失败重试时, 也是往 mq 里面发
-                    mqSenderHandler.doProvideJustJson(mqInfo, null, mqReceive.getMsg());
-                    if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                        LogUtil.ROOT_LOG.info("{} --> {} 成功", desc, msgId);
-                    }
-                } catch (Exception e) {
-                    if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                        LogUtil.ROOT_LOG.error("{} --> {} 异常", desc, msgId, e);
-                    }
-                }
-            } finally {
-                redissonService.unlock(msgId);
-            }
+        if (sendMsg(msgId, desc, mqInfo, mqReceive.getMsg())) {
             return;
         }
 
@@ -96,6 +75,7 @@ public class MqRetryHandler {
         mqReceiveService.updateById(update);
     }
 
+    /** 处理发送重试(将失败的重发到队列) */
     public boolean handlerSend(String desc) {
         for (;;) {
             List<MqSend> mqSendList = mqSendService.queryRetryMsg(maxRetryCount, mqRetryLimit);
@@ -110,7 +90,6 @@ public class MqRetryHandler {
             }
         }
     }
-
     private void retrySendSingle(String desc, MqSend mqSend) {
         // noinspection DuplicatedCode
         MqInfo mqInfo = MqInfo.from(mqSend.getBusinessType());
@@ -125,24 +104,7 @@ public class MqRetryHandler {
         }
 
         String msgId = mqSend.getMsgId();
-        if (redissonService.tryLock(msgId)) {
-            try {
-                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("{} --> {}", desc, msgId);
-                }
-                try {
-                    mqSenderHandler.doProvide(mqInfo, null, mqSend.getMsg());
-                    if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                        LogUtil.ROOT_LOG.info("{} --> {} 成功", desc, msgId);
-                    }
-                } catch (Exception e) {
-                    if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                        LogUtil.ROOT_LOG.error("{} --> {} 异常", desc, msgId, e);
-                    }
-                }
-            } finally {
-                redissonService.unlock(msgId);
-            }
+        if (sendMsg(msgId, desc, mqInfo, mqSend.getMsg())) {
             return;
         }
 
@@ -155,5 +117,29 @@ public class MqRetryHandler {
         update.setStatus(2);
         update.setRemark(mqSend.getRemark() + ";;同 msg_id 的任务正在执行");
         mqSendService.updateById(update);
+    }
+
+    private boolean sendMsg(String msgId, String desc, MqInfo mqInfo, String json) {
+        if (redissonService.tryLock(msgId)) {
+            try {
+                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                    LogUtil.ROOT_LOG.info("{} --> {}", desc, msgId);
+                }
+                try {
+                    mqSenderHandler.doProvideJustJson(mqInfo, null, json);
+                    if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                        LogUtil.ROOT_LOG.info("{} --> {} 成功", desc, msgId);
+                    }
+                } catch (Exception e) {
+                    if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                        LogUtil.ROOT_LOG.error("{} --> {} 异常", desc, msgId, e);
+                    }
+                }
+            } finally {
+                redissonService.unlock(msgId);
+            }
+            return true;
+        }
+        return false;
     }
 }

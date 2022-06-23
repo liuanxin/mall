@@ -48,6 +48,9 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
      * @param delayMs 延迟发送毫秒数, 需要安装 delay 插件, 见: https://www.rabbitmq.com/community-plugins.html
      */
     public void doProvide(MqInfo mqInfo, String searchKey, String json, int delayMs) {
+        if (U.isNull(mqInfo)) {
+            return;
+        }
         String msgId = U.uuid16();
         String traceId = LogUtil.getTraceId();
 
@@ -70,6 +73,9 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
      * @param delayMs 延迟发送毫秒数, 需要安装 delay 插件, 见: https://www.rabbitmq.com/community-plugins.html
      */
     public void doProvideJustJson(MqInfo mqInfo, String searchKey, String json, int delayMs) {
+        if (U.isNull(mqInfo)) {
+            return;
+        }
         String msgId = U.uuid16();
         String traceId = LogUtil.getTraceId();
         provide(searchKey, new SelfCorrelationData(msgId, traceId, mqInfo, json, delayMs));

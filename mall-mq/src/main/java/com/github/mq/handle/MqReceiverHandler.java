@@ -38,6 +38,9 @@ public class MqReceiverHandler {
      * @param fun 业务处理: 入参是数据对应的 json, 返回 searchKey
      */
     public void doConsume(MqInfo mqInfo, Message message, Function<String, String> fun) {
+        if (U.isNull(mqInfo)) {
+            return;
+        }
         long start = System.currentTimeMillis();
         String desc = mqInfo.showDesc();
         try {
@@ -88,6 +91,9 @@ public class MqReceiverHandler {
      * @param fun 业务处理: 入参是数据对应的 json, 返回 searchKey
      */
     public void doConsumeJustJson(MqInfo mqInfo, Message message, Function<String, String> fun) {
+        if (U.isNull(mqInfo)) {
+            return;
+        }
         long start = System.currentTimeMillis();
         String desc = mqInfo.getDesc();
         try {
