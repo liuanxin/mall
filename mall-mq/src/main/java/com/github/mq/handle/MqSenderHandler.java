@@ -81,6 +81,15 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         provide(searchKey, new SelfCorrelationData(msgId, traceId, mqInfo, json, delayMs));
     }
 
+    /** 指定 msgId 发送 mq 消息, 一般用于重试. 用这个发送的 mq 消息, 使用 {@link MqReceiverHandler#doConsumeJustJson} 处理消息 */
+    public void doProvideJustJson(String msgId, MqInfo mqInfo, String searchKey, String json) {
+        if (U.isNull(mqInfo)) {
+            return;
+        }
+        String traceId = LogUtil.getTraceId();
+        provide(searchKey, new SelfCorrelationData(msgId, traceId, mqInfo, json, 0));
+    }
+
     private void provide(String searchKey, SelfCorrelationData correlationData) {
         String msgId = correlationData.getId();
         String traceId = correlationData.getTraceId();

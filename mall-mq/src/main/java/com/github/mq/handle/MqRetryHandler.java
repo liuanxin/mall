@@ -19,10 +19,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MqRetryHandler {
 
-    @Value("mq.retryLimit:20")
+    @Value("${mq.retryLimit:20}")
     private int mqRetryLimit;
 
-    @Value("mq.maxRetryCount:5")
+    @Value("${mq.maxRetryCount:5}")
     private int maxRetryCount;
 
     private final RedissonService redissonService;
@@ -60,7 +60,7 @@ public class MqRetryHandler {
         }
 
         String msgId = mqReceive.getMsgId();
-        if (sendMsg(msgId, desc, mqInfo, mqReceive.getMsg())) {
+        if (sendMsg(msgId, desc, mqReceive.getSearchKey(), mqInfo, mqReceive.getMsg())) {
             return;
         }
 
@@ -104,7 +104,7 @@ public class MqRetryHandler {
         }
 
         String msgId = mqSend.getMsgId();
-        if (sendMsg(msgId, desc, mqInfo, mqSend.getMsg())) {
+        if (sendMsg(msgId, desc, mqSend.getSearchKey(), mqInfo, mqSend.getMsg())) {
             return;
         }
 
@@ -119,14 +119,14 @@ public class MqRetryHandler {
         mqSendService.updateById(update);
     }
 
-    private boolean sendMsg(String msgId, String desc, MqInfo mqInfo, String json) {
+    private boolean sendMsg(String msgId, String desc, String searchKey, MqInfo mqInfo, String json) {
         if (redissonService.tryLock(msgId)) {
             try {
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                     LogUtil.ROOT_LOG.info("{} --> {}", desc, msgId);
                 }
                 try {
-                    mqSenderHandler.doProvideJustJson(mqInfo, null, json);
+                    mqSenderHandler.doProvideJustJson(msgId, mqInfo, searchKey, json);
                     if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                         LogUtil.ROOT_LOG.info("{} --> {} 成功", desc, msgId);
                     }
