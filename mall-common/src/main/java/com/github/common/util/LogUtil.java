@@ -74,10 +74,10 @@ public final class LogUtil {
         return U.toStr(MDC.get(TRACE_ID)).trim();
     }
     public static String getIp() {
-        return MDC.get(REAL_IP).trim();
+        return U.toStr(MDC.get(REAL_IP)).trim();
     }
     public static String getUser() {
-        return MDC.get(USER).trim();
+        return U.toStr(MDC.get(USER)).trim();
     }
 
     public static void unbind() {
