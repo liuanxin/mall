@@ -19,24 +19,37 @@ import static com.github.mq.constant.MqConst.*;
  *     private final MqSenderHandler handler;
  *
  *     public void xxx() {
- *         // 发布到 mq 的实体
- *         XXX&lt;YYY&gt; req = ...;
- *         handler.doProvide(MqInfo.xxx, JsonUtil.toJson(req));
+ *         // 发布到 mq 的数据
+ *         String json = ...
+ *         // 用这个方式发送到 mq 的数据, 会包括「发送时间、队列信息、traceId」等信息
+ *         handler.doProvide(MqInfo.xxx, json);
+ *     }
+ *
+ *     public void yyy() {
+ *         // 发布到 mq 的数据
+ *         String json = ...
+ *         // 用这个方式发送到 mq 的数据, 只会将 json 的信息发过去
+ *         handler.doProvideJustJson(MqInfo.xxx, json);
  *     }
  * 4. 消费 mq 消息
  *     private final MqReceiverHandler handler;
- *     private final XxxService xxxService;
  *
+ *     // 用 doProvide 发送的 mq, 使用这个方式进行消费
  *     &#064;RabbitListener(queues = MqConst.xxx)
- *     public void onReceive(Message message, Channel channel) {
+ *     public void xxx(Message message, Channel channel) {
  *         handler.doConsume(message, channel, this::business);
  *     }
- *     public void business(String json) {
- *         XXX&lt;YYY&gt; req = JsonUtil.convertType(json, new TypeReference&lt;XXX&lt;YYY&gt;&gt;() {});
- *         // 从 mq 接收到的实体
- *         if (req != null) {
- *             xxxService.xxx(req);
- *         }
+ *
+ *     // 用 doProvideJustJson 发送的 mq, 使用这个方式进行消费
+ *     &#064;RabbitListener(queues = MqConst.xxx)
+ *     public void yyy(Message message, Channel channel) {
+ *         handler.doConsumeJustJson(message, channel, this::business);
+ *     }
+ *
+ *     // 入参是 mq 中的数据, 返回是处理完之后需要存到表里的搜索键
+ *     public String business(String json) {
+ *         ...
+ *         return searchKey;
  *     }
  * </pre>
  */

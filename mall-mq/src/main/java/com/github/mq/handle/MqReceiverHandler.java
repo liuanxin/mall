@@ -142,7 +142,6 @@ public class MqReceiverHandler {
     private void doDataConsume(String json, String msgId, String businessType, String desc, Function<String, String> fun) {
         MqReceive model = null;
         boolean needAdd = false;
-        boolean ack = true;
         String remark = "";
         int status = 2;
         int currentRetryCount = 0;
