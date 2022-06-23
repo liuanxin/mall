@@ -61,6 +61,7 @@ public class MqReceiverHandler {
                 }
                 return;
             }
+            // msgId 放在 messageId, traceId 放在 correlationId
             String msgId = getMsgId(messageProperties.getMessageId(), json);
             if (U.isBlank(msgId)) {
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
@@ -72,7 +73,6 @@ public class MqReceiverHandler {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("开始消费 {} 数据({}), 消息发送时间({})", desc, msgId, DateUtil.formatDateTimeMs(mqData.getSendTime()));
             }
-            // msgId 放在 messageId, traceId 放在 correlationId
             handleData(json, msgId, mqInfo, desc, fun);
         } finally {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
