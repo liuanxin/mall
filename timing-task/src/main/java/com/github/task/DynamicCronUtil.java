@@ -7,7 +7,7 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.scheduling.support.CronTrigger;
 
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 public class DynamicCronUtil {
 
@@ -42,9 +42,9 @@ public class DynamicCronUtil {
      *
      * @param desc 当前定时任务的业务说明
      * @param cron 定时任务的表达式
-     * @param supplier 一个没有入参, 出参是 boolean(表示运行是否成功)的方法
+     * @param func 入参是任务的名称, 出参是 boolean(表示运行是否成功)的方法
      */
-    public static void runTask(ScheduledTaskRegistrar schedule, String desc, String cron, Supplier<Boolean> supplier) {
+    public static void runTask(ScheduledTaskRegistrar schedule, String desc, String cron, Function<String, Boolean> func) {
         try {
             CronExpression.parse(cron);
         } catch (IllegalArgumentException e) {
@@ -61,7 +61,7 @@ public class DynamicCronUtil {
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                     LogUtil.ROOT_LOG.info("定时任务({})开始", desc);
                 }
-                boolean flag = supplier.get();
+                boolean flag = func.apply(desc);
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                     LogUtil.ROOT_LOG.info("定时任务({})结束({}), 耗时({})", desc, flag, DateUtil.toHuman(System.currentTimeMillis() - start));
                 }
