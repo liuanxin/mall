@@ -49,7 +49,7 @@ public class MqReceiverHandler {
             MqData mqData = JsonUtil.toObject(data, MqData.class);
             if (U.isNull(mqData)) {
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("消费 {} 数据({})为空", desc, data);
+                    LogUtil.ROOT_LOG.info("消费 {} 数据({})转换后为空", desc, data);
                 }
                 return;
             }
