@@ -21,6 +21,20 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Map;
 import java.util.function.Function;
 
+/***
+ * # ack 模式设置为自动(异常将会 nack, 否则将会 ack)
+ * spring.rabbitmq.listener.simple.acknowledge-mode = auto
+ * # 开启重试
+ * spring.rabbitmq.listener.simple.retry.enabled = true
+ * # 第一次重试的时间间隔, 默认是 1 秒
+ * spring.rabbitmq.listener.simple.retry.initial-interval = 5s
+ * # 最大重试次数, 默认是 3 次
+ * spring.rabbitmq.listener.simple.retry.max-attempts = 5
+ * # 两次重试的间隔, 默认是 10 秒
+ * spring.rabbitmq.listener.simple.retry.max-interval = 5s
+ *
+ * @see org.springframework.boot.autoconfigure.amqp.RabbitProperties
+ */
 @RequiredArgsConstructor
 @Configuration
 @ConditionalOnClass(RabbitListener.class)
@@ -137,6 +151,7 @@ public class MqReceiverHandler {
                 remark = appendRemark + String.format("消费 %s 数据(%s)失败(%s)且重试(%s)达到上限(%s)",
                         desc, msgId, e.getMessage(), currentRetryCount, consumerRetryCount);
             }
+            throw e;
         } finally {
             // 成功了就只写一次消费成功, 失败了也只写一次, 上面不写初始, 少操作一次 db
             if (U.isNotNull(model)) {
