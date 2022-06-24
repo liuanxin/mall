@@ -230,13 +230,19 @@ public class GlobalException {
     }
     private List<String> collectTrack(Throwable e) {
         List<String> exceptionList = new ArrayList<>();
-        exceptionList.add(e.getMessage().trim());
-        for (StackTraceElement trace : e.getStackTrace()) {
-            String msg = trace.toString().trim();
-            if (msg.startsWith(Const.BASE_PACKAGE)) {
-                exceptionList.add(msg);
-            } else if (!"...".equals(A.last(exceptionList))) {
-                exceptionList.add("...");
+        if (U.isNotNull(e)) {
+            exceptionList.add(U.toStr(e.getMessage()));
+
+            StackTraceElement[] stackTraceArray = e.getStackTrace();
+            if (A.isNotEmpty(stackTraceArray)) {
+                for (StackTraceElement trace : stackTraceArray) {
+                    String msg = trace.toString().trim();
+                    if (msg.startsWith(Const.BASE_PACKAGE)) {
+                        exceptionList.add(msg);
+                    } else if (!"...".equals(A.last(exceptionList))) {
+                        exceptionList.add("...");
+                    }
+                }
             }
         }
         return exceptionList;
