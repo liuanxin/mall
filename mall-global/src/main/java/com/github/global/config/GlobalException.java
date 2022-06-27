@@ -162,7 +162,7 @@ public class GlobalException {
 
     private ResponseEntity exception(Throwable e) {
         if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-            LogUtil.ROOT_LOG.error("has exception", e);
+            LogUtil.ROOT_LOG.error(e.getMessage(), e);
         }
         int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
         String msg = U.returnMsg(e, online);
