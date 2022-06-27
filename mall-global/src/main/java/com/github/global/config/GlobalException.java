@@ -236,11 +236,8 @@ public class GlobalException {
             StackTraceElement[] stackTraceArray = e.getStackTrace();
             if (A.isNotEmpty(stackTraceArray)) {
                 for (StackTraceElement trace : stackTraceArray) {
-                    String msg = trace.toString().trim();
-                    if (msg.startsWith(Const.BASE_PACKAGE)) {
-                        exceptionList.add(msg);
-                    } else if (!"...".equals(A.last(exceptionList))) {
-                        exceptionList.add("...");
+                    if (U.isNotNull(trace)) {
+                        exceptionList.add(trace.toString().trim());
                     }
                 }
             }
