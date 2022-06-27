@@ -72,7 +72,7 @@ public class MqReceiverHandler {
 
             // 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
             MqData mqData = JsonUtil.toObject(json, MqData.class);
-            String dataJson = U.isNull(mqData) ? json : mqData.getJson();
+            String dataJson = U.isNull(mqData) ? json : U.defaultIfBlank(mqData.getJson(), json);
             String msgId = getMsgId(messageProperties.getMessageId(), dataJson);
             if (U.isBlank(msgId)) {
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
@@ -129,7 +129,7 @@ public class MqReceiverHandler {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("开始消费 {} 数据({})", desc, json);
             }
-            String dataJson = U.isNull(mqData) ? json : mqData.getJson();
+            String dataJson = U.isNull(mqData) ? json : U.defaultIfBlank(mqData.getJson(), json);
             String searchKey = fun.apply(dataJson);
             model.setSearchKey(U.toStr(searchKey));
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
