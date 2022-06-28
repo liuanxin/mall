@@ -270,6 +270,9 @@ public class JsonUtil {
         if (U.isNull(obj)) {
             return null;
         }
+        if (obj instanceof String s) {
+            return s;
+        }
         try {
             return OBJECT_MAPPER.writeValueAsString(obj);
         } catch (Exception e) {
