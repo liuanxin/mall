@@ -5,7 +5,9 @@ import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.github.global.service.RedissonService;
 import com.github.mq.constant.MqInfo;
+import com.github.mq.model.MqReceive;
 import com.github.mq.model.MqSend;
+import com.github.mq.service.MqReceiveService;
 import com.github.mq.service.MqSendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +27,55 @@ public class MqRetryHandler {
 
     private final RedissonService redissonService;
     private final MqSendService mqSendService;
+    private final MqReceiveService mqReceiveService;
     private final MqSenderHandler mqSenderHandler;
+
+
+    /** 处理消费重试(将失败的重发到队列) */
+    public boolean handlerReceive(String desc) {
+        for (;;) {
+            List<MqReceive> mqReceiveList = mqReceiveService.queryRetryMsg(maxRetryCount, mqRetryLimit);
+            if (A.isNotEmpty(mqReceiveList)) {
+                return true;
+            }
+            for (MqReceive mqReceive : mqReceiveList) {
+                retrySingle(desc, mqReceive);
+            }
+            if (mqReceiveList.size() < mqRetryLimit) {
+                return true;
+            }
+        }
+    }
+    private void retrySingle(String desc, MqReceive mqReceive) {
+        // noinspection DuplicatedCode
+        MqInfo mqInfo = MqInfo.from(mqReceive.getBusinessType());
+        if (U.isNull(mqInfo)) {
+            // 没有 mq-info 的数据直接置为成功, 无法重试
+            MqReceive update = new MqReceive();
+            update.setId(mqReceive.getId());
+            update.setStatus(2);
+            update.setRemark(mqReceive.getRemark() + ";;没有这个 business_type 的场景");
+            mqReceiveService.updateById(update);
+            return;
+        }
+
+        if (sendMsg(mqReceive.getMsgId(), desc, mqReceive.getSearchKey(), mqInfo, mqReceive.getMsg())) {
+            // 如果发到 mq 成功, 则将接收消息置为成功
+            MqReceive update = new MqReceive();
+            update.setId(mqReceive.getId());
+            update.setStatus(2);
+            update.setRemark(mqReceive.getRemark() + ";;重试时发到 mq 成功");
+            mqReceiveService.updateById(update);
+            return;
+        }
+
+        // msgId 的数据只需要有一条在处理, 当前数据直接置为成功, 无需重试
+        MqReceive update = new MqReceive();
+        update.setId(mqReceive.getId());
+        update.setStatus(2);
+        update.setRemark(mqReceive.getRemark() + ";;同 msg_id 的任务正在执行");
+        mqReceiveService.updateById(update);
+    }
 
     /** 处理发送重试(将失败的重发到队列) */
     public boolean handlerSend(String desc) {

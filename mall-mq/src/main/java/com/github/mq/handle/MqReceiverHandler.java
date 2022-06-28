@@ -43,6 +43,9 @@ public class MqReceiverHandler {
     @Value("${mq.consumerRetryCount:3}")
     private int consumerRetryCount;
 
+    @Value("${mq.consumerMsgIdKey:msgId,messageId,msg_id,message_id}")
+    private String msgIdKey;
+
     private final MqReceiveService mqReceiveService;
     private final RedissonService redissonService;
 
@@ -176,21 +179,15 @@ public class MqReceiverHandler {
         // 从消息体里面获取 msgId
         Map<String, Object> map = JsonUtil.toObject(json, Map.class);
         if (A.isEmpty(map)) {
-            return null;
+            return U.EMPTY;
         }
 
-        String messageId = U.toStr(map.get("msgId"));
-        if (U.isNotBlank(messageId)) {
-            return messageId;
+        for (String key : msgIdKey.split(",")) {
+            String messageId = U.toStr(map.get(key.trim()));
+            if (U.isNotBlank(messageId)) {
+                return messageId;
+            }
         }
-        messageId = U.toStr(map.get("messageId"));
-        if (U.isNotBlank(messageId)) {
-            return messageId;
-        }
-        messageId = U.toStr(map.get("message_id"));
-        if (U.isNotBlank(messageId)) {
-            return messageId;
-        }
-        return U.toStr(map.get("msg_id"));
+        return U.EMPTY;
     }
 }
