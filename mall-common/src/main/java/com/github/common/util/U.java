@@ -559,10 +559,6 @@ public final class U {
     }
 
     /** 为 null 或 空白符则返回默认值, 否则调用后返回(字符串) */
-    public static <T> String callIfNotBlank(T obj, Function<T, String> func) {
-        return isNull(obj) ? null : func.apply(obj);
-    }
-    /** 为 null 或 空白符则返回默认值, 否则调用后返回(字符串) */
     public static <T> String callIfNotBlank(T obj, Function<T, String> func, String defaultValue) {
         return isNull(obj) ? defaultValue : defaultIfBlank(func.apply(obj), defaultValue);
     }
