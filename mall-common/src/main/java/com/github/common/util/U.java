@@ -894,7 +894,6 @@ public final class U {
      * @param field 属性名
      * @return 如果属性是枚举则调用枚举的 getValue 方法, 如果是日期则格式化, 否则返回此属性值的 toString 方法
      */
-    @SuppressWarnings("rawtypes")
     public static String getFieldMethod(Object data, String field) {
         if (isNull(data) || isBlank(field)) {
             return EMPTY;
