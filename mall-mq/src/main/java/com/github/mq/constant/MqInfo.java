@@ -62,7 +62,9 @@ public enum MqInfo {
             DEAD_EXCHANGE, DEAD_EXAMPLE_EXCHANGE,
             DEAD_ROUTE_KEY, DEAD_EXAMPLE_KEY,
             DELAY, EXAMPLE_DEAD_DEAD_DELAY_MS
-    ))
+    )),
+
+    DELAY_EXAMPLE(DELAY_EXAMPLE_DESC, ExchangeTypes.DIRECT, DELAY_EXAMPLE_EXCHANGE, true, DELAY_EXAMPLE_KEY, DELAY_EXAMPLE_QUEUE, null)
     ;
 
     private final String desc;

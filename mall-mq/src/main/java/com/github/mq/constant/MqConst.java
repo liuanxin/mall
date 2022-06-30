@@ -48,7 +48,7 @@ public class MqConst {
     /** 交换机共用一个 */
     public static final String EXAMPLE_EXCHANGE = "example:exchange";
     /** 死信交换机共用一个 */
-    public static final String DEAD_EXAMPLE_EXCHANGE = EXAMPLE_EXCHANGE + DEAD;
+    public static final String DEAD_EXAMPLE_EXCHANGE = "example:exchange:dead";
 
     public static final String EXAMPLE_DESC = "示例";
     public static final String EXAMPLE_KEY = "example:routing-key";
@@ -63,4 +63,9 @@ public class MqConst {
     public static final String DEAD_DEAD_EXAMPLE_QUEUE = EXAMPLE_QUEUE + DEAD_DEAD;
     /** 延迟时间, 单位毫秒 */
     public static final int EXAMPLE_DEAD_DEAD_DELAY_MS = 5 * 60 * 1000;
+
+    public static final String DELAY_EXAMPLE_DESC = "延迟队列示例";
+    public static final String DELAY_EXAMPLE_EXCHANGE = "delay-example:exchange";
+    public static final String DELAY_EXAMPLE_KEY = "delay-example:routing-key";
+    public static final String DELAY_EXAMPLE_QUEUE = "delay-example:queue";
 }
