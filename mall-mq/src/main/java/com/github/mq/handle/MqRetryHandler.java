@@ -35,7 +35,7 @@ public class MqRetryHandler {
     public boolean handlerReceive(String desc) {
         for (;;) {
             List<MqReceive> mqReceiveList = mqReceiveService.queryRetryMsg(maxRetryCount, mqRetryLimit);
-            if (A.isNotEmpty(mqReceiveList)) {
+            if (A.isEmpty(mqReceiveList)) {
                 return true;
             }
             for (MqReceive mqReceive : mqReceiveList) {
@@ -81,7 +81,7 @@ public class MqRetryHandler {
     public boolean handlerSend(String desc) {
         for (;;) {
             List<MqSend> mqSendList = mqSendService.queryRetryMsg(maxRetryCount, mqRetryLimit);
-            if (A.isNotEmpty(mqSendList)) {
+            if (A.isEmpty(mqSendList)) {
                 return true;
             }
             for (MqSend mqSend : mqSendList) {
