@@ -38,43 +38,42 @@ public class MqRetryHandler {
             if (A.isEmpty(mqReceiveList)) {
                 return true;
             }
-            for (MqReceive mqReceive : mqReceiveList) {
-                retrySingle(desc, mqReceive);
-            }
+            retryReceive(desc, mqReceiveList);
             if (mqReceiveList.size() < mqRetryLimit) {
                 return true;
             }
         }
     }
-    private void retrySingle(String desc, MqReceive mqReceive) {
-        // noinspection DuplicatedCode
-        MqInfo mqInfo = MqInfo.from(mqReceive.getBusinessType());
-        if (U.isNull(mqInfo)) {
-            // 没有 mq-info 的数据直接置为成功, 无法重试
+    private void retryReceive(String desc, List<MqReceive> mqReceiveList) {
+        for (MqReceive mqReceive : mqReceiveList) {
+            MqInfo mqInfo = MqInfo.from(mqReceive.getBusinessType());
+            if (U.isNull(mqInfo)) {
+                // 没有 mq-info 的数据直接置为成功, 无法重试
+                MqReceive update = new MqReceive();
+                update.setId(mqReceive.getId());
+                update.setStatus(2);
+                update.setRemark(mqReceive.getRemark() + ";;没有这个 business_type 的场景");
+                mqReceiveService.updateById(update);
+                return;
+            }
+
+            if (sendMsg(mqReceive.getMsgId(), desc, mqReceive.getSearchKey(), mqInfo, mqReceive.getMsg())) {
+                // 如果发到 mq 成功, 则将接收消息置为成功
+                MqReceive update = new MqReceive();
+                update.setId(mqReceive.getId());
+                update.setStatus(2);
+                update.setRemark(mqReceive.getRemark() + ";;重试时发到 mq 成功");
+                mqReceiveService.updateById(update);
+                return;
+            }
+
+            // msgId 的数据只需要有一条在处理, 当前数据直接置为成功, 无需重试
             MqReceive update = new MqReceive();
             update.setId(mqReceive.getId());
             update.setStatus(2);
-            update.setRemark(mqReceive.getRemark() + ";;没有这个 business_type 的场景");
+            update.setRemark(mqReceive.getRemark() + ";;同 msg_id 的任务正在执行");
             mqReceiveService.updateById(update);
-            return;
         }
-
-        if (sendMsg(mqReceive.getMsgId(), desc, mqReceive.getSearchKey(), mqInfo, mqReceive.getMsg())) {
-            // 如果发到 mq 成功, 则将接收消息置为成功
-            MqReceive update = new MqReceive();
-            update.setId(mqReceive.getId());
-            update.setStatus(2);
-            update.setRemark(mqReceive.getRemark() + ";;重试时发到 mq 成功");
-            mqReceiveService.updateById(update);
-            return;
-        }
-
-        // msgId 的数据只需要有一条在处理, 当前数据直接置为成功, 无需重试
-        MqReceive update = new MqReceive();
-        update.setId(mqReceive.getId());
-        update.setStatus(2);
-        update.setRemark(mqReceive.getRemark() + ";;同 msg_id 的任务正在执行");
-        mqReceiveService.updateById(update);
     }
 
     /** 处理发送重试(将失败的重发到队列) */
@@ -84,37 +83,36 @@ public class MqRetryHandler {
             if (A.isEmpty(mqSendList)) {
                 return true;
             }
-            for (MqSend mqSend : mqSendList) {
-                retrySendSingle(desc, mqSend);
-            }
+            retrySend(desc, mqSendList);
             if (mqSendList.size() < mqRetryLimit) {
                 return true;
             }
         }
     }
-    private void retrySendSingle(String desc, MqSend mqSend) {
-        // noinspection DuplicatedCode
-        MqInfo mqInfo = MqInfo.from(mqSend.getBusinessType());
-        if (U.isNull(mqInfo)) {
-            // 没有 mq-info 的数据直接置为成功, 无法重试
+    private void retrySend(String desc, List<MqSend> mqSendList) {
+        for (MqSend mqSend : mqSendList) {
+            MqInfo mqInfo = MqInfo.from(mqSend.getBusinessType());
+            if (U.isNull(mqInfo)) {
+                // 没有 mq-info 的数据直接置为成功, 无法重试
+                MqSend update = new MqSend();
+                update.setId(mqSend.getId());
+                update.setStatus(2);
+                update.setRemark(mqSend.getRemark() + ";;没有这个 business_type 的场景");
+                mqSendService.updateById(update);
+                return;
+            }
+
+            if (sendMsg(mqSend.getMsgId(), desc, mqSend.getSearchKey(), mqInfo, mqSend.getMsg())) {
+                return;
+            }
+
+            // msgId 的数据只需要有一条在处理, 当前数据直接置为成功, 无需重试
             MqSend update = new MqSend();
             update.setId(mqSend.getId());
             update.setStatus(2);
-            update.setRemark(mqSend.getRemark() + ";;没有这个 business_type 的场景");
+            update.setRemark(mqSend.getRemark() + ";;同 msg_id 的任务正在执行");
             mqSendService.updateById(update);
-            return;
         }
-
-        if (sendMsg(mqSend.getMsgId(), desc, mqSend.getSearchKey(), mqInfo, mqSend.getMsg())) {
-            return;
-        }
-
-        // msgId 的数据只需要有一条在处理, 当前数据直接置为成功, 无需重试
-        MqSend update = new MqSend();
-        update.setId(mqSend.getId());
-        update.setStatus(2);
-        update.setRemark(mqSend.getRemark() + ";;同 msg_id 的任务正在执行");
-        mqSendService.updateById(update);
     }
 
     private boolean sendMsg(String msgId, String desc, String searchKey, MqInfo mqInfo, String json) {
