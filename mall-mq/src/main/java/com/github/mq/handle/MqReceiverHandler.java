@@ -55,40 +55,56 @@ public class MqReceiverHandler {
      * @param fun 业务处理: 入参是数据对应的 json, 返回 searchKey
      */
     public void doConsume(MqInfo mqInfo, Message message, Function<String, String> fun) {
-        if (U.isNull(mqInfo)) {
+        String json = new String(message.getBody());
+        if (U.isBlank(json)) {
+            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                LogUtil.ROOT_LOG.info("消费数据({})是空的, 无需处理", json);
+            }
             return;
         }
+
+        MqData mqData = JsonUtil.toObjectNil(json, MqData.class);
+        if (U.isNotNull(mqData)) {
+            MqInfo info = MqInfo.from(mqData.getMqInfo());
+            if (U.isNotNull(info)) {
+                if (U.isNull(mqInfo)) {
+                    mqInfo = info;
+                } else if (info != mqInfo) {
+                    if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                        LogUtil.ROOT_LOG.error("消费数据({})信息是({})却在用({})消费, 请检查代码", json, info, mqInfo);
+                    }
+                    return;
+                }
+            }
+        }
+        if (U.isNull(mqInfo)) {
+            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                LogUtil.ROOT_LOG.info("没有队列信息, 无法处理");
+            }
+            return;
+        }
+
+        String mqDesc = mqInfo.getDesc();
+        MessageProperties mp = message.getMessageProperties();
+        // 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
+        String msgId = getMsgId(mp.getMessageId(), mqData, json);
+        // msgId 如果没有不处理
+        if (U.isBlank(msgId)) {
+            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                LogUtil.ROOT_LOG.info("消费 {} 数据({})没有 msgId, 请与发送方沟通", mqDesc, json);
+            }
+            return;
+        }
+
         long start = System.currentTimeMillis();
-        String desc = mqInfo.getDesc();
         try {
-            MessageProperties messageProperties = message.getMessageProperties();
             // 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
-            LogUtil.bindBasicInfo(messageProperties.getCorrelationId());
-
-            String json = new String(message.getBody());
-            if (U.isBlank(json)) {
-                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("消费 {} 数据({})是空的", desc, json);
-                }
-                return;
-            }
-
-            // 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
-            MqData mqData = JsonUtil.toObject(json, MqData.class);
-            String dataJson = U.isNull(mqData) ? json : U.defaultIfBlank(mqData.getJson(), json);
-            String msgId = getMsgId(messageProperties.getMessageId(), dataJson);
-            if (U.isBlank(msgId)) {
-                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("消费 {} 数据({})没有消息 id", desc, json);
-                }
-                return;
-            }
-
-            handleData(msgId, mqData, json, mqInfo, desc, fun);
+            LogUtil.bindBasicInfo(U.defaultIfBlank(mp.getCorrelationId(), (U.isNull(mqData) ? "" : mqData.getTraceId())));
+            handleData(msgId, mqData, json, mqInfo, mqDesc, fun);
         } finally {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 long now = System.currentTimeMillis();
-                LogUtil.ROOT_LOG.info("消费 {} 结束, 耗时: ({})", desc, DateUtil.toHuman(now - start));
+                LogUtil.ROOT_LOG.info("消费 {} 结束, 耗时: ({})", mqDesc, DateUtil.toHuman(now - start));
             }
             LogUtil.unbind();
         }
@@ -171,21 +187,19 @@ public class MqReceiverHandler {
     }
 
     @SuppressWarnings("unchecked")
-    private String getMsgId(String msgId, String json) {
-        if (U.isNotBlank(msgId)) {
-            return msgId;
+    private String getMsgId(String defaultId, MqData mqData, String json) {
+        if (U.isNotBlank(defaultId)) {
+            return defaultId;
         }
 
-        // 从消息体里面获取 msgId
-        Map<String, Object> map = JsonUtil.toObject(json, Map.class);
-        if (A.isEmpty(map)) {
-            return U.EMPTY;
-        }
-
-        for (String key : msgIdKey.split(",")) {
-            String messageId = U.toStr(map.get(key.trim()));
-            if (U.isNotBlank(messageId)) {
-                return messageId;
+        String dataJson = U.isNull(mqData) ? json : U.defaultIfBlank(mqData.getJson(), json);
+        Map<String, Object> map = JsonUtil.toObjectNil(dataJson, Map.class);
+        if (A.isNotEmpty(map)) {
+            for (String key : msgIdKey.split(",")) {
+                String trace = U.toStr(map.get(key.trim()));
+                if (U.isNotBlank(trace)) {
+                    return trace;
+                }
             }
         }
         return U.EMPTY;
