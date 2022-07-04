@@ -133,8 +133,7 @@ public class MqRetryHandler {
                 redissonService.unlock(msgId);
             }
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 }

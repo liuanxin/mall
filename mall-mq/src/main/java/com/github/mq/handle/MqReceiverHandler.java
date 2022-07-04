@@ -128,10 +128,13 @@ public class MqReceiverHandler {
 
     private void doDataConsume(String msgId, MqData mqData, String json, String businessType,
                                String desc, Function<String, String> fun) {
+        // 0.初始, 1.失败, 2.成功(需要重试则改为 1)
+        int fail = 1, success = 2;
+
         MqReceive model = null;
         boolean needAdd = false;
         String remark = "";
-        int status = 2;
+        int status = success;
         int currentRetryCount = 0;
         try {
             model = mqReceiveService.queryByMsg(msgId);
@@ -161,7 +164,7 @@ public class MqReceiverHandler {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("消费 {} 数据({})失败", desc, msgId, e);
             }
-            status = 1;
+            status = fail;
             String oldRemark = U.isNull(model) ? null : model.getRemark();
             String appendRemark = U.isBlank(oldRemark) ? "" : (oldRemark + ";;");
             if (currentRetryCount < consumerRetryCount) {

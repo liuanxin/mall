@@ -20,17 +20,17 @@ public final class LogUtil {
     public static final Logger SQL_LOG = LoggerFactory.getLogger("sqlLog");
 
     /** 接收到请求的时间戳  */
-    private static final String START_REQUEST_TIME = "Start_Request_Time";
+    private static final String START_REQUEST_TIME = "START_REQUEST_TIME";
     /** 接收到请求的时间, 在配置文件中使用 %X{Record_Time} 获取  */
-    private static final String RECEIVE_TIME = "Receive_Time";
+    private static final String RECEIVE_TIME = "RECEIVE_TIME";
     /** 在日志上下文中记录的跟踪 id */
-    private static final String TRACE_ID = "Trace_Id";
+    private static final String TRACE_ID = "TRACE_ID";
     /** 在日志上下文中记录的请求信息: 包括 ip、url, param 等  */
-    private static final String REQUEST_INFO = "Request_Info";
+    private static final String REQUEST_INFO = "REQUEST_INFO";
     /** 在日志上下文中记录的真实 ip */
-    private static final String REAL_IP = "Real_Ip";
+    private static final String REAL_IP = "REAL_IP";
     /** 在日志上下文中记录的用户信息 */
-    private static final String USER = "User";
+    private static final String USER = "USER";
 
     /** 将 跟踪号 和 接收到请求的时间 放进日志上下文 */
     public static void bindBasicInfo(String traceId) {
