@@ -40,6 +40,10 @@ import java.util.function.Function;
 @ConditionalOnClass(RabbitListener.class)
 public class MqReceiverHandler {
 
+    // 0.初始, 1.失败, 2.成功(需要重试则改为 1)
+    private static final int FAIL = 1;
+    private static final int SUCCESS = 2;
+
     @Value("${mq.consumerRetryCount:3}")
     private int consumerRetryCount;
 
@@ -128,13 +132,10 @@ public class MqReceiverHandler {
 
     private void doDataConsume(String msgId, MqData mqData, String json, String businessType,
                                String desc, Function<String, String> fun) {
-        // 0.初始, 1.失败, 2.成功(需要重试则改为 1)
-        int fail = 1, success = 2;
-
         MqReceive model = null;
         boolean needAdd = false;
         String remark = "";
-        int status = success;
+        int status = SUCCESS;
         int currentRetryCount = 0;
         try {
             model = mqReceiveService.queryByMsg(msgId);
@@ -164,7 +165,7 @@ public class MqReceiverHandler {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("消费 {} 数据({})失败", desc, msgId, e);
             }
-            status = fail;
+            status = FAIL;
             String oldRemark = U.isNull(model) ? null : model.getRemark();
             String appendRemark = U.isBlank(oldRemark) ? "" : (oldRemark + ";;");
             if (currentRetryCount < consumerRetryCount) {

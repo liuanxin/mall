@@ -31,11 +31,6 @@ public class MqSendService {
         }
     }
 
-    @Transactional
-    public void updateByMsgId(String msgId, MqSend record) {
-        mqSendDao.update(record, Wrappers.lambdaQuery(MqSend.class).eq(MqSend::getMsgId, msgId));
-    }
-
     public MqSend queryByMsgId(String msgId) {
         if (msgId == null || msgId.trim().isEmpty()) {
             return null;
