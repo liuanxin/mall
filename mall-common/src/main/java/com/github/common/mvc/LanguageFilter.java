@@ -15,20 +15,15 @@ import java.util.Locale;
 
 /**
  * 基于下面的优先级依次获取语言
- *
+ * <p>
  * 1. 参数里的 langParamName (默认是 lang)
  * 2. 头里的 langParamName (默认是 lang)
- * 3. request.getLocale()
+ * 3. request.getLocale(Accept-Language 的值)
  * 4. 简体中文
- *
+ * <p>
  * 手动处理时使用 {@link LocaleContextHolder#getLocale()} 或 {@link RequestContextUtils#getLocale(HttpServletRequest)}
  */
-public class LanguageFilter implements Filter {
-
-    private final String languageParam;
-    public LanguageFilter(String languageParam) {
-        this.languageParam = languageParam;
-    }
+public record LanguageFilter(String languageParam) implements Filter {
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
@@ -52,10 +47,7 @@ public class LanguageFilter implements Filter {
 
     private Locale handleLocale(HttpServletRequest request) {
         String lanParam = U.defaultIfBlank(languageParam, "lang");
-        String lan = request.getParameter(lanParam);
-        if (U.isBlank(lan)) {
-            lan = request.getHeader(lanParam);
-        }
+        String lan = U.defaultIfBlank(request.getParameter(lanParam), request.getHeader(lanParam));
         Locale locale = null;
         if (U.isNotBlank(lan)) {
             try {
@@ -80,5 +72,6 @@ public class LanguageFilter implements Filter {
             case "en" -> Locale.US;
             default -> locale;
         };
+        // return locale;
     }
 }

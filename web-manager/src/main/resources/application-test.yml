@@ -29,6 +29,4 @@ spring:
         cachePrepStmts: true
         useServerPrepStmts: false
 
-mybatis-plus:
-  global-config.banner: false
-  type-enums-package: com.*.*.enums
+mybatis-plus.global-config.banner: false

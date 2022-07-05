@@ -20,6 +20,4 @@ spring:
       minimumIdle: 1
       maximumPoolSize: 1
 
-mybatis-plus:
-  global-config.banner: false
-  type-enums-package: com.*.*.enums
+mybatis-plus.global-config.banner: false
