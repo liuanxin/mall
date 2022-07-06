@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS `t_mq_send`;
 CREATE TABLE IF NOT EXISTS `t_mq_send` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `msg_id` varchar(32) NOT NULL DEFAULT '' COMMENT '消息 id',
-  `search_key` varchar(128) NOT NULL DEFAULT '' COMMENT '搜索键',
+  `search_key` varchar(64) NOT NULL DEFAULT '' COMMENT '搜索键',
   `type` varchar(32) NOT NULL DEFAULT '' COMMENT '业务场景',
   `status` int unsigned NOT NULL DEFAULT '0' COMMENT '0.初始, 1.失败, 2.成功(需要重试则改为 1)',
   `retry_count` int unsigned NOT NULL DEFAULT '0' COMMENT '重试次数(需要重试则改为 0)',
@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS `t_mq_receive`;
 CREATE TABLE IF NOT EXISTS `t_mq_receive` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `msg_id` varchar(32) NOT NULL DEFAULT '' COMMENT '消息 id',
-  `search_key` varchar(128) NOT NULL DEFAULT '' COMMENT '搜索键',
+  `search_key` varchar(64) NOT NULL DEFAULT '' COMMENT '搜索键',
   `type` varchar(32) NOT NULL DEFAULT '' COMMENT '业务场景',
   `status` int unsigned NOT NULL DEFAULT '0' COMMENT '0.初始, 1.失败, 2.成功(需要重试则改为 1)',
   `retry_count` int unsigned NOT NULL DEFAULT '0' COMMENT '重试次数(需要重试则改为 0)',
