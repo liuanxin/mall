@@ -11,8 +11,11 @@ import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 import com.github.global.util.ValidationUtil;
 import com.google.common.base.Joiner;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -25,6 +28,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +42,7 @@ import java.util.Map;
 @SuppressWarnings("rawtypes")
 @ConditionalOnClass({ HttpServletRequest.class, ResponseEntity.class })
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalException {
 
     @Value("${online:false}")
@@ -52,6 +57,18 @@ public class GlobalException {
     @Value("${res.returnStatusCode:false}")
     private boolean returnStatusCode;
 
+    private final MessageSource messageSource;
+
+    /** 国际化业务异常 */
+    @ExceptionHandler(ServiceI18nException.class)
+    public ResponseEntity<JsonResult> serviceI18n(ServiceI18nException e) {
+        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+            LogUtil.ROOT_LOG.debug("service i18n exception:({})", serviceExceptionTrack(e));
+        }
+        int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
+        String msg = messageSource.getMessage(e.getCode(), e.getArgs(), LocaleContextHolder.getLocale());
+        return ResponseEntity.status(status).body(JsonResult.fail(msg));
+    }
     /** 业务异常 */
     @ExceptionHandler(ServiceException.class)
     public ResponseEntity<JsonResult> service(ServiceException e) {
@@ -160,16 +177,6 @@ public class GlobalException {
 
     // 以上是 spring 的内部异常
 
-    private ResponseEntity exception(Throwable e) {
-        if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-            LogUtil.ROOT_LOG.error(e.getMessage(), e);
-        }
-        int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
-        String msg = U.returnMsg(e, online);
-        List<String> errorList = (online ? null : collectTrack(e));
-        return ResponseEntity.status(status).body(JsonResult.fail(msg, errorList));
-    }
-
     /** 未知的所有其他异常 */
     @ExceptionHandler(Throwable.class)
     public ResponseEntity other(Throwable throwable) {
@@ -188,8 +195,15 @@ public class GlobalException {
             return param(pe);
         } else if (e instanceof ServiceException se) {
             return service(se);
+        } else if (e instanceof ServiceI18nException sie) {
+            return serviceI18n(sie);
         } else {
-            return exception(e);
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error(e.getMessage(), e);
+            }
+            int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
+            String msg = U.returnMsg(e, online);
+            return ResponseEntity.status(status).body(JsonResult.fail(msg, collectTrack(e)));
         }
     }
 
@@ -229,6 +243,9 @@ public class GlobalException {
         }
     }
     private List<String> collectTrack(Throwable e) {
+        if (online) {
+            return Collections.emptyList();
+        }
         List<String> exceptionList = new ArrayList<>();
         if (U.isNotNull(e)) {
             exceptionList.add(U.toStr(e.getMessage()));
@@ -245,6 +262,7 @@ public class GlobalException {
         return exceptionList;
     }
     private String serviceExceptionTrack(Throwable e) {
-        return Joiner.on(",").join(collectTrack(e));
+        List<String> errorList = collectTrack(e);
+        return A.isEmpty(errorList) ? U.EMPTY : Joiner.on(",").join(errorList);
     }
 }
