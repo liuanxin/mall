@@ -46,13 +46,13 @@ public class MqRetryHandler {
     }
     private void retryReceive(String desc, List<MqReceive> mqReceiveList) {
         for (MqReceive mqReceive : mqReceiveList) {
-            MqInfo mqInfo = MqInfo.from(mqReceive.getBusinessType());
+            MqInfo mqInfo = MqInfo.from(mqReceive.getType());
             if (U.isNull(mqInfo)) {
                 // 没有 mq-info 的数据直接置为成功, 无法重试
                 MqReceive update = new MqReceive();
                 update.setId(mqReceive.getId());
                 update.setStatus(2);
-                update.setRemark(mqReceive.getRemark() + ";;没有这个 business_type 的场景");
+                update.setRemark(mqReceive.getRemark() + ";;没有这个业务类型场景");
                 mqReceiveService.updateById(update);
                 return;
             }
@@ -91,13 +91,13 @@ public class MqRetryHandler {
     }
     private void retrySend(String desc, List<MqSend> mqSendList) {
         for (MqSend mqSend : mqSendList) {
-            MqInfo mqInfo = MqInfo.from(mqSend.getBusinessType());
+            MqInfo mqInfo = MqInfo.from(mqSend.getType());
             if (U.isNull(mqInfo)) {
                 // 没有 mq-info 的数据直接置为成功, 无法重试
                 MqSend update = new MqSend();
                 update.setId(mqSend.getId());
                 update.setStatus(2);
-                update.setRemark(mqSend.getRemark() + ";;没有这个 business_type 的场景");
+                update.setRemark(mqSend.getRemark() + ";;没有这个业务类型场景");
                 mqSendService.updateById(update);
                 return;
             }
