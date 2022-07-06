@@ -6,6 +6,7 @@ import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.github.global.service.RedissonService;
+import com.github.mq.constant.MqConst;
 import com.github.mq.constant.MqData;
 import com.github.mq.constant.MqInfo;
 import com.github.mq.model.MqReceive;
@@ -39,10 +40,6 @@ import java.util.function.Function;
 @Configuration
 @ConditionalOnClass(RabbitListener.class)
 public class MqReceiverHandler {
-
-    // 0.初始, 1.失败, 2.成功(需要重试则改为 1)
-    private static final int FAIL = 1;
-    private static final int SUCCESS = 2;
 
     @Value("${mq.consumerRetryCount:3}")
     private int consumerRetryCount;
@@ -133,7 +130,7 @@ public class MqReceiverHandler {
         MqReceive model = null;
         boolean needAdd = false;
         String remark = "";
-        int status = SUCCESS;
+        int status = MqConst.SUCCESS;
         int currentRetryCount = 0;
         try {
             model = mqReceiveService.queryByMsg(msgId);
@@ -163,7 +160,7 @@ public class MqReceiverHandler {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("消费 {} 数据({})失败", desc, msgId, e);
             }
-            status = FAIL;
+            status = MqConst.FAIL;
             String oldRemark = U.isNull(model) ? null : model.getRemark();
             String appendRemark = U.isBlank(oldRemark) ? "" : (oldRemark + ";;");
             if (currentRetryCount < consumerRetryCount) {

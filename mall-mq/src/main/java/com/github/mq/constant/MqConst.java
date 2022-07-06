@@ -33,6 +33,13 @@ package com.github.mq.constant;
  */
 public class MqConst {
 
+    /** 0.初始, 1.失败, 2.成功 */
+    public static final int INIT = 0;
+    /** 0.初始, 1.失败, 2.成功 */
+    public static final int FAIL = 1;
+    /** 0.初始, 1.失败, 2.成功 */
+    public static final int SUCCESS = 2;
+
     /** rabbitmq 用在死信队列时的交换机名. 见: https://www.rabbitmq.com/dlx.html */
     public static final String DEAD_EXCHANGE = "x-dead-letter-exchange";
     /** rabbitmq 用在死信队列时的路由键名. 见: https://www.rabbitmq.com/dlx.html */

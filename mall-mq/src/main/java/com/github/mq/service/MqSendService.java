@@ -3,6 +3,7 @@ package com.github.mq.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.github.common.page.Pages;
+import com.github.mq.constant.MqConst;
 import com.github.mq.model.MqSend;
 import com.github.mq.repository.MqSendDao;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +45,7 @@ public class MqSendService {
 
     public List<MqSend> queryRetryMsg(int maxRetryCount, int limit) {
         LambdaQueryWrapper<MqSend> query = Wrappers.lambdaQuery(MqSend.class)
-                .eq(MqSend::getStatus, 1)
+                .eq(MqSend::getStatus, MqConst.FAIL)
                 .lt(MqSend::getRetryCount, maxRetryCount)
                 .orderByAsc(MqSend::getUpdateTime);
         return Pages.returnList(mqSendDao.selectPage(Pages.paramOnlyLimit(limit), query));

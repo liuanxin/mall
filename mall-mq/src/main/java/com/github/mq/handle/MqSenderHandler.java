@@ -4,6 +4,7 @@ import com.github.common.json.JsonUtil;
 import com.github.common.util.ApplicationContexts;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
+import com.github.mq.constant.MqConst;
 import com.github.mq.constant.MqData;
 import com.github.mq.constant.MqInfo;
 import com.github.mq.constant.SelfCorrelationData;
@@ -26,11 +27,6 @@ import java.util.Date;
 @Configuration
 @ConditionalOnClass(RabbitTemplate.class)
 public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTemplate.ReturnsCallback {
-
-    // 0.初始, 1.失败, 2.成功(需要重试则改为 1)
-    private static final int INIT = 0;
-    private static final int FAIL = 1;
-    private static final int SUCCESS = 2;
 
     @Value("${mq.providerRetryCount:2}")
     private int maxRetryCount;
@@ -106,7 +102,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
             model.setMsgId(msgId);
             model.setSearchKey(searchKey);
             model.setType(mqInfo.name().toLowerCase());
-            model.setStatus(INIT);
+            model.setStatus(MqConst.INIT);
             model.setRetryCount(0);
             model.setMsg(json);
             model.setRemark("发送消息");
@@ -134,11 +130,11 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                 rabbitTemplate.convertAndSend(exchangeName, routingKey, msg, correlationData);
             }
             hasChange = true;
-            status = SUCCESS;
+            status = MqConst.SUCCESS;
             remark = "消息发送成功";
         } catch (Exception e) {
             hasChange = true;
-            status = FAIL;
+            status = MqConst.FAIL;
             remark = "连接 mq 失败";
         } finally {
             if (hasChange) {
@@ -170,12 +166,12 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                     if (retryCount < maxRetryCount) {
                         ApplicationContexts.getBean(MqSenderHandler.class).provide(null, data);
                     } else {
-                        mqSend.setStatus(FAIL);
+                        mqSend.setStatus(MqConst.FAIL);
                         mqSend.setRemark(mqSend.getRemark() + ";;" + String.format("发送失败且重试(%s)达到上限(%s)", retryCount, maxRetryCount));
                         mqSendService.updateById(mqSend);
                     }
                 } else {
-                    mqSend.setStatus(FAIL);
+                    mqSend.setStatus(MqConst.FAIL);
                     mqSend.setRemark(mqSend.getRemark() + ";;消息到交换机失败");
                     mqSendService.updateById(mqSend);
                 }
@@ -206,7 +202,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
             if (U.isNotNull(mqSend)) {
                 MqSend model = new MqSend();
                 model.setId(mqSend.getId());
-                model.setStatus(FAIL);
+                model.setStatus(MqConst.FAIL);
                 model.setRemark(model.getRemark() + String.format(";;消息到队列时失败, 响应码(%s)响应文本(%s)", code, text));
                 mqSendService.updateById(model);
             }
