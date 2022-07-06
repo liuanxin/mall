@@ -105,7 +105,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
             model = new MqSend();
             model.setMsgId(msgId);
             model.setSearchKey(searchKey);
-            model.setBusinessType(mqInfo.name().toLowerCase());
+            model.setType(mqInfo.name().toLowerCase());
             model.setStatus(INIT);
             model.setRetryCount(0);
             model.setMsg(json);

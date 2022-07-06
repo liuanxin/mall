@@ -115,11 +115,10 @@ public class MqReceiverHandler {
     }
 
     /** 在每一个节点都要确保会发送 ack 或 nack */
-    private void handleData(String msgId, MqData mqData, String json, MqInfo mqInfo,
-                            String desc, Function<String, String> fun) {
+    private void handleData(String msgId, MqData mqData, String json, MqInfo mqInfo, String desc, Function<String, String> fun) {
         if (redissonService.tryLock(msgId)) {
             try {
-                doDataConsume(msgId, mqData, json, mqInfo.name().toLowerCase(), desc, fun);
+                doDataConsume(msgId, mqData, json, mqInfo, desc, fun);
             } finally {
                 redissonService.unlock(msgId);
             }
@@ -130,8 +129,7 @@ public class MqReceiverHandler {
         }
     }
 
-    private void doDataConsume(String msgId, MqData mqData, String json, String businessType,
-                               String desc, Function<String, String> fun) {
+    private void doDataConsume(String msgId, MqData mqData, String json, MqInfo mqInfo, String desc, Function<String, String> fun) {
         MqReceive model = null;
         boolean needAdd = false;
         String remark = "";
@@ -143,7 +141,7 @@ public class MqReceiverHandler {
             if (needAdd) {
                 model = new MqReceive();
                 model.setMsgId(msgId);
-                model.setBusinessType(businessType);
+                model.setType(mqInfo.name().toLowerCase());
                 model.setRetryCount(0);
                 model.setMsg(json);
             }
