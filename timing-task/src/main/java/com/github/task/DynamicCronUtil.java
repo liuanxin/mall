@@ -57,15 +57,15 @@ public class DynamicCronUtil {
             try {
                 LogUtil.bindBasicInfo(U.uuid16());
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("定时任务({})开始", desc);
+                    LogUtil.ROOT_LOG.info("任务({})开始", desc);
                 }
                 boolean flag = func.apply(desc);
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("定时任务({})结束, 执行({})", desc, flag);
+                    LogUtil.ROOT_LOG.info("任务({})结束({})", desc, flag);
                 }
             } catch (Exception e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("定时任务({})异常", desc, e);
+                    LogUtil.ROOT_LOG.error("任务({})异常", desc, e);
                 }
             } finally {
                 LogUtil.unbind();
