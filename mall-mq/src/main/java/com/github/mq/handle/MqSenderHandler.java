@@ -102,7 +102,6 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         boolean needAdd = false;
         String remark = U.EMPTY;
         int status = MqConst.INIT;
-        int currentRetryCount = 0;
         try {
             model = mqSendService.queryByMsgId(msgId);
             needAdd = U.isNull(model);
@@ -114,7 +113,6 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                 model.setRetryCount(0);
                 model.setMsg(json);
             }
-            currentRetryCount = U.toInt(model.getRetryCount());
 
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("开始发送 {} 数据({})", desc, json);
@@ -155,7 +153,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                     update.setId(model.getId());
                     update.setStatus(status);
                     update.setRemark(remark);
-                    update.setRetryCount(currentRetryCount + 1);
+                    update.setRetryCount(model.getRetryCount() + 1);
                     mqSendService.updateById(update);
                 }
             }
