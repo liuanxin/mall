@@ -85,14 +85,14 @@ public class MqReceiverHandler {
             return;
         }
 
-        String mqDesc = mqInfo.getDesc();
+        String desc = mqInfo.showDesc();
         MessageProperties mp = message.getMessageProperties();
         // 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
         String msgId = getMsgId(mp.getMessageId(), mqData, json);
         // msgId 如果没有不处理
         if (U.isBlank(msgId)) {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info("消费 {} 数据({})没有 msgId, 请与发送方沟通", mqDesc, json);
+                LogUtil.ROOT_LOG.info("消费 {} 数据({})没有 msgId, 请与发送方沟通", desc, json);
             }
             return;
         }
@@ -101,11 +101,11 @@ public class MqReceiverHandler {
         try {
             // 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
             LogUtil.bindBasicInfo(U.defaultIfBlank(mp.getCorrelationId(), (U.isNull(mqData) ? "" : mqData.getTraceId())));
-            handleData(msgId, mqData, json, mqInfo, mqDesc, fun);
+            handleData(msgId, mqData, json, mqInfo, desc, fun);
         } finally {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 long now = System.currentTimeMillis();
-                LogUtil.ROOT_LOG.info("消费 {} 结束, 耗时: ({})", mqDesc, DateUtil.toHuman(now - start));
+                LogUtil.ROOT_LOG.info("消费 {} 结束, 耗时: ({})", desc, DateUtil.toHuman(now - start));
             }
             LogUtil.unbind();
         }
@@ -147,15 +147,15 @@ public class MqReceiverHandler {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("开始消费 {} 数据({})", desc, json);
             }
-            String dataJson = U.isNull(mqData) ? json : U.defaultIfBlank(mqData.getJson(), json);
-            String searchKey = fun.apply(dataJson);
-            model.setSearchKey(U.toStr(searchKey));
+            String searchKey = fun.apply(U.isNull(mqData) ? json : U.defaultIfBlank(mqData.getJson(), json));
+            if (U.isNotBlank(model.getSearchKey())) {
+                model.setSearchKey(U.toStr(searchKey));
+            }
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("消费 {} 数据({})成功", desc, msgId);
             }
             status = MqConst.SUCCESS;
-            remark = String.format("<%s : 消费 %s 数据(%s)成功>%s", DateUtil.nowDateTime(),
-                    desc, msgId, U.toStr(model.getRemark()));
+            remark = String.format("<%s : 消费 %s 数据成功>%s", DateUtil.nowDateTime(), desc, U.toStr(model.getRemark()));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("消费 {} 数据({})失败", desc, msgId, e);
@@ -163,15 +163,15 @@ public class MqReceiverHandler {
             status = MqConst.FAIL;
             String oldRemark = U.toStr(U.isNull(model) ? null : model.getRemark());
             if (currentRetryCount < consumerRetryCount) {
-                remark = String.format("<%s : 消费 %s 数据(%s)失败(%s)>%s", DateUtil.nowDateTime(),
-                        desc, msgId, e.getMessage(), oldRemark);
+                remark = String.format("<%s : 消费 %s 数据失败(%s)>%s", DateUtil.nowDateTime(),
+                        desc, e.getMessage(), oldRemark);
             } else {
-                remark = String.format("<%s : 消费 %s 数据(%s)失败(%s)且重试(%s)达到上限(%s)>%s", DateUtil.nowDateTime(),
-                        desc, msgId, e.getMessage(), currentRetryCount, consumerRetryCount, oldRemark);
+                remark = String.format("<%s : 消费 %s 数据失败(%s)且重试(%s)达到上限(%s)>%s", DateUtil.nowDateTime(),
+                        desc, e.getMessage(), currentRetryCount, consumerRetryCount, oldRemark);
             }
             throw e;
         } finally {
-            // 成功了就只写一次消费成功, 失败了也只写一次, 上面不写初始, 少操作一次 db
+            // 成功了就只写一次消费成功, 失败了也只写一次
             if (U.isNotNull(model)) {
                 if (needAdd) {
                     model.setStatus(status);
@@ -180,7 +180,6 @@ public class MqReceiverHandler {
                 } else {
                     MqReceive update = new MqReceive();
                     update.setId(model.getId());
-                    update.setSearchKey(model.getSearchKey());
                     update.setStatus(status);
                     update.setRemark(remark);
                     update.setRetryCount(currentRetryCount + 1);

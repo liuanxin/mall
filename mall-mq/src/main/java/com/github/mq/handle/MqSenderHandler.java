@@ -30,7 +30,7 @@ import java.util.Date;
 public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTemplate.ReturnsCallback {
 
     @Value("${mq.providerRetryCount:2}")
-    private int maxRetryCount;
+    private int providerRetryCount;
 
     private final RabbitTemplate rabbitTemplate;
     private final MqSendService mqSendService;
@@ -96,30 +96,29 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
 
         String exchangeName = mqInfo.getExchangeName();
         String routingKey = mqInfo.getRoutingKey();
+        String desc = mqInfo.showDesc();
 
-        MqSend model = mqSendService.queryByMsgId(msgId);
-        if (U.isNull(model)) {
-            model = new MqSend();
-            model.setMsgId(msgId);
-            model.setSearchKey(searchKey);
-            model.setType(mqInfo.name().toLowerCase());
-            model.setStatus(MqConst.INIT);
-            model.setRetryCount(0);
-            model.setMsg(json);
-            model.setRemark(String.format("<%s : 发送消息>", DateUtil.nowDateTime()));
-            mqSendService.add(model);
-        } else {
-            MqSend update = new MqSend();
-            update.setId(model.getId());
-            update.setRetryCount(model.getRetryCount() + 1);
-            update.setRemark(String.format("<%s : 消息重试>%s", DateUtil.nowDateTime(), U.toStr(model.getRemark())));
-            mqSendService.updateById(update);
-        }
-
-        boolean hasChange = false;
-        int status = model.getStatus();
-        String remark = model.getRemark();
+        MqSend model = null;
+        boolean needAdd = false;
+        String remark = U.EMPTY;
+        int status = MqConst.INIT;
+        int currentRetryCount = 0;
         try {
+            model = mqSendService.queryByMsgId(msgId);
+            needAdd = U.isNull(model);
+            if (needAdd) {
+                model = new MqSend();
+                model.setMsgId(msgId);
+                model.setSearchKey(searchKey);
+                model.setType(mqInfo.name().toLowerCase());
+                model.setRetryCount(0);
+                model.setMsg(json);
+            }
+            currentRetryCount = U.toInt(model.getRetryCount());
+
+            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                LogUtil.ROOT_LOG.info("开始发送 {} 数据({})", desc, json);
+            }
             // msgId 放在 messageId, traceId 放在 correlationId
             // 默认是持久化的 setDeliveryMode(MessageDeliveryMode.PERSISTENT)
             Message msg = MessageBuilder.withBody(json.getBytes(StandardCharsets.UTF_8))
@@ -130,20 +129,35 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
             } else {
                 rabbitTemplate.convertAndSend(exchangeName, routingKey, msg, correlationData);
             }
-            hasChange = true;
+            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                LogUtil.ROOT_LOG.info("消费 {} 数据({})成功", desc, msgId);
+            }
             status = MqConst.SUCCESS;
-            remark = "消息发送成功";
+            remark = String.format("<%s : 消息 %s 发送成功>%s", DateUtil.nowDateTime(), desc, U.toStr(model.getRemark()));
         } catch (Exception e) {
-            hasChange = true;
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("发送 {} 数据({})失败", desc, msgId, e);
+            }
             status = MqConst.FAIL;
-            remark = "连接 mq 失败";
+            String oldRemark = U.toStr(U.isNull(model) ? null : model.getRemark());
+            remark = String.format("<%s : 发送 %s 数据失败(%s)>%s", DateUtil.nowDateTime(),
+                    desc, e.getMessage(), oldRemark);
+            throw e;
         } finally {
-            if (hasChange) {
-                MqSend update = new MqSend();
-                update.setId(model.getId());
-                update.setStatus(status);
-                update.setRemark(String.format("<%s : %s>%s", DateUtil.nowDateTime(), remark, U.toStr(model.getRemark())));
-                mqSendService.updateById(update);
+            // 成功了就只写一次消费成功, 失败了也只写一次
+            if (U.isNotNull(model)) {
+                if (needAdd) {
+                    model.setStatus(status);
+                    model.setRemark(remark);
+                    mqSendService.add(model);
+                } else {
+                    MqSend update = new MqSend();
+                    update.setId(model.getId());
+                    update.setStatus(status);
+                    update.setRemark(remark);
+                    update.setRetryCount(currentRetryCount + 1);
+                    mqSendService.updateById(update);
+                }
             }
         }
     }
@@ -164,21 +178,21 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                 if (correlationData instanceof SelfCorrelationData data) {
                     int retryCount = U.toInt(mqSend.getRetryCount());
                     // 如果重试次数未达到设定的值则进行重试
-                    if (retryCount < maxRetryCount) {
+                    if (retryCount < providerRetryCount) {
                         ApplicationContexts.getBean(MqSenderHandler.class).provide(null, data);
                     } else {
                         MqSend update = new MqSend();
                         update.setId(mqSend.getId());
                         update.setStatus(MqConst.FAIL);
-                        update.setRemark(String.format("<%s : 发送失败且重试(%s)达到上限(%s)>%s",
-                                DateUtil.nowDateTime(), retryCount, maxRetryCount, U.toStr(mqSend.getRemark())));
+                        update.setRemark(String.format("<%s : 发送失败且重试(%s)达到上限(%s)>%s", DateUtil.nowDateTime(),
+                                retryCount, providerRetryCount, U.toStr(mqSend.getRemark())));
                         mqSendService.updateById(update);
                     }
                 } else {
                     MqSend update = new MqSend();
+                    update.setId(mqSend.getId());
                     update.setStatus(MqConst.FAIL);
-                    update.setRemark(String.format("<%s : 消息到交换机失败>%s",
-                            DateUtil.nowDateTime(), U.toStr(mqSend.getRemark())));
+                    update.setRemark(String.format("<%s : 消息到交换机失败>%s", DateUtil.nowDateTime(), U.toStr(mqSend.getRemark())));
                     mqSendService.updateById(update);
                 }
             }
