@@ -2,6 +2,7 @@ package com.github.mq.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.github.common.date.DateUtil;
 import com.github.common.page.Pages;
 import com.github.mq.constant.MqConst;
 import com.github.mq.model.MqSend;
@@ -44,9 +45,10 @@ public class MqSendService {
     }
 
     public List<MqSend> queryRetryMsg(int maxRetryCount, int limit) {
+        // ( 状态是初始 且 创建时间是在 2 分钟之前 ) 或 ( 状态是失败 且 重试次数小于指定数量 )
         LambdaQueryWrapper<MqSend> query = Wrappers.lambdaQuery(MqSend.class)
-                .eq(MqSend::getStatus, MqConst.FAIL)
-                .lt(MqSend::getRetryCount, maxRetryCount)
+                .or(q -> q.eq(MqSend::getStatus, MqConst.INIT).lt(MqSend::getCreateTime, DateUtil.addMinute(DateUtil.now(), -2)))
+                .or(q -> q.eq(MqSend::getStatus, MqConst.FAIL).lt(MqSend::getRetryCount, maxRetryCount))
                 .orderByAsc(MqSend::getUpdateTime);
         return Pages.returnList(mqSendDao.selectPage(Pages.paramOnlyLimit(limit), query));
     }

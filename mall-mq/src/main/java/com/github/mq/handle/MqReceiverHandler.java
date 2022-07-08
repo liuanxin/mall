@@ -129,8 +129,8 @@ public class MqReceiverHandler {
     private void doDataConsume(String msgId, MqData mqData, String json, MqInfo mqInfo, String desc, Function<String, String> fun) {
         MqReceive model = null;
         boolean needAdd = false;
-        String remark = "";
-        int status = MqConst.SUCCESS;
+        String remark = U.EMPTY;
+        int status = MqConst.INIT;
         int currentRetryCount = 0;
         try {
             model = mqReceiveService.queryByMsg(msgId);
@@ -153,33 +153,38 @@ public class MqReceiverHandler {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("消费 {} 数据({})成功", desc, msgId);
             }
-
-            String oldRemark = model.getRemark();
-            remark = (U.isBlank(oldRemark) ? "" : (oldRemark + ";;")) + desc + "消费成功";
+            status = MqConst.SUCCESS;
+            remark = String.format("<%s : 消费 %s 数据(%s)成功>%s", DateUtil.nowDateTime(),
+                    desc, msgId, U.toStr(model.getRemark()));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("消费 {} 数据({})失败", desc, msgId, e);
             }
             status = MqConst.FAIL;
-            String oldRemark = U.isNull(model) ? null : model.getRemark();
-            String appendRemark = U.isBlank(oldRemark) ? "" : (oldRemark + ";;");
+            String oldRemark = U.toStr(U.isNull(model) ? null : model.getRemark());
             if (currentRetryCount < consumerRetryCount) {
-                remark = appendRemark + String.format("消费 %s 数据(%s)失败(%s)", desc, msgId, e.getMessage());
+                remark = String.format("<%s : 消费 %s 数据(%s)失败(%s)>%s", DateUtil.nowDateTime(),
+                        desc, msgId, e.getMessage(), oldRemark);
             } else {
-                remark = appendRemark + String.format("消费 %s 数据(%s)失败(%s)且重试(%s)达到上限(%s)",
-                        desc, msgId, e.getMessage(), currentRetryCount, consumerRetryCount);
+                remark = String.format("<%s : 消费 %s 数据(%s)失败(%s)且重试(%s)达到上限(%s)>%s", DateUtil.nowDateTime(),
+                        desc, msgId, e.getMessage(), currentRetryCount, consumerRetryCount, oldRemark);
             }
             throw e;
         } finally {
             // 成功了就只写一次消费成功, 失败了也只写一次, 上面不写初始, 少操作一次 db
             if (U.isNotNull(model)) {
-                model.setStatus(status);
-                model.setRemark(remark);
                 if (needAdd) {
+                    model.setStatus(status);
+                    model.setRemark(remark);
                     mqReceiveService.add(model);
                 } else {
-                    model.setRetryCount(currentRetryCount + 1);
-                    mqReceiveService.updateById(model);
+                    MqReceive update = new MqReceive();
+                    update.setId(model.getId());
+                    update.setSearchKey(model.getSearchKey());
+                    update.setStatus(status);
+                    update.setRemark(remark);
+                    update.setRetryCount(currentRetryCount + 1);
+                    mqReceiveService.updateById(update);
                 }
             }
         }

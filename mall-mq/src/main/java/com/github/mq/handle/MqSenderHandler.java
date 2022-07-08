@@ -1,5 +1,6 @@
 package com.github.mq.handle;
 
+import com.github.common.date.DateUtil;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.ApplicationContexts;
 import com.github.common.util.LogUtil;
@@ -105,13 +106,13 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
             model.setStatus(MqConst.INIT);
             model.setRetryCount(0);
             model.setMsg(json);
-            model.setRemark("发送消息");
+            model.setRemark(String.format("<%s : 发送消息>", DateUtil.nowDateTime()));
             mqSendService.add(model);
         } else {
             MqSend update = new MqSend();
             update.setId(model.getId());
             update.setRetryCount(model.getRetryCount() + 1);
-            update.setRemark(model.getRemark() + ";;消息重试");
+            update.setRemark(String.format("<%s : 消息重试>%s", DateUtil.nowDateTime(), U.toStr(model.getRemark())));
             mqSendService.updateById(update);
         }
 
@@ -140,8 +141,8 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
             if (hasChange) {
                 MqSend update = new MqSend();
                 update.setId(model.getId());
-                model.setStatus(status);
-                model.setRemark(model.getRemark() + ";;" + remark);
+                update.setStatus(status);
+                update.setRemark(String.format("<%s : %s>%s", DateUtil.nowDateTime(), remark, U.toStr(model.getRemark())));
                 mqSendService.updateById(update);
             }
         }
@@ -166,14 +167,19 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                     if (retryCount < maxRetryCount) {
                         ApplicationContexts.getBean(MqSenderHandler.class).provide(null, data);
                     } else {
-                        mqSend.setStatus(MqConst.FAIL);
-                        mqSend.setRemark(mqSend.getRemark() + ";;" + String.format("发送失败且重试(%s)达到上限(%s)", retryCount, maxRetryCount));
-                        mqSendService.updateById(mqSend);
+                        MqSend update = new MqSend();
+                        update.setId(mqSend.getId());
+                        update.setStatus(MqConst.FAIL);
+                        update.setRemark(String.format("<%s : 发送失败且重试(%s)达到上限(%s)>%s",
+                                DateUtil.nowDateTime(), retryCount, maxRetryCount, U.toStr(mqSend.getRemark())));
+                        mqSendService.updateById(update);
                     }
                 } else {
-                    mqSend.setStatus(MqConst.FAIL);
-                    mqSend.setRemark(mqSend.getRemark() + ";;消息到交换机失败");
-                    mqSendService.updateById(mqSend);
+                    MqSend update = new MqSend();
+                    update.setStatus(MqConst.FAIL);
+                    update.setRemark(String.format("<%s : 消息到交换机失败>%s",
+                            DateUtil.nowDateTime(), U.toStr(mqSend.getRemark())));
+                    mqSendService.updateById(update);
                 }
             }
         }
@@ -203,7 +209,8 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                 MqSend model = new MqSend();
                 model.setId(mqSend.getId());
                 model.setStatus(MqConst.FAIL);
-                model.setRemark(model.getRemark() + String.format(";;消息到队列时失败, 响应码(%s)响应文本(%s)", code, text));
+                model.setRemark(String.format("<%s : 消息到队列时失败, 响应码(%s)响应文本(%s)>%s",
+                        DateUtil.nowDateTime(), code, text, U.toStr(mqSend.getRemark())));
                 mqSendService.updateById(model);
             }
         }

@@ -1,5 +1,6 @@
 package com.github.mq.handle;
 
+import com.github.common.date.DateUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
@@ -54,7 +55,7 @@ public class MqRetryHandler {
             MqReceive update = new MqReceive();
             update.setId(mqReceive.getId());
             update.setStatus(MqConst.SUCCESS);
-            update.setRemark(mqReceive.getRemark() + ";;没有这个业务类型场景");
+            update.setRemark(String.format("<%s : 没有这个业务类型场景>%s", DateUtil.nowDateTime(), U.toStr(mqReceive.getRemark())));
             mqReceiveService.updateById(update);
             return;
         }
@@ -63,7 +64,7 @@ public class MqRetryHandler {
             MqReceive update = new MqReceive();
             update.setId(mqReceive.getId());
             update.setStatus(MqConst.SUCCESS);
-            update.setRemark(mqReceive.getRemark() + ";;重试时发到 mq 成功");
+            update.setRemark(String.format("<%s : 重试时发到 mq 成功>%s", DateUtil.nowDateTime(), U.toStr(mqReceive.getRemark())));
             mqReceiveService.updateById(update);
             return;
         }
@@ -72,7 +73,7 @@ public class MqRetryHandler {
         MqReceive update = new MqReceive();
         update.setId(mqReceive.getId());
         update.setStatus(MqConst.SUCCESS);
-        update.setRemark(mqReceive.getRemark() + ";;同 msg_id 的任务正在执行");
+        update.setRemark(String.format("<%s : 同 msg_id 的任务正在执行>%s", DateUtil.nowDateTime(), U.toStr(mqReceive.getRemark())));
         mqReceiveService.updateById(update);
     }
 
@@ -98,7 +99,7 @@ public class MqRetryHandler {
             MqSend update = new MqSend();
             update.setId(mqSend.getId());
             update.setStatus(MqConst.SUCCESS);
-            update.setRemark(mqSend.getRemark() + ";;没有这个业务类型场景");
+            update.setRemark(String.format("<%s : 没有这个业务类型场景>%s", DateUtil.nowDateTime(), U.toStr(mqSend.getRemark())));
             mqSendService.updateById(update);
             return;
         }
@@ -111,7 +112,7 @@ public class MqRetryHandler {
         MqSend update = new MqSend();
         update.setId(mqSend.getId());
         update.setStatus(MqConst.SUCCESS);
-        update.setRemark(mqSend.getRemark() + ";;同 msg_id 的任务正在执行");
+        update.setRemark(String.format("<%s : 同 msg_id 的任务正在执行>%s", DateUtil.nowDateTime(), U.toStr(mqSend.getRemark())));
         mqSendService.updateById(update);
     }
 
