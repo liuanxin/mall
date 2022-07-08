@@ -142,7 +142,6 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                     desc, e.getMessage(), oldRemark);
             throw e;
         } finally {
-            // 成功了就只写一次消费成功, 失败了也只写一次
             if (U.isNotNull(model)) {
                 if (needAdd) {
                     model.setStatus(status);
