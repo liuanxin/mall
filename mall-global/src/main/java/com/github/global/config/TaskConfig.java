@@ -1,9 +1,10 @@
 package com.github.global.config;
 
+import com.github.common.json.JsonUtil;
 import com.github.common.util.AsyncUtil;
+import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
-import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
@@ -62,6 +63,10 @@ public class TaskConfig implements AsyncConfigurer {
 
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-        return new SimpleAsyncUncaughtExceptionHandler();
+        return (ex, method, params) -> {
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("调用异步方法({})参数({})时异常", method, U.toStr(JsonUtil.toJsonNil(params)), ex);
+            }
+        };
     }
 }
