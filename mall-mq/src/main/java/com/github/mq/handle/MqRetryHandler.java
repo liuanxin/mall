@@ -120,7 +120,7 @@ public class MqRetryHandler {
         if (redissonService.tryLock(msgId)) {
             try {
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("{} --> {}", desc, msgId);
+                    LogUtil.ROOT_LOG.info("开始 {} --> {}", desc, msgId);
                 }
                 mqSenderHandler.doProvideJustJson(msgId, mqInfo, searchKey, json);
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
