@@ -237,26 +237,25 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                 LogUtil.ROOT_LOG.error("消息({})到交换机失败, 原因({})", JsonUtil.toJson(correlationData), cause);
             }
             String msgId = correlationData.getId();
-            if (U.isBlank(msgId)) {
-                return;
-            }
-            MqSend mqSend = mqSendService.queryByMsgId(msgId);
-            if (U.isNotNull(mqSend)) {
+            if (U.isNotBlank(msgId)) {
                 Consumer<Exception> consumer = CONSUMER_CACHE_MAP.getIfPresent(msgId);
                 try {
-                    if (correlationData instanceof SelfCorrelationData data) {
-                        int retryCount = U.toInt(mqSend.getRetryCount());
-                        // 如果重试次数未达到设定的值则进行重试
-                        if (retryCount < providerRetryCount) {
-                            ApplicationContexts.getBean(MqSenderHandler.class).provide(null, data, consumer);
+                    MqSend mqSend = mqSendService.queryByMsgId(msgId);
+                    if (U.isNotNull(mqSend)) {
+                        if (correlationData instanceof SelfCorrelationData data) {
+                            int retryCount = U.toInt(mqSend.getRetryCount());
+                            // 如果重试次数未达到设定的值则进行重试
+                            if (retryCount < providerRetryCount) {
+                                ApplicationContexts.getBean(MqSenderHandler.class).provide(null, data, consumer);
+                            } else {
+                                String remark = String.format("<%s : 发送失败且重试(%s)达到上限(%s)>",
+                                        DateUtil.nowDateTime(), retryCount, providerRetryCount);
+                                handleError(mqSend, remark, consumer);
+                            }
                         } else {
-                            String remark = String.format("<%s : 发送失败且重试(%s)达到上限(%s)>",
-                                    DateUtil.nowDateTime(), retryCount, providerRetryCount);
+                            String remark = String.format("<%s : 消息到交换机失败>", DateUtil.nowDateTime());
                             handleError(mqSend, remark, consumer);
                         }
-                    } else {
-                        String remark = String.format("<%s : 消息到交换机失败>", DateUtil.nowDateTime());
-                        handleError(mqSend, remark, consumer);
                     }
                 } finally {
                     CONSUMER_CACHE_MAP.invalidate(msgId);

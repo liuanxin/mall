@@ -56,6 +56,12 @@ public class MqReceiverHandler {
      * @param fun 业务处理: 入参是数据对应的 json, 返回 searchKey
      */
     public void doConsume(MqInfo mqInfo, Message message, Function<String, String> fun) {
+        if (U.isNull(mqInfo)) {
+            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                LogUtil.ROOT_LOG.info("没有队列信息, 无法处理");
+            }
+            return;
+        }
         String json = new String(message.getBody());
         if (U.isBlank(json)) {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
@@ -63,26 +69,15 @@ public class MqReceiverHandler {
             }
             return;
         }
-
         MqData mqData = JsonUtil.toObjectNil(json, MqData.class);
         if (U.isNotNull(mqData)) {
             MqInfo info = MqInfo.from(mqData.getMqInfo());
-            if (U.isNotNull(info)) {
-                if (U.isNull(mqInfo)) {
-                    mqInfo = info;
-                } else if (info != mqInfo) {
-                    if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                        LogUtil.ROOT_LOG.error("消费数据({})信息是({})却在用({})消费, 请检查代码", json, info, mqInfo);
-                    }
-                    return;
+            if (U.isNotNull(info) && info != mqInfo) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error("消费数据({})信息是({})却在用({})消费, 请检查代码", json, info, mqInfo);
                 }
+                return;
             }
-        }
-        if (U.isNull(mqInfo)) {
-            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info("没有队列信息, 无法处理");
-            }
-            return;
         }
 
         String desc = mqInfo.showDesc();
@@ -198,9 +193,9 @@ public class MqReceiverHandler {
         Map<String, Object> map = JsonUtil.toObjectNil(dataJson, Map.class);
         if (A.isNotEmpty(map)) {
             for (String key : msgIdKey.split(",")) {
-                String trace = U.toStr(map.get(key.trim()));
-                if (U.isNotBlank(trace)) {
-                    return trace;
+                String msgId = U.toStr(map.get(key.trim()));
+                if (U.isNotBlank(msgId)) {
+                    return msgId;
                 }
             }
         }
