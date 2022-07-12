@@ -143,25 +143,25 @@ public class MqReceiverHandler {
                 LogUtil.ROOT_LOG.info("开始消费 {} 数据({})", desc, json);
             }
             String searchKey = fun.apply(U.isNull(mqData) ? json : U.defaultIfBlank(mqData.getJson(), json));
-            if (U.isNotBlank(model.getSearchKey())) {
+            if (U.isNotBlank(model.getSearchKey()) && U.isNotBlank(searchKey)) {
                 model.setSearchKey(U.toStr(searchKey));
             }
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info("消费 {} 数据({})成功", desc, msgId);
+                LogUtil.ROOT_LOG.info("消费({})数据({})成功", desc, msgId);
             }
             status = MqConst.SUCCESS;
-            remark = String.format("<%s : 消费 %s 数据成功>%s", DateUtil.nowDateTime(), desc, U.toStr(model.getRemark()));
+            remark = String.format("<%s : 消费(%s)数据成功>%s", DateUtil.nowDateTime(), desc, U.toStr(model.getRemark()));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("消费 {} 数据({})失败", desc, msgId, e);
+                LogUtil.ROOT_LOG.error("消费({})数据({})异常", desc, msgId, e);
             }
             status = MqConst.FAIL;
             String oldRemark = U.toStr(U.isNull(model) ? null : model.getRemark());
             if (currentRetryCount < consumerRetryCount) {
-                remark = String.format("<%s : 消费 %s 数据失败(%s)>%s", DateUtil.nowDateTime(),
+                remark = String.format("<%s : 消费(%s)数据异常(%s)>%s", DateUtil.nowDateTime(),
                         desc, e.getMessage(), oldRemark);
             } else {
-                remark = String.format("<%s : 消费 %s 数据失败(%s)且重试(%s)达到上限(%s)>%s", DateUtil.nowDateTime(),
+                remark = String.format("<%s : 消费(%s)数据异常(%s)且重试(%s)达到上限(%s)>%s", DateUtil.nowDateTime(),
                         desc, e.getMessage(), currentRetryCount, consumerRetryCount, oldRemark);
             }
             throw e;
