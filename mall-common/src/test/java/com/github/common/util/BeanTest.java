@@ -48,7 +48,7 @@ public class BeanTest {
         a1.setStatus("abc");
 
         Abc a2 = new Abc();
-        a2.setId(123);
+        a2.setId(1234);
         a2.setType(2);
         a2.setName("李四");
         a2.setCreateTime(DateUtil.parse("2021-09-10"));
