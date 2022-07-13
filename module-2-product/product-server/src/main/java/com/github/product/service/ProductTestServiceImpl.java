@@ -6,13 +6,13 @@ import com.github.common.util.A;
 import com.github.common.util.U;
 import com.github.product.model.ProductTest;
 import com.github.product.repository.ProductTestMapper;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ProductTestServiceImpl implements ProductTestService {
 
     private final ProductTestMapper productTestMapper;

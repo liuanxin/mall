@@ -4,14 +4,14 @@ import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.common.util.U;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 
 /** 性别 */
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public enum Gender {
 
     Nil(0, ""), Male(1, "男"), Female(2, "女");

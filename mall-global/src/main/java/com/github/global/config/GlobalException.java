@@ -9,14 +9,14 @@ import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
-import com.github.global.util.ValidationUtil;
+import com.github.global.service.I18nService;
+import com.github.global.service.ValidationService;
 import com.google.common.base.Joiner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
@@ -57,26 +57,17 @@ public class GlobalException {
     @Value("${res.returnStatusCode:false}")
     private boolean returnStatusCode;
 
-    private final MessageSource messageSource;
+    private final I18nService i18nService;
+    private final ValidationService validationService;
 
-    /** 国际化业务异常 */
-    @ExceptionHandler(ServiceI18nException.class)
-    public ResponseEntity<JsonResult> serviceI18n(ServiceI18nException e) {
+    /** 404 */
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<JsonResult> notFound(NotFoundException e) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("service i18n exception:({})", serviceExceptionTrack(e));
+            LogUtil.ROOT_LOG.debug("not found:({})", serviceExceptionTrack(e));
         }
-        int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
-        String msg = messageSource.getMessage(e.getCode(), e.getArgs(), LocaleContextHolder.getLocale());
-        return ResponseEntity.status(status).body(JsonResult.fail(msg));
-    }
-    /** 业务异常 */
-    @ExceptionHandler(ServiceException.class)
-    public ResponseEntity<JsonResult> service(ServiceException e) {
-        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("service exception:({})", serviceExceptionTrack(e));
-        }
-        int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
-        return ResponseEntity.status(status).body(JsonResult.fail(e.getMessage()));
+        int status = returnStatusCode ? JsonCode.NOT_FOUND.getCode() : JsonCode.SUCCESS.getCode();
+        return ResponseEntity.status(status).body(JsonResult.notFound(e.getMessage()));
     }
     /** 未登录 */
     @ExceptionHandler(NotLoginException.class)
@@ -96,15 +87,6 @@ public class GlobalException {
         int status = returnStatusCode ? JsonCode.NOT_PERMISSION.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.needPermission(e.getMessage()));
     }
-    /** 404 */
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<JsonResult> notFound(NotFoundException e) {
-        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("not found:({})", serviceExceptionTrack(e));
-        }
-        int status = returnStatusCode ? JsonCode.NOT_FOUND.getCode() : JsonCode.SUCCESS.getCode();
-        return ResponseEntity.status(status).body(JsonResult.notFound(e.getMessage()));
-    }
     /** 参数验证 */
     @ExceptionHandler(ParamException.class)
     public ResponseEntity<JsonResult> param(ParamException e) {
@@ -123,6 +105,25 @@ public class GlobalException {
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.badRequest(e.getMessage()));
     }
+    /** 业务异常 */
+    @ExceptionHandler(ServiceException.class)
+    public ResponseEntity<JsonResult> service(ServiceException e) {
+        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+            LogUtil.ROOT_LOG.debug("service exception:({})", serviceExceptionTrack(e));
+        }
+        int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
+        return ResponseEntity.status(status).body(JsonResult.fail(e.getMessage()));
+    }
+    /** 国际化业务异常 */
+    @ExceptionHandler(ServiceI18nException.class)
+    public ResponseEntity<JsonResult> serviceI18n(ServiceI18nException e) {
+        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+            LogUtil.ROOT_LOG.debug("service i18n exception:({})", serviceExceptionTrack(e));
+        }
+        int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
+        String msg = i18nService.getMessage(e.getCode(), e.getArgs());
+        return ResponseEntity.status(status).body(JsonResult.fail(msg));
+    }
     @ExceptionHandler(ForceReturnException.class)
     public ResponseEntity forceReturn(ForceReturnException e) {
         return e.getResponse();
@@ -130,6 +131,15 @@ public class GlobalException {
 
 
     // 以下是 spring 的内部异常
+
+    /** 使用 @Valid 注解时, 验证不通过抛出的异常 */
+    @ExceptionHandler({ BindException.class, MethodArgumentNotValidException.class })
+    public ResponseEntity<JsonResult<String>> paramValidException(BindException e) {
+        Map<String, String> errorMap = validationService.validate(e.getBindingResult());
+        bindAndPrintLog(JsonUtil.toJson(errorMap), e);
+        int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
+        return ResponseEntity.status(status).body(JsonResult.badRequest(Joiner.on(",").join(errorMap.values()), errorMap));
+    }
 
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<JsonResult> noHandler(NoHandlerFoundException e) {
@@ -151,13 +161,6 @@ public class GlobalException {
         bindAndPrintLog(msg, e);
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
         return ResponseEntity.status(status).body(JsonResult.badRequest(msg));
-    }
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<JsonResult<String>> paramValidException(MethodArgumentNotValidException e) {
-        Map<String, String> errorMap = ValidationUtil.validate(e.getBindingResult());
-        bindAndPrintLog(JsonUtil.toJson(errorMap), e);
-        int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
-        return ResponseEntity.status(status).body(JsonResult.badRequest(Joiner.on(",").join(errorMap.values()), errorMap));
     }
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<JsonResult> notSupported(HttpRequestMethodNotSupportedException e) {
@@ -181,44 +184,39 @@ public class GlobalException {
     @ExceptionHandler(Throwable.class)
     public ResponseEntity other(Throwable throwable) {
         Throwable e = innerException(1, throwable);
-        if (e instanceof BadRequestException bre) {
-            return badRequest(bre);
-        } else if (e instanceof ForbiddenException fe) {
-            return forbidden(fe);
-        } else if (e instanceof ForceReturnException fre) {
-            return forceReturn(fre);
-        } else if (e instanceof NotFoundException nfe) {
-            return notFound(nfe);
-        } else if (e instanceof NotLoginException nle) {
-            return notLogin(nle);
-        } else if (e instanceof ParamException pe) {
-            return param(pe);
-        } else if (e instanceof ServiceException se) {
-            return service(se);
-        } else if (e instanceof ServiceI18nException sie) {
-            return serviceI18n(sie);
-        } else {
-            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(e.getMessage(), e);
-            }
-            int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
-            String msg = U.returnMsg(e, online);
-            return ResponseEntity.status(status).body(JsonResult.fail(msg, collectTrack(e)));
-        }
+        return switch (e) {
+            case NotFoundException nfe -> notFound(nfe);
+            case NotLoginException nle -> notLogin(nle);
+            case ForbiddenException fe -> forbidden(fe);
+            case ParamException pe -> param(pe);
+            case BadRequestException bre -> badRequest(bre);
+            case ServiceException se -> service(se);
+            case ServiceI18nException sie -> serviceI18n(sie);
+            case ForceReturnException fre -> forceReturn(fre);
+            default -> exception(e);
+        };
     }
 
-    // ==================================================
+    private ResponseEntity exception(Throwable e) {
+        if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+            LogUtil.ROOT_LOG.error(e.getMessage(), e);
+        }
+        int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
+        String msg = U.returnMsg(e, online);
+        return ResponseEntity.status(status).body(JsonResult.fail(msg, collectTrack(e)));
+    }
 
     private Throwable innerException(int depth, Throwable e) {
         Throwable cause = e.getCause();
         if (cause == null || depth > U.MAX_DEPTH
-                || e instanceof BadRequestException
-                || e instanceof ForbiddenException
-                || e instanceof ForceReturnException
                 || e instanceof NotFoundException
                 || e instanceof NotLoginException
+                || e instanceof ForbiddenException
                 || e instanceof ParamException
-                || e instanceof ServiceException) {
+                || e instanceof BadRequestException
+                || e instanceof ServiceException
+                || e instanceof ServiceI18nException
+                || e instanceof ForceReturnException) {
             return e;
         }
         return innerException(depth + 1, cause);
@@ -242,6 +240,12 @@ public class GlobalException {
             }
         }
     }
+
+    private String serviceExceptionTrack(Throwable e) {
+        List<String> errorList = collectTrack(e);
+        return A.isEmpty(errorList) ? U.EMPTY : Joiner.on(",").join(errorList);
+    }
+
     private List<String> collectTrack(Throwable e) {
         if (online) {
             return Collections.emptyList();
@@ -260,9 +264,5 @@ public class GlobalException {
             }
         }
         return exceptionList;
-    }
-    private String serviceExceptionTrack(Throwable e) {
-        List<String> errorList = collectTrack(e);
-        return A.isEmpty(errorList) ? U.EMPTY : Joiner.on(",").join(errorList);
     }
 }

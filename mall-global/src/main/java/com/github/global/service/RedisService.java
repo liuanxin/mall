@@ -1,7 +1,7 @@
 package com.github.global.service;
 
 import com.github.common.util.U;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.HashOperations;
@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Configuration
 @ConditionalOnClass({ RedisTemplate.class })
 public class RedisService {

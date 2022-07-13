@@ -4,14 +4,14 @@ import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.common.util.U;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 
 /** 用户等级 */
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public enum UserTestLevel {
 
     Nil(0, ""), Normal(1, "普通用户"), Vip(2, "vip 用户");

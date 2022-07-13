@@ -4,14 +4,14 @@ import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.common.util.U;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 
 /** 商品类型 */
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public enum ProductTestType {
 
     Nil(0, ""), Normal(1, "普通商品"), Price(2, "特价商品"), Stock(3, "特销商品");

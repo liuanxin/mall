@@ -13,14 +13,14 @@ import com.github.manager.model.*;
 import com.github.manager.repository.*;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ManagerServiceImpl implements ManagerService {
 
     private final ManagerUserMapper userMapper;

@@ -1,11 +1,11 @@
 package com.github.common.date;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /** 日期的格式化类型 */
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public enum DateFormatType {
 
     /** yyyy-MM-dd HH:mm:ss */

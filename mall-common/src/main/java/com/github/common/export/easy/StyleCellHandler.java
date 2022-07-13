@@ -10,7 +10,7 @@ import com.github.common.util.A;
 import com.github.common.util.U;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.apache.poi.hssf.usermodel.HSSFPalette;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("DuplicatedCode")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class StyleCellHandler implements CellWriteHandler {
 
     /** 标题行字体大小 */

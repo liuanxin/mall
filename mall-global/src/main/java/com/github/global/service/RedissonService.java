@@ -1,7 +1,7 @@
 package com.github.global.service;
 
 import com.github.common.util.A;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
 import org.redisson.client.codec.Codec;
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Configuration
 @ConditionalOnClass({ RedissonClient.class })
 public class RedissonService {

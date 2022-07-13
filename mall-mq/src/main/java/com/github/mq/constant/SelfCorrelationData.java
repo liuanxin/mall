@@ -1,6 +1,5 @@
 package com.github.mq.constant;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -9,7 +8,6 @@ import org.springframework.amqp.rabbit.connection.CorrelationData;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class SelfCorrelationData extends CorrelationData {
 
     private String traceId;
