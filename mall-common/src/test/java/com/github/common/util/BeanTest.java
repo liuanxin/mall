@@ -1,7 +1,6 @@
 package com.github.common.util;
 
 import com.github.common.bean.BeanChange;
-import com.github.common.bean.CollectGroup;
 import com.github.common.bean.CollectProperty;
 import com.github.common.date.DateUtil;
 import lombok.Data;
@@ -21,13 +20,13 @@ public class BeanTest {
         @CollectProperty(value = "名字", order = 1)
         private String name;
 
-        @CollectProperty(value = "是否删除", collectGroup = {CollectGroup.DELETE}, valueMapping = "{\"0\":\"未删除\",\"OTHER\":\"已删除\"}", order = 5)
+        @CollectProperty(value = "是否删除", group = {CollectProperty.Group.DELETE}, valueMapping = "{\"0\":\"未删除\",\"OTHER\":\"已删除\"}", order = 5)
         private Integer isDeleted;
 
-        @CollectProperty(value = "创建时间", collectGroup = {CollectGroup.CREATE}, dateFormat = "yyyy-MM-dd", order = 3)
+        @CollectProperty(value = "创建时间", group = {CollectProperty.Group.CREATE}, dateFormat = "yyyy-MM-dd", order = 3)
         private Date createTime;
 
-        @CollectProperty(value = "更新时间", collectGroup = {CollectGroup.CREATE, CollectGroup.UPDATE}, order = 4)
+        @CollectProperty(value = "更新时间", group = {CollectProperty.Group.CREATE, CollectProperty.Group.UPDATE}, order = 4)
         private Date updateTime;
 
         @CollectProperty(value = "性别", valueMapping = "{\"0\":\"未知\",\"1\":\"男\",\"2\":\"女\"}", order = 2)
@@ -64,8 +63,8 @@ public class BeanTest {
         System.out.println(BeanChange.diff(a1, null));
         System.out.println(BeanChange.diff(null, a2));
         System.out.println(BeanChange.diff(a1, a2));
-        System.out.println(BeanChange.diff(CollectGroup.CREATE, a1, a2));
-        System.out.println(BeanChange.diff(CollectGroup.UPDATE, a1, a2));
-        System.out.println(BeanChange.diff(CollectGroup.DELETE, a1, a2));
+        System.out.println(BeanChange.diff(CollectProperty.Group.CREATE, a1, a2));
+        System.out.println(BeanChange.diff(CollectProperty.Group.UPDATE, a1, a2));
+        System.out.println(BeanChange.diff(CollectProperty.Group.DELETE, a1, a2));
     }
 }

@@ -34,10 +34,10 @@ public final class BeanChange {
 
 
     public static <T> String diff(T oldObj, T newObj) {
-        return diff(CollectGroup.ALL, oldObj, newObj);
+        return diff(CollectProperty.Group.ALL, oldObj, newObj);
     }
 
-    public static <T> String diff(CollectGroup collectType, T oldObj, T newObj) {
+    public static <T> String diff(CollectProperty.Group collectType, T oldObj, T newObj) {
         if (oldObj == newObj) {
             return null;
         }
@@ -52,6 +52,7 @@ public final class BeanChange {
         Class<?> clazz = oldObj.getClass();
         String orderKey = "order";
         String valueKey = "value";
+        CollectProperty.Group all = CollectProperty.Group.ALL;
         for (Field field : U.getAllField(clazz)) {
             String fieldName = field.getName();
             CollectProperty changeProperty = field.getAnnotation(CollectProperty.class);
@@ -59,23 +60,23 @@ public final class BeanChange {
             int order;
             String dateFormat;
             Map<String, String> map;
-            Set<CollectGroup> typeSet;
+            Set<CollectProperty.Group> typeSet;
             if (U.isNull(changeProperty)) {
                 name = fieldName;
                 order = Integer.MAX_VALUE;
                 dateFormat = null;
                 map = Collections.emptyMap();
-                typeSet = Collections.singleton(CollectGroup.ALL);
+                typeSet = Collections.singleton(all);
             } else {
                 name = changeProperty.value();
                 order = changeProperty.order();
                 dateFormat = changeProperty.dateFormat();
                 Map<String, String> valueMapping = JsonUtil.convertType(changeProperty.valueMapping(), MAP_REFERENCE);
                 map = A.isEmpty(valueMapping) ? Collections.emptyMap() : valueMapping;
-                typeSet = new HashSet<>(Arrays.asList(changeProperty.collectGroup()));
+                typeSet = new HashSet<>(Arrays.asList(changeProperty.group()));
             }
 
-            if (collectType == CollectGroup.ALL || typeSet.contains(CollectGroup.ALL) || typeSet.contains(collectType)) {
+            if (collectType == all || typeSet.contains(all) || typeSet.contains(collectType)) {
                 Object oldValue = getField(fieldName, clazz, oldObj);
                 Object newValue = getField(fieldName, clazz, newObj);
                 if (oldValue != newValue) {

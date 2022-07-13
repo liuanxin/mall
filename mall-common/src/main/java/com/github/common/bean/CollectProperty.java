@@ -11,7 +11,7 @@ public @interface CollectProperty {
     String value();
 
     /** 当前属性在哪些组上收集 */
-    CollectGroup[] collectGroup() default CollectGroup.ALL;
+    Group[] group() default Group.ALL;
 
     /**
      * 值映射. 可以转换成 Map&lt;String, String&gt; 的 json 串, 大写的 OTHER 表示其他
@@ -25,4 +25,8 @@ public @interface CollectProperty {
 
     /** 排序, 越小越靠前 */
     int order() default Integer.MAX_VALUE;
+
+    enum Group {
+        ALL, CREATE, UPDATE, DELETE;
+    }
 }
