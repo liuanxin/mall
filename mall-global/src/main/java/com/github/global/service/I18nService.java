@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.util.List;
+import java.util.Locale;
 
 @Configuration
 @RequiredArgsConstructor
@@ -26,13 +27,22 @@ public class I18nService {
     }
 
     public String getMessage(String code, Object... args) {
+        Locale locale = LocaleContextHolder.getLocale();
         try {
-            return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
+            return messageSource.getMessage(code, args, locale);
         } catch (NoSuchMessageException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("i18n exception", e);
             }
-            return code;
+
+            if (locale == Locale.SIMPLIFIED_CHINESE) {
+                return code;
+            }
+            try {
+                return messageSource.getMessage(code, args, Locale.SIMPLIFIED_CHINESE);
+            } catch (NoSuchMessageException ex) {
+                return code;
+            }
         }
     }
 }
