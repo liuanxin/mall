@@ -34,6 +34,8 @@ public class BeanTest {
         private int gender;
 
         private String status;
+
+        private String state;
     }
 
     @Test
@@ -46,6 +48,7 @@ public class BeanTest {
         a1.setUpdateTime(DateUtil.parse("2021-09-09"));
         a1.setGender(1);
         a1.setStatus("abc");
+        a1.setState("xyz");
 
         Abc a2 = new Abc();
         a2.setId(1234);
@@ -55,7 +58,8 @@ public class BeanTest {
         a2.setUpdateTime(DateUtil.parse("2021-09-10"));
         a2.setIsDeleted(0);
         a2.setGender(2);
-        a2.setStatus("123");
+        a2.setStatus("");
+        a2.setState(null);
 
         System.out.println(BeanChange.diff(a1, null));
         System.out.println(BeanChange.diff(null, a2));
