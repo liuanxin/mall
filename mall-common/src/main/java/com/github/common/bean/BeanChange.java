@@ -21,14 +21,17 @@ import java.util.concurrent.TimeUnit;
 public final class BeanChange {
 
     private static final String NEW = "新增";
-    private static final String UPDATE_ADD = "增加[%s]新值(%s)";
-    private static final String UPDATE = "修改[%s]原值(%s)新值(%s)";
-    private static final String UPDATE_DEL = "删除[%s]原值(%s)";
     private static final String DEL = "删除";
 
-    private static final TypeReference<Map<String, String>> MAP_REFERENCE = new TypeReference<>() {};
+    private static final String INSERT = "增加[%s]新值(%s)";
+    private static final String UPDATE = "修改[%s]原值(%s)新值(%s)";
+    private static final String REMOVE = "去除[%s]原值(%s)";
 
+    private static final String VALUE_OTHER_KEY = "OTHER";
+
+    private static final TypeReference<Map<String, String>> MAP_REFERENCE = new TypeReference<>() {};
     private static final Cache<String, Method> METHOD_CACHE_MAP = CacheBuilder.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build();
+
 
     public static <T> String diff(T oldObj, T newObj) {
         return diff(CollectGroup.ALL, oldObj, newObj);
@@ -82,7 +85,7 @@ public final class BeanChange {
             }
         }
         if (A.isNotEmpty(fieldList)) {
-            Collections.sort(fieldList);
+            fieldList.sort(Comparator.comparingInt(ChangeData::order));
             List<String> values = new ArrayList<>();
             for (ChangeData cd : fieldList) {
                 values.add(cd.value());
@@ -142,7 +145,7 @@ public final class BeanChange {
         if (U.isNotBlank(value)) {
             return value;
         }
-        String other = map.get("OTHER");
+        String other = map.get(VALUE_OTHER_KEY);
         if (U.isNotBlank(other)) {
             return other;
         }
@@ -153,9 +156,9 @@ public final class BeanChange {
         if (U.isNull(oldStr) && U.isNull(newStr)) {
             return null;
         } else if (U.isNull(oldStr)) {
-            return String.format(UPDATE_ADD, name, getMapping(map, newStr));
+            return String.format(INSERT, name, getMapping(map, newStr));
         } else if (U.isNull(newStr)) {
-            return String.format(UPDATE_DEL, name, getMapping(map, oldStr));
+            return String.format(REMOVE, name, getMapping(map, oldStr));
         } else if (!oldStr.equals(newStr)) {
             return String.format(UPDATE, name, getMapping(map, oldStr), getMapping(map, newStr));
         } else {
