@@ -48,8 +48,10 @@ public final class BeanChange {
             return DEL;
         }
 
-        List<ChangeData> fieldList = new ArrayList<>();
+        List<Map<String, Object>> fieldList = new ArrayList<>();
         Class<?> clazz = oldObj.getClass();
+        String orderKey = "order";
+        String valueKey = "value";
         for (Field field : U.getAllField(clazz)) {
             String fieldName = field.getName();
             CollectProperty changeProperty = field.getAnnotation(CollectProperty.class);
@@ -79,16 +81,17 @@ public final class BeanChange {
                 if (oldValue != newValue) {
                     String value = compareValue(getValue(oldValue, dateFormat), getValue(newValue, dateFormat), name, map);
                     if (U.isNotBlank(value)) {
-                        fieldList.add(new ChangeData(order, value));
+                        // noinspection ConstantConditions
+                        fieldList.add(Map.of(orderKey, order, valueKey, value));
                     }
                 }
             }
         }
         if (A.isNotEmpty(fieldList)) {
-            fieldList.sort(Comparator.comparingInt(ChangeData::order));
+            fieldList.sort(Comparator.comparingInt(o -> U.toInt(o.get(orderKey))));
             List<String> values = new ArrayList<>();
-            for (ChangeData cd : fieldList) {
-                values.add(cd.value());
+            for (Map<String, Object> map : fieldList) {
+                values.add(U.toStr(map.get(valueKey)));
             }
             return Joiner.on("; ").join(values).trim();
         }
