@@ -6,7 +6,6 @@ import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 import com.github.global.constant.GlobalConst;
-import javassist.ClassPool;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -67,7 +66,7 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
                 String methodName = U.isNotNull(method) ? method.getName() : U.EMPTY;
                 if (U.isNotBlank(methodName)) {
                     sbd.append("#").append(methodName);
-                    try {
+                    /*try {
                         ClassPool classPool = new ClassPool(ClassPool.getDefault());
                         String classInFile = U.getClassInFile(clazz);
                         if (U.isNotBlank(classInFile)) {
@@ -81,7 +80,7 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
                         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
                             LogUtil.ROOT_LOG.debug("get {}#{} line-number exception", className, methodName, e);
                         }
-                    }
+                    }*/
                 }
 
                 long startTimeMillis = LogUtil.getStartMilli();
