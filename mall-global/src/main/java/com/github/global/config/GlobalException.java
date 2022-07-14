@@ -184,26 +184,30 @@ public class GlobalException {
     @ExceptionHandler(Throwable.class)
     public ResponseEntity other(Throwable throwable) {
         Throwable e = innerException(1, throwable);
-        return switch (e) {
-            case NotFoundException nfe -> notFound(nfe);
-            case NotLoginException nle -> notLogin(nle);
-            case ForbiddenException fe -> forbidden(fe);
-            case ParamException pe -> param(pe);
-            case BadRequestException bre -> badRequest(bre);
-            case ServiceException se -> service(se);
-            case ServiceI18nException sie -> serviceI18n(sie);
-            case ForceReturnException fre -> forceReturn(fre);
-            default -> exception(e);
-        };
-    }
-
-    private ResponseEntity exception(Throwable e) {
-        if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-            LogUtil.ROOT_LOG.error(e.getMessage(), e);
+        if (e instanceof NotFoundException nfe) {
+            return notFound(nfe);
+        } else if (e instanceof NotLoginException nle) {
+            return notLogin(nle);
+        } else if (e instanceof ForbiddenException fe) {
+            return forbidden(fe);
+        } else if (e instanceof ParamException pe) {
+            return param(pe);
+        } else if (e instanceof BadRequestException bre) {
+            return badRequest(bre);
+        } else if (e instanceof ServiceException se) {
+            return service(se);
+        } else if (e instanceof ServiceI18nException sie) {
+            return serviceI18n(sie);
+        } else if (e instanceof ForceReturnException fre) {
+            return forceReturn(fre);
+        } else {
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error(e.getMessage(), e);
+            }
+            int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
+            String msg = U.returnMsg(e, online);
+            return ResponseEntity.status(status).body(JsonResult.fail(msg, collectTrack(e)));
         }
-        int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
-        String msg = U.returnMsg(e, online);
-        return ResponseEntity.status(status).body(JsonResult.fail(msg, collectTrack(e)));
     }
 
     private Throwable innerException(int depth, Throwable e) {
