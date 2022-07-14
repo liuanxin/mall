@@ -62,9 +62,13 @@ public class ValidationService {
 
     /** 如果值是以 { 开头且以 } 结尾则调用 i18n 处理国际化 */
     public String getMessage(String msg) {
-        if (U.isNotBlank(msg) && msg.startsWith("{") && msg.endsWith("}")) {
-            msg = msg.substring(1, msg.length() - 1);
-            return i18nService.getMessage(msg);
+        if (U.isBlank(msg)) {
+            return msg;
+        }
+
+        String trim = msg.trim();
+        if (trim.startsWith("{") && trim.endsWith("}")) {
+            return i18nService.getMessage(trim.substring(1, trim.length() - 1));
         } else {
             return msg;
         }
