@@ -10,7 +10,7 @@ log:
 spring:
   profiles.active: dev
   application.name: web-manager
-  mvc.throw-exception-if-no-handler-found: true
+#  mvc.throw-exception-if-no-handler-found: true
   web.resources.add-mappings: false
   redis:
     host: dev-redis

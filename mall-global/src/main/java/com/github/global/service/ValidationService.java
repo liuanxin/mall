@@ -38,20 +38,8 @@ public class ValidationService {
         return handleError(fieldErrorMap.asMap());
     }
 
-    public Map<String, String> handleError(Map<String, Collection<String>> fieldErrorMap) {
-        Map<String, String> errorMap = new LinkedHashMap<>();
-        if (A.isNotEmpty(fieldErrorMap)) {
-            for (Map.Entry<String, Collection<String>> entry : fieldErrorMap.entrySet()) {
-                List<String> list = new ArrayList<>(entry.getValue());
-                list.sort(null);
-                errorMap.put(entry.getKey(), A.toStr(list));
-            }
-        }
-        return errorMap;
-    }
-
     /** 字段上如果标了 @JsonProperty 则使用注解值返回 */
-    public String getParamField(Class<?> clazz, String field) {
+    private String getParamField(Class<?> clazz, String field) {
         if (U.isNull(clazz)) {
             return field;
         } else {
@@ -61,7 +49,7 @@ public class ValidationService {
     }
 
     /** 如果值是以 { 开头且以 } 结尾则调用 i18n 处理国际化 */
-    public String getMessage(String msg) {
+    private String getMessage(String msg) {
         if (U.isBlank(msg)) {
             return msg;
         }
@@ -72,5 +60,17 @@ public class ValidationService {
         } else {
             return msg;
         }
+    }
+
+    private Map<String, String> handleError(Map<String, Collection<String>> fieldErrorMap) {
+        Map<String, String> errorMap = new LinkedHashMap<>();
+        if (A.isNotEmpty(fieldErrorMap)) {
+            for (Map.Entry<String, Collection<String>> entry : fieldErrorMap.entrySet()) {
+                List<String> list = new ArrayList<>(entry.getValue());
+                list.sort(null);
+                errorMap.put(entry.getKey(), A.toStr(list));
+            }
+        }
+        return errorMap;
     }
 }
