@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.common.exception.ParamException;
 import com.github.common.util.A;
 import com.github.common.util.U;
+import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 @RequiredArgsConstructor
@@ -20,6 +22,23 @@ public class ValidationService {
 
     private final I18nService i18nService;
 
+    /**
+     * <pre>
+     * 字段标下面的注解 @NotNull、@Email(groups = Xx.class) 等注解, 嵌套字段上标 @Valid 注解
+     *
+     * 1. 自动验证: 在方法参数上标 @Validated(Xx.class) 注解, 将抛出 MethodArgumentNotValidException 或 BindException 异常
+     * 2. 手动验证: 不标 @Validated 或 @Valid 注解, 调用此方法, 抛出 ParamException 异常
+     * </pre>
+     *
+     * @see javax.validation.constraints.Null
+     * @see javax.validation.constraints.NotNull
+     * @see javax.validation.constraints.NotEmpty
+     * @see javax.validation.constraints.NotBlank
+     * @see javax.validation.constraints.Email
+     * @see javax.validation.constraints.Min
+     * @see javax.validation.constraints.Max
+     * @see javax.validation.constraints.Pattern
+     */
     public void handleValidate(BindingResult bindingResult) {
         Map<String, String> fieldErrorMap = validate(bindingResult);
         if (A.isNotEmpty(fieldErrorMap)) {
@@ -33,17 +52,50 @@ public class ValidationService {
 
         Multimap<String, String> fieldErrorMap = ArrayListMultimap.create();
         for (FieldError error : bindingResult.getFieldErrors()) {
-            fieldErrorMap.put(getParamField(clazz, error.getField()), getMessage(error.getDefaultMessage()));
+            String field = getParamField(clazz, error.getField());
+            if (U.isNotBlank(field)) {
+                fieldErrorMap.put(field, getMessage(error.getDefaultMessage()));
+            }
         }
         return handleError(fieldErrorMap.asMap());
     }
 
-    /** 字段上如果标了 @JsonProperty 则使用注解值返回 */
     private String getParamField(Class<?> clazz, String field) {
         if (U.isNull(clazz)) {
             return field;
         } else {
-            JsonProperty property = AnnotationUtils.findAnnotation(U.getField(clazz, field), JsonProperty.class);
+            List<String> modelList = new ArrayList<>();
+            calcParamProperty(clazz, field, modelList);
+            return Joiner.on(".").join(modelList);
+        }
+    }
+
+    /** 字段上如果标了 @JsonProperty 则使用注解值返回 */
+    private void calcParamProperty(Class<?> clazz, String field, List<String> modelList) {
+        if (field.contains(".")) {
+            int index = field.indexOf(".");
+            String first = field.substring(0, index);
+            Field fd = U.getField(clazz, first);
+            if (U.isNotNull(fd)) {
+                JsonProperty property = AnnotationUtils.findAnnotation(fd, JsonProperty.class);
+                modelList.add(U.callIfNotNull(property, JsonProperty::value, first));
+
+                String second = field.substring(index + 1);
+                calcParamProperty(fd.getType(), second, modelList);
+            }
+        } else {
+            Field fd = U.getField(clazz, field);
+            JsonProperty property = AnnotationUtils.findAnnotation(fd, JsonProperty.class);
+            modelList.add(U.callIfNotNull(property, JsonProperty::value, field));
+        }
+    }
+
+    private String getValue(Class<?> clazz, String field) {
+        Field fd = U.getField(clazz, field);
+        if (U.isNull(fd)) {
+            return U.EMPTY;
+        } else {
+            JsonProperty property = AnnotationUtils.findAnnotation(fd, JsonProperty.class);
             return U.callIfNotNull(property, JsonProperty::value, field);
         }
     }
