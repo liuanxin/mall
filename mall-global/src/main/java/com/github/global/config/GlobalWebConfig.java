@@ -4,7 +4,6 @@ import com.github.common.mvc.CorsFilter;
 import com.github.common.mvc.LanguageFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +22,9 @@ public class GlobalWebConfig {
     @Value("${http.language.param-name:lang}")
     private String languageParam;
 
+    @Value("${spring.messages.basename:}")
+    private String baseNames;
+
     @Bean
     @Order(1)
     public FilterRegistrationBean<CharacterEncodingFilter> characterFilter(CharacterEncodingFilter filter) {
@@ -39,10 +41,9 @@ public class GlobalWebConfig {
         return filterBean;
     }
 
-    @ConditionalOnProperty(prefix = "http", name = "language.handle", havingValue = "true")
     @Bean
     @Order(3)
     public FilterRegistrationBean<LanguageFilter> languageFilter() {
-        return new FilterRegistrationBean<>(new LanguageFilter(languageParam));
+        return new FilterRegistrationBean<>(new LanguageFilter(languageParam, baseNames));
     }
 }

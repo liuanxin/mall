@@ -75,13 +75,6 @@
       "description": "支持 cors 的 ip 地址列表."
     },
     {
-      "name": "http.language.handle",
-      "type": "java.lang.Boolean",
-      "defaultValue": false,
-      "sourceType": "com.github.global.config.GlobalWebConfig",
-      "description": "是否处理语言."
-    },
-    {
       "name": "http.language.param-name",
       "type": "java.lang.String",
       "defaultValue": "lang",

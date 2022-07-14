@@ -1,8 +1,12 @@
 package com.github.common.mvc;
 
+import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
@@ -11,19 +15,31 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * 基于下面的优先级依次获取语言
  * <p>
  * 1. 参数里的 langParamName (默认是 lang)
  * 2. 头里的 langParamName (默认是 lang)
- * 3. request.getLocale(Accept-Language 的值)
+ * 3. 头里的 Accept-Language 值(注意: request.getLocale 是基于 AL 获取的, 但是只能解析 zh-CN, 当 zh_CN 时将无法解析)
  * 4. 简体中文
  * <p>
  * 手动处理时使用 {@link LocaleContextHolder#getLocale()} 或 {@link RequestContextUtils#getLocale(HttpServletRequest)}
  */
-public record LanguageFilter(String languageParam) implements Filter {
+public class LanguageFilter implements Filter {
+
+    private static final Locale DEFAULT = Locale.SIMPLIFIED_CHINESE;
+
+    private final String languageParam;
+    private final Set<Locale> locales;
+    public LanguageFilter(String languageParam, String baseNames) {
+        this.languageParam = languageParam;
+        this.locales = scanLocale(baseNames);
+    }
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
@@ -45,33 +61,88 @@ public record LanguageFilter(String languageParam) implements Filter {
         chain.doFilter(request, res);
     }
 
-    private Locale handleLocale(HttpServletRequest request) {
-        String lanParam = U.defaultIfBlank(languageParam, "lang");
-        String lan = U.defaultIfBlank(request.getParameter(lanParam), request.getHeader(lanParam));
-        Locale locale = null;
-        if (U.isNotBlank(lan)) {
+    private Set<Locale> scanLocale(String baseNames) {
+        if (U.isBlank(baseNames)) {
+            return Collections.emptySet();
+        }
+        String[] files = StringUtils.commaDelimitedListToStringArray(StringUtils.trimAllWhitespace(baseNames));
+        if (A.isEmpty(files)) {
+            return Collections.emptySet();
+        }
+
+        Set<String> languages = new HashSet<>();
+        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+        for (String file : files) {
             try {
-                locale = Locale.forLanguageTag(lan);
-            } catch (Exception e) {
+                // i18n/messages -> messages, i18n/validation -> validation
+                String fileName = file.substring(file.lastIndexOf("/") + 1);
+                String location = String.format("classpath*:%s*.properties", file);
+                Resource[] resources = new PathMatchingResourcePatternResolver(classLoader).getResources(location);
+                for (Resource resource : resources) {
+                    // messages.properties, messages_zh_CN.properties, messages_en_US.properties
+                    String filename = resource.getFilename();
+                    if (U.isNotBlank(filename)) {
+                        // noinspection ConstantConditions
+                        String name = filename.substring(0, filename.indexOf(".properties"));
+                        // 只要 zh_CN、en_US 这些带语言的文件, 不带的忽略
+                        if (!name.equals(fileName) && name.startsWith(fileName)) {
+                            String language = name.substring(fileName.length() + 1);
+                            if (U.isNotBlank(language)) {
+                                languages.add(language);
+                            }
+                        }
+                    }
+                }
+            } catch (IOException e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("parse Local exception", e);
+                    LogUtil.ROOT_LOG.error("get({}) resource exception", file, e);
                 }
             }
         }
-        if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
-            locale = request.getLocale();
+        if (A.isEmpty(languages)) {
+            return Collections.emptySet();
         }
 
-        if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
-            return Locale.SIMPLIFIED_CHINESE;
+        Set<Locale> sets = new HashSet<>();
+        for (String lang : languages) {
+            Locale locale = parse(lang);
+            if (U.isNotNull(locale)) {
+                sets.add(locale);
+            }
         }
-        // 中文就使用 zh_CN, 英文就使用 en_US (如果还有具体的 zh_TW, en_GB、en_CA 就不应用这样处理)
-        String language = locale.getLanguage().toLowerCase();
-        return switch (language) {
-            case "zh" -> Locale.SIMPLIFIED_CHINESE;
-            case "en" -> Locale.US;
-            default -> locale;
-        };
-        // return locale;
+        return sets;
+    }
+
+    private Locale handleLocale(HttpServletRequest request) {
+        String param = U.defaultIfBlank(languageParam, "lang");
+        String lang = U.defaultIfBlank(request.getParameter(param), request.getHeader(param));
+        Locale locale = parse(lang);
+        if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
+            // 从头中获取 Accept-Language 并兼容解析, 使用 request.getLocale() 当语言是 en_US 时将无法解析, 只有 en-US 才行
+            locale = parse(request.getHeader("Accept-Language"));
+        }
+
+        // 「请求的语言」如果是空则使用默认语言
+        if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
+            return DEFAULT;
+        }
+        // 「请求的语言」如果不在「国际化对应的语言列表」中则使用默认语言
+        if (!locales.contains(locale)) {
+            return DEFAULT;
+        }
+        return locale;
+    }
+
+    private Locale parse(String lang) {
+        if (U.isBlank(lang)) {
+            return null;
+        }
+
+        // 兼容 zh-CN 和 zh_CN 两种方式
+        Locale locale = Locale.forLanguageTag(lang);
+        if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
+            return Locale.forLanguageTag(lang.replace("_", "-"));
+        }
+        return locale;
     }
 }
