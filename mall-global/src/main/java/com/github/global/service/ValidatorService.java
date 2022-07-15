@@ -34,6 +34,7 @@ public class ValidatorService {
      * 3. 手动: 不标 @Validated 或 @Valid 注解, 调用此方法, 抛出 ParamException 异常
      * </pre>
      *
+     * @see com.github.global.config.GlobalException#paramValidException
      * @see javax.validation.constraints.Null
      * @see javax.validation.constraints.NotNull
      * @see javax.validation.constraints.NotEmpty
@@ -43,11 +44,12 @@ public class ValidatorService {
      * @see javax.validation.constraints.Max
      * @see javax.validation.constraints.Pattern
      */
-    public void handleValidate(Object obj, Class<?>... groups) {
+    public <T> void handleValidate(T obj, Class<?>... groups) {
         if (U.isNull(obj)) {
             throw new ParamException("参数不能为空");
         }
-        Set<ConstraintViolation<Object>> set = validator.validate(obj, groups);
+        // 这里返回的是无序的
+        Set<ConstraintViolation<T>> set = validator.validate(obj, groups);
         if (A.isNotEmpty(set)) {
             Map<String, String> errorMap = validate(new LinkedHashSet<>(set));
             if (A.isNotEmpty(errorMap)) {

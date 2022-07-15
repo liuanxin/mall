@@ -32,6 +32,7 @@ public class ValidationService {
      * 3. 手动: 不标 @Validated 或 @Valid 注解, 调用此方法, 抛出 ParamException 异常
      * </pre>
      *
+     * @see com.github.global.config.GlobalException#paramValidException
      * @see javax.validation.constraints.Null
      * @see javax.validation.constraints.NotNull
      * @see javax.validation.constraints.NotEmpty
