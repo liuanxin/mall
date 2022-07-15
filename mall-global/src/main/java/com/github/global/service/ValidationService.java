@@ -14,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 @RequiredArgsConstructor
@@ -24,11 +25,11 @@ public class ValidationService {
 
     /**
      * <pre>
-     * 字段标下面的注解 @NotNull、@Email(groups = Xx.class) 等注解, 嵌套字段上标 @Valid 注解
+     * 字段标下面的注解 @NotNull、@Email(groups = Xx.class) 等注解, 嵌套字段上标 @Valid(Xx.class) 注解
      *
-     * 1. 自动验证: 在方法参数上标 @Validated(Xx.class) 注解, 将抛出 MethodArgumentNotValidException 或 BindException 异常
-     * 2. 半自动验证: 在方法参数上标 @Validated(Xx.class) 注解, 用 BindingResult 做为入参, 调用此方法, 抛出 ParamException 异常
-     * 3. 手动验证: 不标 @Validated 或 @Valid 注解
+     * 1. 自动: 在入参上标 @Validated 注解, 将抛出 MethodArgumentNotValidException 或 BindException 异常
+     * 2. 半自动: 在入参上标 @Validated 注解, 用 BindingResult 做为入参, 见 {@link ValidatorService#handleValidate}
+     * 3. 手动: 不标 @Validated 或 @Valid 注解, 调用此方法, 抛出 ParamException 异常
      * </pre>
      *
      * @see javax.validation.constraints.Null
@@ -40,19 +41,20 @@ public class ValidationService {
      * @see javax.validation.constraints.Max
      * @see javax.validation.constraints.Pattern
      */
-    public void handleValidate(BindingResult bindingResult) {
-        Map<String, String> fieldErrorMap = validate(bindingResult);
+    public void handleValidate(BindingResult result) {
+        Map<String, String> fieldErrorMap = validate(result);
         if (A.isNotEmpty(fieldErrorMap)) {
             throw new ParamException(fieldErrorMap);
         }
     }
 
-    public Map<String, String> validate(BindingResult bindingResult) {
-        Object obj = bindingResult.getTarget();
+    public Map<String, String> validate(BindingResult result) {
+        Object obj = result.getTarget();
         Class<?> clazz = U.isNull(obj) ? null : obj.getClass();
 
         Multimap<String, String> fieldErrorMap = ArrayListMultimap.create();
-        for (FieldError error : bindingResult.getFieldErrors()) {
+        List<FieldError> errors = result.getFieldErrors();
+        for (FieldError error : errors) {
             String field = getParamField(clazz, error.getField());
             if (U.isNotBlank(field)) {
                 fieldErrorMap.put(field, getMessage(error.getDefaultMessage()));
@@ -61,7 +63,7 @@ public class ValidationService {
         return handleError(fieldErrorMap.asMap());
     }
 
-    private String getParamField(Class<?> clazz, String field) {
+    public String getParamField(Class<?> clazz, String field) {
         if (U.isNull(clazz)) {
             return field;
         } else {
@@ -76,28 +78,38 @@ public class ValidationService {
         if (field.contains(".")) {
             int index = field.indexOf(".");
             String first = field.substring(0, index);
-            Field fd = U.getField(clazz, first);
+            String model, suffix;
+            if (first.contains("[")) {
+                int idx = first.indexOf("[");
+                model = first.substring(0, idx);
+                suffix = first.substring(idx);
+            } else {
+                model = first;
+                suffix = U.EMPTY;
+            }
+            Field fd = U.getField(clazz, model);
             if (U.isNotNull(fd)) {
                 JsonProperty property = AnnotationUtils.findAnnotation(fd, JsonProperty.class);
-                modelList.add(U.callIfNotNull(property, JsonProperty::value, first));
+                modelList.add(U.callIfNotNull(property, JsonProperty::value, first) + suffix);
 
-                String second = field.substring(index + 1);
-                calcParamProperty(fd.getType(), second, modelList);
+                // 只处理数组 model[0].xxx 和 键值对 model[xx].xxx 的情况, 其他的泛型无法处理
+                Class<?> type;
+                String typeName = fd.getType().getTypeName();
+                if (typeName.equals(List.class.getName())) {
+                    type = (Class<?>) ((ParameterizedType) fd.getGenericType()).getActualTypeArguments()[0];
+                } else if (typeName.equals(Map.class.getName())) {
+                    type = (Class<?>) ((ParameterizedType) fd.getGenericType()).getActualTypeArguments()[1];
+                } else {
+                    type = fd.getType();
+                }
+                calcParamProperty(type, field.substring(index + 1), modelList);
             }
         } else {
             Field fd = U.getField(clazz, field);
-            JsonProperty property = AnnotationUtils.findAnnotation(fd, JsonProperty.class);
-            modelList.add(U.callIfNotNull(property, JsonProperty::value, field));
-        }
-    }
-
-    private String getValue(Class<?> clazz, String field) {
-        Field fd = U.getField(clazz, field);
-        if (U.isNull(fd)) {
-            return U.EMPTY;
-        } else {
-            JsonProperty property = AnnotationUtils.findAnnotation(fd, JsonProperty.class);
-            return U.callIfNotNull(property, JsonProperty::value, field);
+            if (U.isNotNull(fd)) {
+                JsonProperty property = AnnotationUtils.findAnnotation(fd, JsonProperty.class);
+                modelList.add(U.callIfNotNull(property, JsonProperty::value, field));
+            }
         }
     }
 
@@ -116,7 +128,8 @@ public class ValidationService {
     }
 
     public Map<String, String> handleError(Map<String, Collection<String>> fieldErrorMap) {
-        Map<String, String> errorMap = new LinkedHashMap<>();
+        // 返回是无序的, 这里用 key 排序
+        Map<String, String> errorMap = new TreeMap<>();
         if (A.isNotEmpty(fieldErrorMap)) {
             for (Map.Entry<String, Collection<String>> entry : fieldErrorMap.entrySet()) {
                 errorMap.put(entry.getKey(), A.toStr(entry.getValue()));

@@ -39,7 +39,7 @@ public class ValidatorControllerAdvice {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
             LogUtil.ROOT_LOG.debug("constraint violation fails", e);
         }
-        Map<String, String> errorMap = validatorService.handleValidate(e.getConstraintViolations());
+        Map<String, String> errorMap = validatorService.validate(e.getConstraintViolations());
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
         JsonResult<String> result = JsonResult.badRequest(Joiner.on(",").join(errorMap.values()), errorMap);
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {

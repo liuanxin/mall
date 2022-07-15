@@ -27,11 +27,11 @@ public class ValidatorService {
 
     /**
      * <pre>
-     * 字段标下面的注解 @NotNull、@Email(groups = Xx.class) 等注解, 嵌套字段上标 @Valid 注解
+     * 字段标下面的注解 @NotNull、@Email(groups = Xx.class) 等注解, 嵌套字段上标 @Valid(Xx.class) 注解
      *
-     * 1. 自动验证: 在方法参数上标 @Validated(Xx.class) 注解, 将抛出 MethodArgumentNotValidException 或 BindException 异常
-     * 2. 半自动验证: 在方法参数上标 @Validated(Xx.class) 注解, 用 BindingResult 做为入参
-     * 3. 手动验证: 不标 @Validated 或 @Valid 注解, 调用此方法, 抛出 ParamException 异常
+     * 1. 自动: 在入参上标 @Validated 注解, 将抛出 MethodArgumentNotValidException 或 BindException 异常
+     * 2. 半自动: 在入参上标 @Validated 注解, 用 BindingResult 做为入参, 见 {@link ValidationService#handleValidate}
+     * 3. 手动: 不标 @Validated 或 @Valid 注解, 调用此方法, 抛出 ParamException 异常
      * </pre>
      *
      * @see javax.validation.constraints.Null
@@ -49,21 +49,24 @@ public class ValidatorService {
         }
         Set<ConstraintViolation<Object>> set = validator.validate(obj, groups);
         if (A.isNotEmpty(set)) {
-            Map<String, String> errorMap = handleValidate(new LinkedHashSet<>(set));
+            Map<String, String> errorMap = validate(new LinkedHashSet<>(set));
             if (A.isNotEmpty(errorMap)) {
                 throw new ParamException(errorMap);
             }
         }
     }
 
-    public Map<String, String> handleValidate(Set<ConstraintViolation<?>> errorSet) {
+    public Map<String, String> validate(Set<ConstraintViolation<?>> errorSet) {
         if (A.isEmpty(errorSet)) {
             return Collections.emptyMap();
         } else {
             Multimap<String, String> fieldErrorMap = ArrayListMultimap.create();
             for (ConstraintViolation<?> error : errorSet) {
-                String field = error.getPropertyPath().toString();
-                fieldErrorMap.put(field, validationService.getMessage(error.getMessage()));
+                Class<?> clazz = error.getRootBeanClass();
+                String field = validationService.getParamField(clazz, error.getPropertyPath().toString());
+                if (U.isNotBlank(field)) {
+                    fieldErrorMap.put(field, validationService.getMessage(error.getMessage()));
+                }
             }
             return validationService.handleError(fieldErrorMap.asMap());
         }
