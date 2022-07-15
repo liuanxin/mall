@@ -24,7 +24,7 @@ public class CronTask {
     public void cancelOrder() {
         long start = System.currentTimeMillis();
         try {
-            LogUtil.bindBasicInfo(U.uuid16());
+            LogUtil.putTraceId(U.uuid16());
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("{}开始", BUSINESS_DESC);
             }

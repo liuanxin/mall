@@ -55,7 +55,7 @@ public class DynamicCronUtil {
 
         schedule.addTriggerTask(() -> {
             try {
-                LogUtil.bindBasicInfo(U.uuid16());
+                LogUtil.putTraceId(U.uuid16());
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                     LogUtil.ROOT_LOG.info("任务({})开始", desc);
                 }

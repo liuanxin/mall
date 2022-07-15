@@ -358,14 +358,23 @@ public final class RequestUtil {
         render("text/html", data);
     }
 
-    /** 基于请求上下文生成一个日志需要的上下文信息对象 */
-    public static LogUtil.RequestLogContext logContextInfo() {
-        HttpServletRequest request = getRequest();
-        String method = U.isNull(request) ? U.EMPTY : request.getMethod();
+    public static String logBasicInfo() {
+        String method = U.callIfNotNull(getRequest(), HttpServletRequest::getMethod, U.EMPTY);
         String url = getRequestUrl();
-        String param = formatParam();
-        String head = formatHeader();
-        return new LogUtil.RequestLogContext(method, url, param, head);
+        return "(" + method + " " + url + ")";
+    }
+    public static String logRequestInfo() {
+        String heads = formatHeader();
+        String params = formatParam();
+
+        StringBuilder sbd = new StringBuilder();
+        if (U.isNotBlank(heads)) {
+            sbd.append(" headers(").append(heads).append(")");
+        }
+        if (U.isNotBlank(params)) {
+            sbd.append(" params(").append(params).append(")");
+        }
+        return sbd.toString();
     }
 
 

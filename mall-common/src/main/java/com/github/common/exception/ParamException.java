@@ -16,6 +16,10 @@ public class ParamException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 
 	private final Map<String, String> errorMap;
+	public ParamException(String msg) {
+		super(msg);
+		this.errorMap = Collections.emptyMap();
+	}
 	public ParamException(Map<String, String> errorMap) {
 		super(A.isEmpty(errorMap) ? "" : Joiner.on("; ").join(new LinkedHashSet<>(errorMap.values())));
 		this.errorMap = A.isEmpty(errorMap) ? Collections.emptyMap() : errorMap;

@@ -74,9 +74,9 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                                 try {
                                     // 先转换成对象, 再输出成 string, 这样可以去掉空白符
                                     String json = logHandler.toJson(mapper.readValue(data, Object.class));
-                                    LogUtil.ROOT_LOG.info("before body({})", U.toStr(json, maxPrintLength, printLength));
+                                    LogUtil.ROOT_LOG.info("RequestBody before({})", U.toStr(json, maxPrintLength, printLength));
                                 } catch (JsonProcessingException e) {
-                                    LogUtil.ROOT_LOG.error("@RequestBody({}) has not json data", data, e);
+                                    LogUtil.ROOT_LOG.error("RequestBody({}) has not json data", data, e);
                                 }
                             }
                             return new ByteArrayInputStream(bytes);
@@ -94,7 +94,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
         if (LogUtil.ROOT_LOG.isInfoEnabled() && !GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
             if (!printComplete) {
                 String json = logHandler.toJson(body);
-                LogUtil.ROOT_LOG.info("after body({})", U.toStr(json, maxPrintLength, printLength));
+                LogUtil.ROOT_LOG.info("RequestBody after({})", U.toStr(json, maxPrintLength, printLength));
             }
         }
         return super.afterBodyRead(body, inputMessage, parameter, targetType, converterType);

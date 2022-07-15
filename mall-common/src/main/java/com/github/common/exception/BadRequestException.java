@@ -1,9 +1,11 @@
 package com.github.common.exception;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /** 错误的请求异常 */
 public class BadRequestException extends RuntimeException implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public BadRequestException(String msg) {

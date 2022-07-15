@@ -27,7 +27,8 @@ public class ValidationService {
      * 字段标下面的注解 @NotNull、@Email(groups = Xx.class) 等注解, 嵌套字段上标 @Valid 注解
      *
      * 1. 自动验证: 在方法参数上标 @Validated(Xx.class) 注解, 将抛出 MethodArgumentNotValidException 或 BindException 异常
-     * 2. 手动验证: 不标 @Validated 或 @Valid 注解, 调用此方法, 抛出 ParamException 异常
+     * 2. 半自动验证: 在方法参数上标 @Validated(Xx.class) 注解, 用 BindingResult 做为入参, 调用此方法, 抛出 ParamException 异常
+     * 3. 手动验证: 不标 @Validated 或 @Valid 注解
      * </pre>
      *
      * @see javax.validation.constraints.Null
@@ -101,7 +102,7 @@ public class ValidationService {
     }
 
     /** 如果值是以 { 开头且以 } 结尾则调用 i18n 处理国际化 */
-    private String getMessage(String msg) {
+    public String getMessage(String msg) {
         if (U.isBlank(msg)) {
             return msg;
         }
@@ -114,13 +115,11 @@ public class ValidationService {
         }
     }
 
-    private Map<String, String> handleError(Map<String, Collection<String>> fieldErrorMap) {
+    public Map<String, String> handleError(Map<String, Collection<String>> fieldErrorMap) {
         Map<String, String> errorMap = new LinkedHashMap<>();
         if (A.isNotEmpty(fieldErrorMap)) {
             for (Map.Entry<String, Collection<String>> entry : fieldErrorMap.entrySet()) {
-                List<String> list = new ArrayList<>(entry.getValue());
-                list.sort(null);
-                errorMap.put(entry.getKey(), A.toStr(list));
+                errorMap.put(entry.getKey(), A.toStr(entry.getValue()));
             }
         }
         return errorMap;

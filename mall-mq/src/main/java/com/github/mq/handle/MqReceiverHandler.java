@@ -95,7 +95,7 @@ public class MqReceiverHandler {
         long start = System.currentTimeMillis();
         try {
             // 发布消息时: msgId 放在 messageId, traceId 放在 correlationId
-            LogUtil.bindBasicInfo(U.defaultIfBlank(mp.getCorrelationId(), (U.isNull(mqData) ? "" : mqData.getTraceId())));
+            LogUtil.putTraceId(U.defaultIfBlank(mp.getCorrelationId(), (U.isNull(mqData) ? "" : mqData.getTraceId())));
             handleData(msgId, mqData, json, mqInfo, desc, fun);
         } finally {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {

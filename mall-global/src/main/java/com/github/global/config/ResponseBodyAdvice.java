@@ -1,11 +1,11 @@
 package com.github.global.config;
 
 import com.github.common.Const;
-import com.github.common.date.DateUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 import com.github.global.constant.GlobalConst;
+import javassist.ClassPool;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -49,12 +49,14 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
                 return;
             }
 
-            boolean logNotStart = LogUtil.hasNotStart();
+            // 检查之前有没有加过日志上下文, 没有就加一下
+            boolean logNotTrace = LogUtil.hasNotTraceId();
             try {
-                if (logNotStart) {
+                if (logNotTrace) {
                     String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
                     String realIp = RequestUtil.getRealIp();
-                    LogUtil.putContext(traceId, realIp, RequestUtil.logContextInfo());
+                    String basicInfo = RequestUtil.logBasicInfo();
+                    LogUtil.putTraceAndIp(traceId, realIp, basicInfo);
                 }
                 StringBuilder sbd = new StringBuilder();
 
@@ -66,7 +68,7 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
                 String methodName = U.isNotNull(method) ? method.getName() : U.EMPTY;
                 if (U.isNotBlank(methodName)) {
                     sbd.append("#").append(methodName);
-                    /*try {
+                    try {
                         ClassPool classPool = new ClassPool(ClassPool.getDefault());
                         String classInFile = U.getClassInFile(clazz);
                         if (U.isNotBlank(classInFile)) {
@@ -80,17 +82,13 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
                         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
                             LogUtil.ROOT_LOG.debug("get {}#{} line-number exception", className, methodName, e);
                         }
-                    }*/
+                    }
                 }
 
-                long startTimeMillis = LogUtil.getStartMilli();
-                if (U.greater0(startTimeMillis)) {
-                    sbd.append(" time(").append(DateUtil.toHuman(System.currentTimeMillis() - startTimeMillis)).append(")");
-                }
                 sbd.append(" return(").append(U.toStr(json, maxPrintLength, printLength)).append(")");
                 LogUtil.ROOT_LOG.info(sbd.toString());
             } finally {
-                if (logNotStart) {
+                if (logNotTrace) {
                     LogUtil.unbind();
                 }
             }

@@ -1,10 +1,6 @@
 package com.github.common.util;
 
 import com.github.common.date.DateUtil;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -19,57 +15,47 @@ public final class LogUtil {
     /** SQL 相关的日志 */
     public static final Logger SQL_LOG = LoggerFactory.getLogger("sqlLog");
 
-    /** 接收到请求的时间戳  */
-    private static final String START_REQUEST_TIME = "START_REQUEST_TIME";
-    /** 接收到请求的时间, 在配置文件中使用 %X{Record_Time} 获取  */
+    /** 接收到请求的时间, 在配置文件中使用 %X{RECORD_TIME} 获取  */
     private static final String RECEIVE_TIME = "RECEIVE_TIME";
-    /** 在日志上下文中记录的跟踪 id */
+    /** 在日志上下文中记录的跟踪 id, 在配置文件中使用 %X{TRACE_ID} 获取 */
     private static final String TRACE_ID = "TRACE_ID";
-    /** 在日志上下文中记录的请求信息: 包括 ip、url, param 等  */
-    private static final String REQUEST_INFO = "REQUEST_INFO";
-    /** 在日志上下文中记录的真实 ip */
+    /** 在日志上下文中记录的基础信息: 包括 ip、url 等, 在配置文件中使用 %X{BASIC_INFO} 获取  */
+    private static final String BASIC_INFO = "BASIC_INFO";
+    /** 在日志上下文中记录的真实 ip, 在配置文件中使用 %X{REAL_IP} 获取 */
     private static final String REAL_IP = "REAL_IP";
-    /** 在日志上下文中记录的用户信息 */
+    /** 在日志上下文中记录的用户信息, 在配置文件中使用 %X{USER} 获取 */
     private static final String USER = "USER";
 
     /** 将 跟踪号 和 接收到请求的时间 放进日志上下文 */
-    public static void bindBasicInfo(String traceId) {
-        if (hasNotStart()) {
-            Date now = new Date();
-            MDC.put(START_REQUEST_TIME, U.toStr(now.getTime()));
-            MDC.put(RECEIVE_TIME, DateUtil.formatDateTimeMs(now) + " -> ");
-        }
+    public static void putTraceId(String traceId) {
         if (hasNotTraceId()) {
-            // xml 中没有加空格, 在值的前面加一个空格
+            MDC.put(RECEIVE_TIME, DateUtil.formatDateTimeMs(new Date()) + " -> ");
+            // 跟踪号放在最后, 因此在最前加一个空格
             MDC.put(TRACE_ID, " " + U.defaultIfBlank(traceId, U.uuid16()));
         }
     }
-    /** 将 请求上下文信息 放进日志上下文 */
-    public static void putContext(String traceId, String ip, RequestLogContext logContextInfo) {
-        bindBasicInfo(traceId);
-        if (U.isNotNull(logContextInfo)) {
-            MDC.put(REQUEST_INFO, " " + logContextInfo.requestInfo());
-        }
+    /** 将 跟踪号 和 接收到请求的时间 和 ip 放进日志上下文 */
+    public static void putTraceAndIp(String traceId, String ip, String basicInfo) {
+        putTraceId(traceId);
         if (U.isNotBlank(ip)) {
-            MDC.put(REAL_IP, " " + ip);
+            MDC.put(REAL_IP, "(" + ip + ") ");
+        }
+        if (U.isNotBlank(basicInfo)) {
+            MDC.put(BASIC_INFO, "[" + basicInfo + "] ");
         }
     }
-    public static void putUser(String user) {
-        if (U.isNotBlank(user)) {
-            MDC.put(USER, " " + user);
+    /** 将 跟踪号 和 接收到请求的时间 和 ip 放进日志上下文 */
+    public static void putTraceAndIpAndUser(String traceId, String ip, String basicInfo, String userInfo) {
+        putTraceAndIp(traceId, ip, basicInfo);
+        if (U.isNotBlank(userInfo)) {
+            MDC.put(USER, "(" + userInfo + ") ");
         }
     }
 
-    public static boolean hasNotStart() {
-        return U.lessAndEquals0(getStartMilli());
-    }
     public static boolean hasNotTraceId() {
         return U.isBlank(getTraceId());
     }
 
-    public static long getStartMilli() {
-        return U.toLong(MDC.get(START_REQUEST_TIME));
-    }
     public static String getTraceId() {
         return U.toStr(MDC.get(TRACE_ID)).trim();
     }
@@ -82,43 +68,5 @@ public final class LogUtil {
 
     public static void unbind() {
         MDC.clear();
-    }
-
-
-    @Setter
-    @Getter
-    @NoArgsConstructor
-    @Accessors(chain = true)
-    public static class RequestLogContext {
-        /** 访问方法 */
-        private String method;
-        /** 访问地址 */
-        private String url;
-        /** 请求 body 中的参数 */
-        private String params;
-        /** 请求 header 中的参数 */
-        private String heads;
-
-        RequestLogContext(String method, String url, String params, String heads) {
-            this.method =method;
-            this.url = url;
-            this.params = params;
-            this.heads = heads;
-        }
-
-        /** 输出 " [method url params(...) headers(...)]" */
-        private String requestInfo() {
-            StringBuilder sbd = new StringBuilder();
-            sbd.append(" [");
-            sbd.append(method).append(" ").append(url).append(")");
-            if (U.isNotBlank(heads)) {
-                sbd.append(" headers(").append(heads).append(")");
-            }
-            if (U.isNotBlank(params)) {
-                sbd.append(" params(").append(params).append(")");
-            }
-            sbd.append("]");
-            return sbd.toString();
-        }
     }
 }
