@@ -114,7 +114,7 @@ public class GlobalException {
         Map<String, String> errorMap = validationService.validate(e.getBindingResult());
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
         String msg = Joiner.on("; ").join(new LinkedHashSet<>(errorMap.values()));
-        return handle("valid exception", status, JsonResult.badRequest(msg, errorMap), e);
+        return handle("valid fail", status, JsonResult.badRequest(msg, errorMap), e);
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
@@ -175,7 +175,7 @@ public class GlobalException {
             int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
             JsonResult<String> result = JsonResult.fail(U.returnMsg(e, online));
             result.setError(collectTrack(e));
-            bindAndPrintLog(String.format("result: (%s)", JsonUtil.toJson(result)), e);
+            bindAndPrintLog(false, String.format("result: (%s)", JsonUtil.toJson(result)), e);
             return ResponseEntity.status(status).body(result);
         }
     }
@@ -198,27 +198,40 @@ public class GlobalException {
 
     private ResponseEntity<JsonResult<String>> handle(String msg, int status, JsonResult<String> result, Throwable e) {
         result.setError(collectTrack(e));
-        bindAndPrintLog(String.format("%s, result: (%s)", msg, JsonUtil.toJson(result)), e);
+        bindAndPrintLog(true, String.format("%s, result: (%s)", msg, JsonUtil.toJson(result)), e);
         return ResponseEntity.status(status).body(result);
     }
 
-    private void bindAndPrintLog(String msg, Throwable e) {
-        if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-            // 检查之前有没有加过日志上下文, 没有就加一下
-            boolean logNotTrace = LogUtil.hasNotTraceId();
-            try {
-                if (logNotTrace) {
-                    String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
-                    String realIp = RequestUtil.getRealIp();
-                    LogUtil.putTraceAndIp(traceId, realIp);
-                    LogUtil.ROOT_LOG.info("[{}] [{}] {}", RequestUtil.logBasicInfo(), RequestUtil.logRequestInfo(), msg, e);
-                } else {
-                    LogUtil.ROOT_LOG.info("{}", msg, e);
+    private void bindAndPrintLog(boolean knowException, String msg, Throwable e) {
+        // 检查之前有没有加过日志上下文, 没有就加一下
+        boolean logNotTrace = LogUtil.hasNotTraceId();
+        try {
+            String printMsg;
+            if (logNotTrace) {
+                String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
+                String realIp = RequestUtil.getRealIp();
+                LogUtil.putTraceAndIp(traceId, realIp);
+
+                String basicInfo = RequestUtil.logBasicInfo();
+                String requestInfo = RequestUtil.logRequestInfo();
+                printMsg = String.format("[%s] [%s] %s", basicInfo, requestInfo, msg);
+            } else {
+                printMsg = msg;
+            }
+
+            // 已知异常用 debug, 否则用 error
+            if (knowException) {
+                if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+                    LogUtil.ROOT_LOG.debug("{}", printMsg, e);
                 }
-            } finally {
-                if (logNotTrace) {
-                    LogUtil.unbind();
+            } else {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error("{}", printMsg, e);
                 }
+            }
+        } finally {
+            if (logNotTrace) {
+                LogUtil.unbind();
             }
         }
     }
