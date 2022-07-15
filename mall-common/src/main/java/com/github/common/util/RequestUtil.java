@@ -361,7 +361,7 @@ public final class RequestUtil {
     public static String logBasicInfo() {
         String method = U.callIfNotNull(getRequest(), HttpServletRequest::getMethod, U.EMPTY);
         String url = getRequestUrl();
-        return "(" + method + " " + url + ")";
+        return method + " " + url;
     }
     public static String logRequestInfo() {
         String heads = formatHeader();
@@ -374,7 +374,7 @@ public final class RequestUtil {
         if (U.isNotBlank(params)) {
             sbd.append(" params(").append(params).append(")");
         }
-        return sbd.toString();
+        return sbd.toString().trim();
     }
 
 

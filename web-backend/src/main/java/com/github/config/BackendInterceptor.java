@@ -43,9 +43,7 @@ public class BackendInterceptor implements HandlerInterceptor {
         String userInfo = BackendSessionUtil.getUserInfo();
         LogUtil.putTraceAndIpAndUser(traceId, realIp, userInfo);
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-            String basicInfo = RequestUtil.logBasicInfo();
-            String requestInfo = RequestUtil.logRequestInfo();
-            LogUtil.ROOT_LOG.info("[{} {} {}]", basicInfo, userInfo, requestInfo);
+            LogUtil.ROOT_LOG.info("[{}] [{}] [{}]", userInfo, RequestUtil.logBasicInfo(), RequestUtil.logRequestInfo());
         }
     }
     private void unbindParam() {
