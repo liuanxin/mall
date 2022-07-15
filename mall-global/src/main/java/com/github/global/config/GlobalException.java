@@ -175,7 +175,7 @@ public class GlobalException {
             int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
             JsonResult<String> result = JsonResult.fail(U.returnMsg(e, online));
             result.setError(collectTrack(e));
-            bindAndPrintLog(false, String.format("result: (%s)", JsonUtil.toJson(result)), e);
+            bindAndPrintLog(false, String.format("exception result: (%s)", JsonUtil.toJson(result)), e);
             return ResponseEntity.status(status).body(result);
         }
     }
@@ -198,7 +198,7 @@ public class GlobalException {
 
     private ResponseEntity<JsonResult<String>> handle(String msg, int status, JsonResult<String> result, Throwable e) {
         result.setError(collectTrack(e));
-        bindAndPrintLog(true, String.format("%s, result: (%s)", msg, JsonUtil.toJson(result)), e);
+        bindAndPrintLog(true, String.format("%s, exception result: (%s)", msg, JsonUtil.toJson(result)), e);
         return ResponseEntity.status(status).body(result);
     }
 
