@@ -1,0 +1,34 @@
+{
+  "properties": [
+    {
+      "name": "log.level",
+      "type": "java.lang.String",
+      "defaultValue": "debug",
+      "description": "日志级别."
+    },
+    {
+      "name": "log.sqlLevel",
+      "type": "java.lang.String",
+      "defaultValue": "debug",
+      "description": "sql 日志级别."
+    },
+    {
+      "name": "log.thirdLevel",
+      "type": "java.lang.String",
+      "defaultValue": "debug",
+      "description": "第三方包的日志级别."
+    },
+    {
+      "name": "log.filePath",
+      "type": "java.lang.String",
+      "defaultValue": "~/logs",
+      "description": "日志文件所在目录."
+    },
+    {
+      "name": "log.maxHistory",
+      "type": "java.lang.Integer",
+      "defaultValue": 15,
+      "description": "日志保存天数."
+    }
+  ]
+}

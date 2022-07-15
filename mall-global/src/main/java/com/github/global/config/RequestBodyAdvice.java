@@ -1,6 +1,5 @@
 package com.github.global.config;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
@@ -70,14 +69,9 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                         try (InputStream inputStream = inputMessage.getBody()) {
                             byte[] bytes = inputStream.readAllBytes();
                             if (A.isNotEmptyObj(bytes)) {
+                                // 这样输出的内容可能会有很多空白符(空格, 换行等)
                                 String data = new String(bytes, StandardCharsets.UTF_8);
-                                try {
-                                    // 先转换成对象, 再输出成 string, 这样可以去掉空白符
-                                    String json = logHandler.toJson(mapper.readValue(data, Object.class));
-                                    LogUtil.ROOT_LOG.info("RequestBody({})", U.toStr(json, maxPrintLength, printLength));
-                                } catch (JsonProcessingException e) {
-                                    LogUtil.ROOT_LOG.error("RequestBody({}) has not json data", data, e);
-                                }
+                                LogUtil.ROOT_LOG.info("RequestBody({})", U.toStr(data, maxPrintLength, printLength));
                             }
                             return new ByteArrayInputStream(bytes);
                         }
@@ -93,6 +87,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                                 Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
         if (LogUtil.ROOT_LOG.isInfoEnabled() && !GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
             if (!printComplete) {
+                // 这样输出的内容会去除 null 值的属性
                 String json = logHandler.toJson(body);
                 LogUtil.ROOT_LOG.info("RequestBody({})", U.toStr(json, maxPrintLength, printLength));
             }
