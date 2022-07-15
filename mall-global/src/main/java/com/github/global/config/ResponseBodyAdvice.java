@@ -1,6 +1,6 @@
 package com.github.global.config;
 
-import com.github.common.Const;
+import com.github.common.date.DateUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
@@ -49,49 +49,39 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
                 return;
             }
 
-            // 检查之前有没有加过日志上下文, 没有就加一下
-            boolean logNotTrace = LogUtil.hasNotTraceId();
-            try {
-                if (logNotTrace) {
-                    String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
-                    String realIp = RequestUtil.getRealIp();
-                    String basicInfo = RequestUtil.logBasicInfo();
-                    LogUtil.putTraceAndIp(traceId, realIp, basicInfo);
-                }
-                StringBuilder sbd = new StringBuilder();
+            StringBuilder sbd = new StringBuilder();
+            long startTime = LogUtil.getStartTime();
+            if (U.greater0(startTime)) {
+                sbd.append("time(").append(DateUtil.toHuman(System.currentTimeMillis() - startTime)).append(") ");
+            }
 
-                Class<?> clazz = parameter.getContainingClass();
-                String className = clazz.getName();
-                sbd.append(className);
+            Class<?> clazz = parameter.getContainingClass();
+            String className = clazz.getName();
+            sbd.append(className);
 
-                Method method = parameter.getMethod();
-                String methodName = U.isNotNull(method) ? method.getName() : U.EMPTY;
-                if (U.isNotBlank(methodName)) {
-                    sbd.append("#").append(methodName);
-                    try {
-                        ClassPool classPool = new ClassPool(ClassPool.getDefault());
-                        String classInFile = U.getClassInFile(clazz);
-                        if (U.isNotBlank(classInFile)) {
-                            classPool.appendClassPath(classInFile);
-                        }
-                        int line = classPool.get(className).getDeclaredMethod(methodName).getMethodInfo().getLineNumber(0);
-                        if (line > 1) {
-                            sbd.append("(").append(clazz.getSimpleName()).append(".java:").append(line - 1).append(")");
-                        }
-                    } catch (Exception e) {
-                        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-                            LogUtil.ROOT_LOG.debug("get {}#{} line-number exception", className, methodName, e);
-                        }
+            Method method = parameter.getMethod();
+            String methodName = U.isNotNull(method) ? method.getName() : U.EMPTY;
+            if (U.isNotBlank(methodName)) {
+                sbd.append("#").append(methodName);
+                try {
+                    ClassPool classPool = new ClassPool(ClassPool.getDefault());
+                    String classInFile = U.getClassInFile(clazz);
+                    if (U.isNotBlank(classInFile)) {
+                        classPool.appendClassPath(classInFile);
+                    }
+                    int line = classPool.get(className).getDeclaredMethod(methodName).getMethodInfo().getLineNumber(0);
+                    if (line > 1) {
+                        sbd.append("(").append(clazz.getSimpleName()).append(".java:").append(line - 1).append(")");
+                    }
+                } catch (Exception e) {
+                    if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+                        LogUtil.ROOT_LOG.debug("get {}#{} line-number exception", className, methodName, e);
                     }
                 }
-
-                sbd.append(" return(").append(U.toStr(json, maxPrintLength, printLength)).append(")");
-                LogUtil.ROOT_LOG.info(sbd.toString());
-            } finally {
-                if (logNotTrace) {
-                    LogUtil.unbind();
-                }
             }
+
+            sbd.append(" return(").append(U.toStr(json, maxPrintLength, printLength)).append(")");
+            LogUtil.ROOT_LOG.info(sbd.toString());
         }
     }
 }

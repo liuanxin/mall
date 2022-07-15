@@ -7,7 +7,7 @@ import org.slf4j.MDC;
 
 import java.util.Date;
 
-/** 日志管理, 使用此 utils 获取 log, 不要在类中使用 LoggerFactory.getLogger 的方式! */
+/** 日志工具 */
 public final class LogUtil {
 
     /** 根日志: 在类里面使用 LoggerFactory.getLogger(XXX.class) 跟这种方式一样! */
@@ -16,39 +16,41 @@ public final class LogUtil {
     public static final Logger SQL_LOG = LoggerFactory.getLogger("sqlLog");
 
     /** 接收到请求的时间, 在配置文件中使用 %X{RECORD_TIME} 获取  */
-    private static final String RECEIVE_TIME = "RECEIVE_TIME";
+    private static final String RECEIVE_TIME_CONTEXT = "RECEIVE_TIME";
     /** 在日志上下文中记录的跟踪 id, 在配置文件中使用 %X{TRACE_ID} 获取 */
-    private static final String TRACE_ID = "TRACE_ID";
-    /** 在日志上下文中记录的基础信息: 包括 ip、url 等, 在配置文件中使用 %X{BASIC_INFO} 获取  */
-    private static final String BASIC_INFO = "BASIC_INFO";
-    /** 在日志上下文中记录的真实 ip, 在配置文件中使用 %X{REAL_IP} 获取 */
+    private static final String TRACE_ID_CONTEXT = "TRACE_ID";
+
+    /** 在日志上下文中记录的最早的时间, 不在配置中使用, 只在需要用到的地方基于日志上下文获取即可 */
+    private static final String START_TIME = "START_TIME";
+    /** 在日志上下文中记录的真实 ip, 不在配置中使用, 只在需要用到 ip 的地方基于日志上下文获取即可 */
     private static final String REAL_IP = "REAL_IP";
-    /** 在日志上下文中记录的用户信息, 在配置文件中使用 %X{USER} 获取 */
-    private static final String USER = "USER";
+    /** 在日志上下文中记录的用户信息, 不在配置中使用, 只在需要用到用户信息的地方基于日志上下文获取即可 */
+    private static final String USER_INFO = "USER_INFO";
 
     /** 将 跟踪号 和 接收到请求的时间 放进日志上下文 */
     public static void putTraceId(String traceId) {
+        if (U.lessAndEquals0(getStartTime())) {
+            Date now = new Date();
+            MDC.put(START_TIME, U.toStr(now.getTime()));
+            MDC.put(RECEIVE_TIME_CONTEXT, DateUtil.formatDateTimeMs(now) + " -> ");
+        }
         if (hasNotTraceId()) {
-            MDC.put(RECEIVE_TIME, DateUtil.formatDateTimeMs(new Date()) + " -> ");
             // 跟踪号放在最后, 因此在最前加一个空格
-            MDC.put(TRACE_ID, " " + U.defaultIfBlank(traceId, U.uuid16()));
+            MDC.put(TRACE_ID_CONTEXT, " " + U.defaultIfBlank(traceId, U.uuid16()));
         }
     }
     /** 将 跟踪号 和 接收到请求的时间 和 ip 放进日志上下文 */
-    public static void putTraceAndIp(String traceId, String ip, String basicInfo) {
+    public static void putTraceAndIp(String traceId, String ip) {
         putTraceId(traceId);
         if (U.isNotBlank(ip)) {
-            MDC.put(REAL_IP, "(" + ip + ") ");
-        }
-        if (U.isNotBlank(basicInfo)) {
-            MDC.put(BASIC_INFO, "[" + basicInfo + "] ");
+            MDC.put(REAL_IP, ip);
         }
     }
     /** 将 跟踪号 和 接收到请求的时间 和 ip 放进日志上下文 */
-    public static void putTraceAndIpAndUser(String traceId, String ip, String basicInfo, String userInfo) {
-        putTraceAndIp(traceId, ip, basicInfo);
+    public static void putTraceAndIpAndUser(String traceId, String ip, String userInfo) {
+        putTraceAndIp(traceId, ip);
         if (U.isNotBlank(userInfo)) {
-            MDC.put(USER, "(" + userInfo + ") ");
+            MDC.put(USER_INFO, userInfo);
         }
     }
 
@@ -56,14 +58,17 @@ public final class LogUtil {
         return U.isBlank(getTraceId());
     }
 
+    public static long getStartTime() {
+        return U.toLong(MDC.get(START_TIME));
+    }
     public static String getTraceId() {
-        return U.toStr(MDC.get(TRACE_ID)).trim();
+        return U.toStr(MDC.get(TRACE_ID_CONTEXT)).trim();
     }
     public static String getIp() {
         return U.toStr(MDC.get(REAL_IP)).trim();
     }
-    public static String getUser() {
-        return U.toStr(MDC.get(USER)).trim();
+    public static String getUserInfo() {
+        return U.toStr(MDC.get(USER_INFO)).trim();
     }
 
     public static void unbind() {

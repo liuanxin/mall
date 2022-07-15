@@ -40,11 +40,12 @@ public class BackendInterceptor implements HandlerInterceptor {
     private void bindParam() {
         String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
         String realIp = RequestUtil.getRealIp();
-        String basicInfo = RequestUtil.logBasicInfo();
         String userInfo = BackendSessionUtil.getUserInfo();
-        LogUtil.putTraceAndIpAndUser(traceId, realIp, basicInfo, userInfo);
+        LogUtil.putTraceAndIpAndUser(traceId, realIp, userInfo);
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-            LogUtil.ROOT_LOG.info(RequestUtil.logRequestInfo().trim());
+            String basicInfo = RequestUtil.logBasicInfo();
+            String requestInfo = RequestUtil.logRequestInfo();
+            LogUtil.ROOT_LOG.info("[{} {} {}]", basicInfo, userInfo, requestInfo);
         }
     }
     private void unbindParam() {

@@ -210,10 +210,10 @@ public class GlobalException {
                 if (logNotTrace) {
                     String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
                     String realIp = RequestUtil.getRealIp();
-                    String info = RequestUtil.logBasicInfo() + RequestUtil.logRequestInfo();
-                    LogUtil.putTraceAndIp(traceId, realIp, info);
+                    LogUtil.putTraceAndIp(traceId, realIp);
                 }
-                LogUtil.ROOT_LOG.info(msg, e);
+                String info = RequestUtil.logBasicInfo() + RequestUtil.logRequestInfo();
+                LogUtil.ROOT_LOG.info("[{}] {}", info, msg, e);
             } finally {
                 if (logNotTrace) {
                     LogUtil.unbind();
