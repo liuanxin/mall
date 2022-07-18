@@ -58,15 +58,14 @@ public final class SecurityCodeUtil {
      * @param height 生成的图片高度, 最小 30. 传空值或传小于 30 的值会使用最小值
      * @param background 背景颜色, 不传则默认是 192,192,192,1
      * @param color 生成的图片上面验证码的颜色, 不传则默认是 57,66,108,1
-     * @return 图像
      */
     public static Code generateCode(String count, String style, String width,
                                     String height, String background, String color) {
+        // 默认是数字 + 英文
+        String str = "w".equalsIgnoreCase(style) ? WORD : ("n".equalsIgnoreCase(style) ? NUMBER : WORD_NUMBER);
         int loop = Math.max(toInt(count), 4);
         int widthCount = Math.max(toInt(width), 100);
         int heightCount = Math.max(toInt(height), 30);
-        // 默认是数字 + 英文
-        String str = "w".equalsIgnoreCase(style) ? WORD : ("n".equalsIgnoreCase(style) ? NUMBER : WORD_NUMBER);
 
         // 字体颜色
         Color colorRgba = parse(color, 57, 66, 108);
@@ -98,54 +97,74 @@ public final class SecurityCodeUtil {
         for (int i = 0; i < loop; i++) {
             // 随机字体
             graphics.setFont(new Font(FONTS[RANDOM.nextInt(FONTS.length)], Font.BOLD, heightCount - RANDOM.nextInt(8)));
-            String value = U.toStr(str.charAt(RANDOM.nextInt(str.length())));
+            String value = toStr(str.charAt(RANDOM.nextInt(str.length())));
             graphics.drawString(value, (i + 1) * x, y);
             sbd.append(value);
         }
         return new Code(sbd.toString(), image);
     }
 
-    private static int toInt(String str) {
-        if (str == null) {
-            return 0;
-        }
-        try {
-            return Integer.parseInt(str);
-        } catch (NumberFormatException nfe) {
-            return 0;
-        }
-    }
-
+    /** @see java.awt.Color#Color(float, float, float, float) */
     private static Color parse(String rgba, int defaultRed, int defaultGreen, int defaultBlue) {
-        int r = -1, g = -1, b = -1, a = -1;
+        int red = -1, green = -1, blue = -1, alpha = -1;
 
-        if (U.isNotBlank(rgba)) {
+        if (isNotBlank(rgba)) {
             String[] s = rgba.split(",");
-            r = U.toInt(s[0].trim());
+            red = toInt(s[0].trim());
             int len = s.length;
             if (len > 1) {
-                g = U.toInt(s[1].trim());
+                green = toInt(s[1].trim());
                 if (len > 2) {
-                    b = U.toInt(s[2].trim());
+                    blue = toInt(s[2].trim());
                 }
                 if (len > 3) {
                     // alpha 在 0 ~ 1 之间, 就乘以 255, 大于 1 就不乘
-                    double alpha = U.toDouble(s[3].trim());
-                    if (alpha >= 0 && alpha <= 1) {
-                        a = (int) (alpha * 255);
-                    } else if (alpha > 1) {
-                        a = (int) alpha;
+                    double a = toDouble(s[3].trim());
+                    if (a >= 0 && a <= 1) {
+                        alpha = (int) (a * 255 + 0.5);
+                    } else if (a > 1) {
+                        alpha = (int) a;
                     }
                 }
             }
         }
 
-        if (r < 0 || r > 255) { r = defaultRed; }
-        if (g < 0 || g > 255) { g = defaultGreen; }
-        if (b < 0 || b > 255) { b = defaultBlue; }
-        if (a < 0 || a > 255) { a = 255; }
+        if (red < 0 || red > 255) { red = defaultRed; }
+        if (green < 0 || green > 255) { green = defaultGreen; }
+        if (blue < 0 || blue > 255) { blue = defaultBlue; }
+        if (alpha < 0 || alpha > 255) { alpha = 255; }
 
-        return new Color(r, g, b, a);
+        return new Color(red, green, blue, alpha);
+    }
+
+    private static int toInt(String str) {
+        if (str == null) {
+            return -1;
+        }
+        try {
+            return Integer.parseInt(str);
+        } catch (NumberFormatException nfe) {
+            return -1;
+        }
+    }
+
+    private static double toDouble(String str) {
+        if (str == null) {
+            return -1;
+        }
+        try {
+            return Double.parseDouble(str);
+        } catch (NumberFormatException nfe) {
+            return -1;
+        }
+    }
+
+    private static String toStr(Object obj) {
+        return obj == null ? "" : obj.toString();
+    }
+
+    private static boolean isNotBlank(String str) {
+        return str != null && !str.isEmpty();
     }
 
     @Getter
