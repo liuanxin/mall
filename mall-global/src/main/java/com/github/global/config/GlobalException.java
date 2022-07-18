@@ -108,7 +108,7 @@ public class GlobalException {
 
     // 以下是 spring 的内部异常
 
-    /** 使用 @Valid 注解时, 验证不通过抛出的异常 */
+    /** 使用 @Validated 注解时, 验证不通过抛出的异常 */
     @ExceptionHandler({ BindException.class, MethodArgumentNotValidException.class })
     public ResponseEntity<JsonResult<String>> paramValidException(BindException e) {
         Map<String, String> errorMap = validationService.validate(e.getBindingResult());

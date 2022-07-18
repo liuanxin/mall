@@ -212,12 +212,13 @@ public final class A {
     /**
      * 用指定的方法将 List 转换成 HashMap(过滤 key 和 value 为空)
      *
-     * @param handle 1.抛异常, 2.已经有了就不再写入, 否则覆盖
+     * @param handle 1.抛异常, 2.已经有了就不再写入, 其他值则覆盖
      */
     public static <K, T> Map<K, T> listToMap(Collection<T> list, Function<? super T, K> func, int handle) {
         return listToMap(new HashMap<>(), list, func, handle);
     }
-    private static <K, T> Map<K, T> listToMap(Map<K, T> returnMap, Collection<T> list, Function<? super T, K> func, int handle) {
+    private static <K, T> Map<K, T> listToMap(Map<K, T> returnMap, Collection<T> list,
+                                              Function<? super T, K> func, int handle) {
         if (isNotEmpty(list)) {
             for (T obj : list) {
                 if (U.isNotNull(obj)) {
@@ -245,7 +246,7 @@ public final class A {
     /**
      * 用指定的方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空)
      *
-     * @param handle 1.抛异常, 2.已经有了就不再写入, 否则覆盖
+     * @param handle 1.抛异常, 2.已经有了就不再写入, 其他值则覆盖
      */
     public static <K, T> Map<K, T> listToLinkedMap(Collection<T> list, Function<? super T, K> func, int handle) {
         return listToMap(new LinkedHashMap<>(), list, func, handle);
