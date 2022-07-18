@@ -56,17 +56,69 @@ public final class SecurityCodeUtil {
      * @param style  图片上的文字: 英文(w)、数字(n), 否则是数字 + 英文(不包括小写 l、大写 I、小写 o 和 大写 O)
      * @param width  生成的图片宽度, 最小 100. 传空值或传小于 100 的值会使用最小值
      * @param height 生成的图片高度, 最小 30. 传空值或传小于 30 的值会使用最小值
-     * @param rgba 生成的图片上面验证码的颜色, 不传则默认是 57,66,108,1
+     * @param background 背景颜色, 不传则默认是 192,192,192,1
+     * @param color 生成的图片上面验证码的颜色, 不传则默认是 57,66,108,1
      * @return 图像
      */
-    public static Code generateCode(String count, String style, String width, String height, String rgba) {
+    public static Code generateCode(String count, String style, String width,
+                                    String height, String background, String color) {
         int loop = Math.max(toInt(count), 4);
         int widthCount = Math.max(toInt(width), 100);
         int heightCount = Math.max(toInt(height), 30);
         // 默认是数字 + 英文
         String str = "w".equalsIgnoreCase(style) ? WORD : ("n".equalsIgnoreCase(style) ? NUMBER : WORD_NUMBER);
 
+        // 字体颜色
+        Color colorRgba = parse(color, 57, 66, 108);
+        // 背景颜色
+        Color backgroundRgba = parse(background, 192, 192, 192);
+
+        // ========== 上面处理参数的默认值 ==========
+
+        BufferedImage image = new BufferedImage(widthCount, heightCount, BufferedImage.TYPE_INT_RGB);
+        Graphics graphics = image.createGraphics();
+        // 背景颜色
+        graphics.setColor(backgroundRgba);
+        graphics.fillRect(0, 0, widthCount, heightCount);
+
+        int interferenceCount = loop * 10;
+        int maxRandom = 256;
+        for (int i = 0; i < interferenceCount; i++) {
+            // 随机线
+            graphics.setColor(new Color(RANDOM.nextInt(maxRandom), RANDOM.nextInt(maxRandom), RANDOM.nextInt(maxRandom)));
+            graphics.drawLine(RANDOM.nextInt(widthCount), RANDOM.nextInt(heightCount),
+                    RANDOM.nextInt(widthCount), RANDOM.nextInt(heightCount));
+        }
+        // 内容颜色
+        graphics.setColor(colorRgba);
+
+        int x = (widthCount - 8) / (loop + 1);
+        int y = heightCount - 5;
+        StringBuilder sbd = new StringBuilder();
+        for (int i = 0; i < loop; i++) {
+            // 随机字体
+            graphics.setFont(new Font(FONTS[RANDOM.nextInt(FONTS.length)], Font.BOLD, heightCount - RANDOM.nextInt(8)));
+            String value = U.toStr(str.charAt(RANDOM.nextInt(str.length())));
+            graphics.drawString(value, (i + 1) * x, y);
+            sbd.append(value);
+        }
+        return new Code(sbd.toString(), image);
+    }
+
+    private static int toInt(String str) {
+        if (str == null) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(str);
+        } catch (NumberFormatException nfe) {
+            return 0;
+        }
+    }
+
+    private static Color parse(String rgba, int defaultRed, int defaultGreen, int defaultBlue) {
         int r = -1, g = -1, b = -1, a = -1;
+
         if (U.isNotBlank(rgba)) {
             String[] s = rgba.split(",");
             r = U.toInt(s[0].trim());
@@ -87,51 +139,13 @@ public final class SecurityCodeUtil {
                 }
             }
         }
-        if (r < 0 || r > 255) { r = 57; }
-        if (g < 0 || g > 255) { g = 66; }
-        if (b < 0 || b > 255) { b = 108; }
+
+        if (r < 0 || r > 255) { r = defaultRed; }
+        if (g < 0 || g > 255) { g = defaultGreen; }
+        if (b < 0 || b > 255) { b = defaultBlue; }
         if (a < 0 || a > 255) { a = 255; }
 
-        // ========== 上面处理参数的默认值 ==========
-
-        BufferedImage image = new BufferedImage(widthCount, heightCount, BufferedImage.TYPE_INT_RGB);
-        Graphics graphics = image.createGraphics();
-        // 图像背景填充为灰色
-        graphics.setColor(Color.LIGHT_GRAY);
-        graphics.fillRect(0, 0, widthCount, heightCount);
-
-        // 画一些干扰线
-        int interferenceCount = loop * 10;
-        int maxRandom = 256;
-        for (int i = 0; i < interferenceCount; i++) {
-            graphics.setColor(new Color(RANDOM.nextInt(maxRandom), RANDOM.nextInt(maxRandom), RANDOM.nextInt(maxRandom)));
-            graphics.drawLine(RANDOM.nextInt(widthCount), RANDOM.nextInt(heightCount),
-                    RANDOM.nextInt(widthCount), RANDOM.nextInt(heightCount));
-        }
-        graphics.setColor(new Color(r, g, b, a));
-
-        int x = (widthCount - 8) / (loop + 1);
-        int y = heightCount - 5;
-        StringBuilder sbd = new StringBuilder();
-        for (int i = 0; i < loop; i++) {
-            String value = U.toStr(str.charAt(RANDOM.nextInt(str.length())));
-            // 字体大小
-            graphics.setFont(new Font(FONTS[RANDOM.nextInt(FONTS.length)], Font.BOLD, heightCount - RANDOM.nextInt(8)));
-            graphics.drawString(value, (i + 1) * x, y);
-            sbd.append(value);
-        }
-        return new Code(sbd.toString(), image);
-    }
-
-    private static int toInt(String str) {
-        if (str == null) {
-            return 0;
-        }
-        try {
-            return Integer.parseInt(str);
-        } catch (NumberFormatException nfe) {
-            return 0;
-        }
+        return new Color(r, g, b, a);
     }
 
     @Getter

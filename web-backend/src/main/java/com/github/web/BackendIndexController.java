@@ -38,8 +38,8 @@ public class BackendIndexController {
 
     @GetMapping("/code")
     public void code(HttpServletResponse response, String width, String height,
-                     String count, String style, String rgba) throws IOException {
-        SecurityCodeUtil.Code code = SecurityCodeUtil.generateCode(count, style, width, height, rgba);
+                     String count, String style, String background, String color) throws IOException {
+        SecurityCodeUtil.Code code = SecurityCodeUtil.generateCode(count, style, width, height, background, color);
 
         // 往 session 里面丢值
         BackendSessionUtil.putImageCode(code.getContent());
