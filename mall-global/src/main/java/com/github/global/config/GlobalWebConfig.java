@@ -23,7 +23,7 @@ public class GlobalWebConfig {
     private String languageParam;
 
     @Value("${spring.messages.basename:}")
-    private String baseNames;
+    private String i18nBaseNames;
 
     @Bean
     @Order(1)
@@ -44,6 +44,6 @@ public class GlobalWebConfig {
     @Bean
     @Order(3)
     public FilterRegistrationBean<LanguageFilter> languageFilter() {
-        return new FilterRegistrationBean<>(new LanguageFilter(languageParam, baseNames));
+        return new FilterRegistrationBean<>(new LanguageFilter(languageParam, i18nBaseNames));
     }
 }

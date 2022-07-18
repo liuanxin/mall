@@ -1,7 +1,11 @@
 package com.github.common;
 
+import java.util.Locale;
+
 /** 项目中会用到的常量 */
 public final class Const {
+
+    public static final Locale DEFAULT_LOCALE = Locale.SIMPLIFIED_CHINESE;
 
     // ========== load ==========
     /** 当前项目的基本包名 */
@@ -55,5 +59,7 @@ public final class Const {
 
     /** @see org.springframework.http.HttpMethod */
     public static final String[] SUPPORT_METHODS = new String[] { "OPTIONS", "GET", "POST", "PUT", "DELETE" };
-    public static final String[] ALLOW_HEADERS = new String[] { "Accept-Language", "Cookie", "User-Agent", "Content-Type", TOKEN, TRACE, VERSION };
+    public static final String[] ALLOW_HEADERS = new String[] {
+            "Accept-Language", "Cookie", "User-Agent", "Content-Type", TOKEN, TRACE, VERSION
+    };
 }

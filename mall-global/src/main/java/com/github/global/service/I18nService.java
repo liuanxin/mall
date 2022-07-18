@@ -1,5 +1,6 @@
 package com.github.global.service;
 
+import com.github.common.Const;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -35,14 +36,17 @@ public class I18nService {
                 LogUtil.ROOT_LOG.error("i18n exception", e);
             }
 
-            if (locale == Locale.SIMPLIFIED_CHINESE) {
-                return code;
+            Locale defaultLocale = Const.DEFAULT_LOCALE;
+            if (locale != defaultLocale) {
+                try {
+                    return messageSource.getMessage(code, args, defaultLocale);
+                } catch (NoSuchMessageException ex) {
+                    if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                        LogUtil.ROOT_LOG.error("default i18n exception", ex);
+                    }
+                }
             }
-            try {
-                return messageSource.getMessage(code, args, Locale.SIMPLIFIED_CHINESE);
-            } catch (NoSuchMessageException ex) {
-                return code;
-            }
+            return code;
         }
     }
 }

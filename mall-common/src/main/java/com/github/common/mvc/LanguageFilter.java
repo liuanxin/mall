@@ -1,5 +1,6 @@
 package com.github.common.mvc;
 
+import com.github.common.Const;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
@@ -25,7 +26,7 @@ import java.util.Set;
  * <p>
  * 1. 参数里的 langParamName (默认是 lang)
  * 2. 头里的 langParamName (默认是 lang)
- * 3. 头里的 Accept-Language 值(注意: request.getLocale 是基于 AL 获取的, 但是只能解析 zh-CN, 当 zh_CN 时将无法解析)
+ * 3. 头里的 Accept-Language 值(注意: request.getLocale 是基于 Accept-Language 获取的, 但是只能解析 zh-CN, 当 zh_CN 时将无法解析)
  * 4. 简体中文
  * <p>
  * 手动处理时使用 {@link LocaleContextHolder#getLocale()} 或 {@link RequestContextUtils#getLocale(HttpServletRequest)}
@@ -36,9 +37,9 @@ public class LanguageFilter implements Filter {
 
     private final String languageParam;
     private final Set<Locale> locales;
-    public LanguageFilter(String languageParam, String baseNames) {
+    public LanguageFilter(String languageParam, String i18nBaseNames) {
         this.languageParam = languageParam;
-        this.locales = scanLocale(baseNames);
+        this.locales = scanLocale(i18nBaseNames);
     }
 
     @Override
@@ -114,23 +115,24 @@ public class LanguageFilter implements Filter {
     }
 
     private Locale handleLocale(HttpServletRequest request) {
-        String param = U.defaultIfBlank(languageParam, "lang");
-        String lang = U.defaultIfBlank(request.getParameter(param), request.getHeader(param));
-        Locale locale = parse(lang);
-        if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
-            // 从头中获取 Accept-Language 并兼容解析, 使用 request.getLocale() 当语言是 en_US 时将无法解析, 只有 en-US 才行
-            locale = parse(request.getHeader("Accept-Language"));
-        }
+        Locale locale = getLocale(request);
+        // 「请求的语言」如果是空 或 「请求的语言」不在「国际化对应的语言列表」中 则使用默认语言
+        return (hasBlankLocale(locale) || !locales.contains(locale)) ? Const.DEFAULT_LOCALE : locale;
+    }
 
-        // 「请求的语言」如果是空则使用默认语言
-        if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
-            return DEFAULT;
+    private Locale getLocale(HttpServletRequest request) {
+        String param = U.defaultIfBlank(languageParam, "lang");
+        Locale paramLocale = parse(request.getParameter(param));
+        if (!hasBlankLocale(paramLocale)) {
+            return paramLocale;
         }
-        // 「请求的语言」如果不在「国际化对应的语言列表」中则使用默认语言
-        if (!locales.contains(locale)) {
-            return DEFAULT;
+        Locale headLocale = parse(request.getHeader(param));
+        if (!hasBlankLocale(headLocale)) {
+            return headLocale;
         }
-        return locale;
+        // 从头中获取 Accept-Language, 使用 request.getLocale() 当语言是 en_US 时将无法解析, 只有 en-US 才行
+        // return request.getLocale();
+        return parse(request.getHeader("Accept-Language"));
     }
 
     private Locale parse(String lang) {
@@ -144,5 +146,9 @@ public class LanguageFilter implements Filter {
             return Locale.forLanguageTag(lang.replace("_", "-"));
         }
         return locale;
+    }
+
+    private boolean hasBlankLocale(Locale locale) {
+        return U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()));
     }
 }
