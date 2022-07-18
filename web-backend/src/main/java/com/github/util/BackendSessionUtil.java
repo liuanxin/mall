@@ -7,6 +7,8 @@ import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 
+import javax.servlet.http.HttpSession;
+
 /** !!! 操作 session 都基于此, 其他地方不允许操作! 避免 session 被滥用 !!! */
 public class BackendSessionUtil {
 
@@ -17,9 +19,12 @@ public class BackendSessionUtil {
 
     /** 将图片验证码的值放入 session */
     public static void putImageCode(String code) {
-        RequestUtil.getSession().setAttribute(CODE, code);
-        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("put image code({}) in session({})", code, RequestUtil.getSession().getId());
+        HttpSession session = RequestUtil.getSession();
+        if (U.isNotNull(session)) {
+            session.setAttribute(CODE, code);
+            if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+                LogUtil.ROOT_LOG.debug("put image code({}) in session({})", code, session.getId());
+            }
         }
     }
     /** 验证图片验证码 */
@@ -28,35 +33,52 @@ public class BackendSessionUtil {
             return false;
         }
 
-        Object securityCode = RequestUtil.getSession().getAttribute(CODE);
-        return securityCode != null && code.equalsIgnoreCase(securityCode.toString());
+        HttpSession session = RequestUtil.getSession();
+        return U.isNotNull(session) && U.toStr(session.getAttribute(CODE)).equalsIgnoreCase(code);
     }
 
     /** 登录之后调用此方法, 将 用户信息 放入 session, app 需要将返回的数据保存到本地 */
     public static <T> String whenLogin(T user) {
-        if (U.isNotNull(user)) {
-            BackendSessionModel sessionModel = BackendSessionModel.assemblyData(user);
-            if (U.isNotNull(sessionModel)) {
-                if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-                    LogUtil.ROOT_LOG.debug("put ({}) in session({})",
-                            JsonUtil.toJson(sessionModel), RequestUtil.getSession().getId());
-                }
-                RequestUtil.getSession().setAttribute(USER, sessionModel);
-                return AppTokenHandler.generateToken(sessionModel);
-            }
+        if (U.isNull(user)) {
+            return U.EMPTY;
         }
-        return U.EMPTY;
+
+        BackendSessionModel model = BackendSessionModel.assemblyData(user);
+        if (U.isNull(model)) {
+            return U.EMPTY;
+        }
+
+        HttpSession session = RequestUtil.getSession();
+        if (U.isNotNull(session)) {
+            String json = JsonUtil.toJson(model);
+            if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+                LogUtil.ROOT_LOG.debug("put ({}) in session({})", json, session.getId());
+            }
+            session.setAttribute(USER, json);
+        }
+        return AppTokenHandler.generateToken(model);
     }
 
     /** 获取用户信息. 没有则使用默认信息 */
     private static BackendSessionModel getSessionInfo() {
-        // 从 token 中读, 为空再从 session 中读
-        BackendSessionModel sessionModel = AppTokenHandler.getSessionInfoWithToken(BackendSessionModel.class);
-        if (U.isNull(sessionModel)) {
-            sessionModel = (BackendSessionModel) RequestUtil.getSession().getAttribute(USER);
+        // 1.token, 2.session, 3.默认值
+        BackendSessionModel tokenModel = AppTokenHandler.getSessionInfoWithToken(BackendSessionModel.class);
+        if (U.isNotNull(tokenModel)) {
+            return tokenModel;
         }
-        // 为空则使用默认值
-        return sessionModel == null ? BackendSessionModel.defaultUser() : sessionModel;
+
+        HttpSession session = RequestUtil.getSession();
+        if (U.isNotNull(session)) {
+            String json = U.toStr(session.getAttribute(USER));
+            if (U.isNotBlank(json)) {
+                BackendSessionModel model = JsonUtil.toObjectNil(json, BackendSessionModel.class);
+                if (U.isNotNull(model)) {
+                    return model;
+                }
+            }
+        }
+
+        return BackendSessionModel.defaultUser();
     }
 
     /** 从 session 中获取用户 id */
@@ -82,6 +104,9 @@ public class BackendSessionUtil {
 
     /** 退出登录时调用. 清空 session */
     public static void signOut() {
-        RequestUtil.getSession().invalidate();
+        HttpSession session = RequestUtil.getSession();
+        if (U.isNotNull(session)) {
+            session.invalidate();
+        }
     }
 }

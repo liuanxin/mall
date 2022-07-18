@@ -4,17 +4,13 @@ import com.github.common.json.JsonUtil;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 @Setter
 @Getter
 @NoArgsConstructor
-@Accessors(chain = true)
-class BackendSessionModel implements Serializable {
-    private static final long serialVersionUID = 1L;
+class BackendSessionModel {
 
     /** 默认未登录用户的 id */
     private static final Long DEFAULT_ID = 0L;

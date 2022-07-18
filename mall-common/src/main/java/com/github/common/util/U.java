@@ -544,6 +544,16 @@ public final class U {
         return isNull(value) ? defaultValue : value;
     }
 
+    /** 为 null 或 空白符则返回默认值(字符串) */
+    public static String defaultIfBlank(String value, String defaultValue) {
+        return isBlank(value) ? defaultValue : value;
+    }
+
+    /** 为 null 或 为 0 则返回默认值(数字) */
+    public static <T extends Number> T defaultIfNullOrLess0(T value, T defaultValue) {
+        return isNull(value) || value.doubleValue() == 0 ? defaultValue : value;
+    }
+
     /** 为 null 则返回默认值, 否则调用后返回 */
     public static <T, R> R callIfNotNull(T obj, Function<T, R> func) {
         return isNull(obj) ? null : func.apply(obj);
@@ -553,19 +563,9 @@ public final class U {
         return isNull(obj) ? defaultValue : defaultIfNull(func.apply(obj), defaultValue);
     }
 
-    /** 为 null 或 空白符则返回默认值(字符串) */
-    public static String defaultIfBlank(String value, String defaultValue) {
-        return isBlank(value) ? defaultValue : value;
-    }
-
     /** 为 null 或 空白符则返回默认值, 否则调用后返回(字符串) */
     public static <T> String callIfNotBlank(T obj, Function<T, String> func, String defaultValue) {
         return isNull(obj) ? defaultValue : defaultIfBlank(func.apply(obj), defaultValue);
-    }
-
-    /** 为 null 或 为 0 则返回默认值(数字) */
-    public static <T extends Number> T defaultIfNullOrLess0(T value, T defaultValue) {
-        return isNull(value) || value.doubleValue() == 0 ? defaultValue : value;
     }
 
     /** 为 null 或 为 0 则返回默认值, 否则调用后返回(数字) */
