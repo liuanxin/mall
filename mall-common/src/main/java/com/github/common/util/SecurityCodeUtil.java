@@ -56,38 +56,41 @@ public final class SecurityCodeUtil {
      * @param style  图片上的文字: 英文(w)、数字(n), 否则是数字 + 英文(不包括小写 l、大写 I、小写 o 和 大写 O)
      * @param width  生成的图片宽度, 最小 100. 传空值或传小于 100 的值会使用最小值
      * @param height 生成的图片高度, 最小 30. 传空值或传小于 30 的值会使用最小值
-     * @param rgb 生成的图片上面验证码的颜色, 不传则默认是 57,66,108
+     * @param rgba 生成的图片上面验证码的颜色, 不传则默认是 57,66,108,1
      * @return 图像
      */
-    public static Code generateCode(String count, String style, String width, String height, String rgb) {
+    public static Code generateCode(String count, String style, String width, String height, String rgba) {
         int loop = Math.max(toInt(count), 4);
-
-        String str;
-        if ("w".equalsIgnoreCase(style)) {
-            str = WORD;
-        } else if ("n".equalsIgnoreCase(style)) {
-            str = NUMBER;
-        } else {
-            str = WORD_NUMBER;
-        }
-
         int widthCount = Math.max(toInt(width), 100);
         int heightCount = Math.max(toInt(height), 30);
+        // 默认是数字 + 英文
+        String str = "w".equalsIgnoreCase(style) ? WORD : ("n".equalsIgnoreCase(style) ? NUMBER : WORD_NUMBER);
 
-        int r = -1, g = -1, b = -1;
-        if (U.isNotBlank(rgb)) {
-            String[] s = rgb.split(",");
+        int r = -1, g = -1, b = -1, a = -1;
+        if (U.isNotBlank(rgba)) {
+            String[] s = rgba.split(",");
             r = U.toInt(s[0].trim());
-            if (s.length > 1) {
+            int len = s.length;
+            if (len > 1) {
                 g = U.toInt(s[1].trim());
-                if (s.length > 2) {
+                if (len > 2) {
                     b = U.toInt(s[2].trim());
+                }
+                if (len > 3) {
+                    // alpha 在 0 ~ 1 之间, 就乘以 255, 大于 1 就不乘
+                    double alpha = U.toDouble(s[3].trim());
+                    if (alpha >= 0 && alpha <= 1) {
+                        a = (int) (alpha * 255);
+                    } else if (alpha > 1) {
+                        a = (int) alpha;
+                    }
                 }
             }
         }
         if (r < 0 || r > 255) { r = 57; }
         if (g < 0 || g > 255) { g = 66; }
         if (b < 0 || b > 255) { b = 108; }
+        if (a < 0 || a > 255) { a = 255; }
 
         // ========== 上面处理参数的默认值 ==========
 
@@ -105,7 +108,7 @@ public final class SecurityCodeUtil {
             graphics.drawLine(RANDOM.nextInt(widthCount), RANDOM.nextInt(heightCount),
                     RANDOM.nextInt(widthCount), RANDOM.nextInt(heightCount));
         }
-        graphics.setColor(new Color(r, g, b));
+        graphics.setColor(new Color(r, g, b, a));
 
         int x = (widthCount - 8) / (loop + 1);
         int y = heightCount - 5;
