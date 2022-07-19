@@ -28,8 +28,8 @@ public class ValidationService {
      * 字段标下面的注解 @NotNull、@Email(groups = Xx.class) 等注解, 嵌套字段上标 @Valid(Xx.class) 注解
      *
      * 1. 自动: 在入参上标 @Validated 注解, 将抛出 MethodArgumentNotValidException 或 BindException 异常
-     * 2. 半自动: 在入参上标 @Validated 注解, 用 BindingResult 做为入参, 见 {@link ValidatorService#handleValidate}
-     * 3. 手动: 不标 @Validated 或 @Valid 注解, 调用此方法, 抛出 ParamException 异常
+     * 2. 半自动: 在入参上标 @Validated 注解, 用 BindingResult 做为入参, 按需调用此方法, 抛出 ParamException 异常
+     * 3. 手动: 不标 @Validated 或 @Valid 注解, 按需调用 {@link ValidatorService#handleValidate}, 抛出 ParamException 异常
      * </pre>
      *
      * @see com.github.global.config.GlobalException#paramValidException
@@ -42,7 +42,7 @@ public class ValidationService {
      * @see javax.validation.constraints.Max
      * @see javax.validation.constraints.Pattern
      */
-    public void handleValidate(BindingResult result) {
+    public void validateBinding(BindingResult result) {
         Map<String, String> fieldErrorMap = validate(result);
         if (A.isNotEmpty(fieldErrorMap)) {
             throw new ParamException(fieldErrorMap);
