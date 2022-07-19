@@ -62,16 +62,16 @@ public class ValidatorService {
     public Map<String, String> validate(Set<ConstraintViolation<?>> errorSet) {
         if (A.isEmpty(errorSet)) {
             return Collections.emptyMap();
-        } else {
-            Multimap<String, String> fieldErrorMap = ArrayListMultimap.create();
-            for (ConstraintViolation<?> error : errorSet) {
-                Class<?> clazz = error.getRootBeanClass();
-                String field = validationService.getParamField(clazz, error.getPropertyPath().toString());
-                if (U.isNotBlank(field)) {
-                    fieldErrorMap.put(field, validationService.getMessage(error.getMessage()));
-                }
-            }
-            return validationService.handleError(fieldErrorMap.asMap());
         }
+
+        Multimap<String, String> fieldErrorMap = ArrayListMultimap.create();
+        for (ConstraintViolation<?> error : errorSet) {
+            Class<?> clazz = error.getRootBeanClass();
+            String field = validationService.getParamField(clazz, error.getPropertyPath().toString());
+            if (U.isNotBlank(field)) {
+                fieldErrorMap.put(field, validationService.getMessage(error.getMessage()));
+            }
+        }
+        return validationService.handleError(fieldErrorMap.asMap());
     }
 }
