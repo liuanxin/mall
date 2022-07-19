@@ -23,8 +23,7 @@ public class I18nService {
     }
 
     public String getMessage(String code, List<?> args) {
-        Object[] arr = A.isEmpty(args) ? null : args.toArray(new Object[0]);
-        return getMessage(code, arr);
+        return getMessage(code, A.isEmpty(args) ? null : args.toArray(new Object[0]));
     }
 
     public String getMessage(String code, Object... args) {
