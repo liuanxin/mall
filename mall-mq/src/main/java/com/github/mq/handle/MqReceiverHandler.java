@@ -157,14 +157,14 @@ public class MqReceiverHandler {
             }
             status = MqConst.FAIL;
             String oldRemark = U.toStr(U.isNull(model) ? null : model.getRemark());
+            String now = DateUtil.nowDateTime();
             if (currentRetryCount < consumerRetryCount) {
-                remark = String.format("<%s : 消费(%s)数据异常(%s)>%s", DateUtil.nowDateTime(),
-                        desc, e.getMessage(), oldRemark);
+                remark = String.format("<%s : 消费(%s)数据异常(%s)>%s", now, desc, e.getMessage(), oldRemark);
+                throw e;
             } else {
-                remark = String.format("<%s : 消费(%s)数据异常(%s)且重试(%s)达到上限(%s)>%s", DateUtil.nowDateTime(),
-                        desc, e.getMessage(), currentRetryCount, consumerRetryCount, oldRemark);
+                remark = String.format("<%s : 消费(%s)数据异常(%s)且重试(%s)达到上限(%s)>%s", now, desc, e.getMessage(),
+                        currentRetryCount, consumerRetryCount, oldRemark);
             }
-            throw e;
         } finally {
             if (U.isNotNull(model)) {
                 if (needAdd) {
