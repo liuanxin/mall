@@ -22,8 +22,9 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Map;
 import java.util.function.Function;
 
-/***
- * # ack 模式设置为自动(异常将会 nack, 否则将会 ack)
+/**
+ * <pre>
+ * # ack 模式设置为自动(正常返回则 ack, 异常则 nack)
  * spring.rabbitmq.listener.simple.acknowledge-mode = auto
  * # 开启重试
  * spring.rabbitmq.listener.simple.retry.enabled = true
@@ -33,6 +34,7 @@ import java.util.function.Function;
  * spring.rabbitmq.listener.simple.retry.max-attempts = 5
  * # 两次重试的间隔, 默认是 10 秒
  * spring.rabbitmq.listener.simple.retry.max-interval = 5s
+ * </pre>
  *
  * @see org.springframework.boot.autoconfigure.amqp.RabbitProperties
  */

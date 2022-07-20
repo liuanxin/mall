@@ -33,7 +33,11 @@ public class MqRetryHandler {
     private final MqSenderHandler mqSenderHandler;
 
 
-    /** 处理消费重试(将失败的重发到队列) */
+    /**
+     * 处理消费重试(将失败的重发到队列), 使用 spring.rabbitmq.listener.simple.retry.enabled 进行自动重试
+     *
+     * @see com.github.mq.handle.MqReceiverHandler
+     */
     public boolean handlerReceive(String desc) {
         for (;;) {
             List<MqReceive> mqReceiveList = mqReceiveService.queryRetryMsg(maxRetryCount, mqRetryLimit);

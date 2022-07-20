@@ -110,7 +110,7 @@ public final class RequestUtil {
         return U.isNull(request) ? LocaleContextHolder.getLocale() : RequestContextUtils.getLocale(request);
     }
 
-    /*** 本机就返回 true */
+    /** 本机就返回 true */
     public static boolean isLocalRequest() {
         return U.isLocalRequest(getRealIp());
     }
