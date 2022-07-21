@@ -29,7 +29,7 @@ import java.util.function.Function;
  * # 开启重试
  * spring.rabbitmq.listener.simple.retry.enabled = true
  * # 第一次重试的时间间隔, 默认是 1 秒
- * spring.rabbitmq.listener.simple.retry.initial-interval = 5s
+ * spring.rabbitmq.listener.simple.retry.initial-interval = 2s
  * # 最大重试次数, 默认是 3 次
  * spring.rabbitmq.listener.simple.retry.max-attempts = 5
  * # 两次重试的间隔, 默认是 10 秒
