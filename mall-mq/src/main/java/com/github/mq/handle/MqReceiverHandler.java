@@ -43,7 +43,7 @@ import java.util.function.Function;
 @ConditionalOnClass(RabbitListener.class)
 public class MqReceiverHandler {
 
-    @Value("${mq.consumerRetryCount:3}")
+    @Value("${spring.rabbitmq.listener.simple.retry.max-attempts:3}")
     private int consumerRetryCount;
 
     @Value("${mq.consumerMsgIdKey:msgId,messageId,msg_id,message_id}")
@@ -144,10 +144,8 @@ public class MqReceiverHandler {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("开始消费 {} 数据({})", desc, json);
             }
-            String searchKey = fun.apply(U.isNull(mqData) ? json : U.defaultIfBlank(mqData.getJson(), json));
-            if (U.isNotBlank(model.getSearchKey()) && U.isNotBlank(searchKey)) {
-                model.setSearchKey(U.toStr(searchKey));
-            }
+            String data = U.isNotNull(mqData) && U.isNotBlank(mqData.getJson()) ? mqData.getJson() : json;
+            model.setSearchKey(U.toStr(fun.apply(data)));
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("消费({})数据({})成功", desc, msgId);
             }
@@ -177,6 +175,7 @@ public class MqReceiverHandler {
                     MqReceive update = new MqReceive();
                     update.setId(model.getId());
                     update.setStatus(status);
+                    // update.setSearchKey(model.getSearchKey());
                     update.setRemark(remark);
                     update.setRetryCount(currentRetryCount + 1);
                     mqReceiveService.updateById(update);
