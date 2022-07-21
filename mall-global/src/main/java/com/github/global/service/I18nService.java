@@ -18,10 +18,6 @@ public class I18nService {
 
     private final MessageSource messageSource;
 
-    public String getMessage(String code) {
-        return getMessage(code, (Object) null);
-    }
-
     public String getMessage(String code, List<?> args) {
         return getMessage(code, A.isEmpty(args) ? null : args.toArray(new Object[0]));
     }

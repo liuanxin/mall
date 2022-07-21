@@ -1377,6 +1377,11 @@ public final class U {
         serviceException(msg);
     }
 
+    /** 国际化 */
+    public static void assertI18nException(String code, Object... args) {
+        throw new ServiceI18nException(code, args);
+    }
+
     /** 错误的请求 */
     public static void badRequestException(String msg) {
         throw new BadRequestException(msg);
