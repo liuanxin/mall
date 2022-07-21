@@ -93,9 +93,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
      * @param errorHandle 发送异步时回调的方法
      */
     public void doProvideJustJson(MqInfo mqInfo, String searchKey, String json, Consumer<Exception> errorHandle) {
-        String msgId = U.uuid16();
-        String traceId = LogUtil.getTraceId();
-        provide(searchKey, new SelfCorrelationData(msgId, traceId, mqInfo, json, 0), errorHandle);
+        provide(searchKey, new SelfCorrelationData(U.uuid16(), LogUtil.getTraceId(), mqInfo, json, 0), errorHandle);
     }
 
     /**
@@ -104,15 +102,12 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
      * @param delayMs 延迟发送毫秒数, 需要安装 delay 插件, 见: https://www.rabbitmq.com/community-plugins.html
      */
     public void doProvideJustJson(MqInfo mqInfo, String searchKey, String json, int delayMs) {
-        String msgId = U.uuid16();
-        String traceId = LogUtil.getTraceId();
-        provide(searchKey, new SelfCorrelationData(msgId, traceId, mqInfo, json, delayMs), null);
+        provide(searchKey, new SelfCorrelationData(U.uuid16(), LogUtil.getTraceId(), mqInfo, json, delayMs), null);
     }
 
     /** 指定 msgId 发送 mq 消息(发送的 mq 消息不包「发送时间、队列信息」这些内容), 一般用于重试 */
     public void doProvideJustJson(String msgId, MqInfo mqInfo, String searchKey, String json) {
-        String traceId = LogUtil.getTraceId();
-        provide(searchKey, new SelfCorrelationData(msgId, traceId, mqInfo, json, 0), null);
+        provide(searchKey, new SelfCorrelationData(msgId, LogUtil.getTraceId(), mqInfo, json, 0), null);
     }
 
     private void provide(String searchKey, SelfCorrelationData correlationData, Consumer<Exception> errorHandle) {

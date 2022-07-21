@@ -2,7 +2,6 @@ package com.github.mq.handle;
 
 import com.github.common.date.DateUtil;
 import com.github.common.util.A;
-import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.github.global.service.RedissonService;
 import com.github.mq.constant.MqConst;
@@ -34,7 +33,7 @@ public class MqRetryHandler {
 
 
     /**
-     * 处理消费重试(将失败的重发到队列), 使用 spring.rabbitmq.listener.simple.retry.enabled 进行自动重试
+     * 处理消费重试(将失败的重发到队列), 可以使用自带的 spring.rabbitmq.listener.simple.retry.enabled 方式进行自动重试
      *
      * @see com.github.mq.handle.MqReceiverHandler
      */
@@ -47,38 +46,38 @@ public class MqRetryHandler {
             for (MqReceive mqReceive : mqReceiveList) {
                 retryReceive(desc, mqReceive);
             }
-            if (mqReceiveList.size() < mqRetryLimit) {
-                return true;
-            }
         }
     }
     private void retryReceive(String desc, MqReceive mqReceive) {
-        MqInfo mqInfo = MqInfo.from(mqReceive.getType());
-        if (U.isNull(mqInfo)) {
-            // 没有 mq-info 的数据直接置为成功, 无法重试
+        String oldRemark = U.toStr(mqReceive.getRemark());
+        int status = MqConst.SUCCESS;
+        String remark = null;
+        try {
+            MqInfo mqInfo = MqInfo.from(mqReceive.getType());
+            if (U.isNull(mqInfo)) {
+                remark = String.format("<%s : 没有这个业务类型场景>%s", DateUtil.nowDateTime(), oldRemark);
+            } else {
+                if (sendMsg(mqReceive.getMsgId(), desc, mqReceive.getSearchKey(), mqInfo, mqReceive.getMsg())) {
+                    remark = String.format("<%s : 重试时发到 mq 成功>%s", DateUtil.nowDateTime(), oldRemark);
+                } else {
+                    remark = String.format("<%s : 同 msg_id 的任务正在执行>%s", DateUtil.nowDateTime(), oldRemark);
+                }
+            }
+        } catch (Exception e) {
+            status = MqConst.FAIL;
+        } finally {
             MqReceive update = new MqReceive();
             update.setId(mqReceive.getId());
-            update.setStatus(MqConst.SUCCESS);
-            update.setRemark(String.format("<%s : 没有这个业务类型场景>%s", DateUtil.nowDateTime(), U.toStr(mqReceive.getRemark())));
+            update.setStatus(status);
+            if (status == MqConst.FAIL) {
+                update.setRetryCount(mqReceive.getRetryCount() + 1);
+            }
+            if (U.isNotBlank(remark)) {
+                update.setRemark(remark);
+            }
+            // 状态变更: 成功 或 失败且重试次数 + 1
             mqReceiveService.updateById(update);
-            return;
         }
-        if (sendMsg(mqReceive.getMsgId(), desc, mqReceive.getSearchKey(), mqInfo, mqReceive.getMsg())) {
-            // 如果发到 mq 成功, 则将接收消息置为成功
-            MqReceive update = new MqReceive();
-            update.setId(mqReceive.getId());
-            update.setStatus(MqConst.SUCCESS);
-            update.setRemark(String.format("<%s : 重试时发到 mq 成功>%s", DateUtil.nowDateTime(), U.toStr(mqReceive.getRemark())));
-            mqReceiveService.updateById(update);
-            return;
-        }
-
-        // msgId 的数据只需要有一条在处理, 当前数据直接置为成功, 无需重试
-        MqReceive update = new MqReceive();
-        update.setId(mqReceive.getId());
-        update.setStatus(MqConst.SUCCESS);
-        update.setRemark(String.format("<%s : 同 msg_id 的任务正在执行>%s", DateUtil.nowDateTime(), U.toStr(mqReceive.getRemark())));
-        mqReceiveService.updateById(update);
     }
 
     /** 处理发送重试(将失败的重发到队列) */
@@ -91,54 +90,48 @@ public class MqRetryHandler {
             for (MqSend mqSend : mqSendList) {
                 retrySend(desc, mqSend);
             }
-            if (mqSendList.size() < mqRetryLimit) {
-                return true;
-            }
         }
     }
     private void retrySend(String desc, MqSend mqSend) {
-        MqInfo mqInfo = MqInfo.from(mqSend.getType());
-        if (U.isNull(mqInfo)) {
-            // 没有 mq-info 的数据直接置为成功, 无法重试
-            MqSend update = new MqSend();
-            update.setId(mqSend.getId());
-            update.setStatus(MqConst.SUCCESS);
-            update.setRemark(String.format("<%s : 没有这个业务类型场景>%s", DateUtil.nowDateTime(), U.toStr(mqSend.getRemark())));
-            mqSendService.updateById(update);
-            return;
+        String oldRemark = U.toStr(mqSend.getRemark());
+        int status = MqConst.SUCCESS;
+        String remark = null;
+        try {
+            MqInfo mqInfo = MqInfo.from(mqSend.getType());
+            if (U.isNull(mqInfo)) {
+                remark = String.format("<%s : 没有这个业务类型场景>%s", DateUtil.nowDateTime(), oldRemark);
+            } else {
+                if (!sendMsg(mqSend.getMsgId(), desc, mqSend.getSearchKey(), mqInfo, mqSend.getMsg())) {
+                    remark = String.format("<%s : 同 msg_id 的任务正在执行>%s", DateUtil.nowDateTime(), oldRemark);
+                }
+            }
+        } catch (Exception e) {
+            status = MqConst.FAIL;
+        } finally {
+            // 上面的 sendMsg 调用返回为 true 时, 内部方法会自动处理「成功」或「失败且重试次数 + 1」, 因此当前只处理 remark 有值的场景
+            if (U.isNotBlank(remark)) {
+                MqSend update = new MqSend();
+                update.setId(mqSend.getId());
+                update.setStatus(status);
+                if (status == MqConst.FAIL) {
+                    update.setRetryCount(mqSend.getRetryCount() + 1);
+                }
+                update.setRemark(remark);
+                mqSendService.updateById(update);
+            }
         }
-
-        if (sendMsg(mqSend.getMsgId(), desc, mqSend.getSearchKey(), mqInfo, mqSend.getMsg())) {
-            return;
-        }
-
-        // msgId 的数据只需要有一条在处理, 当前数据直接置为成功, 无需重试
-        MqSend update = new MqSend();
-        update.setId(mqSend.getId());
-        update.setStatus(MqConst.SUCCESS);
-        update.setRemark(String.format("<%s : 同 msg_id 的任务正在执行>%s", DateUtil.nowDateTime(), U.toStr(mqSend.getRemark())));
-        mqSendService.updateById(update);
     }
 
     private boolean sendMsg(String msgId, String desc, String searchKey, MqInfo mqInfo, String json) {
         if (redissonService.tryLock(msgId)) {
             try {
-                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("开始 {} --> {}", desc, msgId);
-                }
                 mqSenderHandler.doProvideJustJson(msgId, mqInfo, searchKey, json);
-                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("{} --> {} 成功", desc, msgId);
-                }
-            } catch (Exception e) {
-                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("{} --> {} 异常", desc, msgId, e);
-                }
             } finally {
                 redissonService.unlock(msgId);
             }
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
 }
