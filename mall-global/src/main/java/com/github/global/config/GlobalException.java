@@ -46,8 +46,8 @@ public class GlobalException {
     /**
      * 响应错误时, 错误码是否以 ResponseStatus 返回
      *
-     * true:  ResponseStatus 返回 400 | 500, 返回 json 是 { "code": 400 | 500 ... }
-     * false: ResponseStatus 返回 200,       返回 json 是 { "code": 400 | 500 ... }
+     * true:  ResponseStatus 返回 400 | 500, 返回 json 是 { "data": xxx ... }
+     * false: ResponseStatus 返回 200,       返回 json 是 { "code": 400 | 500, "data": xxx ... }
      */
     @Value("${res.returnStatusCode:false}")
     private boolean returnStatusCode;
@@ -55,48 +55,55 @@ public class GlobalException {
     private final I18nService i18nService;
     private final ValidationService validationService;
 
+    private JsonResult<String> handleErrorResult(JsonResult<String> result) {
+        if (returnStatusCode) {
+            result.setCode(null);
+        }
+        return result;
+    }
+
     /** 404 */
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<JsonResult<String>> notFound(NotFoundException e) {
-        int status = returnStatusCode ? JsonCode.NOT_FOUND.getCode() : JsonCode.SUCCESS.getCode();
-        return handle("not found", status, JsonResult.notFound(e.getMessage()), e);
+        int status = (returnStatusCode ? JsonCode.NOT_FOUND : JsonCode.SUCCESS).getCode();
+        return handle("not found", status, handleErrorResult(JsonResult.notFound(e.getMessage())), e);
     }
     /** 未登录 */
     @ExceptionHandler(NotLoginException.class)
     public ResponseEntity<JsonResult<String>> notLogin(NotLoginException e) {
-        int status = returnStatusCode ? JsonCode.NOT_LOGIN.getCode() : JsonCode.SUCCESS.getCode();
-        return handle("not login", status, JsonResult.needLogin(e.getMessage()), e);
+        int status = (returnStatusCode ? JsonCode.NOT_LOGIN : JsonCode.SUCCESS).getCode();
+        return handle("not login", status, handleErrorResult(JsonResult.needLogin(e.getMessage())), e);
     }
     /** 无权限 */
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<JsonResult<String>> forbidden(ForbiddenException e) {
-        int status = returnStatusCode ? JsonCode.NOT_PERMISSION.getCode() : JsonCode.SUCCESS.getCode();
-        return handle("forbidden", status, JsonResult.needPermission(e.getMessage()), e);
+        int status = (returnStatusCode ? JsonCode.NOT_PERMISSION : JsonCode.SUCCESS).getCode();
+        return handle("forbidden", status, handleErrorResult(JsonResult.needPermission(e.getMessage())), e);
     }
     /** 参数验证 */
     @ExceptionHandler(ParamException.class)
     public ResponseEntity<JsonResult<String>> param(ParamException e) {
-        int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
-        return handle("param exception", status, JsonResult.badRequest(e.getMessage(), e.getErrorMap()), e);
+        int status = (returnStatusCode ? JsonCode.BAD_REQUEST : JsonCode.SUCCESS).getCode();
+        return handle("param exception", status, handleErrorResult(JsonResult.badRequest(e.getMessage(), e.getErrorMap())), e);
     }
     /** 错误的请求 */
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<JsonResult<String>> badRequest(BadRequestException e) {
-        int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
-        return handle("bad request", status, JsonResult.badRequest(e.getMessage(), null), e);
+        int status = (returnStatusCode ? JsonCode.BAD_REQUEST : JsonCode.SUCCESS).getCode();
+        return handle("bad request", status, handleErrorResult(JsonResult.badRequest(e.getMessage(), null)), e);
     }
     /** 业务异常 */
     @ExceptionHandler(ServiceException.class)
     public ResponseEntity<JsonResult<String>> service(ServiceException e) {
-        int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
-        return handle("service exception", status, JsonResult.fail(e.getMessage()), e);
+        int status = (returnStatusCode ? JsonCode.FAIL : JsonCode.SUCCESS).getCode();
+        return handle("service exception", status, handleErrorResult(JsonResult.fail(e.getMessage())), e);
     }
     /** 国际化业务异常 */
     @ExceptionHandler(ServiceI18nException.class)
     public ResponseEntity<JsonResult<String>> serviceI18n(ServiceI18nException e) {
-        int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
+        int status = (returnStatusCode ? JsonCode.FAIL : JsonCode.SUCCESS).getCode();
         String msg = i18nService.getMessage(e.getCode(), e.getArgs());
-        return handle("service i18n exception", status, JsonResult.fail(msg), e);
+        return handle("service i18n exception", status, handleErrorResult(JsonResult.fail(msg)), e);
     }
     @ExceptionHandler(ForceReturnException.class)
     public ResponseEntity forceReturn(ForceReturnException e) {
@@ -110,9 +117,9 @@ public class GlobalException {
     @ExceptionHandler({ BindException.class, MethodArgumentNotValidException.class })
     public ResponseEntity<JsonResult<String>> paramValidException(BindException e) {
         Map<String, String> errorMap = validationService.validate(e.getBindingResult());
-        int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
+        int status = (returnStatusCode ? JsonCode.BAD_REQUEST : JsonCode.SUCCESS).getCode();
         String msg = Joiner.on("; ").join(new LinkedHashSet<>(errorMap.values()));
-        return handle("valid fail", status, JsonResult.badRequest(msg, errorMap), e);
+        return handle("valid fail", status, handleErrorResult(JsonResult.badRequest(msg, errorMap)), e);
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
@@ -122,8 +129,8 @@ public class GlobalException {
             sbd.append(String.format("(%s -> %s)", e.getHttpMethod(), e.getRequestURL()));
         }
         String msg = sbd.toString();
-        int status = returnStatusCode ? JsonCode.NOT_FOUND.getCode() : JsonCode.SUCCESS.getCode();
-        return handle(msg, status, JsonResult.notFound(msg), e);
+        int status = (returnStatusCode ? JsonCode.NOT_FOUND : JsonCode.SUCCESS).getCode();
+        return handle(msg, status, handleErrorResult(JsonResult.notFound(msg)), e);
     }
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<JsonResult<String>> notSupported(HttpRequestMethodNotSupportedException e) {
@@ -132,23 +139,22 @@ public class GlobalException {
             sbd.append(String.format(", current(%s), support(%s)", e.getMethod(), A.toStr(e.getSupportedMethods())));
         }
         String msg = sbd.toString();
-        int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
-        return handle(msg, status, JsonResult.fail(msg), e);
+        int status = (returnStatusCode ? JsonCode.FAIL : JsonCode.SUCCESS).getCode();
+        return handle(msg, status, handleErrorResult(JsonResult.fail(msg)), e);
     }
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<JsonResult<String>> uploadSizeExceeded(MaxUploadSizeExceededException e) {
         // 右移 20 位相当于除以两次 1024, 正好表示从字节到 Mb
         String msg = String.format("Upload File size exceeded the limit: %sM", (e.getMaxUploadSize() >> 20));
-        int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
-        return handle(msg, status, JsonResult.fail(msg), e);
+        int status = (returnStatusCode ? JsonCode.FAIL : JsonCode.SUCCESS).getCode();
+        return handle(msg, status, handleErrorResult(JsonResult.fail(msg)), e);
     }
 
     // 以上是 spring 的内部异常
 
     public ResponseEntity<JsonResult<String>> unknown(Throwable e) {
-        int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
-        JsonResult<String> result = JsonResult.fail(U.returnMsg(e, online));
-        return handle(null, status, JsonResult.fail(U.returnMsg(e, online)), e);
+        int status = (returnStatusCode ? JsonCode.FAIL : JsonCode.SUCCESS).getCode();
+        return handle(null, status, handleErrorResult(JsonResult.fail(U.returnMsg(e, online))), e);
     }
 
     /** 未知的所有其他异常 */
