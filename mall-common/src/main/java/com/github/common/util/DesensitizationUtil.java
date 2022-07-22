@@ -1,7 +1,5 @@
 package com.github.common.util;
 
-import com.github.common.Const;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -24,15 +22,12 @@ public final class DesensitizationUtil {
         }
 
         String lower = key.toLowerCase();
-        if (lower.equals(Const.TOKEN.toLowerCase())) {
-            return U.foggyValue(value, 50, 10);
-        }
-
         String str = lower.contains("_") ? lower.replace("_", "-") : lower;
         return switch (str) {
             case "password" -> "***";
             case "phone", "tel", "telephone" -> U.foggyPhone(value);
             case "idcard", "id-card" -> U.foggyIdCard(value);
+            case "token", "x-token" -> U.foggyValue(value, 50, 10);
             case "apptoken", "app-token", "x-app-token",
                  "appkey", "app-key", "x-app-key",
                  "appsecret", "app-secret", "x-app-secret" -> U.foggyValue(value, 16, 3);
