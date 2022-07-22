@@ -43,7 +43,7 @@ public class ValidatorService {
      * @see javax.validation.constraints.Min
      * @see javax.validation.constraints.Max
      * @see javax.validation.constraints.Pattern
-     * @param groups 校验时用到的组, 见 {@link javax.validation.groups.Default} 用任意类都行, 只要确保跟 @Null 等注解里的一致即可
+     * @param groups 校验时用到的组, 见 {@link javax.validation.groups.Default}, 用任意类都行, 只要确保跟 @Null 等注解里的一致即可
      */
     public <T> void handleValidate(T obj, Class<?>... groups) {
         if (U.isNull(obj)) {
