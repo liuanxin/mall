@@ -19,8 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.MissingRequestHeaderException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -85,7 +83,7 @@ public class GlobalException {
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<JsonResult<String>> badRequest(BadRequestException e) {
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
-        return handle("bad request", status, JsonResult.badRequest(e.getMessage()), e);
+        return handle("bad request", status, JsonResult.badRequest(e.getMessage(), null), e);
     }
     /** 业务异常 */
     @ExceptionHandler(ServiceException.class)
@@ -119,25 +117,21 @@ public class GlobalException {
 
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<JsonResult<String>> noHandler(NoHandlerFoundException e) {
-        String msg = online ? "404" : String.format("404(%s %s)", e.getHttpMethod(), e.getRequestURL());
+        StringBuilder sbd = new StringBuilder("404");
+        if (!online) {
+            sbd.append(String.format("(%s -> %s)", e.getHttpMethod(), e.getRequestURL()));
+        }
+        String msg = sbd.toString();
         int status = returnStatusCode ? JsonCode.NOT_FOUND.getCode() : JsonCode.SUCCESS.getCode();
         return handle(msg, status, JsonResult.notFound(msg), e);
     }
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<JsonResult<String>> missParam(MissingServletRequestParameterException e) {
-        String msg = online ? "miss param" : String.format("miss param(%s : %s)", e.getParameterType(), e.getParameterName());
-        int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
-        return handle(msg, status, JsonResult.badRequest(msg), e);
-    }
-    @ExceptionHandler(MissingRequestHeaderException.class)
-    public ResponseEntity<JsonResult<String>> missHeader(MissingRequestHeaderException e) {
-        String msg = online ? "miss header" : String.format("miss header(%s)", e.getHeaderName());
-        int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
-        return handle(msg, status, JsonResult.badRequest(msg), e);
-    }
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<JsonResult<String>> notSupported(HttpRequestMethodNotSupportedException e) {
-        String msg = online ? "not support" : String.format("not support(%s), support(%s)", e.getMethod(), A.toStr(e.getSupportedMethods()));
+        StringBuilder sbd = new StringBuilder("not support");
+        if (!online) {
+            sbd.append(String.format(", current(%s), support(%s)", e.getMethod(), A.toStr(e.getSupportedMethods())));
+        }
+        String msg = sbd.toString();
         int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
         return handle(msg, status, JsonResult.fail(msg), e);
     }
@@ -151,32 +145,34 @@ public class GlobalException {
 
     // 以上是 spring 的内部异常
 
+    public ResponseEntity<JsonResult<String>> unknown(Throwable e) {
+        int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
+        JsonResult<String> result = JsonResult.fail(U.returnMsg(e, online));
+        return handle(null, status, JsonResult.fail(U.returnMsg(e, online)), e);
+    }
+
     /** 未知的所有其他异常 */
     @ExceptionHandler(Throwable.class)
     public ResponseEntity other(Throwable throwable) {
-        Throwable e = innerException(1, throwable);
-        if (e instanceof NotFoundException nfe) {
+        Throwable exception = innerException(1, throwable);
+        if (exception instanceof NotFoundException nfe) {
             return notFound(nfe);
-        } else if (e instanceof NotLoginException nle) {
+        } else if (exception instanceof NotLoginException nle) {
             return notLogin(nle);
-        } else if (e instanceof ForbiddenException fe) {
+        } else if (exception instanceof ForbiddenException fe) {
             return forbidden(fe);
-        } else if (e instanceof ParamException pe) {
+        } else if (exception instanceof ParamException pe) {
             return param(pe);
-        } else if (e instanceof BadRequestException bre) {
+        } else if (exception instanceof BadRequestException bre) {
             return badRequest(bre);
-        } else if (e instanceof ServiceException se) {
+        } else if (exception instanceof ServiceException se) {
             return service(se);
-        } else if (e instanceof ServiceI18nException sie) {
+        } else if (exception instanceof ServiceI18nException sie) {
             return serviceI18n(sie);
-        } else if (e instanceof ForceReturnException fre) {
+        } else if (exception instanceof ForceReturnException fre) {
             return forceReturn(fre);
         } else {
-            int status = returnStatusCode ? JsonCode.FAIL.getCode() : JsonCode.SUCCESS.getCode();
-            JsonResult<String> result = JsonResult.fail(U.returnMsg(e, online));
-            result.setError(collectTrack(e));
-            bindAndPrintLog(false, String.format("exception result: (%s)", JsonUtil.toJson(result)), e);
-            return ResponseEntity.status(status).body(result);
+            return unknown(exception);
         }
     }
 
@@ -198,15 +194,15 @@ public class GlobalException {
 
     private ResponseEntity<JsonResult<String>> handle(String msg, int status, JsonResult<String> result, Throwable e) {
         result.setError(collectTrack(e));
-        bindAndPrintLog(true, String.format("%s, exception result: (%s)", msg, JsonUtil.toJson(result)), e);
+        bindAndPrintLog(msg, result, e);
         return ResponseEntity.status(status).body(result);
     }
 
-    private void bindAndPrintLog(boolean knowException, String msg, Throwable e) {
+    private void bindAndPrintLog(String errorMsg, JsonResult<String> result, Throwable e) {
         // 检查之前有没有加过日志上下文, 没有就加一下
         boolean logNotTrace = LogUtil.hasNotTraceId();
         try {
-            String printMsg;
+            StringBuilder sbd = new StringBuilder();
             if (logNotTrace) {
                 String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
                 String realIp = RequestUtil.getRealIp();
@@ -214,19 +210,22 @@ public class GlobalException {
 
                 String basicInfo = RequestUtil.logBasicInfo();
                 String requestInfo = RequestUtil.logRequestInfo();
-                printMsg = String.format("[%s] [%s] %s", basicInfo, requestInfo, msg);
-            } else {
-                printMsg = msg;
+                sbd.append(String.format("[%s] [%s] ", basicInfo, requestInfo));
             }
+            boolean knowException = U.isNotBlank(errorMsg);
+            if (knowException) {
+                sbd.append(errorMsg).append(", ");
+            }
+            sbd.append(String.format("exception result: (%s)", JsonUtil.toJson(result)));
 
             // 已知异常用 debug, 否则用 error
             if (knowException) {
                 if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-                    LogUtil.ROOT_LOG.debug("{}", printMsg, e);
+                    LogUtil.ROOT_LOG.debug("{}", sbd, e);
                 }
             } else {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("{}", printMsg, e);
+                    LogUtil.ROOT_LOG.error("{}", sbd, e);
                 }
             }
         } finally {
