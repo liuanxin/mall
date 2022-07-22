@@ -25,14 +25,18 @@ public final class DesensitizationUtil {
 
         String lower = key.toLowerCase();
         if (lower.equals(Const.TOKEN.toLowerCase())) {
-            return U.foggyToken(value);
+            return U.foggyValue(value, 50, 10);
         }
 
-        return switch (lower) {
+        String str = lower.contains("_") ? lower.replace("_", "-") : lower;
+        return switch (str) {
             case "password" -> "***";
-            case "phone" -> U.foggyPhone(value);
-            case "id-card", "idcard", "id_card" -> U.foggyIdCard(value);
-            default -> U.foggyValue(value, 300, 100);
+            case "phone", "tel", "telephone" -> U.foggyPhone(value);
+            case "idcard", "id-card" -> U.foggyIdCard(value);
+            case "apptoken", "app-token", "x-app-token",
+                 "appkey", "app-key", "x-app-key",
+                 "appsecret", "app-secret", "x-app-secret" -> U.foggyValue(value, 16, 3);
+            default -> U.foggyValue(value, 300, 50);
         };
     }
 

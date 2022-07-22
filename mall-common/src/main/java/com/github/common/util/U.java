@@ -7,7 +7,6 @@ import com.github.common.json.JsonUtil;
 
 import java.beans.PropertyDescriptor;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -639,57 +638,7 @@ public final class U {
         return !isBlank(str);
     }
 
-    /** 对象为空, 字符串为 null nil undefined, 数组、集合、Map 长度为 0 则返回 true */
-    public static boolean isEmpty(Object obj) {
-        if (isNull(obj)) {
-            return true;
-        }
 
-        if (obj instanceof String s) {
-            String str = s.trim();
-            return str.isEmpty() || str.equalsIgnoreCase("null") || str.equalsIgnoreCase("undefined");
-        } else if (obj instanceof Optional o) {
-            return o.isEmpty();
-        } else if (obj.getClass().isArray()) {
-            return Array.getLength(obj) == 0;
-        } else if (obj instanceof Collection c) {
-            return c.isEmpty();
-        } else if (obj instanceof Map m) {
-            return m.isEmpty();
-        } else {
-            return false;
-        }
-    }
-    /** 对象非空, 字符串不为 null nil undefined, 数组、集合、Map 长度不为 0 则返回 true */
-    public static boolean isNotEmpty(Object obj) {
-        return !isEmpty(obj);
-    }
-
-    /** 对象长度在指定的数值以内(不包含边距)就返回 true */
-    public static boolean length(Object obj, int max) {
-        return obj != null && obj.toString().trim().length() < max;
-    }
-
-    /** 对象长度在指定的数值经内(包含边距)就返回 true */
-    public static boolean lengthBorder(String str, int min, int max) {
-        return !isBlank(str) && str.length() >= min && str.length() <= max;
-    }
-    /** 对象长度在指定的数值以内(不包含边距)就返回 true */
-    public static boolean length(String str, int min, int max) {
-        return lengthBorder(str, min + 1, max - 1);
-    }
-
-    private static final Pattern ALL = Pattern.compile(".");
-    /** 将字符串中指定位数的值模糊成 * 并返回. 索引位从 0 开始 */
-    public static String foggy(String param, int start, int end) {
-        if (isBlank(param)) {
-            return EMPTY;
-        }
-        if (start < 0 || end < start || end > param.length()) {
-            return param;
-        }
-        return param.substring(0, start) + ALL.matcher(param.substring(start, end)).replaceAll("*") + param.substring(end);
-    }
     public static String foggyPhone(String phone) {
         return checkPhone(phone) ? phone.substring(0, 3) + " **** " + phone.substring(phone.length() - 4) : phone;
     }
@@ -705,16 +654,42 @@ public final class U {
             return idCard;
         }
     }
-    public static String foggyToken(String value) {
-        return foggyValue(value, 100, 20);
-    }
+    /** 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3)」 -> 「abc *** 890[36]」 */
     public static String foggyValue(String value, int max, int leftRight) {
+        return foggyValue(value, max, leftRight, leftRight);
+    }
+    /**
+     * <pre>
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 0)」 -> 「***[36]」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 3)」 -> 「*** 890[36]」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 0)」 -> 「abc ***[36]」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 3)」 -> 「abc *** 890[36]」
+     * </pre>
+     */
+    public static String foggyValue(String value, int max, int left, int right) {
         if (isBlank(value)) {
             return value.trim();
         }
         int valueLen = value.length();
-        if (valueLen > max && max > (leftRight * 2)) {
-            return value.substring(0, leftRight) + " *** " + value.substring(valueLen - leftRight);
+        if (left < 0 || left > valueLen) {
+            left = 0;
+        }
+        if (right < 0 || right > valueLen) {
+            right = 0;
+        }
+        if (valueLen >= max && max > (left + right)) {
+            StringBuilder sbd = new StringBuilder();
+            String lt = value.substring(0, left);
+            if (U.isNotBlank(lt)) {
+                sbd.append(lt).append(" ");
+            }
+            sbd.append("~*~");
+            String rt = value.substring(valueLen - right);
+            if (U.isNotBlank(rt)) {
+                sbd.append(" ").append(rt);
+            }
+            sbd.append("[").append(valueLen).append("]");
+            return sbd.toString();
         } else {
             return value;
         }
