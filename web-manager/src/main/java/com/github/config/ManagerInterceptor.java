@@ -1,6 +1,5 @@
 package com.github.config;
 
-import com.github.common.Const;
 import com.github.common.annotation.NotNeedLogin;
 import com.github.common.annotation.NotNeedPermission;
 import com.github.common.util.LogUtil;
@@ -46,7 +45,7 @@ public class ManagerInterceptor implements HandlerInterceptor {
     }
 
     private void bindParam() {
-        String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
+        String traceId = RequestUtil.getTraceId();
         String realIp = RequestUtil.getRealIp();
         LogUtil.putTraceAndIp(traceId, realIp);
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {

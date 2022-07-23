@@ -1,5 +1,6 @@
 package com.github.common.util;
 
+import com.github.common.Const;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -246,6 +247,10 @@ public final class RequestUtil {
         String contentType = request.getContentType();
         boolean upload = U.isNotBlank(contentType) && contentType.startsWith("multipart/");
         return upload ? "uploading file" : U.formatParam(request.getParameterMap());
+    }
+
+    public static String getTraceId() {
+        return getCookieOrHeaderOrParam(Const.TRACE);
     }
 
     /** 从 cookie 中获取值, 为空就从请求头中取, 为空再从参数中取 */

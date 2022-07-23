@@ -1,6 +1,5 @@
 package com.github.global.config;
 
-import com.github.common.Const;
 import com.github.common.exception.*;
 import com.github.common.json.JsonCode;
 import com.github.common.json.JsonResult;
@@ -210,7 +209,7 @@ public class GlobalException {
         try {
             StringBuilder sbd = new StringBuilder();
             if (logNotTrace) {
-                String traceId = RequestUtil.getCookieOrHeaderOrParam(Const.TRACE);
+                String traceId = RequestUtil.getTraceId();
                 String realIp = RequestUtil.getRealIp();
                 LogUtil.putTraceAndIp(traceId, realIp);
 
