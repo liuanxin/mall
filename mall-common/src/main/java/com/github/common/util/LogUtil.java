@@ -24,8 +24,6 @@ public final class LogUtil {
     private static final String START_TIME = "START_TIME";
     /** 在日志上下文中记录的真实 ip, 不在配置中使用, 只在需要用到 ip 的地方基于日志上下文获取即可 */
     private static final String REAL_IP = "REAL_IP";
-    /** 在日志上下文中记录的用户信息, 不在配置中使用, 只在需要用到用户信息的地方基于日志上下文获取即可 */
-    private static final String USER_INFO = "USER_INFO";
 
     /** 将 跟踪号 和 接收到请求的时间 放进日志上下文 */
     public static void putTraceId(String traceId) {
@@ -46,13 +44,6 @@ public final class LogUtil {
             MDC.put(REAL_IP, ip);
         }
     }
-    /** 将 跟踪号 和 接收到请求的时间 和 ip 放进日志上下文 */
-    public static void putTraceAndIpAndUser(String traceId, String ip, String userInfo) {
-        putTraceAndIp(traceId, ip);
-        if (U.isNotBlank(userInfo)) {
-            MDC.put(USER_INFO, userInfo);
-        }
-    }
 
     public static boolean hasNotTraceId() {
         return U.isBlank(getTraceId());
@@ -66,9 +57,6 @@ public final class LogUtil {
     }
     public static String getIp() {
         return U.toStr(MDC.get(REAL_IP)).trim();
-    }
-    public static String getUserInfo() {
-        return U.toStr(MDC.get(USER_INFO)).trim();
     }
 
     public static void unbind() {
