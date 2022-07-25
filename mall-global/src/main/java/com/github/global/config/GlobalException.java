@@ -249,6 +249,6 @@ public class GlobalException {
                 LogUtil.unbind();
             }
         }
-        return ResponseEntity.status(status).body(result);
+        return ResponseEntity.status(status)/*.header(Const.TRACE, LogUtil.getTraceId())*/.body(result);
     }
 }
