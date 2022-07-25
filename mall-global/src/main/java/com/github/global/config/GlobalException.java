@@ -24,7 +24,10 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 处理全局异常的控制类
@@ -198,17 +201,25 @@ public class GlobalException {
     }
 
     private ResponseEntity<JsonResult<String>> handle(String msg, int status, JsonResult<String> result, Throwable e) {
-        result.setError(collectTrack(e));
-        bindAndPrintLog(msg, result, e);
-        return ResponseEntity.status(status).body(result);
-    }
+        // 非生产 且 异常信息非空 时, 将异常写入返回值
+        if (!online && U.isNotNull(e)) {
+            List<String> exceptionList = new ArrayList<>();
+            exceptionList.add(U.toStr(e.getMessage()));
 
-    private void bindAndPrintLog(String errorMsg, JsonResult<String> result, Throwable e) {
-        // 检查之前有没有加过日志上下文, 没有就加一下
-        boolean logNotTrace = LogUtil.hasNotTraceId();
+            StackTraceElement[] stackTraceArray = e.getStackTrace();
+            if (A.isNotEmpty(stackTraceArray)) {
+                for (StackTraceElement trace : stackTraceArray) {
+                    exceptionList.add(trace.toString().trim());
+                }
+            }
+            result.setError(exceptionList);
+        }
+
+        // 打印异常日志: 之前没有加过日志上下文就加上并输出基础和请求信息, 避免某些异常没有进到拦截器时日志缺少信息
+        boolean logNotTraceId = LogUtil.hasNotTraceId();
         try {
             StringBuilder sbd = new StringBuilder();
-            if (logNotTrace) {
+            if (logNotTraceId) {
                 String traceId = RequestUtil.getTraceId();
                 String realIp = RequestUtil.getRealIp();
                 LogUtil.putTraceAndIp(traceId, realIp);
@@ -217,9 +228,9 @@ public class GlobalException {
                 String requestInfo = RequestUtil.logRequestInfo();
                 sbd.append(String.format("[%s] [%s] ", basicInfo, requestInfo));
             }
-            boolean knowException = U.isNotBlank(errorMsg);
+            boolean knowException = U.isNotBlank(msg);
             if (knowException) {
-                sbd.append(errorMsg).append(", ");
+                sbd.append(msg).append(", ");
             }
             sbd.append(String.format("exception result: (%s)", JsonUtil.toJson(result)));
 
@@ -234,26 +245,10 @@ public class GlobalException {
                 }
             }
         } finally {
-            if (logNotTrace) {
+            if (logNotTraceId) {
                 LogUtil.unbind();
             }
         }
-    }
-
-    private List<String> collectTrack(Throwable e) {
-        if (online || U.isNull(e)) {
-            return Collections.emptyList();
-        }
-
-        List<String> exceptionList = new ArrayList<>();
-        exceptionList.add(U.toStr(e.getMessage()));
-
-        StackTraceElement[] stackTraceArray = e.getStackTrace();
-        if (A.isNotEmpty(stackTraceArray)) {
-            for (StackTraceElement trace : stackTraceArray) {
-                exceptionList.add(trace.toString().trim());
-            }
-        }
-        return exceptionList;
+        return ResponseEntity.status(status).body(result);
     }
 }

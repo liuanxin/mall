@@ -53,23 +53,32 @@ public class DynamicCronUtil {
             return;
         }
 
-        schedule.addTriggerTask(() -> {
-            try {
-                LogUtil.putTraceId(U.uuid16());
-                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("任务({})开始", desc);
-                }
-                boolean flag = func.apply(desc);
-                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info("任务({})结束({})", desc, flag);
-                }
-            } catch (Exception e) {
-                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("任务({})异常", desc, e);
-                }
-            } finally {
-                LogUtil.unbind();
+        schedule.addTriggerTask(
+                () -> task(desc, func),
+                (trigger) -> new CronTrigger(cron).nextExecutionTime(trigger)
+        );
+    }
+
+    /**
+     * @param desc 当前定时任务的业务说明
+     * @param func 入参是任务的名称, 出参是 boolean(表示运行是否成功)的方法
+     */
+    public static void task(String desc, Function<String, Boolean> func) {
+        try {
+            LogUtil.putTraceId(U.uuid16());
+            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                LogUtil.ROOT_LOG.info("任务({})开始", desc);
             }
-        }, (triggerContext) -> new CronTrigger(cron).nextExecutionTime(triggerContext));
+            boolean flag = func.apply(desc);
+            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                LogUtil.ROOT_LOG.info("任务({})结束({})", desc, flag);
+            }
+        } catch (Exception e) {
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("任务({})异常", desc, e);
+            }
+        } finally {
+            LogUtil.unbind();
+        }
     }
 }
