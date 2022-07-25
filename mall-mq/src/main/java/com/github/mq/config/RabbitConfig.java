@@ -34,7 +34,7 @@ public class RabbitConfig {
             final String exchangeName = mqInfo.getExchangeName();
             final String routingKey = mqInfo.getRoutingKey();
             final String queueName = mqInfo.getQueueName();
-            final Map<String, Object> args = mqInfo.getArgs();
+            final Map<String, Object> args = mqInfo.getMqArgs();
             final String bindingName = String.format("(%s -- %s --> %s)", exchangeName, routingKey, queueName);
 
             final Exchange exchange = exchangeMap.computeIfAbsent(exchangeName, key -> {
@@ -42,9 +42,6 @@ public class RabbitConfig {
                 ExchangeBuilder builder = new ExchangeBuilder(key, exchangeType);
                 if (mqInfo.isDelayExchange()) {
                     builder.delayed();
-                }
-                if (A.isNotEmpty(args)) {
-                    builder.withArguments(args);
                 }
                 return builder.build();
             });

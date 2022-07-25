@@ -79,7 +79,7 @@ public enum MqInfo {
     private final boolean delayExchange;
     private final String routingKey;
     private final String queueName;
-    private final Map<String, Object> args;
+    private final Map<String, Object> mqArgs;
 
     public String showDesc() {
         return String.format("%s(%s -- %s --> %s)", desc, exchangeName, routingKey, queueName);
