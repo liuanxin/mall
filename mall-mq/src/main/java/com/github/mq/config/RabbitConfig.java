@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -34,7 +35,9 @@ public class RabbitConfig {
             final String exchangeName = mqInfo.getExchangeName();
             final String routingKey = mqInfo.getRoutingKey();
             final String queueName = mqInfo.getQueueName();
-            final Map<String, Object> args = mqInfo.getMqArgs();
+            final Map<String, Object> exchangeArgs = Collections.emptyMap(); // mqInfo.getExchangeArgs();
+            final Map<String, Object> mqArgs = mqInfo.getMqArgs();
+            final Map<String, Object> bindingArgs = Collections.emptyMap(); // mqInfo.getBindingArgs();
             final String bindingName = String.format("(%s -- %s --> %s)", exchangeName, routingKey, queueName);
 
             final Exchange exchange = exchangeMap.computeIfAbsent(exchangeName, key -> {
@@ -43,19 +46,23 @@ public class RabbitConfig {
                 if (mqInfo.isDelayExchange()) {
                     builder.delayed();
                 }
+                if (A.isNotEmpty(exchangeArgs)) {
+                    builder.withArguments(exchangeArgs);
+                }
                 return builder.build();
             });
 
             final Queue queue = queueMap.computeIfAbsent(queueName, key -> {
                 // 持久化(durable 是 true), 不自动删除(autoDelete 是 false)
                 QueueBuilder builder = QueueBuilder.durable(key);
-                if (A.isNotEmpty(args)) {
-                    builder.withArguments(args);
+                if (A.isNotEmpty(mqArgs)) {
+                    builder.withArguments(mqArgs);
                 }
                 return builder.build();
             });
 
-            bindingMap.computeIfAbsent(bindingName, k -> BindingBuilder.bind(queue).to(exchange).with(routingKey).noargs());
+            bindingMap.computeIfAbsent(bindingName, k -> BindingBuilder.bind(queue).to(exchange).with(routingKey)
+                    .and(A.isEmpty(bindingArgs) ? Collections.emptyMap() : bindingArgs));
         }
 
         for (Exchange exchange : exchangeMap.values()) {
