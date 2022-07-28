@@ -63,9 +63,8 @@ public final class U {
 
     /**
      * 字符串长度 >= 这个值, 才进行压缩
-     *
-     * 字符串压缩时, 将字符串先操作 gzip 再编码成 base64 字符串
-     * 解压字符串时, 将字符串先解码 base64 再操作 gzip 解压
+     *   字符串压缩时, 将字符串先操作 gzip 再编码成 base64 字符串
+     *   解压字符串时, 将字符串先解码 base64 再操作 gzip 解压
      */
     private static final int COMPRESS_MIN_LEN = 1000;
 
@@ -259,6 +258,7 @@ public final class U {
     }
 
     /**
+     * <pre>
      * 将 int 转换成 26 进制的数(大写)
      *
      * A   <--> 1
@@ -267,6 +267,7 @@ public final class U {
      * AZ  <--> 52
      * ZZ  <--> 702
      * AAA <--> 703
+     * </pre>
      */
     public static String numTo26Radix(int n) {
         StringBuilder s = new StringBuilder();
@@ -287,8 +288,12 @@ public final class U {
 
     /** 转换成 int, 非数字则返回 0 */
     public static int toInt(Object obj) {
+        return toInt(obj, 0);
+    }
+    /** 转换成 int, 非数字则返回默认值 */
+    public static int toInt(Object obj, int defaultInt) {
         if (isNull(obj)) {
-            return 0;
+            return defaultInt;
         }
         if (obj instanceof Number n) {
             return n.intValue();
@@ -296,14 +301,18 @@ public final class U {
         try {
             return Integer.parseInt(obj.toString().trim());
         } catch (NumberFormatException e) {
-            return 0;
+            return defaultInt;
         }
     }
 
     /** 转换成 long, 非数字则返回 0L */
     public static long toLong(Object obj) {
+        return toLong(obj, 0L);
+    }
+    /** 转换成 long, 非数字则返回默认值 */
+    public static long toLong(Object obj, long defaultLong) {
         if (isNull(obj)) {
-            return 0L;
+            return defaultLong;
         }
         if (obj instanceof Number n) {
             return n.longValue();
@@ -311,14 +320,18 @@ public final class U {
         try {
             return Long.parseLong(obj.toString().trim());
         } catch (NumberFormatException e) {
-            return 0L;
+            return defaultLong;
         }
     }
 
     /** 转换成 float, 非数字则返回 0F */
     public static float toFloat(Object obj) {
+        return toFloat(obj, 0F);
+    }
+    /** 转换成 float, 非数字则返回默认值 */
+    public static float toFloat(Object obj, float defaultFloat) {
         if (isNull(obj)) {
-            return 0F;
+            return defaultFloat;
         }
         if (obj instanceof Number n) {
             return n.floatValue();
@@ -326,14 +339,18 @@ public final class U {
         try {
             return Float.parseFloat(obj.toString().trim());
         } catch (NumberFormatException e) {
-            return 0F;
+            return defaultFloat;
         }
     }
 
     /** 转换成 double, 非数字则返回 0D */
     public static double toDouble(Object obj) {
+        return toDouble(obj, 0D);
+    }
+    /** 转换成 double, 非数字则返回 0D */
+    public static double toDouble(Object obj, double defaultDouble) {
         if (isNull(obj)) {
-            return 0D;
+            return defaultDouble;
         }
         if (obj instanceof Number n) {
             return n.doubleValue();
@@ -341,16 +358,18 @@ public final class U {
         try {
             return Double.parseDouble(obj.toString().trim());
         } catch (NumberFormatException e) {
-            return 0D;
+            return defaultDouble;
         }
     }
 
+    /** 是整数则返回 true, 最大整数位 19 位 */
     public static boolean isInt(Object obj) {
         if (isNull(obj)) {
             return false;
         }
         if (obj instanceof Number n) {
             double num = n.doubleValue();
+            // java 的 Double 类中的 MIN_VALUE 表示的是一个非 0 的值, 它比 0 是要大的
             return Math.abs(num - Math.round(num)) < Double.MIN_VALUE;
         }
         try {
@@ -875,6 +894,7 @@ public final class U {
         }
 
         Object value;
+        // noinspection rawtypes
         if (data instanceof Map m) {
             value = m.get(field);
         } else {
