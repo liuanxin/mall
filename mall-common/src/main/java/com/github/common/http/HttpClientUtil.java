@@ -319,7 +319,7 @@ public class HttpClientUtil {
     /** 处理 get 请求的参数: 拼在 url 上即可 */
     private static String handleGetParams(String url, Map<String, Object> params) {
         if (A.isNotEmpty(params)) {
-            url = U.appendUrl(url) + U.formatParam(params);
+            url = U.appendUrl(url) + U.formatParam(false, params);
         }
         return url;
     }
@@ -394,7 +394,11 @@ public class HttpClientUtil {
         String url = request.getURI().toString();
 
         long start = System.currentTimeMillis();
-        try (CloseableHttpResponse response = createHttpClient().execute(request, HttpClientContext.create())) {
+
+        try (
+                CloseableHttpClient httpClient = createHttpClient();
+                CloseableHttpResponse response = httpClient.execute(request, HttpClientContext.create())
+        ) {
             HttpEntity entity = response.getEntity();
             if (U.isNotNull(entity)) {
                 String result = EntityUtils.toString(entity, StandardCharsets.UTF_8);
@@ -422,7 +426,10 @@ public class HttpClientUtil {
         request.setConfig(config(CONNECT_TIME_OUT, SOCKET_TIME_OUT));
 
         long start = System.currentTimeMillis();
-        try (CloseableHttpResponse response = createHttpClient().execute(request, HttpClientContext.create())) {
+        try (
+                CloseableHttpClient httpClient = createHttpClient();
+                CloseableHttpResponse response = httpClient.execute(request, HttpClientContext.create())
+        ) {
             HttpEntity entity = response.getEntity();
             if (U.isNotNull(entity)) {
                 entity.writeTo(new FileOutputStream(file));

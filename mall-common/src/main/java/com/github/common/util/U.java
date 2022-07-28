@@ -14,6 +14,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
@@ -36,7 +37,7 @@ public final class U {
 
     public static final String EMPTY = "";
     public static final String BLANK = " ";
-    private static final String LIKE = "%";
+    public static final String LIKE = "%";
 
     /** 递归时的最大深度, 避免无限递归 */
     public static final int MAX_DEPTH = 10;
@@ -62,13 +63,19 @@ public final class U {
     private static final String LOCAL = "(?i)127.0.0.1|localhost|::1|0:0:0:0:0:0:0:1";
 
     /**
+     * <pre>
      * 字符串长度 >= 这个值, 才进行压缩
      *   字符串压缩时, 将字符串先操作 gzip 再编码成 base64 字符串
      *   解压字符串时, 将字符串先解码 base64 再操作 gzip 解压
+     * </pre>
      */
     private static final int COMPRESS_MIN_LEN = 1000;
 
     private static final String TMP = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    private static final String ENUM_CODE = "code";
+    private static final String ENUM_VALUE = "value";
+    private static final Pattern THOUSANDS_REGEX = Pattern.compile("(\\d)(?=(?:\\d{3})+$)");
 
     public static final Set<String> TRUES = new HashSet<>(4, 1);
     static {
@@ -82,6 +89,7 @@ public final class U {
     private static final Map<String, Method> METHOD_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, List<Field>> FIELDS_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, Field> FIELD_CACHE = new ConcurrentHashMap<>();
+
 
     /** 生成指定位数的随机数: 纯数字 */
     public static String random(int length) {
@@ -108,7 +116,7 @@ public final class U {
         return sbd.toString();
     }
 
-    // ========== enum ==========
+
     /**
      * 获取枚举中的值, 先匹配 name, 再匹配 getCode(数字), 再匹配 getValue(中文), 都匹配不上则返回 null
      *
@@ -147,8 +155,6 @@ public final class U {
         return null;
     }
 
-    private static final String ENUM_CODE = "code";
-    private static final String ENUM_VALUE = "value";
     /**
      * <pre>
      * 序列化枚举, 如以下示例
@@ -235,10 +241,8 @@ public final class U {
             return null;
         }
     }
-    // ========== enum ==========
 
 
-    // ========== number ==========
     /** 传入的数不为 null 且 大于 0 就返回 true */
     public static boolean greater0(Number obj) {
         return obj != null && obj.doubleValue() > 0;
@@ -255,35 +259,6 @@ public final class U {
     /** 传入的数为 null 或 小于 0 就返回 true(等于 0 时返回 false) */
     public static boolean less0(Number obj) {
         return !greaterAndEquals0(obj);
-    }
-
-    /**
-     * <pre>
-     * 将 int 转换成 26 进制的数(大写)
-     *
-     * A   <--> 1
-     * Z   <--> 26
-     * AA  <--> 27
-     * AZ  <--> 52
-     * ZZ  <--> 702
-     * AAA <--> 703
-     * </pre>
-     */
-    public static String numTo26Radix(int n) {
-        StringBuilder s = new StringBuilder();
-        while (n > 0) {
-            int m = n % 26;
-            if (m == 0) {
-                m = 26;
-            }
-            s.insert(0, (char) (m + 64));
-            n = (n - m) / 26;
-        }
-        return s.toString();
-    }
-
-    public static int unixTimestamp() {
-        return (int) (System.currentTimeMillis() / 1000);
     }
 
     /** 转换成 int, 非数字则返回 0 */
@@ -401,6 +376,11 @@ public final class U {
         return !isNumber(obj);
     }
 
+    /** 返回当前时间戳(到秒), 相当于 mysql 中的 SELECT UNIX_TIMESTAMP() 语句 */
+    public static int unixTimestamp() {
+        return (int) (System.currentTimeMillis() / 1000);
+    }
+
     /** 将数值转换成 ipv4, 类似于 mysql 中 INET_NTOA(134744072) ==> 8.8.8.8 */
     public static String num2ip(long num) {
         return ((num & 0xff000000) >> 24) + "." + ((num & 0xff0000) >> 16)
@@ -424,12 +404,9 @@ public final class U {
         }
         return result;
     }
-    // ========== number ==========
 
 
-    // ========== object & string ==========
-    private static final Pattern THOUSANDS_REGEX = Pattern.compile("(\\d)(?=(?:\\d{3})+$)");
-    /** 1234567890.51 ==> 1,234,567,890.51 */
+    /** 数字格式化千分位: 1234567890.51 ==> 1,234,567,890.51 */
     public static String formatNumberToThousands(String number) {
         if (isBlank(number)) {
             return EMPTY;
@@ -448,23 +425,6 @@ public final class U {
 
     public static String toStr(Object obj) {
         return isNull(obj) ? EMPTY : obj.toString();
-    }
-
-    /** 如果字符长度大于指定长度, 则只输出头尾的固定字符 */
-    public static String toStr(Object obj, int maxLen, int leftRightLen) {
-        String str = toStr(obj);
-        if (isBlank(str)) {
-            return EMPTY;
-        }
-
-        int length = str.length();
-        if (length > maxLen) {
-            String append = " ... ";
-            if (maxLen > leftRightLen * 2 + append.length()) {
-                return str.substring(0, leftRightLen) + append + str.substring(length - leftRightLen, length);
-            }
-        }
-        return str;
     }
 
     /** 如果字符小于指定的位数, 就在前面补全指定的字符 */
@@ -607,17 +567,18 @@ public final class U {
             return false;
         }
     }
-    public static boolean isEquals(Object obj1, Object obj2) {
+
+    public static boolean equals(Object obj1, Object obj2) {
         return Objects.equals(obj1, obj2);
     }
-    public static boolean isNotEquals(Object obj1, Object obj2) {
-        return !isEquals(obj1, obj2);
+    public static boolean notEquals(Object obj1, Object obj2) {
+        return !equals(obj1, obj2);
     }
-    public static boolean isEqualsIgnoreCase(String str1, String str2) {
+    public static boolean equalsIgnoreCase(String str1, String str2) {
         return isNotNull(str1) && str1.equalsIgnoreCase(str2);
     }
-    public static boolean isNotEqualsIgnoreCase(String str1, String str2) {
-        return !isEqualsIgnoreCase(str1, str2);
+    public static boolean notEqualsIgnoreCase(String str1, String str2) {
+        return !equalsIgnoreCase(str1, str2);
     }
 
     public static Boolean getBoolean(Object obj) {
@@ -658,31 +619,39 @@ public final class U {
     }
 
 
+    /** 雾化手机号: 13012345678 -> 130****5678 */
     public static String foggyPhone(String phone) {
-        return checkPhone(phone) ? phone.substring(0, 3) + " **** " + phone.substring(phone.length() - 4) : phone;
+        return checkPhone(phone) ? phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4) : phone;
     }
+    /** 雾化身份证号: 110011191001011010 -> 110****10 */
     public static String foggyIdCard(String idCard) {
         // 是标准的 15 或 18 位身份证就返回「前面 3 位 + 后面 2 位」. 只有 6 位尾数则只返回「后面 2 位」
         if (isBlank(idCard)) {
             return idCard;
         } else if (isIdCard(idCard)) {
-            return idCard.substring(0, 3) + " **** " + idCard.substring(idCard.length() - 2);
+            return idCard.substring(0, 3) + "****" + idCard.substring(idCard.length() - 2);
         } else if (idCard.length() == 6) {
-            return "**** " + idCard.substring(2);
+            return "****" + idCard.substring(2);
         } else {
             return idCard;
         }
     }
-    /** 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3)」 -> 「abc *** 890[36]」 */
+    /**
+     * 如果字符长度大于指定长度, 则只输出头尾的固定字符
+     * <pre>
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3)」 -> 「abc *** 890[36]」
+     * </pre>
+     */
     public static String foggyValue(String value, int max, int leftRight) {
         return foggyValue(value, max, leftRight, leftRight);
     }
     /**
+     * 如果字符长度大于指定长度, 则只输出头尾的固定字符
      * <pre>
      * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 0)」 -> 「***[36]」
-     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 3)」 -> 「*** 890[36]」
-     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 0)」 -> 「abc ***[36]」
-     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 3)」 -> 「abc *** 890[36]」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 3)」 -> 「***890[36]」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 0)」 -> 「abc***[36]」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 3)」 -> 「abc***890[36]」
      * </pre>
      */
     public static String foggyValue(String value, int max, int left, int right) {
@@ -700,12 +669,12 @@ public final class U {
             StringBuilder sbd = new StringBuilder();
             String lt = value.substring(0, left);
             if (U.isNotBlank(lt)) {
-                sbd.append(lt).append(" ");
+                sbd.append(lt);
             }
-            sbd.append("~*~");
+            sbd.append("***");
             String rt = value.substring(valueLen - right);
             if (U.isNotBlank(rt)) {
-                sbd.append(" ").append(rt);
+                sbd.append(rt);
             }
             sbd.append("[").append(valueLen).append("]");
             return sbd.toString();
@@ -723,10 +692,8 @@ public final class U {
     public static String rightLike(String param) {
         return isBlank(param) ? EMPTY : param + LIKE;
     }
-    // ========== object & string ==========
 
 
-    // ========== regex ==========
     /**
      * 验证 指定正则 是否 <span style="color:red;">全字匹配</span> 指定字符串, 匹配则返回 true <br/><br/>
      *
@@ -769,12 +736,12 @@ public final class U {
             } else {
                 g = EMPTY;
             }
-            return isNumber(g) ? (toInt(g) % 2 == 0 ? "女" : "男") : "未知";
+            return isNumber(g) ? (toInt(g) % 2 == 0 ? "女" : "男") : EMPTY;
         } else {
-            return "未知";
+            return EMPTY;
         }
     }
-    /** 是本地请求则返回 true */
+    /** 是本地 ip 则返回 true */
     public static boolean isLocalRequest(String ip) {
         return checkRegexWithStrict(ip, LOCAL);
     }
@@ -844,8 +811,7 @@ public final class U {
 
     /** 获取后缀(包含点 .) */
     public static String getSuffix(String file) {
-        return (isNotBlank(file) && file.contains("."))
-                ? file.substring(file.lastIndexOf(".")) : EMPTY;
+        return (isNotBlank(file) && file.contains(".")) ? file.substring(file.lastIndexOf(".")) : EMPTY;
     }
 
     /** 将传入的文件重命名成不带 - 的 uuid 名称并返回 */
@@ -853,13 +819,6 @@ public final class U {
         return uuid() + getSuffix(fileName);
     }
 
-    /** 为空则返回空字符串, 如果传入的 url 中有 ? 则在尾部拼接 &, 否则拼接 ? 返回 */
-    public static String appendUrl(String src) {
-        if (isBlank(src)) {
-            return EMPTY;
-        }
-        return src + (src.contains("?") ? "&" : "?");
-    }
     /** 为空则返回 /, 如果开头有 / 则直接返回, 否则在开头拼接 / 并返回 */
     public static String addPrefix(String src) {
         if (isBlank(src)) {
@@ -879,6 +838,14 @@ public final class U {
             return src;
         }
         return src + "/";
+    }
+
+    /** 为空则返回空字符串, 如果传入的 url 中有 ? 则在尾部拼接 &, 否则拼接 ? 返回 */
+    public static String appendUrl(String src) {
+        if (isBlank(src)) {
+            return EMPTY;
+        }
+        return src + (src.contains("?") ? "&" : "?");
     }
 
     /**
@@ -1156,8 +1123,12 @@ public final class U {
         return (depth <= MAX_DEPTH) ? getField(superclass, field, depth + 1) : null;
     }
 
-    /** 转换成 id=123&name=xyz&name=opq */
+    /** 将参数 转换成 id=123&name=xyz&name=opq, 将值进行脱敏(如 password=***&phone=130**** */
     public static String formatParam(Map<String, ?> params) {
+        return formatParam(true, params);
+    }
+    /** 转换成 id=123&name=xyz&name=opq */
+    public static String formatParam(boolean des, Map<String, ?> params) {
         if (A.isEmpty(params)) {
             return EMPTY;
         }
@@ -1165,10 +1136,11 @@ public final class U {
         StringJoiner joiner = new StringJoiner("&");
         for (Map.Entry<String, ?> entry : params.entrySet()) {
             String key = entry.getKey();
-            Object value = entry.getValue();
-            if (isNotBlank(key) && isNotNull(value)) {
-                String v = "password".equalsIgnoreCase(key) ? "***" : A.toString(value);
-                joiner.add(key + "=" + v);
+            Object obj = entry.getValue();
+            if (isNotBlank(key) && isNotNull(obj)) {
+                String str = A.toString(obj);
+                String value = des ? DesensitizationUtil.desKey(key, str) : str;
+                joiner.add(key + "=" + value);
             }
         }
         return joiner.toString();
@@ -1223,22 +1195,22 @@ public final class U {
     /**
      * <pre>
      * try (
-     *         InputStream inputStream = ...;
-     *         OutputStream outputStream = ...;
-     *
-     *         ReadableByteChannel readChannel = Channels.newChannel(inputStream);
-     *         WritableByteChannel writeChannel = Channels.newChannel(outputStream);
+     *         InputStream input = ...;
+     *         OutputStream output = ...;
      * ) {
-     *     inputToOutputWithChannel(readChannel, writeChannel);
+     *     inputToOutputWithChannel(input, output);
      * }
      * </pre>
      */
-    public static void inputToOutputWithChannel(ReadableByteChannel readChannel, WritableByteChannel writeChannel) {
-        try {
+    public static void inputToOutputWithChannel(InputStream input, OutputStream output) {
+        try (
+                ReadableByteChannel read = Channels.newChannel(input);
+                WritableByteChannel write = Channels.newChannel(output)
+        ) {
             ByteBuffer buffer = ByteBuffer.allocateDirect(8192);
-            while (readChannel.read(buffer) != -1) {
+            while (read.read(buffer) != -1) {
                 buffer.flip();
-                writeChannel.write(buffer);
+                write.write(buffer);
                 buffer.clear();
             }
         } catch (IOException e) {

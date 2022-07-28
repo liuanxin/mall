@@ -57,7 +57,7 @@ public class CorsFilter implements Filter {
         } else {
             String domain = getDomain(request);
             // 头里面带过来的 origin 跟请求的不一样才需要设置 cors
-            if (U.isNotEquals(domain, origin)) {
+            if (U.notEquals(domain, origin)) {
                 // 配置项为空则设置 cors
                 if (A.isEmpty(allowOriginSet)) {
                     if (hasOptions(request)) {

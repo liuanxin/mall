@@ -80,7 +80,7 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
                 }
             }
 
-            sbd.append(" return(").append(U.toStr(json, maxPrintLength, printLength)).append(")");
+            sbd.append(" return(").append(U.foggyValue(json, maxPrintLength, printLength, printLength)).append(")");
             LogUtil.ROOT_LOG.info(sbd.toString());
         }
     }

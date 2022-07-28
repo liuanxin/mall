@@ -70,6 +70,6 @@ public class GlobalLogHandler {
         }
 
         String str = hasCompress ? U.compress(json) : json;
-        return cutJson ? U.toStr(str, cutJsonMax, cutJsonLeftRightLen) : str;
+        return cutJson ? U.foggyValue(str, cutJsonMax, cutJsonLeftRightLen) : str;
     }
 }

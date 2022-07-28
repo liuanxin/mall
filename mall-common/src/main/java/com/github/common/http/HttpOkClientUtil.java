@@ -32,12 +32,12 @@ public class HttpOkClientUtil {
 
     private static final OkHttpClient HTTP_CLIENT;
     static {
+        // 连接超时时间
+        // 响应超时时间
+        // 连接池中的最大连接数(默认是 5 且每个连接保持 5 分钟)
         HTTP_CLIENT = new OkHttpClient().newBuilder()
-                // 连接超时时间
                 .connectTimeout(CONNECT_TIME_OUT, TimeUnit.SECONDS)
-                // 响应超时时间
                 .readTimeout(READ_TIME_OUT, TimeUnit.SECONDS)
-                // 连接池中的最大连接数(默认是 5 且每个连接保持 5 分钟)
                 .connectionPool(new ConnectionPool(MAX_CONNECTIONS, 5, TimeUnit.MINUTES))
                 .build();
     }
@@ -144,13 +144,13 @@ public class HttpOkClientUtil {
     /** 处理 get 请求的参数: 拼在 url 上即可 */
     private static String handleGetParams(String url, Map<String, Object> params) {
         if (A.isNotEmpty(params)) {
-            url = U.appendUrl(url) + U.formatParam(params);
+            url = U.appendUrl(url) + U.formatParam(false, params);
         }
         return url;
     }
     /** 处理 post 请求的参数 */
     private static Request.Builder handlePostParams(Map<String, Object> params) {
-        return new Request.Builder().post(RequestBody.create(MultipartBody.FORM, U.formatParam(params)));
+        return new Request.Builder().post(RequestBody.create(MultipartBody.FORM, U.formatParam(false, params)));
     }
     /** 处理请求时存到 header 中的数据 */
     private static void handleHeader(Request.Builder request, Map<String, Object> headers) {
@@ -230,7 +230,7 @@ public class HttpOkClientUtil {
     }
 
     /** 用 get 方式请求 url 并将响应结果保存指定的文件 */
-    @SuppressWarnings({"UnstableApiUsage", "ResultOfMethodCallIgnored"})
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void download(String url, String file) {
         url = handleEmptyScheme(url);
         Request request = wrapperRequest(new Request.Builder(), url);
@@ -240,6 +240,7 @@ public class HttpOkClientUtil {
             ResponseBody body = response.body();
             U.assertNil(body, "下载文件时, 响应了空数据");
 
+            // noinspection ConstantConditions
             byte[] bytes = body.bytes();
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 Headers reqHeaders = request.headers();
@@ -259,7 +260,7 @@ public class HttpOkClientUtil {
     }
 
     /** 用 post 方式请求 url 并将响应结果保存指定的文件 */
-    @SuppressWarnings({"UnstableApiUsage", "ResultOfMethodCallIgnored"})
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void postDownloadFile(String url, String json, String file) {
         Request.Builder builder = new Request.Builder().post(RequestBody.create(JSON, json));
         url = handleEmptyScheme(url);
@@ -270,6 +271,7 @@ public class HttpOkClientUtil {
             ResponseBody body = response.body();
             U.assertNil(body, "下载文件时, 响应了空数据");
 
+            // noinspection ConstantConditions
             byte[] bytes = body.bytes();
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 Headers reqHeaders = request.headers();

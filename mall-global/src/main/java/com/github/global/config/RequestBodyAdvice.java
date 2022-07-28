@@ -71,7 +71,8 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                             if (A.isNotEmptyObj(bytes)) {
                                 // 这样输出的内容可能会有很多空白符(空格, 换行等)
                                 String data = new String(bytes, StandardCharsets.UTF_8);
-                                LogUtil.ROOT_LOG.info("RequestBody({})", U.toStr(data, maxPrintLength, printLength));
+                                String str = U.foggyValue(data, maxPrintLength, printLength, printLength);
+                                LogUtil.ROOT_LOG.info("RequestBody({})", str);
                             }
                             return new ByteArrayInputStream(bytes);
                         }
@@ -89,7 +90,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
             if (!printComplete) {
                 // 这样输出的内容会去除 null 值的属性
                 String json = logHandler.toJson(body);
-                LogUtil.ROOT_LOG.info("RequestBody({})", U.toStr(json, maxPrintLength, printLength));
+                LogUtil.ROOT_LOG.info("RequestBody({})", U.foggyValue(json, maxPrintLength, printLength, printLength));
             }
         }
         return super.afterBodyRead(body, inputMessage, parameter, targetType, converterType);
