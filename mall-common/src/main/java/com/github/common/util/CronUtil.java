@@ -1,14 +1,12 @@
-package com.github.task;
+package com.github.common.util;
 
-import com.github.common.util.LogUtil;
-import com.github.common.util.U;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.scheduling.support.CronTrigger;
 
 import java.util.function.Function;
 
-public class DynamicCronUtil {
+public class CronUtil {
 
     /**
      * <pre>

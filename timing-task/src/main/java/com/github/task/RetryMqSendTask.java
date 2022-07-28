@@ -1,5 +1,6 @@
 package com.github.task;
 
+import com.github.common.util.CronUtil;
 import com.github.mq.handle.MqRetryHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,6 @@ public class RetryMqSendTask implements SchedulingConfigurer {
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar schedule) {
-        DynamicCronUtil.runTask(schedule, BUSINESS_DESC, CRON, mqRetryHandler::handlerSend);
+        CronUtil.runTask(schedule, BUSINESS_DESC, CRON, mqRetryHandler::handlerSend);
     }
 }

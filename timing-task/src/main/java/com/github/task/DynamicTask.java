@@ -1,5 +1,6 @@
 package com.github.task;
 
+import com.github.common.util.CronUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
@@ -17,7 +18,7 @@ public class DynamicTask implements SchedulingConfigurer {
     public void configureTasks(ScheduledTaskRegistrar schedule) {
         String desc = "xxx";
         String cron = "0 0 0/1 * * *";
-        DynamicCronUtil.runTask(schedule, desc, cron, this::handlerBusiness);
+        CronUtil.runTask(schedule, desc, cron, this::handlerBusiness);
     }
 
     /** 操作具体的业务 */
