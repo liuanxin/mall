@@ -3,6 +3,8 @@ package com.github.manager.service;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.github.common.collection.MapValueList;
+import com.github.common.collection.MultiUtil;
 import com.github.common.encrypt.Encrypt;
 import com.github.common.page.PageParam;
 import com.github.common.page.PageReturn;
@@ -11,13 +13,14 @@ import com.github.common.util.A;
 import com.github.common.util.U;
 import com.github.manager.model.*;
 import com.github.manager.repository.*;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -134,7 +137,7 @@ public class ManagerServiceImpl implements ManagerService {
             return Collections.emptyList();
         }
 
-        Multimap<Long, ManagerMenu> menuMultiMap = ArrayListMultimap.create();
+        MapValueList<Long, ManagerMenu> menuMultiMap = MultiUtil.createMapList();
         if (loadMenu) {
             List<ManagerRoleMenu> roleMenus = roleMenuMapper.selectList(Wrappers.lambdaQuery(ManagerRoleMenu.class)
                     .in(ManagerRoleMenu::getRoleId, rids));
@@ -155,7 +158,7 @@ public class ManagerServiceImpl implements ManagerService {
             }
         }
 
-        Multimap<Long, ManagerPermission> permissionMultimap = ArrayListMultimap.create();
+        MapValueList<Long, ManagerPermission> permissionMultiMap = MultiUtil.createMapList();
         if (loadPermission) {
             Wrapper<ManagerRolePermission> rolePermissionQuery = Wrappers.lambdaQuery(ManagerRolePermission.class)
                     .in(ManagerRolePermission::getRoleId, rids);
@@ -171,7 +174,7 @@ public class ManagerServiceImpl implements ManagerService {
                     for (ManagerRolePermission rolePermission : rolePermissions) {
                         ManagerPermission permission = permissionMap.get(rolePermission.getPermissionId());
                         if (U.isNotNull(permission)) {
-                            permissionMultimap.put(rolePermission.getPermissionId(), permission);
+                            permissionMultiMap.put(rolePermission.getPermissionId(), permission);
                         }
                     }
                 }
@@ -187,18 +190,14 @@ public class ManagerServiceImpl implements ManagerService {
         for (ManagerRole role : roles) {
             Long rid = role.getId();
 
-            if (!menuMultiMap.isEmpty()) {
-                Collection<ManagerMenu> managerMenus = menuMultiMap.get(rid);
-                if (A.isNotEmpty(managerMenus)) {
-                    role.setMenus(new ArrayList<>(managerMenus));
-                }
+            List<ManagerMenu> managerMenus = menuMultiMap.get(rid);
+            if (A.isNotEmpty(managerMenus)) {
+                role.setMenus(managerMenus);
             }
 
-            if (!permissionMultimap.isEmpty()) {
-                Collection<ManagerPermission> managerPermissions = permissionMultimap.get(rid);
-                if (A.isNotEmpty(managerPermissions)) {
-                    role.setPermissions(new ArrayList<>(managerPermissions));
-                }
+            List<ManagerPermission> managerPermissions = permissionMultiMap.get(rid);
+            if (A.isNotEmpty(managerPermissions)) {
+                role.setPermissions(managerPermissions);
             }
         }
         return roles;

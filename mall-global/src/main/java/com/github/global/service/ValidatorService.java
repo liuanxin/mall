@@ -1,10 +1,10 @@
 package com.github.global.service;
 
+import com.github.common.collection.MapValueSet;
+import com.github.common.collection.MultiUtil;
 import com.github.common.exception.ParamException;
 import com.github.common.util.A;
 import com.github.common.util.U;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
@@ -64,7 +64,7 @@ public class ValidatorService {
             return Collections.emptyMap();
         }
 
-        Multimap<String, String> fieldErrorMap = ArrayListMultimap.create();
+        MapValueSet<String, String> fieldErrorMap = MultiUtil.createLinkedMapLinkedSet();
         for (ConstraintViolation<?> error : errorSet) {
             Class<?> clazz = error.getRootBeanClass();
             String field = validationService.getParamField(clazz, error.getPropertyPath().toString());

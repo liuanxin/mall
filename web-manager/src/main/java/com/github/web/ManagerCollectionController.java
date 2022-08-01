@@ -2,14 +2,14 @@ package com.github.web;
 
 import com.github.common.annotation.NotNeedLogin;
 import com.github.common.annotation.NotNeedPermission;
+import com.github.common.collection.MapValueSet;
+import com.github.common.collection.MultiUtil;
 import com.github.common.util.A;
 import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiGroup;
 import com.github.liuanxin.api.annotation.ApiIgnore;
 import com.github.liuanxin.api.annotation.ApiMethod;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,9 +21,8 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 @ApiIgnore
 @RestController
@@ -38,7 +37,7 @@ public class ManagerCollectionController {
     @GetMapping("/collect-menu-permission")
     public boolean version() {
         Map<RequestMappingInfo, HandlerMethod> handlerMethods = mapping.getHandlerMethods();
-        Multimap<String, String> multimap = ArrayListMultimap.create();
+        MapValueSet<String, String> multi = MultiUtil.createLinkedMapLinkedSet();
         String sp = "~!~";
         String classSuffix = "Controller";
         for (Map.Entry<RequestMappingInfo, HandlerMethod> entry : handlerMethods.entrySet()) {
@@ -72,17 +71,18 @@ public class ManagerCollectionController {
                 ApiMethod apiMethod = handlerMethod.getMethodAnnotation(ApiMethod.class);
                 String permissionName = U.isNull(apiMethod) ? U.EMPTY : apiMethod.value();
                 // 类名用作 front
-                String m = Joiner.on(sp).join(menu, className);
+                String key = Joiner.on(sp).join(menu, className);
 
                 String method = A.toStr(requestMapping.getMethodsCondition().getMethods());
                 PatternsRequestCondition patternsCondition = requestMapping.getPatternsCondition();
                 String url = U.isNull(patternsCondition) ? U.EMPTY : A.toStr(patternsCondition.getPatterns());
-                String p = Joiner.on(sp).join(permissionName, method, url);
-                multimap.put(m, p);
+                String value = Joiner.on(sp).join(permissionName, method, url);
+
+                multi.put(key, value);
             }
         }
         int i = 1;
-        for (Map.Entry<String, Collection<String>> entry : multimap.asMap().entrySet()) {
+        for (Map.Entry<String, Set<String>> entry : multi.asMap().entrySet()) {
             String[] menuArr = entry.getKey().split(sp);
             System.out.printf(
                     "REPLACE INTO `t_manager_menu`(`id`, `name`, `front`) VALUES(%s,'%s','%s')%n",
@@ -90,7 +90,7 @@ public class ManagerCollectionController {
             );
 
             int j = 1;
-            for (String permission : new LinkedHashSet<>(entry.getValue())) {
+            for (String permission : entry.getValue()) {
                 String[] arr = permission.split(sp);
                 System.out.printf(
                         "REPLACE INTO `t_manager_permission`(`id`, `mid`, `name`, `method`, `url`)" +

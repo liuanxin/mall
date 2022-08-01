@@ -2,20 +2,18 @@ package com.github.manager.model;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.github.common.collection.MapValueList;
+import com.github.common.collection.MultiUtil;
 import com.github.common.util.A;
 import com.github.common.util.U;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.*;
 
 /** 菜单, 需要跟前端对应, 前端每增加一个菜单就需要添加一条记录, 与角色是 多对多 的关系 --> t_manager_menu */
 @Data
 @TableName("t_manager_menu")
-public class ManagerMenu implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class ManagerMenu {
 
     /** 根 id */
     private static final long ROOT_ID = 0L;
@@ -43,8 +41,8 @@ public class ManagerMenu implements Serializable {
     @TableField(exist = false)
     private List<ManagerPermission> permissionList;
 
-    private static void handle(ManagerMenu menu, Map<String, Collection<ManagerMenu>> menuMap, int depth) {
-        Collection<ManagerMenu> menus = menuMap.get(U.toStr(menu.getId()));
+    private static void handle(ManagerMenu menu, Map<String, List<ManagerMenu>> menuMap, int depth) {
+        List<ManagerMenu> menus = menuMap.get(U.toStr(menu.getId()));
         if (A.isNotEmpty(menus) && depth < U.MAX_DEPTH) {
             for (ManagerMenu m : menus) {
                 handle(m, menuMap, depth + 1);
@@ -63,7 +61,7 @@ public class ManagerMenu implements Serializable {
         Map<Long, List<ManagerPermission>> mpMap = A.listToMapList(permissions, ManagerPermission::getMenuId);
 
         List<ManagerMenu> menuList = new ArrayList<>();
-        Multimap<String, ManagerMenu> childMap = ArrayListMultimap.create();
+        MapValueList<String, ManagerMenu> childMap = MultiUtil.createMapList();
         for (ManagerMenu menu : menus) {
             // 将权限写进菜单
             List<ManagerPermission> mps = mpMap.get(menu.getId());
@@ -77,7 +75,7 @@ public class ManagerMenu implements Serializable {
                 childMap.put(U.toStr(menu.getPid()), menu);
             }
         }
-        Map<String, Collection<ManagerMenu>> relationMap = childMap.asMap();
+        Map<String, List<ManagerMenu>> relationMap = childMap.asMap();
         for (ManagerMenu menu : menuList) {
             handle(menu, relationMap, 0);
         }

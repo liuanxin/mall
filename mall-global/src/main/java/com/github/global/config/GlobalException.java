@@ -46,10 +46,12 @@ public class GlobalException {
     private boolean online;
 
     /**
+     * <pre>
      * 响应错误时, 错误码是否以 ResponseStatus 返回
      *
      * true:  ResponseStatus 返回 400 | 500, 返回 json 是 { "data": xxx ... }
      * false: ResponseStatus 返回 200,       返回 json 是 { "code": 400 | 500, "data": xxx ... }
+     * </pre>
      */
     @Value("${res.returnStatusCode:false}")
     private boolean returnStatusCode;

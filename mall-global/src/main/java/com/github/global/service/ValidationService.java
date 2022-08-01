@@ -1,12 +1,12 @@
 package com.github.global.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.common.collection.MapValueSet;
+import com.github.common.collection.MultiUtil;
 import com.github.common.exception.ParamException;
 import com.github.common.util.A;
 import com.github.common.util.U;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -53,7 +53,7 @@ public class ValidationService {
         Object obj = result.getTarget();
         Class<?> clazz = U.isNull(obj) ? null : obj.getClass();
 
-        Multimap<String, String> fieldErrorMap = ArrayListMultimap.create();
+        MapValueSet<String, String> fieldErrorMap = MultiUtil.createLinkedMapLinkedSet();
         List<FieldError> errors = result.getFieldErrors();
         for (FieldError error : errors) {
             String field = getParamField(clazz, error.getField());
@@ -128,11 +128,10 @@ public class ValidationService {
         }
     }
 
-    public Map<String, String> handleError(Map<String, Collection<String>> fieldErrorMap) {
-        // 返回是无序的, 这里用 key 排序
-        Map<String, String> errorMap = new TreeMap<>();
+    public Map<String, String> handleError(Map<String, Set<String>> fieldErrorMap) {
+        Map<String, String> errorMap = new LinkedHashMap<>();
         if (A.isNotEmpty(fieldErrorMap)) {
-            for (Map.Entry<String, Collection<String>> entry : fieldErrorMap.entrySet()) {
+            for (Map.Entry<String, Set<String>> entry : fieldErrorMap.entrySet()) {
                 errorMap.put(entry.getKey(), A.toStr(entry.getValue()));
             }
         }
