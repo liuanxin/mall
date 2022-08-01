@@ -18,7 +18,7 @@ public class CronTask {
 
     @Scheduled(cron = CRON)
     public void cancelOrder() {
-        CronUtil.task(DESC, this::handlerBusiness);
+        CronUtil.runTask(DESC, this::handlerBusiness);
     }
 
     /** 操作具体的业务 */

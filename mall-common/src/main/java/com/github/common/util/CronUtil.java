@@ -1,7 +1,6 @@
 package com.github.common.util;
 
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
-import org.springframework.scheduling.support.CronExpression;
 import org.springframework.scheduling.support.CronTrigger;
 
 import java.util.function.Function;
@@ -42,8 +41,9 @@ public class CronUtil {
      * @param func 入参是任务的名称, 出参是 boolean(表示运行是否成功)的方法
      */
     public static void runTask(ScheduledTaskRegistrar schedule, String desc, String cron, Function<String, Boolean> func) {
+        CronTrigger cronTrigger;
         try {
-            CronExpression.parse(cron);
+            cronTrigger = new CronTrigger(cron);
         } catch (IllegalArgumentException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("定时任务({})的表达式({})有误", desc, cron, e);
@@ -51,17 +51,14 @@ public class CronUtil {
             return;
         }
 
-        schedule.addTriggerTask(
-                () -> task(desc, func),
-                (trigger) -> new CronTrigger(cron).nextExecutionTime(trigger)
-        );
+        schedule.addTriggerTask(() -> runTask(desc, func), cronTrigger);
     }
 
     /**
      * @param desc 当前定时任务的业务说明
      * @param func 入参是任务的名称, 出参是 boolean(表示运行是否成功)的方法
      */
-    public static void task(String desc, Function<String, Boolean> func) {
+    public static void runTask(String desc, Function<String, Boolean> func) {
         try {
             LogUtil.putTraceId(U.uuid16());
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
