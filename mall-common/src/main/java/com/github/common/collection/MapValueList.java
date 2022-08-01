@@ -1,7 +1,6 @@
 package com.github.common.collection;
 
 import java.util.*;
-import java.util.function.Function;
 
 public final class MapValueList<K, V> {
 
@@ -10,16 +9,16 @@ public final class MapValueList<K, V> {
         this.valueMap = hasSort ? new LinkedHashMap<>() : new HashMap<>();
     }
 
-    public void put(K k, V v) {
-        valueMap.computeIfAbsent(k, valueFunc(k)).add(v);
+    private List<V> computeIfAbsent(K k) {
+        return valueMap.computeIfAbsent(k, (k1) -> new ArrayList<>());
     }
 
-    private Function<K, List<V>> valueFunc(K k) {
-        return (key) -> new ArrayList<>();
+    public void put(K k, V v) {
+        computeIfAbsent(k).add(v);
     }
 
     public void remove(K k, V v) {
-        valueMap.computeIfAbsent(k, valueFunc(k)).remove(v);
+        computeIfAbsent(k).remove(v);
     }
 
     public List<V> get(K k) {

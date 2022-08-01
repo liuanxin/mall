@@ -1,7 +1,6 @@
 package com.github.common.collection;
 
 import java.util.*;
-import java.util.function.Function;
 
 public final class MapValueSet<K, V> {
 
@@ -12,16 +11,16 @@ public final class MapValueSet<K, V> {
         this.valueHasSort = valueHasSort;
     }
 
-    public void put(K k, V v) {
-        valueMap.computeIfAbsent(k, valueFunc(k)).add(v);
+    private Set<V> computeIfAbsent(K k) {
+        return valueMap.computeIfAbsent(k, (k1) -> valueHasSort ? new LinkedHashSet<>() : new HashSet<>());
     }
 
-    private Function<K, Set<V>> valueFunc(K k) {
-        return (key) -> valueHasSort ? new LinkedHashSet<>() : new HashSet<>();
+    public void put(K k, V v) {
+        computeIfAbsent(k).add(v);
     }
 
     public void remove(K k, V v) {
-        valueMap.computeIfAbsent(k, valueFunc(k)).remove(v);
+        computeIfAbsent(k).remove(v);
     }
 
     public Set<V> get(K k) {
