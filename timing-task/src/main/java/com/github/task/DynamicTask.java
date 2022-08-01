@@ -12,18 +12,17 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 @SuppressWarnings("NullableProblems")
 public class DynamicTask implements SchedulingConfigurer {
 
-    // private final ProductService productService;
+    // private final XxxService xxxService;
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar schedule) {
-        String desc = "xxx";
-        String cron = "0 0 0/1 * * *";
-        CronUtil.runTask(schedule, desc, cron, this::handlerBusiness);
+        String cron = "0 0 0/1 * * *"; // 任务的运行表达式, 可以从 db 动态获取
+        CronUtil.runTask(schedule, "任务说明", cron, this::handlerBusiness);
     }
 
     /** 操作具体的业务 */
     private boolean handlerBusiness(String desc) {
-        // productService.xxx();
+        // xxxService.doSomething();
         return true;
     }
 }
