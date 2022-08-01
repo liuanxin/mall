@@ -1,6 +1,7 @@
 package com.github.common.collection;
 
 import java.util.*;
+import java.util.function.Function;
 
 public final class MapValueList<K, V> {
 
@@ -10,15 +11,19 @@ public final class MapValueList<K, V> {
     }
 
     public void put(K k, V v) {
-        valueMap.computeIfAbsent(k, k1 -> new ArrayList<>()).add(v);
+        valueMap.computeIfAbsent(k, valueFunc(k)).add(v);
+    }
+
+    private Function<K, List<V>> valueFunc(K k) {
+        return (key) -> new ArrayList<>();
+    }
+
+    public void remove(K k, V v) {
+        valueMap.computeIfAbsent(k, valueFunc(k)).remove(v);
     }
 
     public List<V> get(K k) {
         return valueMap.get(k);
-    }
-
-    public void remove(K k, V v) {
-        valueMap.computeIfAbsent(k, k1 -> new ArrayList<>()).remove(v);
     }
 
     public void remove(K k) {
