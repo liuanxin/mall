@@ -132,7 +132,7 @@ public class ValidationService {
         Map<String, String> errorMap = new LinkedHashMap<>();
         if (A.isNotEmpty(fieldErrorMap)) {
             for (Map.Entry<String, Set<String>> entry : fieldErrorMap.entrySet()) {
-                errorMap.put(entry.getKey(), A.toStr(entry.getValue()));
+                errorMap.put(entry.getKey(), A.toStr(entry.getValue(), "<", ">"));
             }
         }
         return errorMap;

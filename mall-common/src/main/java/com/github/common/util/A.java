@@ -83,6 +83,35 @@ public final class A {
         return !isEmpty(map);
     }
 
+    public static String toStr(Collection<?> collection, String left, String right) {
+        if (isEmpty(collection)) {
+            return U.EMPTY;
+        }
+
+        StringBuilder sbd = new StringBuilder();
+        for (Object o : collection) {
+            if (U.isNotNull(o)) {
+                sbd.append(left).append(o).append(right);
+            }
+        }
+        return sbd.toString();
+    }
+
+    /** 拿英文逗号(,)分隔数组(忽略空) */
+    public static <T> String toStr(T[] array, String left, String right) {
+        if (isEmpty(array)) {
+            return U.EMPTY;
+        }
+
+        StringBuilder sbd = new StringBuilder();
+        for (Object o : array) {
+            if (U.isNotNull(o)) {
+                sbd.append(left).append(o).append(right);
+            }
+        }
+        return sbd.toString();
+    }
+
     /** 拿英文逗号(,)分隔集合(忽略空) */
     public static String toStr(Collection<?> collection) {
         return toStr(collection, SPLIT);

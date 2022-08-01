@@ -17,7 +17,7 @@ public class AopSelfAdvice implements MethodInterceptor {
         try {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("Before call aop -> method({}) args({})",
-                        invocation.getMethod(), A.toStr(invocation.getArguments()));
+                        invocation.getMethod(), A.toStr(invocation.getArguments(), "<", ">"));
             }
             return invocation.proceed();
         } finally {
