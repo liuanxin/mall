@@ -3,7 +3,7 @@ package com.github.manager.service;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.github.common.collection.MapValueList;
+import com.github.common.collection.MapMultiValue;
 import com.github.common.collection.MultiUtil;
 import com.github.common.encrypt.Encrypt;
 import com.github.common.page.PageParam;
@@ -137,7 +137,7 @@ public class ManagerServiceImpl implements ManagerService {
             return Collections.emptyList();
         }
 
-        MapValueList<Long, ManagerMenu> menuMultiMap = MultiUtil.createMapList();
+        MapMultiValue<Long, ManagerMenu, List<ManagerMenu>> menuMultiMap = MultiUtil.createMapList();
         if (loadMenu) {
             List<ManagerRoleMenu> roleMenus = roleMenuMapper.selectList(Wrappers.lambdaQuery(ManagerRoleMenu.class)
                     .in(ManagerRoleMenu::getRoleId, rids));
@@ -158,7 +158,7 @@ public class ManagerServiceImpl implements ManagerService {
             }
         }
 
-        MapValueList<Long, ManagerPermission> permissionMultiMap = MultiUtil.createMapList();
+        MapMultiValue<Long, ManagerPermission, List<ManagerPermission>> permissionMultiMap = MultiUtil.createMapList();
         if (loadPermission) {
             Wrapper<ManagerRolePermission> rolePermissionQuery = Wrappers.lambdaQuery(ManagerRolePermission.class)
                     .in(ManagerRolePermission::getRoleId, rids);

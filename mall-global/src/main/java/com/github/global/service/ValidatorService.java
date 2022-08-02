@@ -1,6 +1,6 @@
 package com.github.global.service;
 
-import com.github.common.collection.MapValueSet;
+import com.github.common.collection.MapMultiValue;
 import com.github.common.collection.MultiUtil;
 import com.github.common.exception.ParamException;
 import com.github.common.util.A;
@@ -64,7 +64,7 @@ public class ValidatorService {
             return Collections.emptyMap();
         }
 
-        MapValueSet<String, String> fieldErrorMap = MultiUtil.createLinkedMapLinkedSet();
+        MapMultiValue<String, String, Set<String>> fieldErrorMap = MultiUtil.createLinkedMapLinkedSet();
         for (ConstraintViolation<?> error : errorSet) {
             Class<?> clazz = error.getRootBeanClass();
             String field = validationService.getParamField(clazz, error.getPropertyPath().toString());

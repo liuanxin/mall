@@ -2,7 +2,7 @@ package com.github.web;
 
 import com.github.common.annotation.NotNeedLogin;
 import com.github.common.annotation.NotNeedPermission;
-import com.github.common.collection.MapValueSet;
+import com.github.common.collection.MapMultiValue;
 import com.github.common.collection.MultiUtil;
 import com.github.common.util.A;
 import com.github.common.util.U;
@@ -37,7 +37,7 @@ public class ManagerCollectionController {
     @GetMapping("/collect-menu-permission")
     public boolean version() {
         Map<RequestMappingInfo, HandlerMethod> handlerMethods = mapping.getHandlerMethods();
-        MapValueSet<String, String> multi = MultiUtil.createLinkedMapLinkedSet();
+        MapMultiValue<String, String, Set<String>> multi = MultiUtil.createLinkedMapLinkedSet();
         String sp = "~!~";
         String classSuffix = "Controller";
         for (Map.Entry<RequestMappingInfo, HandlerMethod> entry : handlerMethods.entrySet()) {
