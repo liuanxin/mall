@@ -11,7 +11,7 @@ enum MapValueMultiType {
     /** 数组 */
     ARRAY_LIST {
         @Override
-        public <V> Collection<V> instance() {
+        public <T> Collection<T> instance() {
             return new ArrayList<>();
         }
     },
@@ -19,7 +19,7 @@ enum MapValueMultiType {
     /** 去重且无序数组 */
     HASH_SET {
         @Override
-        public <V> Collection<V> instance() {
+        public <T> Collection<T> instance() {
             return new HashSet<>();
         }
     },
@@ -27,10 +27,10 @@ enum MapValueMultiType {
     /** 去重且有序数据 */
     LINKED_HASH_SET {
         @Override
-        public <V> Collection<V> instance() {
+        public <T> Collection<T> instance() {
             return new LinkedHashSet<>();
         }
     };
 
-    abstract <V> Collection<V> instance();
+    abstract <T> Collection<T> instance();
 }

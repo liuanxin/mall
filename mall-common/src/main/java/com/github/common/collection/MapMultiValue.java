@@ -13,25 +13,20 @@ public final class MapMultiValue<K, V, C extends Collection<V>> {
         this.valueType = valueType;
     }
 
-    @SuppressWarnings("unchecked")
-    private C computeIfAbsent(K k) {
-        return valueMap.computeIfAbsent(k, (k1) -> (C) valueType.instance());
+    public boolean put(K k, V v) {
+        // noinspection unchecked
+        return valueMap.computeIfAbsent(k, (k1) -> (C) valueType.instance()).add(v);
     }
 
-    public void put(K k, V v) {
-        computeIfAbsent(k).add(v);
+    public boolean remove(K k, V v) {
+        return valueMap.containsKey(k) && valueMap.get(k).remove(v);
     }
-
-    public void remove(K k, V v) {
-        computeIfAbsent(k).remove(v);
+    public void remove(K k) {
+        valueMap.remove(k);
     }
 
     public C get(K k) {
         return valueMap.get(k);
-    }
-
-    public void remove(K k) {
-        valueMap.remove(k);
     }
 
     public boolean isEmpty() {
