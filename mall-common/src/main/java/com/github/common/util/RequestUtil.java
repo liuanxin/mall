@@ -98,11 +98,8 @@ public final class RequestUtil {
             return U.EMPTY;
         }
 
-        String scheme = request.getHeader(NGINX_PROTO);
-        if (U.isBlank(scheme)) {
-            scheme = request.getScheme();
-        }
-        return scheme.split(",")[0].trim().toLowerCase();
+        String proto = request.getHeader(NGINX_PROTO);
+        return U.isBlank(proto) ? request.getScheme() : proto.split(",")[0].trim().toLowerCase();
     }
 
     /** 获取请求的语言信息 */
