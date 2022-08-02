@@ -3,7 +3,7 @@ package com.github.web;
 import com.github.common.annotation.NotNeedLogin;
 import com.github.common.annotation.NotNeedPermission;
 import com.github.common.collection.MapMultiValue;
-import com.github.common.collection.MultiUtil;
+import com.github.common.collection.MapUtil;
 import com.github.common.util.A;
 import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiGroup;
@@ -37,7 +37,7 @@ public class ManagerCollectionController {
     @GetMapping("/collect-menu-permission")
     public boolean version() {
         Map<RequestMappingInfo, HandlerMethod> handlerMethods = mapping.getHandlerMethods();
-        MapMultiValue<String, String, Set<String>> multi = MultiUtil.createLinkedMapLinkedSet();
+        MapMultiValue<String, String, Set<String>> multi = MapUtil.createLinkedMapLinkedSet();
         String sp = "~!~";
         String classSuffix = "Controller";
         for (Map.Entry<RequestMappingInfo, HandlerMethod> entry : handlerMethods.entrySet()) {

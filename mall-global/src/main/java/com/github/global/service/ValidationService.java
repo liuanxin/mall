@@ -2,7 +2,7 @@ package com.github.global.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.common.collection.MapMultiValue;
-import com.github.common.collection.MultiUtil;
+import com.github.common.collection.MapUtil;
 import com.github.common.exception.ParamException;
 import com.github.common.util.A;
 import com.github.common.util.U;
@@ -53,7 +53,7 @@ public class ValidationService {
         Object obj = result.getTarget();
         Class<?> clazz = U.isNull(obj) ? null : obj.getClass();
 
-        MapMultiValue<String, String, Set<String>> fieldErrorMap = MultiUtil.createLinkedMapLinkedSet();
+        MapMultiValue<String, String, Set<String>> fieldErrorMap = MapUtil.createLinkedMapLinkedSet();
         List<FieldError> errors = result.getFieldErrors();
         for (FieldError error : errors) {
             String field = getParamField(clazz, error.getField());

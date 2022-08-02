@@ -3,7 +3,7 @@ package com.github.manager.model;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.github.common.collection.MapMultiValue;
-import com.github.common.collection.MultiUtil;
+import com.github.common.collection.MapUtil;
 import com.github.common.util.A;
 import com.github.common.util.U;
 import lombok.Data;
@@ -58,10 +58,10 @@ public class ManagerMenu {
             return Collections.emptyMap();
         }
 
-        Map<Long, List<ManagerPermission>> mpMap = A.listToMapList(permissions, ManagerPermission::getMenuId);
+        Map<Long, List<ManagerPermission>> mpMap = MapUtil.listToMapList(permissions, ManagerPermission::getMenuId);
 
         List<ManagerMenu> menuList = new ArrayList<>();
-        MapMultiValue<String, ManagerMenu, List<ManagerMenu>> childMap = MultiUtil.createMapList();
+        MapMultiValue<String, ManagerMenu, List<ManagerMenu>> childMap = MapUtil.createMapList();
         for (ManagerMenu menu : menus) {
             // 将权限写进菜单
             List<ManagerPermission> mps = mpMap.get(menu.getId());

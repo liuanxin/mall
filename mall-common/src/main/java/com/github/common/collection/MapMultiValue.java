@@ -3,12 +3,12 @@ package com.github.common.collection;
 import java.util.Collection;
 import java.util.Map;
 
-/** 使用 {@link MultiUtil} 的静态方法 */
+/** 使用 {@link MapUtil} 的静态方法 */
 public final class MapMultiValue<K, V, C extends Collection<V>> {
 
     private final Map<K, C> valueMap;
-    private final MapMultiType valueType;
-    MapMultiValue(Map<K, C> valueMap, MapMultiType valueType) {
+    private final MapValueMultiType valueType;
+    MapMultiValue(Map<K, C> valueMap, MapValueMultiType valueType) {
         this.valueMap = valueMap;
         this.valueType = valueType;
     }

@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.github.common.collection.MapMultiValue;
-import com.github.common.collection.MultiUtil;
+import com.github.common.collection.MapUtil;
 import com.github.common.encrypt.Encrypt;
 import com.github.common.page.PageParam;
 import com.github.common.page.PageReturn;
@@ -137,7 +137,7 @@ public class ManagerServiceImpl implements ManagerService {
             return Collections.emptyList();
         }
 
-        MapMultiValue<Long, ManagerMenu, List<ManagerMenu>> menuMultiMap = MultiUtil.createMapList();
+        MapMultiValue<Long, ManagerMenu, List<ManagerMenu>> menuMultiMap = MapUtil.createMapList();
         if (loadMenu) {
             List<ManagerRoleMenu> roleMenus = roleMenuMapper.selectList(Wrappers.lambdaQuery(ManagerRoleMenu.class)
                     .in(ManagerRoleMenu::getRoleId, rids));
@@ -147,7 +147,7 @@ public class ManagerServiceImpl implements ManagerService {
                     List<ManagerMenu> menus = menuMapper.selectList(Wrappers.lambdaQuery(ManagerMenu.class)
                             .in(ManagerMenu::getId, mids));
 
-                    Map<Long, ManagerMenu> menuMap = A.listToMap(menus, ManagerMenu::getId);
+                    Map<Long, ManagerMenu> menuMap = MapUtil.listToMap(menus, ManagerMenu::getId);
                     for (ManagerRoleMenu roleMenu : roleMenus) {
                         ManagerMenu menu = menuMap.get(roleMenu.getMenuId());
                         if (U.isNotNull(menu)) {
@@ -158,7 +158,7 @@ public class ManagerServiceImpl implements ManagerService {
             }
         }
 
-        MapMultiValue<Long, ManagerPermission, List<ManagerPermission>> permissionMultiMap = MultiUtil.createMapList();
+        MapMultiValue<Long, ManagerPermission, List<ManagerPermission>> permissionMultiMap = MapUtil.createMapList();
         if (loadPermission) {
             Wrapper<ManagerRolePermission> rolePermissionQuery = Wrappers.lambdaQuery(ManagerRolePermission.class)
                     .in(ManagerRolePermission::getRoleId, rids);
@@ -170,7 +170,7 @@ public class ManagerServiceImpl implements ManagerService {
                             .in(ManagerPermission::getId, pids);
                     List<ManagerPermission> permissions = permissionMapper.selectList(permissionQuery);
 
-                    Map<Long, ManagerPermission> permissionMap = A.listToMap(permissions, ManagerPermission::getId);
+                    Map<Long, ManagerPermission> permissionMap = MapUtil.listToMap(permissions, ManagerPermission::getId);
                     for (ManagerRolePermission rolePermission : rolePermissions) {
                         ManagerPermission permission = permissionMap.get(rolePermission.getPermissionId());
                         if (U.isNotNull(permission)) {

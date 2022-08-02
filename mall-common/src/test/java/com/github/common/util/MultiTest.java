@@ -1,7 +1,7 @@
 package com.github.common.util;
 
 import com.github.common.collection.MapMultiValue;
-import com.github.common.collection.MultiUtil;
+import com.github.common.collection.MapUtil;
 import org.junit.Test;
 
 import java.util.List;
@@ -11,7 +11,7 @@ public class MultiTest {
 
     @Test
     public void test() {
-        MapMultiValue<Integer, String, List<String>> mapList1 = MultiUtil.createMapList();
+        MapMultiValue<Integer, String, List<String>> mapList1 = MapUtil.createMapList();
         mapList1.put(123, "aaa");
         mapList1.put(123, "bbb");
         mapList1.put(123, "aaa");
@@ -21,7 +21,7 @@ public class MultiTest {
         // {1234=[bbb, aaa, aaa], 123=[aaa, bbb, aaa]}
         System.out.println(mapList1);
 
-        MapMultiValue<Integer, String, List<String>> mapList2 = MultiUtil.createLinkedMapList();
+        MapMultiValue<Integer, String, List<String>> mapList2 = MapUtil.createLinkedMapList();
         mapList2.put(123, "aaa");
         mapList2.put(123, "bbb");
         mapList2.put(123, "aaa");
@@ -31,7 +31,7 @@ public class MultiTest {
         // {123=[aaa, bbb, aaa], 1234=[bbb, aaa, aaa]}
         System.out.println(mapList2);
 
-        MapMultiValue<Integer, String, Set<String>> mapSet1 = MultiUtil.createMapSet();
+        MapMultiValue<Integer, String, Set<String>> mapSet1 = MapUtil.createMapSet();
         mapSet1.put(123, "aaa");
         mapSet1.put(123, "bbb");
         mapSet1.put(123, "aaa");
@@ -41,7 +41,7 @@ public class MultiTest {
         // {1234=[aaa, bbb], 123=[aaa, bbb]}
         System.out.println(mapSet1);
 
-        MapMultiValue<Integer, String, Set<String>> mapSet2 = MultiUtil.createLinkedMapSet();
+        MapMultiValue<Integer, String, Set<String>> mapSet2 = MapUtil.createLinkedMapSet();
         mapSet2.put(123, "aaa");
         mapSet2.put(123, "bbb");
         mapSet2.put(123, "aaa");
@@ -51,7 +51,7 @@ public class MultiTest {
         // {123=[aaa, bbb], 1234=[aaa, bbb]}
         System.out.println(mapSet2);
 
-        MapMultiValue<Integer, String, Set<String>> mapSet3 = MultiUtil.createMapLinkedSet();
+        MapMultiValue<Integer, String, Set<String>> mapSet3 = MapUtil.createMapLinkedSet();
         mapSet3.put(123, "aaa");
         mapSet3.put(123, "bbb");
         mapSet3.put(123, "aaa");
@@ -61,7 +61,7 @@ public class MultiTest {
         // {1234=[bbb, aaa], 123=[aaa, bbb]}
         System.out.println(mapSet3);
 
-        MapMultiValue<Integer, String, Set<String>> mapSet4 = MultiUtil.createLinkedMapLinkedSet();
+        MapMultiValue<Integer, String, Set<String>> mapSet4 = MapUtil.createLinkedMapLinkedSet();
         mapSet4.put(123, "aaa");
         mapSet4.put(123, "bbb");
         mapSet4.put(123, "aaa");
