@@ -2,7 +2,7 @@ package com.github.res;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.github.common.collection.MapUtil;
+import com.github.common.collection.MapMultiUtil;
 import com.github.common.enums.Gender;
 import com.github.common.enums.TestEnum;
 import com.github.common.json.JsonUtil;
@@ -68,7 +68,7 @@ public class ExampleRes {
         PageReturn<ExampleRes> returnRes = PageReturn.convertJustTotal(userPageInfo);
         if (U.isNotNull(userPageInfo)) {
             // 把商品数据整理成  userId: List<商品>
-            Map<Long, List<ProductTest>> userIdMap = MapUtil.listToMapList(testList, ProductTest::getUserId);
+            Map<Long, List<ProductTest>> userIdMap = MapMultiUtil.listToMapList(testList, ProductTest::getUserId);
 
             List<ExampleRes> exampleVoList = new ArrayList<>();
             for (UserTest userExample : userPageInfo.getList()) {

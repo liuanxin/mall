@@ -6,7 +6,7 @@ import com.github.common.util.U;
 import java.util.*;
 import java.util.function.Function;
 
-public class MapUtil {
+public class MapMultiUtil {
 
     /** 生成 HashMap&lt;K, ArrayList&lt;V&gt;&gt; 实体(value 是数组), 只需要做 add remove, 用 asMap 成最终实体 */
     public static <K, V> MapMultiValue<K, V, List<V>> createMapList() {
