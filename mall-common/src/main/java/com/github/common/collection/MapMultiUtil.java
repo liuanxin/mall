@@ -44,22 +44,17 @@ public class MapMultiUtil {
     public static <K, T> Map<K, T> listToMap(Collection<T> list, Function<? super T, K> func, MapValueDuplicateType duplicateType) {
         return listToMap(new HashMap<>(), list, func, duplicateType);
     }
-    private static <K, T> Map<K, T> listToMap(Map<K, T> returnMap, Collection<T> list,
-                                              Function<? super T, K> func, MapValueDuplicateType duplicateType) {
+    private static <K, V> Map<K, V> listToMap(Map<K, V> returnMap, Collection<V> list,
+                                              Function<? super V, K> func, MapValueDuplicateType duplicateType) {
         if (A.isNotEmpty(list)) {
-            for (T obj : list) {
-                if (U.isNotNull(obj)) {
-                    K k = func.apply(obj);
-                    // noinspection DuplicatedCode
+            for (V v : list) {
+                if (U.isNotNull(v)) {
+                    K k = func.apply(v);
                     if (U.isNotNull(k)) {
                         if (returnMap.containsKey(k)) {
-                            switch (duplicateType) {
-                                case THROW -> throw new RuntimeException("重复数据不允许写入");
-                                case COVER -> returnMap.put(k, obj);
-                                case IGNORE -> {}
-                            }
+                            duplicateType.handle(returnMap, list, k, v);
                         } else {
-                            returnMap.put(k, obj);
+                            returnMap.put(k, v);
                         }
                     }
                 }
@@ -142,14 +137,9 @@ public class MapMultiUtil {
                     K k = keyFun.apply(obj);
                     if (U.isNotNull(k)) {
                         V v = valueFun.apply(obj);
-                        // noinspection DuplicatedCode
                         if (U.isNotNull(v)) {
                             if (returnMap.containsKey(k)) {
-                                switch (duplicateType) {
-                                    case THROW -> throw new RuntimeException("重复数据不允许写入");
-                                    case COVER -> returnMap.put(k, v);
-                                    case IGNORE -> {}
-                                }
+                                duplicateType.handle(returnMap, list, k, v);
                             } else {
                                 returnMap.put(k, v);
                             }

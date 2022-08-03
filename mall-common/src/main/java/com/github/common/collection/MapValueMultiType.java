@@ -16,7 +16,7 @@ enum MapValueMultiType {
         }
     },
 
-    /** 去重且无序数组 */
+    /** 去重且无序集合 */
     HASH_SET {
         @Override
         public <T> Collection<T> instance() {
@@ -24,7 +24,7 @@ enum MapValueMultiType {
         }
     },
 
-    /** 去重且有序数据 */
+    /** 去重且有序集合 */
     LINKED_HASH_SET {
         @Override
         public <T> Collection<T> instance() {

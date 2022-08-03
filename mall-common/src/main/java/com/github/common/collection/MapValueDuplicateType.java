@@ -1,14 +1,33 @@
 package com.github.common.collection;
 
-/** 键值对的 value 是集合时, 数据重复时的做法 */
+import java.util.Collection;
+import java.util.Map;
+
+/** list 转换成 map 时, key 重复后的做法 */
 enum MapValueDuplicateType {
 
     /** 抛异常 */
-    THROW,
+    THROW {
+        @Override
+        public <K, V> void handle(Map<K, V> map, Collection<?> list, K k, V v) {
+            throw new RuntimeException(String.format("Duplicate (%s : %s) in data (%s)", k, v, list));
+        }
+    },
 
     /** 覆盖 */
-    COVER,
+    COVER {
+        @Override
+        public <K, V> void handle(Map<K, V> map, Collection<?> list, K k, V v) {
+            map.put(k, v);
+        }
+    },
 
     /** 忽略 */
-    IGNORE
+    IGNORE {
+        @Override
+        public <K, V> void handle(Map<K, V> map, Collection<?> list, K k, V v) {
+        }
+    };
+
+    abstract <K, V> void handle(Map<K, V> map, Collection<?> list, K k, V v);
 }
