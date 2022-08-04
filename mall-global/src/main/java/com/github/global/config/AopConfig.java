@@ -24,7 +24,17 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 public class AopConfig {
 
     @Bean
-    public DefaultPointcutAdvisor SelfAopAnnotation() {
-        return new DefaultPointcutAdvisor(new AnnotationMatchingPointcut(null, AopSelf.class, true), new AopSelfAdvice());
+    public AnnotationMatchingPointcut aopSelfPointcut() {
+        return new AnnotationMatchingPointcut(null, AopSelf.class, true);
+    }
+
+    @Bean
+    public AopSelfAdvice aopSelfAdvice() {
+        return new AopSelfAdvice();
+    }
+
+    @Bean
+    public DefaultPointcutAdvisor aopSelfAdvisor(AnnotationMatchingPointcut aopSelfPointcut, AopSelfAdvice aopSelfAdvice) {
+        return new DefaultPointcutAdvisor(aopSelfPointcut, aopSelfAdvice);
     }
 }
