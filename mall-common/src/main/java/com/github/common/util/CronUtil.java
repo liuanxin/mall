@@ -3,7 +3,7 @@ package com.github.common.util;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.support.CronTrigger;
 
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class CronUtil {
 
@@ -38,9 +38,9 @@ public class CronUtil {
      *
      * @param desc 当前定时任务的业务说明
      * @param cron 定时任务的表达式
-     * @param func 入参是任务的名称, 出参是 boolean(表示运行是否成功)的方法
+     * @param predicate 入参是任务的业务说明, 出参是 boolean(表示运行是否成功)的方法
      */
-    public static void runTask(ScheduledTaskRegistrar schedule, String desc, String cron, Function<String, Boolean> func) {
+    public static void runTask(ScheduledTaskRegistrar schedule, String desc, String cron, Predicate<String> predicate) {
         CronTrigger cronTrigger;
         try {
             cronTrigger = new CronTrigger(cron);
@@ -51,20 +51,20 @@ public class CronUtil {
             return;
         }
 
-        schedule.addTriggerTask(() -> runTask(desc, func), cronTrigger);
+        schedule.addTriggerTask(() -> runTask(desc, predicate), cronTrigger);
     }
 
     /**
      * @param desc 当前定时任务的业务说明
-     * @param func 入参是任务的名称, 出参是 boolean(表示运行是否成功)的方法
+     * @param predicate 入参是任务的名称, 出参是 boolean(表示运行是否成功)的方法
      */
-    public static void runTask(String desc, Function<String, Boolean> func) {
+    public static void runTask(String desc, Predicate<String> predicate) {
         try {
             LogUtil.putTraceId(U.uuid16());
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("任务({})开始", desc);
             }
-            boolean flag = func.apply(desc);
+            boolean flag = predicate.test(desc);
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("任务({})结束({})", desc, flag);
             }
