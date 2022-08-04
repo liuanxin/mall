@@ -37,11 +37,11 @@ public class MapMultiUtil {
 
 
     /** 用指定的方法将 List 转换成 HashMap(过滤 key 和 value 为空), 如果同样的 key 有多个值, 后面将覆盖前面 */
-    public static <K, T> Map<K, T> listToMap(Collection<T> list, Function<? super T, K> func) {
+    public static <K, V> Map<K, V> listToMap(Collection<V> list, Function<? super V, K> func) {
         return listToMap(new HashMap<>(), list, func, MapValueDuplicateType.COVER);
     }
     /** 用指定的方法将 List 转换成 HashMap(过滤 key 和 value 为空) */
-    public static <K, T> Map<K, T> listToMap(Collection<T> list, Function<? super T, K> func, MapValueDuplicateType duplicateType) {
+    public static <K, V> Map<K, V> listToMap(Collection<V> list, Function<? super V, K> func, MapValueDuplicateType duplicateType) {
         return listToMap(new HashMap<>(), list, func, duplicateType);
     }
     private static <K, V> Map<K, V> listToMap(Map<K, V> returnMap, Collection<V> list,
@@ -63,57 +63,13 @@ public class MapMultiUtil {
         return returnMap;
     }
     /** 用指定的方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空), 如果同样的 key 有多个值, 后面将覆盖前面 */
-    public static <K, T> Map<K, T> listToLinkedMap(Collection<T> list, Function<? super T, K> func) {
+    public static <K, V> Map<K, V> listToLinkedMap(Collection<V> list, Function<? super V, K> func) {
         return listToMap(new LinkedHashMap<>(), list, func, MapValueDuplicateType.COVER);
     }
     /** 用指定的方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空) */
-    public static <K, T> Map<K, T> listToLinkedMap(Collection<T> list, Function<? super T, K> func, MapValueDuplicateType duplicateType) {
+    public static <K, V> Map<K, V> listToLinkedMap(Collection<V> list, Function<? super V, K> func,
+                                                   MapValueDuplicateType duplicateType) {
         return listToMap(new LinkedHashMap<>(), list, func, duplicateType);
-    }
-
-    /** 用指定的方法将 List 转换成 HashMap(过滤 key 和 value 为空), 其中 map 的 value 是 List */
-    public static <K, T> Map<K, List<T>> listToMapList(Collection<T> list, Function<? super T, K> func) {
-        return listToMapList(list, func, new HashMap<>());
-    }
-    private static <K, T> Map<K, List<T>> listToMapList(Collection<T> list, Function<? super T, K> func, Map<K, List<T>> returnMap) {
-        if (A.isNotEmpty(list)) {
-            for (T obj : list) {
-                if (U.isNotNull(obj)) {
-                    K k = func.apply(obj);
-                    if (U.isNotNull(k)) {
-                        returnMap.computeIfAbsent(k, k1 -> new ArrayList<>()).add(obj);
-                    }
-                }
-            }
-        }
-        return returnMap;
-    }
-    /** 用指定的方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空), 其中 map 的 value 是 List */
-    public static <K, T> Map<K, List<T>> listToLinkedMapList(Collection<T> list, Function<? super T, K> func) {
-        return listToMapList(list, func, new LinkedHashMap<>());
-    }
-
-
-    /** 用指定的方法将 List 转换成 HashMap(过滤 key 和 value 为空), 其中 map 的 value 是 LinkedHashSet */
-    public static <K, T> Map<K, Set<T>> listToMapSet(Collection<T> list, Function<? super T, K> func) {
-        return listToMapSet(list, func, new HashMap<>());
-    }
-    private static <K, T> Map<K, Set<T>> listToMapSet(Collection<T> list, Function<? super T, K> func, Map<K, Set<T>> returnMap) {
-        if (A.isNotEmpty(list)) {
-            for (T obj : list) {
-                if (U.isNotNull(obj)) {
-                    K k = func.apply(obj);
-                    if (U.isNotNull(k)) {
-                        returnMap.computeIfAbsent(k, k1 -> new LinkedHashSet<>()).add(obj);
-                    }
-                }
-            }
-        }
-        return returnMap;
-    }
-    /** 用指定的方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空), 其中 map 的 value 是 LinkedHashSet */
-    public static <K, T> Map<K, Set<T>> listToLinkedMapSet(Collection<T> list, Function<? super T, K> func) {
-        return listToMapSet(list, func, new LinkedHashMap<>());
     }
 
 
@@ -164,13 +120,61 @@ public class MapMultiUtil {
         return listToMapKeyValue(new LinkedHashMap<>(), list, keyFun, valueFun, duplicateType);
     }
 
+
+    /** 用指定的方法将 List 转换成 HashMap(过滤 key 和 value 为空), 其中 map 的 value 是 List */
+    public static <K, V> Map<K, List<V>> listToMapList(Collection<V> list, Function<? super V, K> func) {
+        return listToMapList(list, func, new HashMap<>());
+    }
+    private static <K, V> Map<K, List<V>> listToMapList(Collection<V> list, Function<? super V, K> func,
+                                                        Map<K, List<V>> returnMap) {
+        if (A.isNotEmpty(list)) {
+            for (V obj : list) {
+                if (U.isNotNull(obj)) {
+                    K k = func.apply(obj);
+                    if (U.isNotNull(k)) {
+                        returnMap.computeIfAbsent(k, k1 -> new ArrayList<>()).add(obj);
+                    }
+                }
+            }
+        }
+        return returnMap;
+    }
+    /** 用指定的方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空), 其中 map 的 value 是 List */
+    public static <K, V> Map<K, List<V>> listToLinkedMapList(Collection<V> list, Function<? super V, K> func) {
+        return listToMapList(list, func, new LinkedHashMap<>());
+    }
+
+
+    /** 用指定的方法将 List 转换成 HashMap(过滤 key 和 value 为空), 其中 map 的 value 是 LinkedHashSet */
+    public static <K, V> Map<K, Set<V>> listToMapSet(Collection<V> list, Function<? super V, K> func) {
+        return listToMapSet(list, func, new HashMap<>());
+    }
+    private static <K, V> Map<K, Set<V>> listToMapSet(Collection<V> list, Function<? super V, K> func,
+                                                      Map<K, Set<V>> returnMap) {
+        if (A.isNotEmpty(list)) {
+            for (V obj : list) {
+                if (U.isNotNull(obj)) {
+                    K k = func.apply(obj);
+                    if (U.isNotNull(k)) {
+                        returnMap.computeIfAbsent(k, k1 -> new LinkedHashSet<>()).add(obj);
+                    }
+                }
+            }
+        }
+        return returnMap;
+    }
+    /** 用指定的方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空), 其中 map 的 value 是 LinkedHashSet */
+    public static <K, V> Map<K, Set<V>> listToLinkedMapSet(Collection<V> list, Function<? super V, K> func) {
+        return listToMapSet(list, func, new LinkedHashMap<>());
+    }
+
+
     /** 用两个指定方法将 List 转换成 HashMap(过滤 key 和 value 为空), 其中 map 的 value 是 List */
     public static <T, K, V> Map<K, List<V>> listToMapKeyValueList(Collection<T> list,
                                                                   Function<? super T, K> keyFun,
                                                                   Function<? super T, V> valueFun) {
         return listToMapKeyValueList(list, keyFun, valueFun, new HashMap<>());
     }
-
     private static <T, K, V> Map<K, List<V>> listToMapKeyValueList(Collection<T> list,
                                                                    Function<? super T, K> keyFun,
                                                                    Function<? super T, V> valueFun,
@@ -190,7 +194,6 @@ public class MapMultiUtil {
         }
         return returnMap;
     }
-
     /** 用两个指定方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空), 其中 map 的 value 是 List */
     public static <T, K, V> Map<K, List<V>> listToLinkedMapKeyValueList(Collection<T> list,
                                                                         Function<? super T, K> keyFun,
@@ -198,13 +201,13 @@ public class MapMultiUtil {
         return listToMapKeyValueList(list, keyFun, valueFun, new LinkedHashMap<>());
     }
 
+
     /** 用两个指定方法将 List 转换成 HashMap(过滤 key 和 value 为空), 其中 map 的 value 是 LinkedHashSet */
     public static <T, K, V> Map<K, Set<V>> listToMapKeyValueSet(Collection<T> list,
                                                                 Function<? super T, K> keyFun,
                                                                 Function<? super T, V> valueFun) {
         return listToMapKeyValueSet(list, keyFun, valueFun, new HashMap<>());
     }
-
     private static <T, K, V> Map<K, Set<V>> listToMapKeyValueSet(Collection<T> list,
                                                                  Function<? super T, K> keyFun,
                                                                  Function<? super T, V> valueFun,
@@ -224,7 +227,6 @@ public class MapMultiUtil {
         }
         return returnMap;
     }
-
     /** 用两个指定方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空), 其中 map 的 value 是 LinkedHashSet */
     public static <T, K, V> Map<K, Set<V>> listToLinkedMapKeyValueSet(Collection<T> list,
                                                                       Function<? super T, K> keyFun,
