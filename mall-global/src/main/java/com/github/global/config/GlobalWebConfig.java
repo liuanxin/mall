@@ -29,21 +29,25 @@ public class GlobalWebConfig {
     @Order(1)
     public FilterRegistrationBean<CharacterEncodingFilter> characterFilter(CharacterEncodingFilter filter) {
         FilterRegistrationBean<CharacterEncodingFilter> filterBean = new FilterRegistrationBean<>(filter);
-        filterBean.setOrder(Integer.MIN_VALUE);
+        filterBean.setOrder(Integer.MIN_VALUE + 1);
         return filterBean;
     }
 
     @Bean
     @Order(2)
     public FilterRegistrationBean<CorsFilter> corsFilter() {
-        FilterRegistrationBean<CorsFilter> filterBean = new FilterRegistrationBean<>(new CorsFilter(allowHeaders));
-        filterBean.setOrder(Integer.MIN_VALUE + 1);
+        CorsFilter filter = new CorsFilter(allowHeaders);
+        FilterRegistrationBean<CorsFilter> filterBean = new FilterRegistrationBean<>(filter);
+        filterBean.setOrder(Integer.MIN_VALUE + 2);
         return filterBean;
     }
 
     @Bean
     @Order(3)
     public FilterRegistrationBean<LanguageFilter> languageFilter() {
-        return new FilterRegistrationBean<>(new LanguageFilter(languageParam, i18nBaseNames));
+        LanguageFilter filter = new LanguageFilter(languageParam, i18nBaseNames);
+        FilterRegistrationBean<LanguageFilter> filterBean = new FilterRegistrationBean<>(filter);
+        filterBean.setOrder(Integer.MIN_VALUE + 3);
+        return filterBean;
     }
 }
