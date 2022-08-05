@@ -56,6 +56,10 @@ public class GlobalException {
     @Value("${res.returnStatusCode:false}")
     private boolean returnStatusCode;
 
+    /** 打印请求日志时, 是否输出头信息 */
+    @Value("${req.logPrintHeader:true}")
+    private boolean printHeader;
+
     private final I18nService i18nService;
     private final ValidationService validationService;
 
@@ -227,7 +231,7 @@ public class GlobalException {
                 LogUtil.putTraceAndIp(traceId, realIp);
 
                 String basicInfo = RequestUtil.logBasicInfo();
-                String requestInfo = RequestUtil.logRequestInfo();
+                String requestInfo = RequestUtil.logRequestInfo(printHeader);
                 sbd.append(String.format("[%s] [%s] ", basicInfo, requestInfo));
             }
             boolean knowException = U.isNotBlank(msg);

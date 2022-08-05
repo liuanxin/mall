@@ -1123,7 +1123,7 @@ public final class U {
         return (depth <= MAX_DEPTH) ? getField(superclass, field, depth + 1) : null;
     }
 
-    /** 将参数 转换成 id=123&name=xyz&name=opq, 将值进行脱敏(如 password=***&phone=130**** */
+    /** 将参数 转换成 id=123&name=xyz&name=opq, 将值进行脱敏(如 password=***&phone=130****) */
     public static String formatParam(Map<String, ?> params) {
         return formatParam(true, params);
     }

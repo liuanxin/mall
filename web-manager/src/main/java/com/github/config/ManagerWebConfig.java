@@ -1,6 +1,7 @@
 package com.github.config;
 
 import com.github.common.mvc.SpringMvc;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -22,6 +23,10 @@ import java.util.List;
 @SuppressWarnings("NullableProblems")
 @Configuration
 public class ManagerWebConfig extends DelegatingWebMvcConfiguration {
+
+    /** 打印请求日志时, 是否输出头信息 */
+    @Value("${req.logPrintHeader:true}")
+    private boolean printHeader;
 
     @Override
     protected void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -53,7 +58,7 @@ public class ManagerWebConfig extends DelegatingWebMvcConfiguration {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new ManagerInterceptor()).addPathPatterns("/**");
+        registry.addInterceptor(new ManagerInterceptor(printHeader)).addPathPatterns("/**");
     }
 
 //    /**

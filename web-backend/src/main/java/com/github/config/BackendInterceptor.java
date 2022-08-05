@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @SuppressWarnings("NullableProblems")
-public class BackendInterceptor implements HandlerInterceptor {
+public record BackendInterceptor(boolean printHeader) implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) {
@@ -43,7 +43,7 @@ public class BackendInterceptor implements HandlerInterceptor {
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
             String userInfo = BackendSessionUtil.getUserInfo();
             String basicInfo = RequestUtil.logBasicInfo();
-            String requestInfo = RequestUtil.logRequestInfo();
+            String requestInfo = RequestUtil.logRequestInfo(printHeader);
             LogUtil.ROOT_LOG.info("[{}] [{}] [{}]", userInfo, basicInfo, requestInfo);
         }
     }

@@ -235,7 +235,7 @@ public final class RequestUtil {
      *
      * @return 示例: id=xxx&name=yyy
      */
-    public static String formatParam() {
+    public static String formatParam(boolean des) {
         HttpServletRequest request = getRequest();
         if (U.isNull(request)) {
             return U.EMPTY;
@@ -243,7 +243,7 @@ public final class RequestUtil {
 
         String contentType = request.getContentType();
         boolean upload = U.isNotBlank(contentType) && contentType.startsWith("multipart/");
-        return upload ? "uploading file" : U.formatParam(request.getParameterMap());
+        return upload ? "uploading file" : U.formatParam(des, request.getParameterMap());
     }
 
     public static String getTraceId() {
@@ -310,7 +310,7 @@ public final class RequestUtil {
     }
 
     /** 格式化头里的参数: 键值以冒号分隔 */
-    public static String formatHeader() {
+    public static String formatHeader(boolean des) {
         HttpServletRequest request = getRequest();
         if (U.isNull(request)) {
             return U.EMPTY;
@@ -321,7 +321,9 @@ public final class RequestUtil {
         while (headers.hasMoreElements()) {
             String headName = headers.nextElement();
             String value = request.getHeader(headName);
-            sbd.append("<").append(headName).append(" : ").append(DesensitizationUtil.desKey(headName, value)).append(">");
+            sbd.append("<").append(headName).append(" : ");
+            sbd.append(des ? DesensitizationUtil.desKey(headName, value) : value);
+            sbd.append(">");
         }
         return sbd.toString();
     }
@@ -365,12 +367,13 @@ public final class RequestUtil {
         String url = getRequestUrl();
         return method + " " + url;
     }
-    public static String logRequestInfo() {
-        String heads = formatHeader();
-        String params = formatParam();
+    public static String logRequestInfo(boolean printHeader) {
+        boolean des = true;
+        String heads = formatHeader(des);
+        String params = formatParam(des);
 
         StringBuilder sbd = new StringBuilder();
-        if (U.isNotBlank(heads)) {
+        if (printHeader && U.isNotBlank(heads)) {
             sbd.append(" headers(").append(heads).append(")");
         }
         if (U.isNotBlank(params)) {

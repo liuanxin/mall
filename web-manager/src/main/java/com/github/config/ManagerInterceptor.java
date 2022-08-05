@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @SuppressWarnings("NullableProblems")
-public class ManagerInterceptor implements HandlerInterceptor {
+public record ManagerInterceptor(boolean printHeader) implements HandlerInterceptor {
 
     private static final List<String> LET_IT_GO = Arrays.asList(
             "/error", "/api/project", "/api/info", "/api/example/*"
@@ -51,7 +51,7 @@ public class ManagerInterceptor implements HandlerInterceptor {
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
             String userInfo = ManagerSessionUtil.getUserInfo();
             String basicInfo = RequestUtil.logBasicInfo();
-            String requestInfo = RequestUtil.logRequestInfo();
+            String requestInfo = RequestUtil.logRequestInfo(printHeader);
             LogUtil.ROOT_LOG.info("[{}] [{}] [{}]", userInfo, basicInfo, requestInfo);
         }
     }
