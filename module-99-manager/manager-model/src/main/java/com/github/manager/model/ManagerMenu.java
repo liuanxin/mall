@@ -43,7 +43,7 @@ public class ManagerMenu {
 
     private static void handle(ManagerMenu menu, Map<String, List<ManagerMenu>> menuMap, int depth) {
         List<ManagerMenu> menus = menuMap.get(U.toStr(menu.getId()));
-        if (A.isNotEmpty(menus) && depth < U.MAX_DEPTH) {
+        if (A.isNotEmpty(menus) && depth <= U.MAX_DEPTH) {
             for (ManagerMenu m : menus) {
                 handle(m, menuMap, depth + 1);
             }
