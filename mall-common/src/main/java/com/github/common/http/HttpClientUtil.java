@@ -26,7 +26,6 @@ import org.apache.http.util.EntityUtils;
 
 import javax.net.ssl.SSLException;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.ConnectException;
@@ -117,12 +116,7 @@ public class HttpClientUtil {
 
     /** 向指定 url 进行 get 请求 */
     public static String get(String url) {
-        if (U.isBlank(url)) {
-            return null;
-        }
-
-        url = handleEmptyScheme(url);
-        return handleRequest(new HttpGet(url), null, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+        return get(url, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
     }
     public static String get(String url, int connectTimeout, int socketTimeout) {
         if (U.isBlank(url)) {
@@ -132,21 +126,14 @@ public class HttpClientUtil {
         url = handleEmptyScheme(url);
         return handleRequest(new HttpGet(url), null, connectTimeout, socketTimeout);
     }
+
+    /** 向指定 url 进行 get 请求. 有参数 */
     public static <T> String get(String url, T param) {
-        if (U.isBlank(url)) {
-            return null;
-        }
         return get(url, A.isEmptyObj(param) ? Collections.emptyMap() : JsonUtil.convertType(param, new TypeReference<>() {}));
     }
     /** 向指定 url 进行 get 请求. 有参数 */
     public static String get(String url, Map<String, Object> params) {
-        if (U.isBlank(url)) {
-            return null;
-        }
-
-        url = handleEmptyScheme(url);
-        url = handleGetParams(url, params);
-        return handleRequest(new HttpGet(url), U.formatParam(params), CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+        return get(url, params, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
     }
     /** 向指定 url 进行 get 请求. 有参数 */
     public static String get(String url, Map<String, Object> params, int connectTimeout, int socketTimeout) {
@@ -158,18 +145,10 @@ public class HttpClientUtil {
         url = handleGetParams(url, params);
         return handleRequest(new HttpGet(url), U.formatParam(params), connectTimeout, socketTimeout);
     }
+
     /** 向指定 url 进行 get 请求. 有参数和头 */
     public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap) {
-        if (U.isBlank(url)) {
-            return null;
-        }
-
-        url = handleEmptyScheme(url);
-        url = handleGetParams(url, params);
-
-        HttpGet request = new HttpGet(url);
-        handleHeader(request, headerMap);
-        return handleRequest(request, U.formatParam(params), CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+        return getWithHeader(url, params, headerMap, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
     }
     /** 向指定 url 进行 get 请求. 有参数和头 */
     public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap,
@@ -189,13 +168,7 @@ public class HttpClientUtil {
 
     /** 向指定的 url 进行 post 请求. 有参数 */
     public static String post(String url, Map<String, Object> params) {
-        if (U.isBlank(url)) {
-            return null;
-        }
-
-        url = handleEmptyScheme(url);
-        HttpPost request = handlePostParams(url, params);
-        return handleRequest(request, U.formatParam(params), CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+        return post(url, params, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
     }
     /** 向指定的 url 进行 post 请求. 有参数 */
     public static String post(String url, Map<String, Object> params, int connectTimeout, int socketTimeout) {
@@ -207,17 +180,10 @@ public class HttpClientUtil {
         HttpPost request = handlePostParams(url, params);
         return handleRequest(request, U.formatParam(params), connectTimeout, socketTimeout);
     }
+
     /** 向指定的 url 进行 post 请求. 参数以 json 的方式一次传递 */
     public static String post(String url, String json) {
-        if (U.isBlank(url)) {
-            return null;
-        }
-
-        url = handleEmptyScheme(url);
-        HttpPost request = new HttpPost(url);
-        request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
-        request.addHeader("Content-Type", "application/json");
-        return handleRequest(request, json, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+        return post(url, json, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
     }
     /** 向指定的 url 进行 post 请求. 参数以 json 的方式一次传递 */
     public static String post(String url, String json, int connectTimeout, int socketTimeout) {
@@ -231,16 +197,10 @@ public class HttpClientUtil {
         request.addHeader("Content-Type", "application/json");
         return handleRequest(request, json, connectTimeout, socketTimeout);
     }
+
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
-        if (U.isBlank(url)) {
-            return null;
-        }
-
-        url = handleEmptyScheme(url);
-        HttpPost request = handlePostParams(url, params);
-        handleHeader(request, headers);
-        return handleRequest(request, U.formatParam(params), CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+        return postWithHeader(url, params, headers, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
     }
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers,
@@ -254,18 +214,10 @@ public class HttpClientUtil {
         handleHeader(request, headers);
         return handleRequest(request, U.formatParam(params), connectTimeout, socketTimeout);
     }
+
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postBodyWithHeader(String url, String json, Map<String, Object> headers) {
-        if (U.isBlank(url)) {
-            return null;
-        }
-
-        url = handleEmptyScheme(url);
-        HttpPost request = new HttpPost(url);
-        request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
-        handleHeader(request, headers);
-        request.addHeader("Content-Type", "application/json");
-        return handleRequest(request, json, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+        return postBodyWithHeader(url, json, headers, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
     }
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postBodyWithHeader(String url, String json, Map<String, Object> headers,
@@ -350,37 +302,6 @@ public class HttpClientUtil {
             }
         }
     }
-    /** 收集上下文中的数据, 以便记录日志 */
-    private static String collectContext(long start, String method, String url, String params,
-                                         Header[] requestHeaders, Header[] responseHeaders, String result) {
-        StringBuilder sbd = new StringBuilder();
-        sbd.append("HttpClient4 => [")
-                .append(DateUtil.formatDateTimeMs(new Date(start))).append(" -> ").append(DateUtil.nowDateTimeMs())
-                .append("] (").append(method).append(" ").append(url).append(")");
-
-        if (U.isNotBlank(params)) {
-            sbd.append(" param(").append(U.compress(params)).append(") ");
-        }
-        if (A.isNotEmpty(requestHeaders)) {
-            sbd.append(" request headers(");
-            for (Header header : requestHeaders) {
-                sbd.append("<").append(header.getName()).append(": ").append(header.getValue()).append(">");
-            }
-            sbd.append(")");
-        }
-
-        sbd.append(",");
-
-        if (A.isNotEmpty(responseHeaders)) {
-            sbd.append(" response headers(");
-            for (Header header : responseHeaders) {
-                sbd.append("<").append(header.getName()).append(": ").append(header.getValue()).append(">");
-            }
-            sbd.append(")");
-        }
-        sbd.append(" return(").append(U.compress(result)).append(")");
-        return sbd.toString();
-    }
     /** 发起 http 请求 */
     private static String handleRequest(HttpRequestBase request, String params, int connectTimeout, int socketTimeout) {
         request.setConfig(config(connectTimeout, socketTimeout));
@@ -393,55 +314,61 @@ public class HttpClientUtil {
         String method = request.getMethod();
         String url = request.getURI().toString();
 
+        Header[] reqHeaders = request.getAllHeaders();
+        Header[] resHeaders = null;
+        String result = null;
         long start = System.currentTimeMillis();
-
         try (
                 CloseableHttpClient httpClient = createHttpClient();
                 CloseableHttpResponse response = httpClient.execute(request, HttpClientContext.create())
         ) {
             HttpEntity entity = response.getEntity();
             if (U.isNotNull(entity)) {
-                String result = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+                resHeaders = response.getAllHeaders();
+                result = EntityUtils.toString(entity, StandardCharsets.UTF_8);
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    Header[] reqHeaders = request.getAllHeaders();
-                    Header[] resHeaders = response.getAllHeaders();
                     LogUtil.ROOT_LOG.info(collectContext(start, method, url, params, reqHeaders, resHeaders, result));
                 }
                 EntityUtils.consume(entity);
                 return result;
             }
         } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info("{} => {} exception", method, url, e);
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error(collectContext(start, method, url, params, reqHeaders, resHeaders, result), e);
             }
         }
         return null;
     }
-
-
-    /** 用 get 方式请求 url 并将响应结果保存指定的文件 */
-    public static void download(String url, String file) {
-        url = handleEmptyScheme(url);
-        HttpGet request = new HttpGet(url);
-        request.setConfig(config(CONNECT_TIME_OUT, SOCKET_TIME_OUT));
-
-        long start = System.currentTimeMillis();
-        try (
-                CloseableHttpClient httpClient = createHttpClient();
-                CloseableHttpResponse response = httpClient.execute(request, HttpClientContext.create())
-        ) {
-            HttpEntity entity = response.getEntity();
-            if (U.isNotNull(entity)) {
-                entity.writeTo(new FileOutputStream(file));
-                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    long ms = (System.currentTimeMillis() - start);
-                    LogUtil.ROOT_LOG.info("download ({}) to file({}) success, time({}ms)", url, file, ms);
-                }
-            }
-        } catch (IOException e) {
-            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info("download ({}) to file({}) exception", url, file, e);
-            }
+    /** 收集上下文中的数据, 以便记录日志 */
+    private static String collectContext(long start, String method, String url, String params,
+                                         Header[] requestHeaders, Header[] responseHeaders, String result) {
+        StringBuilder sbd = new StringBuilder();
+        sbd.append("HttpClient4 => [")
+                .append(DateUtil.formatDateTimeMs(new Date(start))).append(" -> ").append(DateUtil.nowDateTimeMs())
+                .append("] (").append(method).append(" ").append(url).append(")");
+        sbd.append(" req[");
+        if (U.isNotBlank(params)) {
+            sbd.append(" param(").append(U.compress(params)).append(") ");
         }
+        if (A.isNotEmpty(requestHeaders)) {
+            sbd.append(" header(");
+            for (Header header : requestHeaders) {
+                sbd.append("<").append(header.getName()).append(": ").append(header.getValue()).append(">");
+            }
+            sbd.append(")");
+        }
+        sbd.append("], res[");
+        if (A.isNotEmpty(responseHeaders)) {
+            sbd.append(" header(");
+            for (Header header : responseHeaders) {
+                sbd.append("<").append(header.getName()).append(": ").append(header.getValue()).append(">");
+            }
+            sbd.append(")");
+        }
+        if (U.isNotBlank(result)) {
+            sbd.append(" return(").append(U.compress(result)).append(")");
+        }
+        sbd.append("]");
+        return sbd.toString();
     }
 }

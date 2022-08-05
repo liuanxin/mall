@@ -9,7 +9,6 @@ import okhttp3.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -171,122 +170,60 @@ public class HttpOkClientUtil {
         sbd.append("OkHttp3 => (")
                 .append(DateUtil.formatDateTimeMs(start)).append(" -> ").append(DateUtil.nowDateTimeMs())
                 .append("] (").append(method).append(" ").append(url).append(")");
-
+        sbd.append(" req[");
         if (U.isNotBlank(params)) {
-            sbd.append(" params(").append(U.compress(params)).append(")");
+            sbd.append(" param(").append(U.compress(params)).append(")");
         }
         if (U.isNotNull(requestHeaders)) {
-            sbd.append(" request headers(");
+            sbd.append(" header(");
             for (String name : requestHeaders.names()) {
                 sbd.append("<").append(name).append(": ").append(requestHeaders.get(name)).append(">");
             }
             sbd.append(")");
         }
-
-        sbd.append(",");
-
+        sbd.append("], res[");
         if (U.isNotNull(responseHeaders)) {
-            sbd.append(" response headers(");
+            sbd.append(" header(");
             for (String name : responseHeaders.names()) {
                 sbd.append("<").append(name).append(":").append(responseHeaders.get(name)).append(">");
             }
             sbd.append(")");
         }
-        sbd.append(" return(").append(U.compress(result)).append(")");
+        if (U.isNotBlank(result)) {
+            sbd.append(" return(").append(U.compress(result)).append(")");
+        }
+        sbd.append("]");
         return sbd.toString();
     }
     /** 发起 http 请求 */
     private static String handleRequest(String url, Request.Builder builder, String params) {
         url = handleEmptyScheme(url);
-        Request request = wrapperRequest(builder, url);
-        String method = request.method();
 
-        Date start = DateUtil.now();
-        try (Response response = HTTP_CLIENT.newCall(request).execute()) {
-            ResponseBody body = response.body();
-            if (body != null) {
-                String result = body.string();
-                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    Headers reqHeaders = request.headers();
-                    Headers resHeaders = response.headers();
-                    LogUtil.ROOT_LOG.info(collectContext(start, method, url, params, reqHeaders, resHeaders, result));
-                }
-                return result;
-            }
-        } catch (IOException e) {
-            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info("{} => {} exception", method, url, e);
-            }
-        }
-        return null;
-    }
-
-    private static Request wrapperRequest(Request.Builder builder, String url) {
         String traceId = LogUtil.getTraceId();
         if (U.isNotBlank(traceId)) {
             builder.addHeader(Const.TRACE, traceId);
         }
-        return builder.header("User-Agent", USER_AGENT).url(url).build();
-    }
-
-    /** 用 get 方式请求 url 并将响应结果保存指定的文件 */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static void download(String url, String file) {
-        url = handleEmptyScheme(url);
-        Request request = wrapperRequest(new Request.Builder(), url);
-
+        Request request = builder.header("User-Agent", USER_AGENT).url(url).build();
+        String method = request.method();
+        Headers reqHeaders = request.headers();
+        Headers resHeaders = null;
+        String result = null;
         Date start = DateUtil.now();
         try (Response response = HTTP_CLIENT.newCall(request).execute()) {
             ResponseBody body = response.body();
-            U.assertNil(body, "下载文件时, 响应了空数据");
-
-            // noinspection ConstantConditions
-            byte[] bytes = body.bytes();
-            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                Headers reqHeaders = request.headers();
-                Headers resHeaders = response.headers();
-                LogUtil.ROOT_LOG.info(collectContext(start, "GET", url, "", reqHeaders, resHeaders, A.toString(bytes)));
+            if (body != null) {
+                result = body.string();
+                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                    resHeaders = response.headers();
+                    LogUtil.ROOT_LOG.info(collectContext(start, method, url, params, reqHeaders, resHeaders, result));
+                }
+                return result;
             }
-
-            File f = new File(file);
-            f.getParentFile().mkdirs();
-            Files.write(f.toPath(), bytes);
-        } catch (IOException e) {
-            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info("download ({}) to file({}) exception", url, file, e);
-            }
-            U.assertException("下载文件异常");
-        }
-    }
-
-    /** 用 post 方式请求 url 并将响应结果保存指定的文件 */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static void postDownloadFile(String url, String json, String file) {
-        Request.Builder builder = new Request.Builder().post(RequestBody.create(JSON, json));
-        url = handleEmptyScheme(url);
-        Request request = wrapperRequest(builder, url);
-
-        Date start = DateUtil.now();
-        try (Response response = HTTP_CLIENT.newCall(request).execute()) {
-            ResponseBody body = response.body();
-            U.assertNil(body, "下载文件时, 响应了空数据");
-
-            // noinspection ConstantConditions
-            byte[] bytes = body.bytes();
-            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                Headers reqHeaders = request.headers();
-                Headers resHeaders = response.headers();
-                LogUtil.ROOT_LOG.info(collectContext(start, "POST", url, json, reqHeaders, resHeaders, A.toString(bytes)));
-            }
-
-            File f = new File(file);
-            f.getParentFile().mkdirs();
-            Files.write(f.toPath(), bytes);
-        } catch (IOException e) {
+        } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("post download ({}) to file({}) exception", url, file, e);
+                LogUtil.ROOT_LOG.error(collectContext(start, method, url, params, reqHeaders, resHeaders, result), e);
             }
-            U.assertException("下载文件异常");
         }
+        return null;
     }
 }
