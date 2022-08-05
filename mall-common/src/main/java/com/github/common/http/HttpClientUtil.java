@@ -305,7 +305,6 @@ public class HttpClientUtil {
     /** 发起 http 请求 */
     private static String handleRequest(HttpRequestBase request, String params, int connectTimeout, int socketTimeout) {
         request.setConfig(config(connectTimeout, socketTimeout));
-        request.addHeader("Content-Type", "application/json");
 
         String traceId = LogUtil.getTraceId();
         if (U.isNotBlank(traceId)) {

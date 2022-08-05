@@ -2,6 +2,7 @@ package com.github.common.http;
 
 import com.github.common.Const;
 import com.github.common.date.DateUtil;
+import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
@@ -27,7 +28,7 @@ public class HttpOkClientUtil {
     /** 连接池最大数量 */
     private static final int MAX_CONNECTIONS = 200;
 
-    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    private static final MediaType JSON = MediaType.parse("application/json");
 
     private static final OkHttpClient HTTP_CLIENT;
     static {
@@ -73,22 +74,7 @@ public class HttpOkClientUtil {
 
     /** 向指定的 url 进行 post 请求. 有参数 */
     public static String post(String url, Map<String, Object> params) {
-        if (U.isBlank(url)) {
-            return null;
-        }
-
-        Request.Builder builder = handlePostParams(params);
-        return handleRequest(url, builder, U.formatParam(params));
-    }
-    /** 向指定的 url 进行 post 请求. 参数以 json 的方式一次传递 */
-    public static String post(String url, String json) {
-        if (U.isBlank(url)) {
-            return null;
-        }
-
-        RequestBody body = RequestBody.create(JSON, json);
-        Request.Builder builder = new Request.Builder().post(body);
-        return handleRequest(url, builder, json);
+        return postWithHeader(url, params, null);
     }
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
@@ -96,9 +82,36 @@ public class HttpOkClientUtil {
             return null;
         }
 
-        Request.Builder builder = handlePostParams(params);
+        RequestBody request = RequestBody.create(MultipartBody.FORM, U.formatParam(false, params));
+        Request.Builder builder = new Request.Builder().post(request);
         handleHeader(builder, headers);
         return handleRequest(url, builder, U.formatParam(params));
+    }
+
+
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static String postBody(String url, Map<String, Object> params) {
+        return postBodyWithHeader(url, params, null);
+    }
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static String postBodyWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
+        return postBodyWithHeader(url, JsonUtil.toJson(params), headers);
+    }
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static String postBody(String url, String json) {
+        return postBodyWithHeader(url, json, null);
+    }
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static String postBodyWithHeader(String url, String json, Map<String, Object> headers) {
+        if (U.isBlank(url)) {
+            return null;
+        }
+
+        String data = U.toStr(json);
+        Request.Builder builder = new Request.Builder().post(RequestBody.create(JSON, json));
+        handleHeader(builder, headers);
+        builder.addHeader("Content-Type", "application/json");
+        return handleRequest(url, builder, json);
     }
 
 
@@ -146,10 +159,6 @@ public class HttpOkClientUtil {
             url = U.appendUrl(url) + U.formatParam(false, params);
         }
         return url;
-    }
-    /** 处理 post 请求的参数 */
-    private static Request.Builder handlePostParams(Map<String, Object> params) {
-        return new Request.Builder().post(RequestBody.create(MultipartBody.FORM, U.formatParam(false, params)));
     }
     /** 处理请求时存到 header 中的数据 */
     private static void handleHeader(Request.Builder request, Map<String, Object> headers) {
