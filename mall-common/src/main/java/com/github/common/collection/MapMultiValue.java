@@ -21,6 +21,7 @@ public final class MapMultiValue<K, V, C extends Collection<V>> {
     public boolean remove(K k, V v) {
         return valueMap.containsKey(k) && valueMap.get(k).remove(v);
     }
+
     public C remove(K k) {
         return valueMap.remove(k);
     }
