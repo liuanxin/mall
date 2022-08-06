@@ -64,14 +64,13 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
     /**
      * 用这个发送的 mq 信息, 实际发送的是 {@link MqData} 对象, 里面有「发送时间、队列信息」信息
      *
-     * @param delayMs 延迟发送毫秒数, 需要安装 delay 插件, 见: https://www.rabbitmq.com/community-plugins.html
+     * @param delayMs 延迟发送毫秒数, 需要安装 <a href="https://www.rabbitmq.com/community-plugins.html">delay</a> 插件
      */
     public void doProvide(MqInfo mqInfo, String searchKey, String json, int delayMs) {
         doProvide(mqInfo, searchKey, json, delayMs, null);
     }
 
     private void doProvide(MqInfo mqInfo, String searchKey, String json, int delayMs, Consumer<Exception> errorHandle) {
-        // noinspection DuplicatedCode
         String msgId = U.uuid16();
         String traceId = LogUtil.getTraceId();
 
@@ -99,7 +98,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
     /**
      * 发送 mq 消息, 不包「发送时间、队列信息」这些内容
      *
-     * @param delayMs 延迟发送毫秒数, 需要安装 delay 插件, 见: https://www.rabbitmq.com/community-plugins.html
+     * @param delayMs 延迟发送毫秒数, 需要安装 <a href="https://www.rabbitmq.com/community-plugins.html">delay</a> 插件
      */
     public void doProvideJustJson(MqInfo mqInfo, String searchKey, String json, int delayMs) {
         provide(searchKey, new SelfCorrelationData(U.uuid16(), LogUtil.getTraceId(), mqInfo, json, delayMs), null);
