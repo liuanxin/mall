@@ -221,7 +221,9 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                         }
                     }
                 } finally {
-                    CONSUMER_CACHE_MAP.invalidate(msgId);
+                    if (U.isNotNull(consumer)) {
+                        CONSUMER_CACHE_MAP.invalidate(msgId);
+                    }
                 }
             }
         }
@@ -241,20 +243,22 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         if (LogUtil.ROOT_LOG.isErrorEnabled()) {
             LogUtil.ROOT_LOG.error("消息({})到队列失败", JsonUtil.toJson(msg));
         }
-        int code = msg.getReplyCode();
-        String text = msg.getReplyText();
         // msgId 放在 messageId, traceId 放在 correlationId
         String msgId = msg.getMessage().getMessageProperties().getMessageId();
         if (U.isNotBlank(msgId)) {
-            Consumer<Exception> consumer = CONSUMER_CACHE_MAP.getIfPresent(msgId);
-            try {
-                MqSend mqSend = mqSendService.queryByMsgId(msgId);
-                if (U.isNotNull(mqSend)) {
-                    String remark = String.format("<%s : 消息到队列时失败, 响应码(%s)响应文本(%s)>", DateUtil.nowDateTime(), code, text);
+            MqSend mqSend = mqSendService.queryByMsgId(msgId);
+            if (U.isNotNull(mqSend)) {
+                Consumer<Exception> consumer = CONSUMER_CACHE_MAP.getIfPresent(msgId);
+                try {
+                    int code = msg.getReplyCode();
+                    String text = msg.getReplyText();
+                    String remark = String.format("<%s : 消息到队列时失败(%s -> %s)>", DateUtil.nowDateTime(), code, text);
                     handleError(mqSend, remark, consumer);
+                } finally {
+                    if (U.isNotNull(consumer)) {
+                        CONSUMER_CACHE_MAP.invalidate(msgId);
+                    }
                 }
-            } finally {
-                CONSUMER_CACHE_MAP.invalidate(msgId);
             }
         }
     }
