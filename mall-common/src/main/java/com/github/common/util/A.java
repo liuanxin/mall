@@ -220,7 +220,7 @@ public final class A {
             return (List<T>) l;
         }
         if (!array.getClass().isArray()) {
-            throw new IllegalArgumentException("不是数据: " + array);
+            throw new IllegalArgumentException("param not array: " + array);
         }
         int length = Array.getLength(array);
         if (length == 0) {
