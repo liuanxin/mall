@@ -48,7 +48,6 @@ public class JsonUtil {
             // NON_NULL  : null 值不序列化
             // NON_EMPTY : null、空字符串、长度为 0 的 list、长度为 0 的 map 都不序列化
             setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-
             globalConfig(this);
         }
     }
@@ -59,22 +58,23 @@ public class JsonUtil {
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
         objectMapper.setDateFormat(dateFormat);
 
-        // 日期不用 utc 方式显示(utc 是一个整数值)
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        // 日期不用 utc 方式显示(utc 是一个整数值)
-        objectMapper.disable(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS);
-        // 不确定的属性项上不要失败
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        // 序列化时: date 不要用时间戳
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        // 序列化时: duration(时间量) 不要用时间戳
+        objectMapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false);
 
-        // 不确定值的枚举返回 null
-        objectMapper.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL);
-        // 用 BigDecimal 来反序列化浮点数
-        objectMapper.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
-        // 用 BigInteger 来反序列化整数
-        objectMapper.enable(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS);
+        // 反序列化时: 不确定的属性项上不要失败
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        // 反序列化时: 不确定值的枚举返回 null
+        objectMapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true);
+        // 反序列化时: 浮点数用 BigDecimal
+        objectMapper.configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true);
+        // 反序列化时: 整数用 BigInteger
+        // objectMapper.configure(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS, true);
+
         // 允许字符串中包含未加引号的控制字符(值小于 32 的 ASCII 字符, 包括制表符和换行字符)
         // json 标准要求所有控制符必须使用引号, 因此默认是 false, 遇到此类字符时会抛出异常
-        // objectMapper.enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature());
+        // objectMapper.configure(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature(), true);
         objectMapper.registerModule(JsonModule.GLOBAL_MODULE);
     }
 

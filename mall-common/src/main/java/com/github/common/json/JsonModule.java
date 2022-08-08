@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.github.common.date.DateUtil;
 import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.U;
@@ -20,6 +21,9 @@ public final class JsonModule {
 
     /** 全局序列化反序列化模块 */
     public static final SimpleModule GLOBAL_MODULE = new SimpleModule()
+            // Long 或 long 序列化时用 String 类型
+            .addSerializer(Long.class, ToStringSerializer.instance)
+            .addSerializer(Long.TYPE, ToStringSerializer.instance)
             .addSerializer(BigDecimal.class, BigDecimalSerializer.INSTANCE)
 
             .addDeserializer(BigDecimal.class, BigDecimalDeserializer.INSTANCE)
