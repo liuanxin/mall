@@ -20,7 +20,7 @@ public final class JsonModule {
 
     /** 全局序列化反序列化模块 */
     public static final SimpleModule GLOBAL_MODULE = new SimpleModule()
-            // Long 或 long 序列化时用 String 类型, 避免前端处理大整数数时精度丢失
+            // Long 或 long 序列化时用 String 类型, 避免前端处理 long 时精度丢失
             .addSerializer(Long.class, ToStringSerializer.instance)
             .addSerializer(long.class, ToStringSerializer.instance)
             .addSerializer(BigDecimal.class, BigDecimalSerializer.INSTANCE)
