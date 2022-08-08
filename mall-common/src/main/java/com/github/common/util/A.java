@@ -236,56 +236,16 @@ public final class A {
         return returnList;
     }
 
-    /** 将 List 中指定的方法收集了并返回(过滤空) */
-    public static <T, R> List<R> collect(Collection<T> list, Function<T, R> func) {
-        return collect(list, func, new ArrayList<>());
-    }
-
-    /** 将 List 中指定的方法收集了去重且过滤空后返回(有序) */
-    public static <T, R> List<R> collectDistinct(Collection<T> list, Function<T, R> func) {
-        return new ArrayList<>(collectLinkedSet(list, func));
-    }
-
-    /** 将 List 中指定的方法收集了去重且过滤空后返回(无序) */
-    public static <T, R> Set<R> collectSet(Collection<T> list, Function<T, R> func) {
-        return collect(list, func, new HashSet<>());
-    }
-
-    /** 将 List 中指定的方法收集了去重且过滤空后返回(有序) */
-    public static <T, R> Set<R> collectLinkedSet(Collection<T> list, Function<T, R> func) {
-        return collect(list, func, new LinkedHashSet<>());
-    }
-
-    private static <T, R, C extends Collection<R>> C collect(Collection<T> list, Function<T, R> func, C targetList) {
-        if (isNotEmpty(list)) {
-            for (T obj : list) {
-                if (U.isNotNull(obj)) {
-                    R value = func.apply(obj);
-                    if (U.isNotNull(value)) {
-                        targetList.add(value);
-                    }
-                }
-            }
-        }
-        return targetList;
-    }
-
     /** 将 List 分割成多个 List */
     public static <T> List<List<T>> split(Collection<T> list, int singleSize) {
         List<List<T>> returnList = new ArrayList<>();
         if (isNotEmpty(list) && singleSize > 0) {
             int size = list.size();
-            int loop = (size / singleSize);
-            if (size % singleSize > 0) {
-                loop += 1;
-            }
-            for (int i = 0; i < loop; i++) {
+            int outLoop = (size % singleSize != 0) ? ((size / singleSize) + 1) : (size / singleSize);
+            for (int i = 0; i < outLoop; i++) {
                 List<T> innerList = new ArrayList<>();
                 int j = (i * singleSize);
-                int innerLoop = (j + singleSize);
-                if (innerLoop > size) {
-                    innerLoop = size;
-                }
+                int innerLoop = Math.min(j + singleSize, size);
                 for (; j < innerLoop; j++) {
                     innerList.add(getIndex(list, j));
                 }
@@ -388,29 +348,62 @@ public final class A {
         }
     }
     /** 获取集合指定下标的值 */
-    public static <T> T getIndex(Collection<T> collection, int index) {
-        if (isEmpty(collection) || index < 0 || index >= collection.size()) {
+    public static <T> T getIndex(Collection<T> list, int index) {
+        if (isEmpty(list) || index < 0 || index > list.size()) {
             return null;
         }
+        // 如果是最后一个, 则索引下标减一
+        if (index == list.size()) {
+            index--;
+        }
         // 当类型为 List 时, 直接取最后一个元素
-        if (collection instanceof List<T> list) {
-            return list.get(index);
+        if (list instanceof List<T> l) {
+            return l.get(index);
         }
 
         int i = 0;
-        Iterator<T> iterator = collection.iterator();
-        while (true) {
-            T current = iterator.next();
+        for (T obj : list) {
             if (index == i) {
-                return current;
+                return obj;
             }
             i++;
         }
+        return null;
     }
 
     /** 集合中随机返回一个 */
     public static <T> T rand(Collection<T> source) {
         return isEmpty(source) ? null : (T) source.toArray()[U.RANDOM.nextInt(source.size())];
+    }
+
+
+    /** 将 List 中指定的方法收集了并返回(过滤空) */
+    public static <T, R> List<R> collect(Collection<T> list, Function<T, R> func) {
+        return collect(list, func, new ArrayList<>());
+    }
+
+    /** 将 List 中指定的方法收集了去重且过滤空后返回(无序) */
+    public static <T, R> Set<R> collectSet(Collection<T> list, Function<T, R> func) {
+        return collect(list, func, new HashSet<>());
+    }
+
+    /** 将 List 中指定的方法收集了去重且过滤空后返回(有序) */
+    public static <T, R> Set<R> collectLinkedSet(Collection<T> list, Function<T, R> func) {
+        return collect(list, func, new LinkedHashSet<>());
+    }
+
+    private static <T, R, C extends Collection<R>> C collect(Collection<T> list, Function<T, R> func, C targetList) {
+        if (isNotEmpty(list)) {
+            for (T obj : list) {
+                if (U.isNotNull(obj)) {
+                    R value = func.apply(obj);
+                    if (U.isNotNull(value)) {
+                        targetList.add(value);
+                    }
+                }
+            }
+        }
+        return targetList;
     }
 
 
