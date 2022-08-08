@@ -29,5 +29,5 @@ public enum MapValueDuplicateType {
         }
     };
 
-    abstract <K, V> void handle(Map<K, V> map, Collection<?> list, K k, V v);
+    public abstract <K, V> void handle(Map<K, V> map, Collection<?> list, K k, V v);
 }

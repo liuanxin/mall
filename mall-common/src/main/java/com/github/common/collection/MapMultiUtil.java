@@ -36,58 +36,6 @@ public class MapMultiUtil {
     }
 
 
-    /** 用指定的方法将 List 转换成 HashMap(过滤 key 和 value 为空), 如果同样的 key 有多个值, 后面将覆盖前面 */
-    public static <K, V> Map<K, V> listToMap(Collection<V> list, Function<? super V, K> keyFunc) {
-        return listToMap(new HashMap<>(), list, keyFunc, MapValueDuplicateType.COVER);
-    }
-    /** 用指定的方法将 List 转换成 HashMap(过滤 key 和 value 为空) */
-    public static <K, V> Map<K, V> listToMap(Collection<V> list,
-                                             Function<? super V, K> keyFunc,
-                                             MapValueDuplicateType duplicateType) {
-        return listToMap(new HashMap<>(), list, keyFunc, duplicateType);
-    }
-
-    /** 用指定的方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空), 如果同样的 key 有多个值, 后面将覆盖前面 */
-    public static <K, V> Map<K, V> listToLinkedMap(Collection<V> list, Function<? super V, K> keyFunc) {
-        return listToMap(new LinkedHashMap<>(), list, keyFunc, MapValueDuplicateType.COVER);
-    }
-    /** 用指定的方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空) */
-    public static <K, V> Map<K, V> listToLinkedMap(Collection<V> list,
-                                                   Function<? super V, K> keyFunc,
-                                                   MapValueDuplicateType duplicateType) {
-        return listToMap(new LinkedHashMap<>(), list, keyFunc, duplicateType);
-    }
-
-
-    /** 用两个指定方法将 List 转换成 HashMap(过滤 key 和 value 为空), 如果同样的 key 有多个值, 后面将覆盖前面 */
-    public static <T, K, V> Map<K, V> listToMapKeyValue(Collection<T> list,
-                                                        Function<? super T, K> keyFunc,
-                                                        Function<? super T, V> valueFunc) {
-        return listToMapKeyValue(list, keyFunc, valueFunc, MapValueDuplicateType.COVER);
-    }
-    /** 用两个指定方法将 List 转换成 HashMap(过滤 key 和 value 为空) */
-    public static <T, K, V> Map<K, V> listToMapKeyValue(Collection<T> list,
-                                                        Function<? super T, K> keyFunc,
-                                                        Function<? super T, V> valueFunc,
-                                                        MapValueDuplicateType duplicateType) {
-        return listToMapKeyValue(new HashMap<>(), list, keyFunc, valueFunc, duplicateType);
-    }
-
-    /** 用两个指定方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空), 如果同样的 key 有多个值, 后面将覆盖前面 */
-    public static <T, K, V> Map<K, V> listToLinkedMapKeyValue(Collection<T> list,
-                                                              Function<? super T, K> keyFunc,
-                                                              Function<? super T, V> valueFunc) {
-        return listToLinkedMapKeyValue(list, keyFunc, valueFunc, MapValueDuplicateType.COVER);
-    }
-    /** 用两个指定方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空) */
-    public static <T, K, V> Map<K, V> listToLinkedMapKeyValue(Collection<T> list,
-                                                              Function<? super T, K> keyFunc,
-                                                              Function<? super T, V> valueFunc,
-                                                              MapValueDuplicateType duplicateType) {
-        return listToMapKeyValue(new LinkedHashMap<>(), list, keyFunc, valueFunc, duplicateType);
-    }
-
-
     /** 用指定的方法将 List 转换成 HashMap(过滤 key 和 value 为空), 其中 map 的 value 是 List */
     public static <K, V> Map<K, List<V>> listToMapList(Collection<V> list, Function<? super V, K> keyFunc) {
         return listToMapCollection(list, keyFunc, createMapList());
@@ -155,51 +103,6 @@ public class MapMultiUtil {
         return listToMapKeyValueCollection(list, keyFunc, valueFunc, createLinkedMapLinkedSet());
     }
 
-
-    private static <K, V> Map<K, V> listToMap(Map<K, V> returnMap,
-                                              Collection<V> list,
-                                              Function<? super V, K> keyFunc,
-                                              MapValueDuplicateType duplicateType) {
-        if (A.isNotEmpty(list)) {
-            for (V v : list) {
-                if (U.isNotNull(v)) {
-                    K k = keyFunc.apply(v);
-                    if (U.isNotNull(k)) {
-                        if (returnMap.containsKey(k)) {
-                            duplicateType.handle(returnMap, list, k, v);
-                        } else {
-                            returnMap.put(k, v);
-                        }
-                    }
-                }
-            }
-        }
-        return returnMap;
-    }
-    private static <T, K, V> Map<K, V> listToMapKeyValue(Map<K, V> returnMap,
-                                                         Collection<T> list,
-                                                         Function<? super T, K> keyFunc,
-                                                         Function<? super T, V> valueFunc,
-                                                         MapValueDuplicateType duplicateType) {
-        if (A.isNotEmpty(list)) {
-            for (T obj : list) {
-                if (U.isNotNull(obj)) {
-                    K k = keyFunc.apply(obj);
-                    if (U.isNotNull(k)) {
-                        V v = valueFunc.apply(obj);
-                        if (U.isNotNull(v)) {
-                            if (returnMap.containsKey(k)) {
-                                duplicateType.handle(returnMap, list, k, v);
-                            } else {
-                                returnMap.put(k, v);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return returnMap;
-    }
     private static <K, V, C extends Collection<V>> Map<K, C> listToMapCollection(Collection<V> list,
                                                                                  Function<? super V, K> keyFunc,
                                                                                  MapMultiValue<K, V, C> multiValueMap) {

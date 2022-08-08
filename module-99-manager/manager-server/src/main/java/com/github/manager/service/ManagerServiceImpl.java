@@ -147,7 +147,7 @@ public class ManagerServiceImpl implements ManagerService {
                     List<ManagerMenu> menus = menuMapper.selectList(Wrappers.lambdaQuery(ManagerMenu.class)
                             .in(ManagerMenu::getId, ids));
 
-                    Map<Long, ManagerMenu> menuMap = MapMultiUtil.listToMap(menus, ManagerMenu::getId);
+                    Map<Long, ManagerMenu> menuMap = A.listToMap(menus, ManagerMenu::getId);
                     for (ManagerRoleMenu roleMenu : roleMenus) {
                         ManagerMenu menu = menuMap.get(roleMenu.getMenuId());
                         if (U.isNotNull(menu)) {
@@ -170,7 +170,7 @@ public class ManagerServiceImpl implements ManagerService {
                             .in(ManagerPermission::getId, ids);
                     List<ManagerPermission> permissions = permissionMapper.selectList(permissionQuery);
 
-                    Map<Long, ManagerPermission> permissionMap = MapMultiUtil.listToMap(permissions, ManagerPermission::getId);
+                    Map<Long, ManagerPermission> permissionMap = A.listToMap(permissions, ManagerPermission::getId);
                     for (ManagerRolePermission rolePermission : rolePermissions) {
                         ManagerPermission permission = permissionMap.get(rolePermission.getPermissionId());
                         if (U.isNotNull(permission)) {
