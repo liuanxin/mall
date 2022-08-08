@@ -265,8 +265,8 @@ public final class A {
     }
 
     /** 构造 HashMap, 必须保证每两个参数的类型是一致的! 当参数是奇数时, 最后一个 key 将会被忽略 */
-    public static <K, V> Map<K, V> maps(Object... keysAndValues) {
-        return maps(new HashMap<>(), keysAndValues);
+    public static <K, V> HashMap<K, V> maps(Object... keysAndValues) {
+        return (HashMap<K, V>) maps(new HashMap<K, V>(), keysAndValues);
     }
     private static <K, V> Map<K, V> maps(Map<K, V> map, Object... keysAndValues) {
         if (isNotEmpty(keysAndValues)) {
@@ -280,8 +280,8 @@ public final class A {
         return map;
     }
     /** 构造 LinkedHashMap, 必须保证每两个参数的类型是一致的! 当参数是奇数时, 最后一个 key 将会被忽略 */
-    public static <K, V> Map<K, V> linkedMaps(Object... keysAndValues) {
-        return maps(new LinkedHashMap<>(), keysAndValues);
+    public static <K, V> LinkedHashMap<K, V> linkedMaps(Object... keysAndValues) {
+        return (LinkedHashMap<K, V>) maps(new LinkedHashMap<K, V>(), keysAndValues);
     }
 
     /** 构造 ArrayList, 过滤 null 值 */
