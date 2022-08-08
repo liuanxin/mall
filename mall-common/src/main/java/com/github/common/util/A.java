@@ -372,8 +372,12 @@ public final class A {
     }
 
     /** 集合中随机返回一个 */
-    public static <T> T rand(Collection<T> source) {
-        return isEmpty(source) ? null : (T) source.toArray()[U.RANDOM.nextInt(source.size())];
+    public static <T> T rand(Collection<T> list) {
+        return getIndex(list, U.RANDOM.nextInt(list.size()));
+    }
+    /** 数组中随机返回一个 */
+    public static <T> T rand(T[] array) {
+        return getIndex(array, U.RANDOM.nextInt(array.length));
     }
 
 
