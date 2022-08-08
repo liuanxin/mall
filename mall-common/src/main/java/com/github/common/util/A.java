@@ -236,39 +236,36 @@ public final class A {
 
     /** 将 List 中指定的方法收集了并返回(过滤空) */
     public static <T, R> List<R> collect(Collection<T> list, Function<T, R> func) {
-        List<R> returnList = new ArrayList<>();
-        if (isNotEmpty(list)) {
-            for (T obj : list) {
-                if (U.isNotNull(obj)) {
-                    R value = func.apply(obj);
-                    if (U.isNotNull(value)) {
-                        returnList.add(value);
-                    }
-                }
-            }
-        }
-        return returnList;
+        return collect(list, func, new ArrayList<>());
     }
 
-    /** 将 List 中指定的方法收集了去重并返回(过滤空) */
+    /** 将 List 中指定的方法收集了去重且过滤空后返回(有序) */
     public static <T, R> List<R> collectDistinct(Collection<T> list, Function<T, R> func) {
-        return new ArrayList<>(collectSet(list, func));
+        return new ArrayList<>(collectLinkedSet(list, func));
     }
 
-    /** 将 List 中指定的方法收集了去重并返回(过滤空) */
+    /** 将 List 中指定的方法收集了去重且过滤空后返回(无序) */
     public static <T, R> Set<R> collectSet(Collection<T> list, Function<T, R> func) {
-        Set<R> returnSet = new LinkedHashSet<>();
+        return collect(list, func, new HashSet<>());
+    }
+
+    /** 将 List 中指定的方法收集了去重且过滤空后返回(有序) */
+    public static <T, R> Set<R> collectLinkedSet(Collection<T> list, Function<T, R> func) {
+        return collect(list, func, new LinkedHashSet<>());
+    }
+
+    private static <T, R, C extends Collection<R>> C collect(Collection<T> list, Function<T, R> func, C targetList) {
         if (isNotEmpty(list)) {
             for (T obj : list) {
                 if (U.isNotNull(obj)) {
                     R value = func.apply(obj);
                     if (U.isNotNull(value)) {
-                        returnSet.add(value);
+                        targetList.add(value);
                     }
                 }
             }
         }
-        return returnSet;
+        return targetList;
     }
 
     /** 将 List 分割成多个 List */
