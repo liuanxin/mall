@@ -142,10 +142,10 @@ public class ManagerServiceImpl implements ManagerService {
             List<ManagerRoleMenu> roleMenus = roleMenuMapper.selectList(Wrappers.lambdaQuery(ManagerRoleMenu.class)
                     .in(ManagerRoleMenu::getRoleId, rids));
             if (A.isNotEmpty(roleMenus)) {
-                List<Long> mids = A.collect(roleMenus, ManagerRoleMenu::getMenuId);
-                if (A.isNotEmpty(mids)) {
+                List<Long> ids = A.collect(roleMenus, ManagerRoleMenu::getMenuId);
+                if (A.isNotEmpty(ids)) {
                     List<ManagerMenu> menus = menuMapper.selectList(Wrappers.lambdaQuery(ManagerMenu.class)
-                            .in(ManagerMenu::getId, mids));
+                            .in(ManagerMenu::getId, ids));
 
                     Map<Long, ManagerMenu> menuMap = MapMultiUtil.listToMap(menus, ManagerMenu::getId);
                     for (ManagerRoleMenu roleMenu : roleMenus) {
@@ -164,10 +164,10 @@ public class ManagerServiceImpl implements ManagerService {
                     .in(ManagerRolePermission::getRoleId, rids);
             List<ManagerRolePermission> rolePermissions = rolePermissionMapper.selectList(rolePermissionQuery);
             if (A.isNotEmpty(rolePermissions)) {
-                List<Long> pids = A.collect(rolePermissions, ManagerRolePermission::getPermissionId);
-                if (A.isNotEmpty(pids)) {
+                List<Long> ids = A.collect(rolePermissions, ManagerRolePermission::getPermissionId);
+                if (A.isNotEmpty(ids)) {
                     Wrapper<ManagerPermission> permissionQuery = Wrappers.lambdaQuery(ManagerPermission.class)
-                            .in(ManagerPermission::getId, pids);
+                            .in(ManagerPermission::getId, ids);
                     List<ManagerPermission> permissions = permissionMapper.selectList(permissionQuery);
 
                     Map<Long, ManagerPermission> permissionMap = MapMultiUtil.listToMap(permissions, ManagerPermission::getId);

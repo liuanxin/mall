@@ -60,7 +60,7 @@ public class ManagerMenu {
 
         Map<Long, List<ManagerPermission>> mpMap = MapMultiUtil.listToMapList(permissions, ManagerPermission::getMenuId);
 
-        List<ManagerMenu> menuList = new ArrayList<>();
+        List<ManagerMenu> firstMenuList = new ArrayList<>();
         MapMultiValue<String, ManagerMenu, List<ManagerMenu>> childMap = MapMultiUtil.createMapList();
         for (ManagerMenu menu : menus) {
             // 将权限写进菜单
@@ -70,18 +70,15 @@ public class ManagerMenu {
             }
 
             if (menu.getPid() == ROOT_ID) {
-                menuList.add(menu);
+                firstMenuList.add(menu);
             } else {
                 childMap.put(U.toStr(menu.getPid()), menu);
             }
         }
         Map<String, List<ManagerMenu>> relationMap = childMap.asMap();
-        for (ManagerMenu menu : menuList) {
-            handle(menu, relationMap, 0);
-        }
-
         Map<String, ManagerMenu> tmpMap = new HashMap<>();
-        for (ManagerMenu menu : menuList) {
+        for (ManagerMenu menu : firstMenuList) {
+            handle(menu, relationMap, 0);
             tmpMap.put(U.toStr(menu.getId()), menu);
         }
 
