@@ -3,6 +3,7 @@ package com.github.common.date;
 import com.github.common.util.U;
 import org.joda.time.*;
 import org.joda.time.format.DateTimeFormat;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -140,37 +141,38 @@ public class DateUtil {
      * </pre>
      */
     public static String toHumanRoughly(long intervalMs) {
+        boolean hasCn = LocaleContextHolder.getLocale() == Locale.CHINA;
         if (intervalMs == 0) {
-            return "刚刚";
+            return hasCn ? "刚刚" : "Now";
         }
 
         boolean flag = (intervalMs < 0);
         long ms = (flag ? -intervalMs : intervalMs);
         if (ms < MINUTE) {
-            return "刚刚";
+            return hasCn ? "刚刚" : "Now";
         }
 
-        String state = flag ? "后" : "前";
+        String state = flag ? (hasCn ? "后" : " later") : (hasCn ? "前" : " ago");
 
         long minute = ms / MINUTE;
         if (minute < 60) {
-            return minute + " 分钟" + state;
+            return minute + (hasCn ? " 分钟" : (minute > 1 ? " minutes" : " minute")) + state;
         }
 
         long hour = minute / 60;
         if (hour < 24) {
-            return hour + " 小时" + state;
+            return hour + (hasCn ? " 小时" : (hour > 1 ? " hours" : " hour")) + state;
         }
 
         long day = hour / 24;
         if (day == 1) {
-            return flag ? "明天" : "昨天";
+            return flag ? (hasCn ? "明天" : "tomorrow") : (hasCn ? "昨天" : "yesterday");
         } else if (day == 2) {
-            return flag ? "后天" : "前天";
+            return flag ? (hasCn ? "后天" : "after tomorrow") : (hasCn ? "前天" : "before yesterday");
         } else if (day < 365) {
-            return day + " 天" + state;
+            return day + (hasCn ? " 天" : " days") + state;
         } else {
-            return (day / 365) + " 年" + state;
+            return (day / 365) + (hasCn ? " 年" : ((day > (365 * 2)) ? " years" : " year")) + state;
         }
     }
     /** 如: toHuman(36212711413L) ==> 1 年 54 天 3 小时 5 分 11 秒 413 毫秒 */
@@ -178,6 +180,7 @@ public class DateUtil {
         if (intervalMs == 0) {
             return "0";
         }
+        boolean hasCn = LocaleContextHolder.getLocale() == Locale.SIMPLIFIED_CHINESE;
 
         boolean flag = (intervalMs < 0);
         long ms = Math.abs(intervalMs);
@@ -202,22 +205,22 @@ public class DateUtil {
             sbd.append("-");
         }
         if (year > 0) {
-            sbd.append(year).append(" 年 ");
+            sbd.append(year).append(hasCn ? " 年 " : (year > 1 ? " years " : " year "));
         }
         if (day > 0) {
-            sbd.append(day).append(" 天 ");
+            sbd.append(day).append(hasCn ? " 天 " : (day > 1 ? " days " : " day "));
         }
         if (hour > 0) {
-            sbd.append(hour).append(" 小时 ");
+            sbd.append(hour).append(hasCn ? " 小时 " : (hour > 1 ? " hours " : " hour "));
         }
         if (minute > 0) {
-            sbd.append(minute).append(" 分 ");
+            sbd.append(minute).append(hasCn ? " 分 " : (minute > 1 ? " minutes " : " minute "));
         }
         if (second > 0) {
-            sbd.append(second).append(" 秒 ");
+            sbd.append(second).append(hasCn ? " 秒 " : (second > 1 ? " seconds " : " second "));
         }
         if (m > 0) {
-            sbd.append(m).append(" 毫秒");
+            sbd.append(m).append(hasCn ? " 毫秒" : " ms");
         }
         return sbd.toString().trim();
     }

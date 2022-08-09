@@ -3,8 +3,10 @@ package com.github.common.util;
 import com.github.common.date.DateFormatType;
 import com.github.common.date.DateUtil;
 import org.junit.Test;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 
 public class DateTest {
@@ -23,8 +25,10 @@ public class DateTest {
         date = DateUtil.format(now, DateFormatType.USA_YYYY_MM_DD_HH_MM_SS);
         System.out.println(DateUtil.parse(date));
 
-        long end = Objects.requireNonNull(DateUtil.parse("2019-01-03 01:02:02")).getTime();
-        long start = Objects.requireNonNull(DateUtil.parse("2019-01-01 01:02:03")).getTime();
+        LocaleContextHolder.setLocale(Locale.CHINA);
+        // LocaleContextHolder.setLocale(Locale.US);
+        long end = Objects.requireNonNull(DateUtil.parse("2019-01-03 01:02:02.123")).getTime();
+        long start = Objects.requireNonNull(DateUtil.parse("2019-01-01 01:02:03.321")).getTime();
         System.out.println(DateUtil.toHumanRoughly(end - start));
         System.out.println(DateUtil.toHuman(end - start));
 
