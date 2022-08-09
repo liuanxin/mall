@@ -40,7 +40,7 @@ public final class JsonModule {
 
         @Override
         public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-            gen.writeString(DesensitizationUtil.desKey(gen.getOutputContext().getCurrentName(), value));
+            gen.writeString(DesensitizationUtil.desByKey(gen.getOutputContext().getCurrentName(), value));
         }
     }
 

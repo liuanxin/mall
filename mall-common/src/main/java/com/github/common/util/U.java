@@ -629,9 +629,9 @@ public final class U {
         if (isBlank(idCard)) {
             return idCard;
         } else if (isIdCard(idCard)) {
-            return idCard.substring(0, 3) + "****" + idCard.substring(idCard.length() - 2);
+            return idCard.substring(0, 3) + "***" + idCard.substring(idCard.length() - 2);
         } else if (idCard.length() == 6) {
-            return "****" + idCard.substring(2);
+            return "***" + idCard.substring(2);
         } else {
             return idCard;
         }
@@ -659,25 +659,10 @@ public final class U {
             return value.trim();
         }
         int valueLen = value.length();
-        if (left < 0 || left > valueLen) {
-            left = 0;
-        }
-        if (right < 0 || right > valueLen) {
-            right = 0;
-        }
-        if (valueLen >= max && max > (left + right)) {
-            StringBuilder sbd = new StringBuilder();
-            String lt = value.substring(0, left);
-            if (U.isNotBlank(lt)) {
-                sbd.append(lt);
-            }
-            sbd.append("***");
-            String rt = value.substring(valueLen - right);
-            if (U.isNotBlank(rt)) {
-                sbd.append(rt);
-            }
-            sbd.append("[").append(valueLen).append("]");
-            return sbd.toString();
+        int lt = (left < 0 || left > valueLen) ? 0 : left;
+        int rt = (right < 0 || right > valueLen) ? 0 : right;
+        if (valueLen >= max && max > (lt + rt)) {
+            return String.format("%s***%s[%s]", value.substring(0, lt), value.substring(valueLen - rt), valueLen);
         } else {
             return value;
         }
@@ -1139,7 +1124,7 @@ public final class U {
             Object obj = entry.getValue();
             if (isNotBlank(key) && isNotNull(obj)) {
                 String str = A.toString(obj);
-                String value = des ? DesensitizationUtil.desKey(key, str) : str;
+                String value = des ? DesensitizationUtil.desByKey(key, str) : str;
                 joiner.add(key + "=" + value);
             }
         }

@@ -16,7 +16,7 @@ public final class DesensitizationUtil {
     private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
     /** 基于 key 脱敏 */
-    public static String desKey(String key, String value) {
+    public static String desByKey(String key, String value) {
         if (U.isBlank(key) || U.isBlank(value)) {
             return A.rand(SENSITIVE_LIST);
         }
@@ -31,7 +31,7 @@ public final class DesensitizationUtil {
             case "apptoken", "app-token", "x-app-token",
                     "appkey", "app-key", "x-app-key",
                     "appsecret", "app-secret", "x-app-secret" -> U.foggyValue(value, 16, 3);
-            default -> U.foggyValue(value, 300, 50);
+            default -> U.foggyValue(value, 1000, 100);
         };
     }
 
@@ -60,14 +60,19 @@ public final class DesensitizationUtil {
             // BigDecimal 或 float 或 double 使用 String 序列化
             return BigDecimal.valueOf(d).setScale(Math.abs(digitsNumber), RoundingMode.DOWN).toString();
         }
-        if (value instanceof BigInteger || value instanceof Long) {
+
+        else if (value instanceof BigInteger || value instanceof Long) {
             // long 或 BigInt 使用 String 序列化
             return Long.toString((random != 0) ?  RANDOM.nextLong((long) random) : value.longValue());
         }
-        if (value instanceof Integer || value instanceof Short) {
+
+        else if (value instanceof Integer || value instanceof Short) {
             return (random != 0) ? RANDOM.nextInt((int) random) : value.intValue();
         }
-        return value;
+
+        else {
+            return value;
+        }
     }
 
     public static void descDate(Date value, long randomDateTimeMillis) {

@@ -322,7 +322,7 @@ public final class RequestUtil {
             String headName = headers.nextElement();
             String value = request.getHeader(headName);
             sbd.append("<").append(headName).append(" : ");
-            sbd.append(des ? DesensitizationUtil.desKey(headName, value) : value);
+            sbd.append(des ? DesensitizationUtil.desByKey(headName, value) : value);
             sbd.append(">");
         }
         return sbd.toString();
@@ -369,12 +369,14 @@ public final class RequestUtil {
     }
     public static String logRequestInfo(boolean printHeader) {
         boolean des = true;
-        String heads = formatHeader(des);
         String params = formatParam(des);
 
         StringBuilder sbd = new StringBuilder();
-        if (printHeader && U.isNotBlank(heads)) {
-            sbd.append(" headers(").append(heads).append(")");
+        if (printHeader) {
+            String heads = formatHeader(des);
+            if (U.isNotBlank(heads)) {
+                sbd.append(" headers(").append(heads).append(")");
+            }
         }
         if (U.isNotBlank(params)) {
             sbd.append(" params(").append(params).append(")");
