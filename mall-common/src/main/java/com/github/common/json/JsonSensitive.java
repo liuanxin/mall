@@ -9,10 +9,10 @@ import java.lang.annotation.*;
  * <pre>
  * 脱敏注解. 只能标在 String、Number(Integer, Long, Float, Double, BigInteger, BigDecimal)、Date 类型上
  *
- * 用在 String:       &#064;JsonSensitive(start = 2, end = 2) 将 abcdefghijklmnopqrstuvwxyz 输出成 ab *** yz
- * 用在 Integer/Long: &#064;JsonSensitive(randomNumber = 100) 将输出成 1 ~ 100 之间的随机数
- * 用在 BigDecimal:   &#064;JsonSensitive(randomNumber = 123.534D, digitsNumber = 3) 将输出成 1 ~ 123.534 之间的随机数并保留 3 位小数
- * 用在 Date:         &#064;JsonSensitive(randomDate = 1234567890L) 将 2022-01-01 输出成 "2022-01-01 的时间戳 - (1 ~ 1234567890)" 的时间格式
+ * 用在 String:       &#064;JsonSensitive(start = 2, end = 2) 将 abcdefghijklmnopqrstuvwxyz 输出成 ab***yz
+ * 用在 Integer/Long: &#064;JsonSensitive(randomNumber = 100) 将输出成 0 ~ 99 之间的随机数
+ * 用在 BigDecimal:   &#064;JsonSensitive(randomNumber = 123.534D, digitsNumber = 3) 将输出成 0 ~ 123.5339∞ 之间的随机数并保留 3 位小数
+ * 用在 Date:         &#064;JsonSensitive(randomDateTimeMillis = 1234567890L) 将 2022-01-01 输出成 "2022-01-01 的时间戳 - (1 ~ 1234567890)" 的时间格式
  * </pre>
  */
 @Target(ElementType.FIELD)
