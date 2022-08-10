@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS `t_manager_role` (
 DROP TABLE IF EXISTS `t_manager_menu`;
 CREATE TABLE IF NOT EXISTS `t_manager_menu` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `parent_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '父菜单, 0 则表示是根菜单',
+  `parent_id` BIGINT UNSIGNED NOT NULL COMMENT '父菜单, 0 则表示是根菜单',
   `name` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '菜单说明',
   `front` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '前端对应的值(如 path 或 name)',
   PRIMARY KEY (`id`),
