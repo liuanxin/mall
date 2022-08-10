@@ -33,8 +33,6 @@ import java.util.Set;
  */
 public class LanguageFilter implements Filter {
 
-    private static final Locale DEFAULT = Locale.SIMPLIFIED_CHINESE;
-
     private final String languageParam;
     private final Set<Locale> locales;
     public LanguageFilter(String languageParam, String i18nBaseNames) {

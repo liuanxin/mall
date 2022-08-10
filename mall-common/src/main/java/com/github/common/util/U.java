@@ -36,8 +36,6 @@ public final class U {
     public static final int PROCESSORS = Runtime.getRuntime().availableProcessors();
 
     public static final String EMPTY = "";
-    public static final String BLANK = " ";
-    public static final String LIKE = "%";
 
     /** 递归时的最大深度, 避免无限递归 */
     public static final int MAX_DEPTH = 20;
@@ -400,7 +398,10 @@ public final class U {
             }
             result >>= 8;
         } catch (java.net.UnknownHostException e) {
-            assertException("「" + ip + "」不是有效的 ip 地址");
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error(String.format("ip(%s)转换成数值时异常", ip), e);
+            }
+            serviceException("「" + ip + "」不是有效的 ip 地址");
         }
         return result;
     }
@@ -558,10 +559,10 @@ public final class U {
         }
     }
 
-    public static boolean equals(Object obj1, Object obj2) {
+    public static <T> boolean equals(T obj1, T obj2) {
         return Objects.equals(obj1, obj2);
     }
-    public static boolean notEquals(Object obj1, Object obj2) {
+    public static <T> boolean notEquals(T obj1, T obj2) {
         return !equals(obj1, obj2);
     }
     public static boolean equalsIgnoreCase(String str1, String str2) {
@@ -600,7 +601,7 @@ public final class U {
             return true;
         } else {
             String trim = str.trim();
-            return trim.isEmpty() || trim.equalsIgnoreCase("null") || trim.equalsIgnoreCase("undefined");
+            return trim.isEmpty() || "null".equalsIgnoreCase(trim) || "undefined".equalsIgnoreCase(trim);
         }
     }
     /** 非空且不是空字符时返回 true */
@@ -611,20 +612,12 @@ public final class U {
 
     /** 雾化手机号: 13012345678 -> 130****5678 */
     public static String foggyPhone(String phone) {
-        return checkPhone(phone) ? phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4) : phone;
+        return hasPhone(phone) ? phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4) : phone;
     }
-    /** 雾化身份证号: 110011191001011010 -> 110****10 */
+    /** 雾化身份证号: 110011191001011010 -> 110***10 */
     public static String foggyIdCard(String idCard) {
-        // 是标准的 15 或 18 位身份证就返回「前面 3 位 + 后面 2 位」. 只有 6 位尾数则只返回「后面 2 位」
-        if (isBlank(idCard)) {
-            return idCard;
-        } else if (isIdCard(idCard)) {
-            return idCard.substring(0, 3) + "***" + idCard.substring(idCard.length() - 2);
-        } else if (idCard.length() == 6) {
-            return "***" + idCard.substring(2);
-        } else {
-            return idCard;
-        }
+        // 是标准的 15 或 18 位身份证就返回「前面 3 位 + 后面 2 位」
+        return hasIdCard(idCard) ? foggyValue(idCard, 15, 3, 2) : idCard;
     }
     /**
      * 如果字符长度大于指定长度, 则只输出头尾的固定字符
@@ -658,16 +651,6 @@ public final class U {
         }
     }
 
-    public static String like(String param) {
-        return isBlank(param) ? EMPTY : LIKE + param + LIKE;
-    }
-    public static String leftLike(String param) {
-        return isBlank(param) ? EMPTY : LIKE + param;
-    }
-    public static String rightLike(String param) {
-        return isBlank(param) ? EMPTY : param + LIKE;
-    }
-
 
     /**
      * 验证 指定正则 是否 <span style="color:red;">全字匹配</span> 指定字符串, 匹配则返回 true <br/><br/>
@@ -680,44 +663,27 @@ public final class U {
         return isNotBlank(param) && Pattern.compile(regex).matcher(param).matches();
     }
     /** 后缀是图片则返回 true */
-    public static boolean checkImage(String image) {
+    public static boolean hasImage(String image) {
         return checkRegexWithStrict(image, IMAGE);
     }
     /** 是正确的邮箱地址则返回 true */
-    public static boolean checkEmail(String email) {
+    public static boolean hasEmail(String email) {
         return checkRegexWithStrict(email, EMAIL);
     }
     /** 是一个手机则返回 true */
-    public static boolean checkPhone(String phone) {
+    public static boolean hasPhone(String phone) {
         return checkRegexWithStrict(phone, PHONE);
     }
     /** 是一个有效的 ip 地址则返回 true */
-    public static boolean isLicitIp(String ip) {
+    public static boolean hasLicitIp(String ip) {
         return checkRegexWithStrict(ip, IPV4);
     }
     /** 是一个有效的身份证号就返回 true */
-    public static boolean isIdCard(String num) {
+    public static boolean hasIdCard(String num) {
         return checkRegexWithStrict(num, ID_CARD);
     }
-    /** 基于身份证号码返回性别 */
-    public static String idCardToGender(String num) {
-        if (isIdCard(num)) {
-            int len = num.length();
-            String g;
-            if (len == 15) {
-                g = num.substring(14, 15);
-            } else if (len == 18) {
-                g = num.substring(16, 17);
-            } else {
-                g = EMPTY;
-            }
-            return isNumber(g) ? (toInt(g) % 2 == 0 ? "女" : "男") : EMPTY;
-        } else {
-            return EMPTY;
-        }
-    }
     /** 是本地 ip 则返回 true */
-    public static boolean isLocalRequest(String ip) {
+    public static boolean hasLocalRequest(String ip) {
         return checkRegexWithStrict(ip, LOCAL);
     }
 
@@ -725,17 +691,16 @@ public final class U {
     public static boolean checkRegexWithRelax(String param, String regex) {
         return isNotBlank(param) && Pattern.compile(regex).matcher(param).find();
     }
-
     /** 传入的参数只要包含中文就返回 true */
-    public static boolean checkChinese(String param) {
-        return checkRegexWithRelax(param, CHINESE);
+    public static boolean containsChinese(String value) {
+        return checkRegexWithRelax(value, CHINESE);
     }
     /** 传入的参数只要来自移动端就返回 true */
-    public static boolean checkMobile(String param) {
+    public static boolean hasMobile(String param) {
         return checkRegexWithRelax(param, MOBILE);
     }
     /** 传入的参数只要是 pc 端就返回 true */
-    public static boolean checkPc(String param) {
+    public static boolean hasPc(String param) {
         return checkRegexWithRelax(param, PC);
     }
 
@@ -785,13 +750,13 @@ public final class U {
     }
 
     /** 获取后缀(包含点 .) */
-    public static String getSuffix(String file) {
+    public static String getFileSuffix(String file) {
         return (isNotBlank(file) && file.contains(".")) ? file.substring(file.lastIndexOf(".")) : EMPTY;
     }
 
     /** 将传入的文件重命名成不带 - 的 uuid 名称并返回 */
     public static String renameFile(String fileName) {
-        return uuid() + getSuffix(fileName);
+        return uuid() + getFileSuffix(fileName);
     }
 
     /** 为空则返回 /, 如果开头有 / 则直接返回, 否则在开头拼接 / 并返回 */
@@ -823,8 +788,9 @@ public final class U {
         return src + (src.contains("?") ? "&" : "?");
     }
 
+
     /**
-     * 调用对象的属性对应的 get 方法并将返回值用 String 返回
+     * 调用对象的属性对应的 get 方法并将返回值用 String 返回(如果是 null 则返回空字符串)
      *
      * @param data  对象
      * @param field 属性名
@@ -841,7 +807,13 @@ public final class U {
             value = m.get(field);
         } else {
             try {
-                value = new PropertyDescriptor(field, data.getClass()).getReadMethod().invoke(data);
+                String cacheKey = data.getClass().getName() + "." + field;
+                Method method = METHOD_CACHE.get(cacheKey);
+                if (isNull(method)) {
+                    method = new PropertyDescriptor(field, data.getClass()).getReadMethod();
+                    METHOD_CACHE.put(cacheKey, method);
+                }
+                value = method.invoke(data);
             } catch (Exception e) {
                 value = invokeMethod(data, "get" + field.substring(0, 1).toUpperCase() + field.substring(1));
             }
@@ -860,28 +832,19 @@ public final class U {
         }
     }
 
-    /** 获取类的所有属性(包括父类) */
-    public static Set<Field> getAllField(Class<?> clazz) {
-        return getAllFieldWithDepth(clazz, 0);
-    }
-    private static Set<Field> getAllFieldWithDepth(Class<?> clazz, int depth) {
-        if (clazz == Object.class) {
-            return Collections.emptySet();
-        }
-
-        Set<Field> fieldSet = new LinkedHashSet<>(Arrays.asList(clazz.getDeclaredFields()));
-        Class<?> superclass = clazz.getSuperclass();
-        if (superclass == Object.class) {
-            return fieldSet;
-        }
-
-        if (depth <= MAX_DEPTH) {
-            Set<Field> tmpSet = getAllFieldWithDepth(superclass, depth + 1);
-            if (tmpSet.size() > 0) {
-                fieldSet.addAll(tmpSet);
+    /** 调用对象的公有方法. 异常将被忽略并返回 null */
+    public static Object invokeMethod(Object obj, String method, Object... param) {
+        Method m = getMethod(obj, method);
+        if (isNotNull(m)) {
+            try {
+                return m.invoke(obj, param);
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error("call({}) method({}) exception", obj.getClass().getName(), method, e);
+                }
             }
         }
-        return fieldSet;
+        return null;
     }
 
     /** 获取类的所有方法(包括父类) */
@@ -906,21 +869,6 @@ public final class U {
             }
         }
         return methodSet;
-    }
-
-    /** 调用对象的公有方法. 异常将被忽略并返回 null */
-    public static Object invokeMethod(Object obj, String method, Object... param) {
-        Method m = getMethod(obj, method);
-        if (isNotNull(m)) {
-            try {
-                return m.invoke(obj, param);
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("call({}) method({}) exception", obj.getClass().getName(), method, e);
-                }
-            }
-        }
-        return null;
     }
 
     public static List<Method> getMethods(Object obj) {
@@ -1010,6 +958,30 @@ public final class U {
         return (depth <= MAX_DEPTH) ? getMethod(superclass, method, depth + 1) : null;
     }
 
+    /** 获取类的所有属性(包括父类) */
+    public static Set<Field> getAllField(Class<?> clazz) {
+        return getAllFieldWithDepth(clazz, 0);
+    }
+    private static Set<Field> getAllFieldWithDepth(Class<?> clazz, int depth) {
+        if (clazz == Object.class) {
+            return Collections.emptySet();
+        }
+
+        Set<Field> fieldSet = new LinkedHashSet<>(Arrays.asList(clazz.getDeclaredFields()));
+        Class<?> superclass = clazz.getSuperclass();
+        if (superclass == Object.class) {
+            return fieldSet;
+        }
+
+        if (depth <= MAX_DEPTH) {
+            Set<Field> tmpSet = getAllFieldWithDepth(superclass, depth + 1);
+            if (tmpSet.size() > 0) {
+                fieldSet.addAll(tmpSet);
+            }
+        }
+        return fieldSet;
+    }
+
     public static List<Field> getFields(Object obj) {
         return getFields(obj, 0);
     }
@@ -1097,6 +1069,7 @@ public final class U {
         }
         return (depth <= MAX_DEPTH) ? getField(superclass, field, depth + 1) : null;
     }
+
 
     /** 将参数 转换成 id=123&name=xyz&name=opq, 将值进行脱敏(如 password=***&phone=130****) */
     public static String formatParam(Map<String, ?> params) {
@@ -1269,54 +1242,55 @@ public final class U {
     /** 对象为 null 时抛出异常 */
     public static void assertNil(Object obj, String msg) {
         if (isNull(obj)) {
-            assertException(msg);
+            serviceException(msg);
         }
     }
 
     /** 空白符、null、undefined、nil 时抛出异常 */
     public static void assertBlank(String str, String msg) {
         if (isBlank(str)) {
-            assertException(msg);
+            serviceException(msg);
         }
     }
 
     /** 数组为 null 或 长度为 0 时则抛出异常 */
     public static <T> void assertEmpty(T[] array, String msg) {
         if (A.isEmpty(array)) {
-            assertException(msg);
+            serviceException(msg);
         }
     }
-
     /** 列表为 null 或 长度为 0 时则抛出异常 */
     public static <T> void assertEmpty(Collection<T> list, String msg) {
         if (A.isEmpty(list)) {
-            assertException(msg);
+            serviceException(msg);
         }
     }
-
     /** map 为 null 或 长度为 0 时则抛出异常 */
-    public static <K,V> void assertEmpty(Map<K,V> map, String msg) {
+    public static <K, V> void assertEmpty(Map<K, V> map, String msg) {
         if (A.isEmpty(map)) {
-            assertException(msg);
+            serviceException(msg);
         }
     }
 
     /** 数值为空或小于等于 0 则抛出异常 */
     public static void assert0(Number number, String msg) {
         if (lessAndEquals0(number)) {
-            assertException(msg);
+            serviceException(msg);
+        }
+    }
+
+    /** 数值为空或小于 0 则抛出异常 */
+    public static void assertLess0(Number number, String msg) {
+        if (less0(number)) {
+            serviceException(msg);
         }
     }
 
     /** 条件为 true 则抛出业务异常 */
-    public static void assertException(Boolean flag, String msg) {
-        if (flag != null && flag) {
-            assertException(msg);
+    public static void assertException(boolean flag, String msg) {
+        if (flag) {
+            serviceException(msg);
         }
-    }
-
-    public static void assertException(String msg) {
-        serviceException(msg);
     }
 
     /** 国际化 */
@@ -1343,17 +1317,5 @@ public final class U {
     /** 业务异常 */
     public static void serviceException(String msg) {
         throw new ServiceException(msg);
-    }
-
-    public static String returnMsg(Throwable e, boolean online) {
-        String msg;
-        if (online) {
-            msg = "出" + (e instanceof NullPointerException ? "问题" : "错") + "了, 但别担心, 这不是你的错.";
-        } else if (e instanceof NullPointerException) {
-            msg = "空指针异常, 联系后台查看日志进行处理";
-        } else {
-            msg = e.getMessage();
-        }
-        return msg;
     }
 }

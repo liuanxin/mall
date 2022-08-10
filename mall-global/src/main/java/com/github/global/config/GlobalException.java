@@ -14,6 +14,7 @@ import com.google.common.base.Joiner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -24,10 +25,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 处理全局异常的控制类
@@ -162,7 +160,7 @@ public class GlobalException {
 
     public ResponseEntity<JsonResult<String>> unknown(Throwable e) {
         int status = (returnStatusCode ? JsonCode.FAIL : JsonCode.SUCCESS).getCode();
-        return handle(null, status, handleErrorResult(JsonResult.fail(U.returnMsg(e, online))), e);
+        return handle(null, status, handleErrorResult(JsonResult.fail(returnMsg(online, e))), e);
     }
 
     /** 未知的所有其他异常 */
@@ -256,5 +254,22 @@ public class GlobalException {
             }
         }
         return ResponseEntity.status(status)/*.header(Const.TRACE, LogUtil.getTraceId())*/.body(result);
+    }
+
+    private static String returnMsg(boolean online, Throwable e) {
+        boolean hasCn = LocaleContextHolder.getLocale() == Locale.CHINA;
+        boolean npe = e instanceof NullPointerException;
+        if (online) {
+            if (npe) {
+                return hasCn ? "出错了, 我们会尽快处理, 请稍候重试" : "Something went wrong, we'll fix it asap, please try later";
+            } else {
+                return hasCn ? "未知错误, 我们会尽快处理, 请稍候重试" : "Unknown error, we will deal with it as soon as possible, please try later";
+            }
+        }
+
+        if (npe) {
+            return hasCn ? "空指针异常, 请联系后端处理" : "NPE, please contact back-end for processing";
+        }
+        return e.getMessage();
     }
 }

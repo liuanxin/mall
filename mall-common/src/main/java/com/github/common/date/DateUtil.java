@@ -180,7 +180,7 @@ public class DateUtil {
         if (intervalMs == 0) {
             return "0";
         }
-        boolean hasCn = LocaleContextHolder.getLocale() == Locale.SIMPLIFIED_CHINESE;
+        boolean hasCn = LocaleContextHolder.getLocale() == Locale.CHINA;
 
         boolean flag = (intervalMs < 0);
         long ms = Math.abs(intervalMs);

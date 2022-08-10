@@ -3,6 +3,7 @@ package com.github.common.pdf;
 import com.github.common.encrypt.Encrypt;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.LogUtil;
+import com.github.common.util.U;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.itextpdf.text.*;
@@ -19,10 +20,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-@SuppressWarnings({"unchecked", "PatternVariableCanBeUsed", "DuplicatedCode"})
+@SuppressWarnings({"unchecked", "PatternVariableCanBeUsed", "DuplicatedCode", "rawtypes"})
 public class PdfUtil {
 
-    private static final Pattern CN_PATTERN = Pattern.compile("[\\u4e00-\\u9fa5]");
     private static final Pattern SPACE_PATTERN = Pattern.compile("([a-zA-Z0-9])");
     private static final Map<EncodeHintType, Object> HINTS = new HashMap<>();
     static {
@@ -484,7 +484,7 @@ public class PdfUtil {
 
     private static boolean headHasCn(List<String> headList) {
         for (String head : headList) {
-            if (CN_PATTERN.matcher(head).find()) {
+            if (U.containsChinese(head)) {
                 return true;
             }
         }
@@ -631,7 +631,7 @@ public class PdfUtil {
     }
 
     private static BaseFont toBaseFont(String value, boolean bold) {
-        return toBaseFont(value != null && CN_PATTERN.matcher(value).find(), bold);
+        return toBaseFont(U.containsChinese(value), bold);
     }
     private static BaseFont toBaseFont(boolean hasCn, boolean bold) {
         if (hasCn) {
@@ -641,7 +641,7 @@ public class PdfUtil {
         }
     }
     private static Font toFont(String value, boolean bold, float fontSize, BaseColor color) {
-        boolean hasCn = value != null && CN_PATTERN.matcher(value).find();
+        boolean hasCn = U.containsChinese(value);
         String cacheKey;
         if (USE_CACHE) {
             String c = ( (color == null) ? "" : ("-" + color.getRGB()) );
@@ -667,12 +667,8 @@ public class PdfUtil {
         return (obj == null) ? "" : obj.toString();
     }
     private static String handleSpace(String str, boolean space) {
-        // 中文字体里的字母和英文看起来会显得很紧凑, 加一个空格
-        if (space && CN_PATTERN.matcher(str).find()) {
-            return SPACE_PATTERN.matcher(str).replaceAll(" $1 ").replace("  ", " ");
-        } else {
-            return str;
-        }
+        // 中文字体里的字母和数字会很紧凑, 在字母和数字左右加一个空格, 两个空格替换成一个空格
+        return (space && U.containsChinese(str)) ? SPACE_PATTERN.matcher(str).replaceAll(" $1 ").replace("  ", " ") : str;
     }
     private static float toFloat(Float num, float defaultValue) {
         return num == null || num < 0 ? defaultValue : num;

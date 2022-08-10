@@ -43,4 +43,19 @@ public enum Gender {
         Gender gender = U.enumDeserializer(obj, Gender.class);
         return U.isNull(gender) ? Nil : gender;
     }
+
+    /** 基于身份证号码返回性别 */
+    public static Gender fromIdCard(String num) {
+        String idCard = num.trim();
+        if (U.hasIdCard(idCard)) {
+            String gender = switch (idCard.length()) {
+                case 15 -> idCard.substring(14, 15);
+                case 18 -> idCard.substring(16, 17);
+                default -> U.EMPTY;
+            };
+            return deserializer(gender);
+        } else {
+            return Gender.Nil;
+        }
+    }
 }

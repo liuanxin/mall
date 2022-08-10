@@ -90,9 +90,7 @@ public class Money implements Serializable {
 
     /** 检查金额是否是负数 */
     public void checkEmptyAndNegative() {
-        if (cent == null || cent < 0) {
-            U.assertException("金额不能是负数");
-        }
+        U.assertException(cent == null || cent < 0, "金额不能是负数");
     }
 
     /** 输出大写中文 */

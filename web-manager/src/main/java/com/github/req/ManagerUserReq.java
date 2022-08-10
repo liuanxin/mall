@@ -40,10 +40,12 @@ public class ManagerUserReq {
     }
     public void basicCheck() {
         if (U.isNotBlank(userName)) {
-            U.assertException(userName.trim().length() > 20, "用户名请保持在 20 个字以内");
+            int max = 20;
+            U.assertException(userName.trim().length() > max, String.format("用户名请保持在 %s 个字以内", max));
         }
         if (U.isNotBlank(password)) {
-            U.assertException(password.length() > 20, "密码超过 20 位还能记得住吗?");
+            int max = 16;
+            U.assertException(password.length() > max, String.format("密码长度只需要在 %s 位即可", max));
         }
     }
 

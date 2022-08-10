@@ -20,51 +20,51 @@ public class UtilTest {
 
     @Test
     public void chinese() {
-        Assert.assertFalse(U.checkChinese(null));
-        Assert.assertFalse(U.checkChinese(""));
-        Assert.assertFalse(U.checkChinese("wqiroewfds123$%^&*("));
+        Assert.assertFalse(U.containsChinese(null));
+        Assert.assertFalse(U.containsChinese(""));
+        Assert.assertFalse(U.containsChinese("wqiroewfds123$%^&*("));
 
-        Assert.assertTrue(U.checkChinese("wqiroewfds中123$%^&*("));
+        Assert.assertTrue(U.containsChinese("wqiroewfds中123$%^&*("));
     }
 
     @Test
     public void phone() {
-        Assert.assertFalse(U.checkPhone(null));
-        Assert.assertFalse(U.checkPhone(""));
-        Assert.assertFalse(U.checkPhone("131-1234-5678"));
-        Assert.assertFalse(U.checkPhone("131 1234 5678"));
-        Assert.assertFalse(U.checkPhone("131-1234 5678"));
-        Assert.assertFalse(U.checkPhone("1311234678"));
+        Assert.assertFalse(U.hasPhone(null));
+        Assert.assertFalse(U.hasPhone(""));
+        Assert.assertFalse(U.hasPhone("131-1234-5678"));
+        Assert.assertFalse(U.hasPhone("131 1234 5678"));
+        Assert.assertFalse(U.hasPhone("131-1234 5678"));
+        Assert.assertFalse(U.hasPhone("1311234678"));
 
-        Assert.assertTrue(U.checkPhone("13112345678"));
-        Assert.assertTrue(U.checkPhone("12112345678"));
+        Assert.assertTrue(U.hasPhone("13112345678"));
+        Assert.assertTrue(U.hasPhone("12112345678"));
     }
 
     @Test
     public void image() {
-        Assert.assertFalse(U.checkImage(null));
-        Assert.assertFalse(U.checkImage(""));
-        Assert.assertFalse(U.checkImage("/tmp/image/fdwqrewqiofds.giff"));
-        Assert.assertFalse(U.checkImage("afdwruewqrewq.abc"));
+        Assert.assertFalse(U.hasImage(null));
+        Assert.assertFalse(U.hasImage(""));
+        Assert.assertFalse(U.hasImage("/tmp/image/fdwqrewqiofds.giff"));
+        Assert.assertFalse(U.hasImage("afdwruewqrewq.abc"));
 
-        Assert.assertTrue(U.checkImage("/tmp/ufio1u8231/abc.png"));
-        Assert.assertTrue(U.checkImage("http://abc.xyz.com/uire4ui231.jpg"));
-        Assert.assertTrue(U.checkImage("D:\\image\\中.bmp"));
-        Assert.assertTrue(U.checkImage(".bmp"));
+        Assert.assertTrue(U.hasImage("/tmp/ufio1u8231/abc.png"));
+        Assert.assertTrue(U.hasImage("http://abc.xyz.com/uire4ui231.jpg"));
+        Assert.assertTrue(U.hasImage("D:\\image\\中.bmp"));
+        Assert.assertTrue(U.hasImage(".bmp"));
     }
 
     @Test
     public void email() {
-        Assert.assertFalse(U.checkEmail(null));
-        Assert.assertFalse(U.checkEmail(""));
-        Assert.assertFalse(U.checkEmail("1$%^&*23-iurew@xyz.13s-rew.com"));
-        Assert.assertFalse(U.checkEmail("-123@xyz.com"));
+        Assert.assertFalse(U.hasEmail(null));
+        Assert.assertFalse(U.hasEmail(""));
+        Assert.assertFalse(U.hasEmail("1$%^&*23-iurew@xyz.13s-rew.com"));
+        Assert.assertFalse(U.hasEmail("-123@xyz.com"));
 
-        Assert.assertTrue(U.checkEmail("abc-xyz@126.com"));
-        Assert.assertTrue(U.checkEmail("abc@126.com"));
-        Assert.assertTrue(U.checkEmail("10010@qq.com"));
-        Assert.assertTrue(U.checkEmail("_abc-def@123-hij.uvw_xyz.com"));
-        Assert.assertTrue(U.checkEmail("123-iurew@xyz.13s-rew.com"));
+        Assert.assertTrue(U.hasEmail("abc-xyz@126.com"));
+        Assert.assertTrue(U.hasEmail("abc@126.com"));
+        Assert.assertTrue(U.hasEmail("10010@qq.com"));
+        Assert.assertTrue(U.hasEmail("_abc-def@123-hij.uvw_xyz.com"));
+        Assert.assertTrue(U.hasEmail("123-iurew@xyz.13s-rew.com"));
     }
 
     @Test

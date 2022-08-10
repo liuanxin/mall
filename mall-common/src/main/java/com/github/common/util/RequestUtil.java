@@ -109,8 +109,8 @@ public final class RequestUtil {
     }
 
     /** 本机就返回 true */
-    public static boolean isLocalRequest() {
-        return U.isLocalRequest(getRealIp());
+    public static boolean hasLocalRequest() {
+        return U.hasLocalRequest(getRealIp());
     }
 
     /** 获取 ua 信息 */
@@ -127,7 +127,7 @@ public final class RequestUtil {
 
     /** 判断当前请求是否来自移动端, 来自移动端则返回 true */
     public static boolean isMobileRequest() {
-        return U.checkMobile(userAgent());
+        return U.hasMobile(userAgent());
     }
 
     /** 判断当前请求是否是 ajax 请求, 是 ajax 则返回 true */
