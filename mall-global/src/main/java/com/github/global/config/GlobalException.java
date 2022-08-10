@@ -257,19 +257,11 @@ public class GlobalException {
     }
 
     private static String returnMsg(boolean online, Throwable e) {
-        boolean hasCn = LocaleContextHolder.getLocale() == Locale.CHINA;
-        boolean npe = e instanceof NullPointerException;
         if (online) {
-            if (npe) {
-                return hasCn ? "出错了, 我们会尽快处理, 请稍候重试" : "Something went wrong, we'll fix it asap, please try later";
-            } else {
-                return hasCn ? "未知错误, 我们会尽快处理, 请稍候重试" : "Unknown error, we will deal with it as soon as possible, please try later";
-            }
+            boolean hasCn = LocaleContextHolder.getLocale() == Locale.CHINA;
+            return hasCn ? "出错了, 我们会尽快处理" : "Something went wrong, we'll fix it asap";
+        } else {
+            return e.getMessage();
         }
-
-        if (npe) {
-            return hasCn ? "空指针异常, 请联系后端处理" : "NPE, please contact back-end for processing";
-        }
-        return e.getMessage();
     }
 }
