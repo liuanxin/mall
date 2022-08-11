@@ -91,14 +91,12 @@ public final class BeanChange {
             fieldList.sort(Comparator.comparingInt(BeanField::order));
             List<String> values = new ArrayList<>();
             for (BeanField field : fieldList) {
-                values.add(U.toStr(field.value));
+                values.add(U.toStr(field.value()));
             }
             return Joiner.on("; ").join(values).trim();
         }
         return null;
     }
-
-    private record BeanField(int order, String value) {}
 
     private static Object getField(String fieldName, Class<?> clazz, Object obj) {
         if (U.isNull(obj)) {
