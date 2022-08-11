@@ -9,6 +9,7 @@ import org.springframework.core.convert.converter.Converter;
  *
  * @see org.springframework.core.convert.support.StringToBooleanConverter
  */
+@SuppressWarnings({"JavadocReference", "NullableProblems"})
 public class String2BooleanConverter implements Converter<String, Boolean> {
 
     @Override

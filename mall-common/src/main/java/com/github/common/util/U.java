@@ -3,9 +3,7 @@ package com.github.common.util;
 import com.github.common.date.DateUtil;
 import com.github.common.encrypt.Encrypt;
 import com.github.common.exception.*;
-import com.github.common.json.JsonUtil;
 
-import java.beans.PropertyDescriptor;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -83,10 +81,8 @@ public final class U {
         TRUES.add("yes");
     }
 
-    private static final Map<String, List<Method>> METHODS_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String, Method> METHOD_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String, List<Field>> FIELDS_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String, Field> FIELD_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Map<String, Method>> METHODS_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Map<String, Field>> FIELDS_CACHE = new ConcurrentHashMap<>();
 
 
     /** 生成指定位数的随机数: 纯数字 */
@@ -116,7 +112,7 @@ public final class U {
 
 
     /**
-     * 获取枚举中的值, 先匹配 name, 再匹配 getCode(数字), 再匹配 getValue(中文), 都匹配不上则返回 null
+     * 获取枚举中的值, 先匹配 name, 再匹配 getCode 方法, 再匹配 getValue 方法, 都匹配不上则返回 null
      *
      * @param clazz 枚举的类信息
      * @param obj 要匹配的值
@@ -125,7 +121,7 @@ public final class U {
     public static <E extends Enum> E toEnum(Class<E> clazz, Object obj) {
         if (isNotNull(obj)) {
             E[] constants = clazz.getEnumConstants();
-            if (constants != null && constants.length > 0) {
+            if (A.isNotEmpty(constants)) {
                 String source = obj.toString().trim();
                 for (E em : constants) {
                     // 如果传递过来的是枚举名, 且能匹配上则返回
@@ -151,93 +147,6 @@ public final class U {
             }
         }
         return null;
-    }
-
-    /**
-     * <pre>
-     * 序列化枚举, 如以下示例
-     *
-     * public enum Gender {
-     *   Male(0, "男"), Female(1, "女");
-     *
-     *   &#064;EnumValue
-     *   private final int code;
-     *   private final String value;
-     *
-     *   &#064;JsonValue
-     *   public Map<String, Object> serializer() {
-     *     return <span style="color:red">serializerEnum(code, value);</span>
-     *   }
-     *   &#064;JsonCreator
-     *   public static Gender deserializer(Object obj) {
-     *     return enumDeserializer(obj, Gender.class);
-     *   }
-     * }
-     *
-     * Gender.Male 在序列化时将返回 { "code": 0, "value": "男" } 其中 code 用来交互, value 用来显示
-     * 反序列化时, 0、男、{ "code": 0, "value": "男" } 都可以反序列化成 Gender.Male
-     * </pre>
-     */
-    public static Map<String, Object> serializerEnum(int code, String value) {
-        return A.maps(ENUM_CODE, code, ENUM_VALUE, value);
-    }
-    /**
-     * <pre>
-     * 枚举反序列化, 如以下示例
-     *
-     * public enum Gender {
-     *   Male(0, "男"), Female(1, "女");
-     *
-     *   &#064;EnumValue
-     *   private final int code;
-     *   private final String value;
-     *
-     *   &#064;JsonValue
-     *   public Map<String, Object> serializer() {
-     *     return <span style="color:red">serializerEnum(code, value);</span>
-     *   }
-     *   &#064;JsonCreator
-     *   public static Gender deserializer(Object obj) {
-     *     return enumDeserializer(obj, Gender.class);
-     *   }
-     * }
-     *
-     * Gender.Male 在序列化时将返回 { "code": 0, "value": "男" } code 用来交互, value 用来显示
-     * 而 0、男、{ "code": 0, "value": "男" } 也都可以反序列化成 Gender.Male
-     * </pre>
-     */
-    @SuppressWarnings("rawtypes")
-    public static <E extends Enum> E enumDeserializer(Object obj, Class<E> enumClass) {
-        if (isNull(obj)) {
-            return null;
-        }
-
-        Object tmp = null;
-        if (obj instanceof Map m) {
-            tmp = getEnumInMap(m);
-        } else {
-            String tmpStr = obj.toString().trim();
-            if (tmpStr.startsWith("{") && tmpStr.endsWith("}")) {
-                tmp = getEnumInMap(JsonUtil.toObjectNil(obj.toString(), Map.class));
-            }
-        }
-
-        if (isNull(tmp)) {
-            tmp = obj;
-        }
-        return toEnum(enumClass, tmp);
-    }
-    @SuppressWarnings("rawtypes")
-    private static Object getEnumInMap(Map map) {
-        if (A.isNotEmpty(map)) {
-            Object tmp = map.get(ENUM_CODE);
-            if (isNull(tmp)) {
-                tmp = map.get(ENUM_VALUE);
-            }
-            return tmp;
-        } else {
-            return null;
-        }
     }
 
 
@@ -806,17 +715,7 @@ public final class U {
         if (data instanceof Map m) {
             value = m.get(field);
         } else {
-            try {
-                String cacheKey = data.getClass().getName() + "." + field;
-                Method method = METHOD_CACHE.get(cacheKey);
-                if (isNull(method)) {
-                    method = new PropertyDescriptor(field, data.getClass()).getReadMethod();
-                    METHOD_CACHE.put(cacheKey, method);
-                }
-                value = method.invoke(data);
-            } catch (Exception e) {
-                value = invokeMethod(data, "get" + field.substring(0, 1).toUpperCase() + field.substring(1));
-            }
+            value = invokeMethod(data, "get" + field.substring(0, 1).toUpperCase() + field.substring(1));
         }
 
         if (isNull(value)) {
@@ -847,227 +746,108 @@ public final class U {
         return null;
     }
 
-    /** 获取类的所有方法(包括父类) */
-    public static Set<Method> getAllMethod(Class<?> clazz) {
-        return getAllMethodWithDepth(clazz, 0);
-    }
-    private static Set<Method> getAllMethodWithDepth(Class<?> clazz, int depth) {
-        if (clazz == Object.class) {
-            return Collections.emptySet();
-        }
-
-        Set<Method> methodSet = new LinkedHashSet<>(Arrays.asList(clazz.getDeclaredMethods()));
-        Class<?> superclass = clazz.getSuperclass();
-        if (superclass == Object.class) {
-            return methodSet;
-        }
-
-        if (depth <= MAX_DEPTH) {
-            Set<Method> tmpSet = getAllMethodWithDepth(superclass, depth + 1);
-            if (tmpSet.size() > 0) {
-                methodSet.addAll(tmpSet);
-            }
-        }
-        return methodSet;
-    }
-
+    /** 获取对象的所有方法(包括父类) */
     public static List<Method> getMethods(Object obj) {
-        return getMethods(obj, 0);
+        Map<String, Method> methodMap = getMethods(obj, 0);
+        return A.isEmpty(methodMap) ? Collections.emptyList() : new ArrayList<>(methodMap.values());
     }
-    private static List<Method> getMethods(Object obj, int depth) {
+    private static Map<String, Method> getMethods(Object obj, int depth) {
         // noinspection DuplicatedCode
         if (isNull(obj)) {
-            return Collections.emptyList();
+            return Collections.emptyMap();
         }
 
         Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
         if (clazz == Object.class) {
-            return Collections.emptyList();
+            return Collections.emptyMap();
         }
+
         String key = clazz.getName();
-        List<Method> list = METHODS_CACHE.get(key);
-        if (A.isNotEmpty(list)) {
-            return list;
+        Map<String, Method> methodCacheMap = METHODS_CACHE.get(key);
+        if (A.isNotEmpty(methodCacheMap)) {
+            return methodCacheMap;
         }
 
-        Set<Method> methodSet = new LinkedHashSet<>();
-        Set<String> methodNameSet = new HashSet<>();
-        try {
-            for (Method method : clazz.getDeclaredMethods()) {
-                methodSet.add(method);
-                methodNameSet.add(method.getName());
+        Map<String, Method> returnMap = new LinkedHashMap<>();
+        Method[] declaredMethods = clazz.getDeclaredMethods();
+        if (A.isNotEmpty(declaredMethods)) {
+            for (Method declaredMethod : declaredMethods) {
+                returnMap.put(declaredMethod.getName(), declaredMethod);
             }
-        } catch (SecurityException ignore) {
         }
-        if (methodSet.isEmpty()) {
-            return Collections.emptyList();
+        Method[] methods = clazz.getMethods();
+        if (A.isNotEmpty(methods)) {
+            for (Method method : methods) {
+                returnMap.put(method.getName(), method);
+            }
         }
 
-        List<Method> methods = new ArrayList<>(methodSet);
         Class<?> superclass = clazz.getSuperclass();
         if (superclass != Object.class && depth <= MAX_DEPTH) {
-            List<Method> methodList = getMethods(superclass, depth + 1);
-            if (A.isNotEmpty(methodList)) {
-                for (Method method : methodList) {
-                    if (!methodNameSet.contains(method.getName())) {
-                        methods.add(method);
-                    }
-                }
+            Map<String, Method> methodMap = getMethods(superclass, depth + 1);
+            if (A.isNotEmpty(methodMap)) {
+                returnMap.putAll(methodMap);
             }
         }
-        METHODS_CACHE.put(key, methods);
-        return methods;
+        METHODS_CACHE.put(key, returnMap);
+        return returnMap;
     }
-
+    /** 获取对象的指定方法 */
     public static Method getMethod(Object obj, String method) {
-        return getMethod(obj, method, 0);
-    }
-    private static Method getMethod(Object obj, String method, int depth) {
-        // noinspection DuplicatedCode
-        if (isNull(obj) || isBlank(method)) {
-            return null;
-        }
-
-        Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
-        if (clazz == Object.class) {
-            return null;
-        }
-        String key = clazz.getName() + "->" + method;
-        Method m = METHOD_CACHE.get(key);
-        if (isNotNull(m)) {
-            return m;
-        }
-
-        try {
-            Method md = clazz.getDeclaredMethod(method);
-            METHOD_CACHE.put(key, md);
-            return md;
-        } catch (NoSuchMethodException ignore) {
-        }
-        try {
-            Method md = clazz.getMethod(method);
-            METHOD_CACHE.put(key, md);
-            return md;
-        } catch (NoSuchMethodException ignore) {
-        }
-
-        Class<?> superclass = clazz.getSuperclass();
-        if (superclass == Object.class) {
-            return null;
-        }
-        return (depth <= MAX_DEPTH) ? getMethod(superclass, method, depth + 1) : null;
+        Map<String, Method> methodMap = getMethods(obj, 0);
+        return A.isEmpty(methodMap) ? null : methodMap.get(method);
     }
 
-    /** 获取类的所有属性(包括父类) */
-    public static Set<Field> getAllField(Class<?> clazz) {
-        return getAllFieldWithDepth(clazz, 0);
-    }
-    private static Set<Field> getAllFieldWithDepth(Class<?> clazz, int depth) {
-        if (clazz == Object.class) {
-            return Collections.emptySet();
-        }
-
-        Set<Field> fieldSet = new LinkedHashSet<>(Arrays.asList(clazz.getDeclaredFields()));
-        Class<?> superclass = clazz.getSuperclass();
-        if (superclass == Object.class) {
-            return fieldSet;
-        }
-
-        if (depth <= MAX_DEPTH) {
-            Set<Field> tmpSet = getAllFieldWithDepth(superclass, depth + 1);
-            if (tmpSet.size() > 0) {
-                fieldSet.addAll(tmpSet);
-            }
-        }
-        return fieldSet;
-    }
-
+    /** 获取对象的所有属性(包括父类) */
     public static List<Field> getFields(Object obj) {
-        return getFields(obj, 0);
+        Map<String, Field> fieldMap = getFields(obj, 0);
+        return A.isEmpty(fieldMap) ? Collections.emptyList() : new ArrayList<>(fieldMap.values());
     }
-    private static List<Field> getFields(Object obj, int depth) {
+    private static Map<String, Field> getFields(Object obj, int depth) {
         // noinspection DuplicatedCode
         if (isNull(obj)) {
-            return Collections.emptyList();
+            return Collections.emptyMap();
         }
 
         Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
         if (clazz == Object.class) {
-            return Collections.emptyList();
+            return Collections.emptyMap();
         }
+
         String key = clazz.getName();
-        List<Field> fl = FIELDS_CACHE.get(key);
-        if (isNotNull(fl)) {
-            return fl;
+        Map<String, Field> fieldCacheMap = FIELDS_CACHE.get(key);
+        if (isNotNull(fieldCacheMap)) {
+            return fieldCacheMap;
         }
 
-        Set<Field> fieldSet = new LinkedHashSet<>();
-        Set<String> fieldNameSet = new HashSet<>();
-        try {
-            for (Field field : clazz.getDeclaredFields()) {
-                fieldSet.add(field);
-                fieldNameSet.add(field.getName());
+        Map<String, Field> returnMap = new LinkedHashMap<>();
+        Field[] declaredFields = clazz.getDeclaredFields();
+        if (A.isNotEmpty(declaredFields)) {
+            for (Field declaredField : declaredFields) {
+                returnMap.put(declaredField.getName(), declaredField);
             }
-        } catch (SecurityException ignore) {
         }
-        if (fieldSet.isEmpty()) {
-            return Collections.emptyList();
+        Field[] fields = clazz.getFields();
+        if (A.isNotEmpty(fields)) {
+            for (Field field : fields) {
+                returnMap.put(field.getName(), field);
+            }
         }
 
-        List<Field> fields = new ArrayList<>(fieldSet);
         Class<?> superclass = clazz.getSuperclass();
         if (superclass != Object.class && depth <= MAX_DEPTH) {
-            List<Field> fieldList = getFields(superclass, depth + 1);
-            if (A.isNotEmpty(fieldList)) {
-                fields.addAll(fieldList);
-                for (Field field : fieldList) {
-                    if (!fieldNameSet.contains(field.getName())) {
-                        fields.add(field);
-                    }
-                }
+            Map<String, Field> fieldMap = getFields(superclass, depth + 1);
+            if (A.isNotEmpty(fieldMap)) {
+                returnMap.putAll(fieldMap);
             }
         }
-        FIELDS_CACHE.put(key, fields);
-        return fields;
+        FIELDS_CACHE.put(key, returnMap);
+        return returnMap;
     }
-
+    /** 获取对象的指定属性 */
     public static Field getField(Object obj, String field) {
-        return getField(obj, field, 0);
-    }
-    private static Field getField(Object obj, String field, int depth) {
-        // noinspection DuplicatedCode
-        if (isNull(obj) || isBlank(field)) {
-            return null;
-        }
-
-        Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
-        if (clazz == Object.class) {
-            return null;
-        }
-        String key = clazz.getName() + "->" + field;
-        Field f = FIELD_CACHE.get(key);
-        if (isNotNull(f)) {
-            return f;
-        }
-
-        try {
-            Field fd = clazz.getDeclaredField(field);
-            FIELD_CACHE.put(key, fd);
-            return fd;
-        } catch (NoSuchFieldException ignore) {
-        }
-        try {
-            Field fd = clazz.getField(field);
-            FIELD_CACHE.put(key, fd);
-            return fd;
-        } catch (NoSuchFieldException ignore) {
-        }
-
-        Class<?> superclass = clazz.getSuperclass();
-        if (superclass == Object.class) {
-            return null;
-        }
-        return (depth <= MAX_DEPTH) ? getField(superclass, field, depth + 1) : null;
+        Map<String, Field> fieldMap = getFields(obj, 0);
+        return A.isEmpty(fieldMap) ? null : fieldMap.get(field);
     }
 
 

@@ -12,6 +12,7 @@ import org.springframework.core.convert.converter.ConverterFactory;
  *
  * @see org.springframework.core.convert.support.StringToEnumConverterFactory
  */
+@SuppressWarnings({"JavadocReference", "NullableProblems", "rawtypes"})
 public class StringToEnumConverter implements ConverterFactory<String, Enum> {
 
     @Override
@@ -22,16 +23,12 @@ public class StringToEnumConverter implements ConverterFactory<String, Enum> {
             enumType = enumType.getSuperclass();
         }
         if (enumType == null) {
-            throw new IllegalArgumentException("The target type " + targetType.getName() + " does not refer to an enum");
+            throw new IllegalArgumentException("Type(%s" + targetType.getName() + ") does not refer to an enum");
         }
         return new StringToEnum(enumType);
     }
 
-    private class StringToEnum<E extends Enum> implements Converter<String, E> {
-        private final Class<E> enumType;
-        StringToEnum(Class<E> enumType) {
-            this.enumType = enumType;
-        }
+    private record StringToEnum<E extends Enum>(Class<E> enumType) implements Converter<String, E> {
 
         @Override
         public E convert(String source) {

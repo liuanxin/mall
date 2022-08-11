@@ -10,6 +10,7 @@ import org.springframework.util.NumberUtils;
  *
  * 此 convert 用于替代 {@link org.springframework.core.convert.support.StringToNumberConverterFactory}
  */
+@SuppressWarnings({"JavadocReference", "NullableProblems"})
 public class StringToNumberConverter implements ConverterFactory<String, Number> {
 
     private static final String DEFAULT_VALUE = "0";
@@ -19,11 +20,7 @@ public class StringToNumberConverter implements ConverterFactory<String, Number>
         return new StringToNumber<>(targetType);
     }
 
-    private static final class StringToNumber<T extends Number> implements Converter<String, T> {
-        private final Class<T> targetType;
-        StringToNumber(Class<T> targetType) {
-            this.targetType = targetType;
-        }
+    private record StringToNumber<T extends Number>(Class<T> targetType) implements Converter<String, T> {
 
         @Override
         public T convert(String source) {

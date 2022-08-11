@@ -53,7 +53,7 @@ public final class BeanChange {
         String orderKey = "order";
         String valueKey = "value";
         CollectProperty.Group all = CollectProperty.Group.ALL;
-        for (Field field : U.getAllField(clazz)) {
+        for (Field field : U.getFields(clazz)) {
             String fieldName = field.getName();
             CollectProperty changeProperty = field.getAnnotation(CollectProperty.class);
             String name;

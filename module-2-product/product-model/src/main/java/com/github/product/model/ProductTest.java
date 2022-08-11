@@ -4,14 +4,12 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.github.product.enums.ProductTestType;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /** 商品示例 --> t_product_test */
 @Data
 @TableName("t_product_test")
-public class ProductTest implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class ProductTest {
 
     private Long id;
 

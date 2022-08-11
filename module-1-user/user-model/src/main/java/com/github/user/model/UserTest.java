@@ -5,13 +5,10 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.github.user.enums.UserTestLevel;
 import lombok.Data;
 
-import java.io.Serializable;
-
 /** 用户 --> t_user_test */
 @Data
 @TableName("t_user_test")
-public class UserTest implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class UserTest {
 
     private Long id;
 

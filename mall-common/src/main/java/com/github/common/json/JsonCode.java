@@ -50,7 +50,14 @@ public enum JsonCode {
     }
     @JsonCreator
     public static JsonCode deserializer(Object obj) {
-        JsonCode code = U.enumDeserializer(obj, JsonCode.class);
-        return U.isNull(code) ? SUCCESS : code;
+        if (U.isNotNull(obj)) {
+            String str = obj.toString().trim();
+            for (JsonCode e : values()) {
+                if (str.equals(String.valueOf(e.code))) {
+                    return e;
+                }
+            }
+        }
+        return null;
     }
 }
