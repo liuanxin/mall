@@ -437,6 +437,16 @@ public final class U {
         return isBlank(value) ? defaultValue : value;
     }
 
+    /** 不为 null 且 数值大于 0 则返回默认值 */
+    public static <T extends Number> T defaultIfGreater0(T value, T defaultValue) {
+        return isNotNull(value) && value.doubleValue() > 0 ? value : defaultValue;
+    }
+
+    /** 不为 null 且 数值大于等于 0 则返回默认值 */
+    public static <T extends Number> T defaultIfGreaterEquals0(T value, T defaultValue) {
+        return isNotNull(value) && value.doubleValue() >= 0 ? value : defaultValue;
+    }
+
     /** 为 null 则返回默认值, 否则调用后返回 */
     public static <T, R> R callIfNotNull(T obj, Function<T, R> func) {
         return isNull(obj) ? null : func.apply(obj);
