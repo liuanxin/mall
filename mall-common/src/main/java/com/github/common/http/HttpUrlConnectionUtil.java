@@ -158,7 +158,7 @@ public class HttpUrlConnectionUtil {
         return result;
     }
 
-    private static String handleRequest(String method, String url, String data, Map<String, Object> headerMap) {
+    private static String handleRequest(String method, String url, String data, Map<String, Object> headers) {
         long start = System.currentTimeMillis();
         HttpURLConnection con = null;
         Map<String, List<String>> reqHeaders = null;
@@ -170,8 +170,8 @@ public class HttpUrlConnectionUtil {
             con.setRequestMethod(method);
             con.setConnectTimeout(CONNECT_TIME_OUT);
             con.setReadTimeout(SOCKET_TIME_OUT);
-            if (A.isNotEmpty(headerMap)) {
-                for (Map.Entry<String, ?> entry : headerMap.entrySet()) {
+            if (A.isNotEmpty(headers)) {
+                for (Map.Entry<String, ?> entry : headers.entrySet()) {
                     con.setRequestProperty(entry.getKey(), U.toStr(entry.getValue()));
                 }
             }

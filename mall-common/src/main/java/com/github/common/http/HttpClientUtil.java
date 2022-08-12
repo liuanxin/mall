@@ -76,10 +76,10 @@ public class HttpClientUtil {
 
 
 //    /** 向指定 url 上传文件 */
-//    public static String postFile(String url, Map<String, Object> params, Map<String, Object> headers, Map<String, File> files) {
+//    public static String postFile(String url, Map<String, Object> params, Map<String, Object> headers, File file) {
 //    }
 
-    private static String handleRequest(String method, String url, String data, Map<String, Object> headerMap) {
+    private static String handleRequest(String method, String url, String data, Map<String, Object> headers) {
         long start = System.currentTimeMillis();
         Map<String, List<String>> reqHeaders = null;
         String resCode = "";
@@ -90,8 +90,8 @@ public class HttpClientUtil {
             HttpRequest.Builder builder = HttpRequest.newBuilder();
             builder.method(method, U.isBlank(data) ?  HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(data));
             builder.uri(URI.create(url));
-            if (A.isNotEmpty(headerMap)) {
-                for (Map.Entry<String, Object> entry : headerMap.entrySet()) {
+            if (A.isNotEmpty(headers)) {
+                for (Map.Entry<String, Object> entry : headers.entrySet()) {
                     builder.setHeader(entry.getKey(), U.toStr(entry.getValue()));
                 }
             }
