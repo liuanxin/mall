@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.common.collection.MapMultiUtil;
 import com.github.common.enums.Gender;
-import com.github.common.enums.TestEnum;
 import com.github.common.json.JsonUtil;
 import com.github.common.page.PageReturn;
 import com.github.common.util.A;
@@ -28,9 +27,6 @@ public class ExampleRes {
 
     @ApiReturn("昵称")
     private String nickName;
-
-    @ApiReturn(value = "枚举", example = "one")
-    private TestEnum testEnum;
 
     @ApiReturn(value = "性别", example = "1")
     private Gender gender;

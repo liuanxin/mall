@@ -3,19 +3,26 @@ package com.github.common.enums;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.common.util.U;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 /** 性别 */
-@Getter
-@RequiredArgsConstructor
 public enum Gender {
 
     Nil(0, ""), Male(1, "男"), Female(2, "女");
 
     private final int code;
-
     private final String value;
+    Gender(int code, String value) {
+        this.code = code;
+        this.value = value;
+    }
+
+    @JsonValue
+    public int getCode() {
+        return code;
+    }
+    public String getValue() {
+        return value;
+    }
 
     public static Gender fromCode(Integer code) {
         if (U.isNotNull(code)) {
@@ -28,10 +35,6 @@ public enum Gender {
         return Nil;
     }
 
-    @JsonValue
-    public int getCode() {
-        return code;
-    }
     /** 数据反序列化. 如 male、0、男、{"code": 0, "value": "男"} 都可以反序列化为 Gender.Male 值 */
     @JsonCreator
     public static Gender deserializer(Object obj) {
@@ -55,7 +58,10 @@ public enum Gender {
                 case 18 -> idCard.substring(16, 17);
                 default -> U.EMPTY;
             };
-            return deserializer(gender);
+            if (U.isNotBlank(gender) && U.isNotInt(gender)) {
+                return Gender.Nil;
+            }
+            return (U.toInt(gender) % 2 == 1) ? Gender.Male : Gender.Female;
         } else {
             return Gender.Nil;
         }

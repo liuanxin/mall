@@ -261,6 +261,10 @@ public final class U {
             return false;
         }
     }
+    /** 不是整数则返回 true, 最大整数位 19 位 */
+    public static boolean isNotInt(Object obj) {
+        return !isInt(obj);
+    }
 
     /** 是数字则返回 true */
     public static boolean isNumber(Object obj) {
