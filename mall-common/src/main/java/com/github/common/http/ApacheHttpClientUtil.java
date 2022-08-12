@@ -11,10 +11,7 @@ import org.apache.http.*;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -29,13 +26,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.ConnectException;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+@SuppressWarnings("DuplicatedCode")
 public class ApacheHttpClientUtil {
 
-    private static final String USER_AGENT = "Mozilla/5.0 (httpclient4.5; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36";
+    private static final String USER_AGENT = HttpConst.getUserAgent("apache_http_client4");
 
     /** 重试次数 */
     private static final int RETRY_COUNT = 3;
@@ -43,25 +42,16 @@ public class ApacheHttpClientUtil {
     private static final int MAX_CONNECTIONS = 200;
     /** 每个连接的路由数, 默认是 2 */
     private static final int MAX_CONNECTIONS_PER_ROUTE = 50;
-
     /** 从连接池获取到连接的超时时间, 单位: 毫秒 */
     private static final int CONNECTION_REQUEST_TIME_OUT = 3000;
-    /** 建立连接的超时时间, 单位: 毫秒 */
-    private static final int CONNECT_TIME_OUT = 5000;
-    /** 数据交互的时间, 单位: 毫秒 */
-    private static final int SOCKET_TIME_OUT = 60000;
 
     private static final PoolingHttpClientConnectionManager CONNECTION_MANAGER;
     private static final HttpRequestRetryHandler HTTP_REQUEST_RETRY_HANDLER;
     static {
         CONNECTION_MANAGER = new PoolingHttpClientConnectionManager();
-
-        // 设置每个连接的路由数, 默认是 2
         CONNECTION_MANAGER.setDefaultMaxPerRoute(MAX_CONNECTIONS_PER_ROUTE);
-        // 每个连接的最大连接数, 默认是 20
         CONNECTION_MANAGER.setMaxTotal(MAX_CONNECTIONS);
 
-        // 重试策略
         HTTP_REQUEST_RETRY_HANDLER = (exception, executionCount, context) -> {
             if (executionCount > RETRY_COUNT) {
                 return false;
@@ -116,13 +106,9 @@ public class ApacheHttpClientUtil {
 
     /** 向指定 url 进行 get 请求 */
     public static String get(String url) {
-        return get(url, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+        return get(url, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
     }
     public static String get(String url, int connectTimeout, int socketTimeout) {
-        if (U.isBlank(url)) {
-            return null;
-        }
-
         url = handleEmptyScheme(url);
         return handleRequest(new HttpGet(url), null, connectTimeout, socketTimeout);
     }
@@ -133,14 +119,10 @@ public class ApacheHttpClientUtil {
     }
     /** 向指定 url 进行 get 请求. 有参数 */
     public static String get(String url, Map<String, Object> params) {
-        return get(url, params, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+        return get(url, params, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
     }
     /** 向指定 url 进行 get 请求. 有参数 */
     public static String get(String url, Map<String, Object> params, int connectTimeout, int socketTimeout) {
-        if (U.isBlank(url)) {
-            return null;
-        }
-
         url = handleEmptyScheme(url);
         url = handleGetParams(url, params);
         return handleRequest(new HttpGet(url), U.formatParam(params), connectTimeout, socketTimeout);
@@ -148,15 +130,11 @@ public class ApacheHttpClientUtil {
 
     /** 向指定 url 进行 get 请求. 有参数和头 */
     public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap) {
-        return getWithHeader(url, params, headerMap, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+        return getWithHeader(url, params, headerMap, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
     }
     /** 向指定 url 进行 get 请求. 有参数和头 */
     public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap,
                                        int connectTimeout, int socketTimeout) {
-        if (U.isBlank(url)) {
-            return null;
-        }
-
         url = handleEmptyScheme(url);
         url = handleGetParams(url, params);
 
@@ -168,14 +146,10 @@ public class ApacheHttpClientUtil {
 
     /** 向指定的 url 进行 post 请求. 有参数 */
     public static String post(String url, Map<String, Object> params) {
-        return post(url, params, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+        return post(url, params, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
     }
     /** 向指定的 url 进行 post 请求. 有参数 */
     public static String post(String url, Map<String, Object> params, int connectTimeout, int socketTimeout) {
-        if (U.isBlank(url)) {
-            return null;
-        }
-
         url = handleEmptyScheme(url);
         HttpPost request = handlePostParams(url, params);
         return handleRequest(request, U.formatParam(params), connectTimeout, socketTimeout);
@@ -183,14 +157,10 @@ public class ApacheHttpClientUtil {
 
     /** 向指定的 url 进行 post 请求. 参数以 json 的方式一次传递 */
     public static String post(String url, String json) {
-        return post(url, json, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+        return post(url, json, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
     }
     /** 向指定的 url 进行 post 请求. 参数以 json 的方式一次传递 */
     public static String post(String url, String json, int connectTimeout, int socketTimeout) {
-        if (U.isBlank(url)) {
-            return null;
-        }
-
         url = handleEmptyScheme(url);
         HttpPost request = new HttpPost(url);
         request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
@@ -200,15 +170,11 @@ public class ApacheHttpClientUtil {
 
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
-        return postWithHeader(url, params, headers, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+        return postWithHeader(url, params, headers, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
     }
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers,
                                         int connectTimeout, int socketTimeout) {
-        if (U.isBlank(url)) {
-            return null;
-        }
-
         url = handleEmptyScheme(url);
         HttpPost request = handlePostParams(url, params);
         handleHeader(request, headers);
@@ -217,15 +183,11 @@ public class ApacheHttpClientUtil {
 
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postBodyWithHeader(String url, String json, Map<String, Object> headers) {
-        return postBodyWithHeader(url, json, headers, CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+        return postBodyWithHeader(url, json, headers, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
     }
     /** 向指定的 url 进行 post 请求. 有参数和头 */
     public static String postBodyWithHeader(String url, String json, Map<String, Object> headers,
                                             int connectTimeout, int socketTimeout) {
-        if (U.isBlank(url)) {
-            return null;
-        }
-
         url = handleEmptyScheme(url);
         HttpPost request = new HttpPost(url);
         request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
@@ -234,18 +196,51 @@ public class ApacheHttpClientUtil {
         return handleRequest(request, json, connectTimeout, socketTimeout);
     }
 
+    /** 向指定的 url 进行 post 请求. 有参数和头 */
+    public static String putWithHeader(String url, String json, Map<String, Object> headers) {
+        return postBodyWithHeader(url, json, headers, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
+    }
+    /** 向指定的 url 进行 post 请求. 有参数和头 */
+    public static String putWithHeader(String url, String json, Map<String, Object> headers,
+                                       int connectTimeout, int socketTimeout) {
+        url = handleEmptyScheme(url);
+        HttpPut request = new HttpPut(url);
+        request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
+        handleHeader(request, headers);
+        request.addHeader("Content-Type", "application/json");
+        return handleRequest(request, json, connectTimeout, socketTimeout);
+    }
 
-    /** 向指定的 url 进行 post 操作, 有参数和文件 */
-    public static String postFile(String url, Map<String, Object> params, Map<String, File> files) {
-        if (U.isBlank(url)) {
-            return null;
-        }
+    /** 向指定的 url 进行 post 请求. 有参数和头 */
+    public static String deleteWithHeader(String url, String json, Map<String, Object> headers) {
+        return postBodyWithHeader(url, json, headers, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
+    }
+    /** 向指定的 url 进行 post 请求. 有参数和头 */
+    public static String deleteWithHeader(String url, String json, Map<String, Object> headers,
+                                       int connectTimeout, int socketTimeout) {
+        url = handleEmptyScheme(url);
+        HttpEntityEnclosingRequestBase request = new HttpEntityEnclosingRequestBase() {
+            @Override
+            public String getMethod() {
+                return "DELETE";
+            }
+        };
+        request.setURI(URI.create(url));
+        request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
+        handleHeader(request, headers);
+        request.addHeader("Content-Type", "application/json");
+        return handleRequest(request, json, connectTimeout, socketTimeout);
+    }
 
+
+    /** 向指定 url 上传文件 */
+    public static String postFile(String url, Map<String, Object> params, Map<String, Object> headers, Map<String, File> files) {
         url = handleEmptyScheme(url);
         if (A.isEmpty(params)) {
             params = new HashMap<>();
         }
         HttpPost request = handlePostParams(url, params);
+        handleHeader(request, headers);
         if (A.isNotEmpty(files)) {
             MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create().setLaxMode();
             for (Map.Entry<String, File> entry : files.entrySet()) {
@@ -257,7 +252,7 @@ public class ApacheHttpClientUtil {
             }
             request.setEntity(entityBuilder.build());
         }
-        return handleRequest(request, U.formatParam(params), CONNECT_TIME_OUT, SOCKET_TIME_OUT);
+        return handleRequest(request, U.formatParam(params), HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
     }
 
 
@@ -308,13 +303,14 @@ public class ApacheHttpClientUtil {
 
         String traceId = LogUtil.getTraceId();
         if (U.isNotBlank(traceId)) {
-            request.addHeader(Const.TRACE, traceId);
+            request.setHeader(Const.TRACE, traceId);
         }
         String method = request.getMethod();
         String url = request.getURI().toString();
 
         Header[] reqHeaders = request.getAllHeaders();
         Header[] resHeaders = null;
+        String statusCode = "";
         String result = null;
         long start = System.currentTimeMillis();
         try (
@@ -322,50 +318,63 @@ public class ApacheHttpClientUtil {
                 CloseableHttpResponse response = httpClient.execute(request, HttpClientContext.create())
         ) {
             HttpEntity entity = response.getEntity();
+            statusCode = response.getStatusLine().getStatusCode() + " ";
             if (U.isNotNull(entity)) {
                 resHeaders = response.getAllHeaders();
                 result = EntityUtils.toString(entity, StandardCharsets.UTF_8);
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info(collectContext(start, method, url, params, reqHeaders, resHeaders, result));
+                    LogUtil.ROOT_LOG.info(collectContext(start, method, url, params, reqHeaders, statusCode, resHeaders, result));
                 }
                 EntityUtils.consume(entity);
-                return result;
             }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(collectContext(start, method, url, params, reqHeaders, resHeaders, result), e);
+                LogUtil.ROOT_LOG.error(collectContext(start, method, url, params, reqHeaders, statusCode, resHeaders, result), e);
             }
         }
-        return null;
+        return result;
     }
     /** 收集上下文中的数据, 以便记录日志 */
-    private static String collectContext(long start, String method, String url, String params,
-                                         Header[] requestHeaders, Header[] responseHeaders, String result) {
+    private static String collectContext(long start, String method, String url, String params, Header[] reqHeaders,
+                                         String statusCode, Header[] resHeaders, String result) {
         StringBuilder sbd = new StringBuilder();
-        sbd.append("HttpClient4 => [")
-                .append(DateUtil.formatDateTimeMs(new Date(start))).append(" -> ").append(DateUtil.nowDateTimeMs())
+        long now = System.currentTimeMillis();
+        sbd.append("Apache-HttpClient4 => [")
+                .append(DateUtil.formatDateTimeMs(new Date(start))).append(" -> ")
+                .append(DateUtil.formatDateTimeMs(new Date(now)))
+                .append("(").append(DateUtil.toHuman(now - start)).append(")")
                 .append("] (").append(method).append(" ").append(url).append(")");
         sbd.append(" req[");
-        if (U.isNotBlank(params)) {
-            sbd.append(" param(").append(U.compress(params)).append(") ");
+        boolean hasParam = U.isNotBlank(params);
+        if (hasParam) {
+            sbd.append("param(").append(U.compress(params)).append(")");
         }
-        if (A.isNotEmpty(requestHeaders)) {
-            sbd.append(" header(");
-            for (Header header : requestHeaders) {
+        boolean hasReqHeader = A.isNotEmpty(reqHeaders);
+        if (hasParam && hasReqHeader) {
+            sbd.append(" ");
+        }
+        if (hasReqHeader) {
+            sbd.append("header(");
+            for (Header header : reqHeaders) {
                 sbd.append("<").append(header.getName()).append(": ").append(header.getValue()).append(">");
             }
             sbd.append(")");
         }
-        sbd.append("], res[");
-        if (A.isNotEmpty(responseHeaders)) {
-            sbd.append(" header(");
-            for (Header header : responseHeaders) {
+        sbd.append("], res[").append(statusCode);
+        boolean hasResHeader = A.isNotEmpty(resHeaders);
+        if (hasResHeader) {
+            sbd.append("header(");
+            for (Header header : resHeaders) {
                 sbd.append("<").append(header.getName()).append(": ").append(header.getValue()).append(">");
             }
             sbd.append(")");
         }
-        if (U.isNotBlank(result)) {
-            sbd.append(" return(").append(U.compress(result)).append(")");
+        boolean hasResult = U.isNotBlank(result);
+        if (hasResHeader && hasResult) {
+            sbd.append(" ");
+        }
+        if (hasResult) {
+            sbd.append("return(").append(U.compress(result)).append(")");
         }
         sbd.append("]");
         return sbd.toString();
