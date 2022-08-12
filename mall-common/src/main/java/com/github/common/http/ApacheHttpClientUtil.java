@@ -5,6 +5,7 @@ import com.github.common.Const;
 import com.github.common.date.DateUtil;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
+import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import org.apache.http.*;
@@ -95,7 +96,6 @@ public class ApacheHttpClientUtil {
                 .build();
     }
     private static RequestConfig config(int connectTimeout, int socketTimeout) {
-        // 配置请求的超时设置
         return RequestConfig.custom()
                 .setConnectionRequestTimeout(CONNECTION_REQUEST_TIME_OUT)
                 .setConnectTimeout(connectTimeout)
@@ -113,26 +113,26 @@ public class ApacheHttpClientUtil {
         return handleRequest(new HttpGet(url), null, connectTimeout, socketTimeout);
     }
 
-    /** 向指定 url 进行 get 请求. 有参数 */
+    /** 向指定 url 进行 get 请求 */
     public static <T> String get(String url, T param) {
         return get(url, A.isEmptyObj(param) ? Collections.emptyMap() : JsonUtil.convertType(param, new TypeReference<>() {}));
     }
-    /** 向指定 url 进行 get 请求. 有参数 */
+    /** 向指定 url 进行 get 请求 */
     public static String get(String url, Map<String, Object> params) {
         return get(url, params, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
     }
-    /** 向指定 url 进行 get 请求. 有参数 */
+    /** 向指定 url 进行 get 请求 */
     public static String get(String url, Map<String, Object> params, int connectTimeout, int socketTimeout) {
         url = handleEmptyScheme(url);
         url = handleGetParams(url, params);
         return handleRequest(new HttpGet(url), U.formatParam(params), connectTimeout, socketTimeout);
     }
 
-    /** 向指定 url 进行 get 请求. 有参数和头 */
+    /** 向指定 url 进行 get 请求 */
     public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap) {
         return getWithHeader(url, params, headerMap, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
     }
-    /** 向指定 url 进行 get 请求. 有参数和头 */
+    /** 向指定 url 进行 get 请求 */
     public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap,
                                        int connectTimeout, int socketTimeout) {
         url = handleEmptyScheme(url);
@@ -144,22 +144,22 @@ public class ApacheHttpClientUtil {
     }
 
 
-    /** 向指定的 url 进行 post 请求. 有参数 */
+    /** 向指定的 url 进行 post 请求 */
     public static String post(String url, Map<String, Object> params) {
         return post(url, params, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
     }
-    /** 向指定的 url 进行 post 请求. 有参数 */
+    /** 向指定的 url 进行 post 请求 */
     public static String post(String url, Map<String, Object> params, int connectTimeout, int socketTimeout) {
         url = handleEmptyScheme(url);
         HttpPost request = handlePostParams(url, params);
         return handleRequest(request, U.formatParam(params), connectTimeout, socketTimeout);
     }
 
-    /** 向指定的 url 进行 post 请求. 参数以 json 的方式一次传递 */
+    /** 向指定的 url 进行 post 请求 */
     public static String post(String url, String json) {
         return post(url, json, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
     }
-    /** 向指定的 url 进行 post 请求. 参数以 json 的方式一次传递 */
+    /** 向指定的 url 进行 post 请求 */
     public static String post(String url, String json, int connectTimeout, int socketTimeout) {
         url = handleEmptyScheme(url);
         HttpPost request = new HttpPost(url);
@@ -168,11 +168,11 @@ public class ApacheHttpClientUtil {
         return handleRequest(request, json, connectTimeout, socketTimeout);
     }
 
-    /** 向指定的 url 进行 post 请求. 有参数和头 */
+    /** 向指定的 url 进行 post 请求 */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
         return postWithHeader(url, params, headers, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
     }
-    /** 向指定的 url 进行 post 请求. 有参数和头 */
+    /** 向指定的 url 进行 post 请求 */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers,
                                         int connectTimeout, int socketTimeout) {
         url = handleEmptyScheme(url);
@@ -181,11 +181,11 @@ public class ApacheHttpClientUtil {
         return handleRequest(request, U.formatParam(params), connectTimeout, socketTimeout);
     }
 
-    /** 向指定的 url 进行 post 请求. 有参数和头 */
+    /** 向指定的 url 进行 post 请求 */
     public static String postBodyWithHeader(String url, String json, Map<String, Object> headers) {
         return postBodyWithHeader(url, json, headers, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
     }
-    /** 向指定的 url 进行 post 请求. 有参数和头 */
+    /** 向指定的 url 进行 post 请求 */
     public static String postBodyWithHeader(String url, String json, Map<String, Object> headers,
                                             int connectTimeout, int socketTimeout) {
         url = handleEmptyScheme(url);
@@ -196,11 +196,16 @@ public class ApacheHttpClientUtil {
         return handleRequest(request, json, connectTimeout, socketTimeout);
     }
 
-    /** 向指定的 url 进行 post 请求. 有参数和头 */
-    public static String putWithHeader(String url, String json, Map<String, Object> headers) {
-        return postBodyWithHeader(url, json, headers, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
+
+    /** 向指定的 url 进行 put 请求 */
+    public static String put(String url, String json) {
+        return putWithHeader(url, json, null);
     }
-    /** 向指定的 url 进行 post 请求. 有参数和头 */
+    /** 向指定的 url 进行 put 请求 */
+    public static String putWithHeader(String url, String json, Map<String, Object> headers) {
+        return putWithHeader(url, json, headers, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
+    }
+    /** 向指定的 url 进行 put 请求 */
     public static String putWithHeader(String url, String json, Map<String, Object> headers,
                                        int connectTimeout, int socketTimeout) {
         url = handleEmptyScheme(url);
@@ -211,13 +216,18 @@ public class ApacheHttpClientUtil {
         return handleRequest(request, json, connectTimeout, socketTimeout);
     }
 
-    /** 向指定的 url 进行 post 请求. 有参数和头 */
-    public static String deleteWithHeader(String url, String json, Map<String, Object> headers) {
-        return postBodyWithHeader(url, json, headers, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
+
+    /** 向指定的 url 进行 delete 请求 */
+    public static String delete(String url, String json) {
+        return deleteWithHeader(url, json, null);
     }
-    /** 向指定的 url 进行 post 请求. 有参数和头 */
+    /** 向指定的 url 进行 delete 请求 */
+    public static String deleteWithHeader(String url, String json, Map<String, Object> headers) {
+        return deleteWithHeader(url, json, headers, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
+    }
+    /** 向指定的 url 进行 delete 请求 */
     public static String deleteWithHeader(String url, String json, Map<String, Object> headers,
-                                       int connectTimeout, int socketTimeout) {
+                                          int connectTimeout, int socketTimeout) {
         url = handleEmptyScheme(url);
         HttpEntityEnclosingRequestBase request = new HttpEntityEnclosingRequestBase() {
             @Override
@@ -234,25 +244,45 @@ public class ApacheHttpClientUtil {
 
 
     /** 向指定 url 上传文件 */
-    public static String postFile(String url, Map<String, Object> params, Map<String, Object> headers, Map<String, File> files) {
+    public static String postFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
         url = handleEmptyScheme(url);
         if (A.isEmpty(params)) {
             params = new HashMap<>();
         }
+        StringBuilder paramSbd = new StringBuilder();
         HttpPost request = handlePostParams(url, params);
         handleHeader(request, headers);
-        if (A.isNotEmpty(files)) {
+        boolean hasParam = A.isNotEmpty(params);
+        if (hasParam) {
+            paramSbd.append("param(");
+            for (Map.Entry<String, Object> entry : params.entrySet()) {
+                String key = entry.getKey();
+                String value = U.toStr(entry.getValue());
+                paramSbd.append("<").append(key).append(" : ")
+                        .append(DesensitizationUtil.desByKey(key, value)).append(">");
+            }
+            paramSbd.append(")");
+        }
+        boolean hasFile = A.isNotEmpty(files);
+        if (hasParam && hasFile) {
+            paramSbd.append(" ");
+        }
+        if (hasFile) {
+            paramSbd.append("file(");
             MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create().setLaxMode();
             for (Map.Entry<String, File> entry : files.entrySet()) {
-                String key = entry.getKey();
-                File value = entry.getValue();
-
-                entityBuilder.addBinaryBody(key, value);
-                params.put(key, value.toString());
+                File file = entry.getValue();
+                if (U.isNotNull(file)) {
+                    String key = entry.getKey();
+                    entityBuilder.addBinaryBody(key, file);
+                    paramSbd.append("<").append(key).append(" : ").append(file).append(">");
+                }
             }
             request.setEntity(entityBuilder.build());
+            paramSbd.append(")");
         }
-        return handleRequest(request, U.formatParam(params), HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
+        String print = String.format("upload file[%s]", paramSbd);
+        return handleRequest(request, print, HttpConst.CONNECT_TIME_OUT, HttpConst.READ_TIME_OUT);
     }
 
 
@@ -356,7 +386,7 @@ public class ApacheHttpClientUtil {
         if (hasReqHeader) {
             sbd.append("header(");
             for (Header header : reqHeaders) {
-                sbd.append("<").append(header.getName()).append(": ").append(header.getValue()).append(">");
+                sbd.append("<").append(header.getName()).append(" : ").append(header.getValue()).append(">");
             }
             sbd.append(")");
         }
@@ -365,7 +395,7 @@ public class ApacheHttpClientUtil {
         if (hasResHeader) {
             sbd.append("header(");
             for (Header header : resHeaders) {
-                sbd.append("<").append(header.getName()).append(": ").append(header.getValue()).append(">");
+                sbd.append("<").append(header.getName()).append(" : ").append(header.getValue()).append(">");
             }
             sbd.append(")");
         }

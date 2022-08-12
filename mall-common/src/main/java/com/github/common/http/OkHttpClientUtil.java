@@ -4,6 +4,7 @@ import com.github.common.Const;
 import com.github.common.date.DateUtil;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
+import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import okhttp3.*;
@@ -93,7 +94,7 @@ public class OkHttpClientUtil {
 
     /** 向指定的 url 基于 put 发起 request-body 请求 */
     public static String put(String url, String json) {
-        return postBodyWithHeader(url, json, null);
+        return putWithHeader(url, json, null);
     }
     /** 向指定的 url 基于 put 发起 request-body 请求 */
     public static String putWithHeader(String url, String json, Map<String, Object> headers) {
@@ -107,10 +108,10 @@ public class OkHttpClientUtil {
 
     /** 向指定的 url 基于 delete 发起 request-body 请求 */
     public static String delete(String url, String json) {
-        return postBodyWithHeader(url, json, null);
+        return deleteWithHeader(url, json, null);
     }
     /** 向指定的 url 基于 delete 发起 request-body 请求 */
-    public static String delete(String url, String json, Map<String, Object> headers) {
+    public static String deleteWithHeader(String url, String json, Map<String, Object> headers) {
         String data = U.toStr(json);
         Request.Builder builder = new Request.Builder().delete(RequestBody.create(JSON, json));
         handleHeader(builder, headers);
@@ -120,30 +121,46 @@ public class OkHttpClientUtil {
 
 
     /** 向指定 url 上传文件 */
-    public static String postFile(String url, Map<String, Object> params, Map<String, Object> headers, Map<String, File> files) {
+    public static String postFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
         MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
-            Object value = entry.getValue();
-            if (U.isNotNull(value)) {
-                builder.addFormDataPart(entry.getKey(), value.toString());
+        StringBuilder paramSbd = new StringBuilder();
+        boolean hasParam = A.isNotEmpty(params);
+        if (hasParam) {
+            paramSbd.append("param(");
+            for (Map.Entry<String, Object> entry : params.entrySet()) {
+                String key = entry.getKey();
+                String value = U.toStr(entry.getValue());
+
+                builder.addFormDataPart(key, value);
+                paramSbd.append("<").append(key).append(" : ")
+                        .append(DesensitizationUtil.desByKey(key, value)).append(">");
             }
+            paramSbd.append(")");
         }
-        for (Map.Entry<String, File> entry : files.entrySet()) {
-            File file = entry.getValue();
-            if (U.isNotNull(file)) {
-                try {
-                    MediaType type = MediaType.parse(Files.probeContentType(file.toPath()));
-                    builder.addFormDataPart(entry.getKey(), null, RequestBody.create(type, file));
-                } catch (IOException e) {
-                    if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                        LogUtil.ROOT_LOG.error("add file({}) to post exception", file.getName(), e);
+        boolean hasFile = A.isNotEmpty(files);
+        if (hasParam && hasFile) {
+            paramSbd.append(" ");
+        }
+        if (hasFile) {
+            paramSbd.append("file(");
+            for (Map.Entry<String, File> entry : files.entrySet()) {
+                File file = entry.getValue();
+                if (U.isNotNull(file)) {
+                    String key = entry.getKey();
+                    try {
+                        MediaType type = MediaType.parse(Files.probeContentType(file.toPath()));
+                        builder.addFormDataPart(key, null, RequestBody.create(type, file));
+                    } catch (IOException e) {
+                        throw new RuntimeException(String.format("add file(%s) exception", file.getName()), e);
                     }
+                    paramSbd.append("<").append(key).append(" : ").append(file).append(">");
                 }
             }
+            paramSbd.append(")");
         }
         Request.Builder request = new Request.Builder().post(builder.build());
         handleHeader(request, headers);
-        return handleRequest(url, request, U.formatParam(params));
+        return handleRequest(url, request, String.format("upload file[%s]", paramSbd));
     }
 
 
@@ -226,7 +243,7 @@ public class OkHttpClientUtil {
         if (hasReqHeader) {
             sbd.append("header(");
             for (String name : reqHeaders.names()) {
-                sbd.append("<").append(name).append(": ").append(reqHeaders.get(name)).append(">");
+                sbd.append("<").append(name).append(" : ").append(reqHeaders.get(name)).append(">");
             }
             sbd.append(")");
         }
@@ -235,7 +252,7 @@ public class OkHttpClientUtil {
         if (hasResHeader) {
             sbd.append(" header(");
             for (String name : resHeaders.names()) {
-                sbd.append("<").append(name).append(":").append(resHeaders.get(name)).append(">");
+                sbd.append("<").append(name).append(" : ").append(resHeaders.get(name)).append(">");
             }
             sbd.append(")");
         }

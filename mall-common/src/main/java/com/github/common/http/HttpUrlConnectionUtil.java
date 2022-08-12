@@ -4,6 +4,7 @@ import com.github.common.Const;
 import com.github.common.date.DateUtil;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
+import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.google.common.base.Joiner;
@@ -77,11 +78,42 @@ public class HttpUrlConnectionUtil {
     }
 
 
+    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    public static String put(String url, String json) {
+        return putWithHeader(url, json, null);
+    }
+    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    public static String putWithHeader(String url, String json, Map<String, Object> headers) {
+        Map<String, Object> headerMap = new LinkedHashMap<>();
+        if (A.isNotEmpty(headers)) {
+            headerMap.putAll(headers);
+        }
+        headerMap.put("Content-Type", "application/json");
+        return handleRequest("PUT", url, U.toStr(json), headerMap);
+    }
+
+
+    /** 向指定的 url 基于 delete 发起 request-body 请求 */
+    public static String delete(String url, String json) {
+        return deleteWithHeader(url, json, null);
+    }
+    /** 向指定的 url 基于 delete 发起 request-body 请求 */
+    public static String deleteWithHeader(String url, String json, Map<String, Object> headers) {
+        Map<String, Object> headerMap = new LinkedHashMap<>();
+        if (A.isNotEmpty(headers)) {
+            headerMap.putAll(headers);
+        }
+        headerMap.put("Content-Type", "application/json");
+        return handleRequest("DELETE", url, U.toStr(json), headerMap);
+    }
+
+
     /** 向指定 url 上传文件 */
-    public static String postFile(String url, Map<String, Object> params, Map<String, Object> headers, Map<String, File> files) {
+    public static String postFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
         long start = System.currentTimeMillis();
         HttpURLConnection con = null;
         Map<String, List<String>> reqHeaders = null;
+        StringBuilder paramSbd = new StringBuilder();
         String result = null;
         Map<String, List<String>> resHeaders = null;
         String resCode = "";
@@ -107,27 +139,44 @@ public class HttpUrlConnectionUtil {
                 // 默认值 false, 当向远程服务器传送数据/写数据时, 需设置为 true
                 con.setDoOutput(true);
 
-                con.setRequestProperty("Content-Type", "multipart/form-data;boundary=*****");
+                String boundary = "*****";
+                con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
                 try (DataOutputStream dataOutput = new DataOutputStream(con.getOutputStream())) {
                     if (hasParam) {
+                        paramSbd.append("param(");
                         for (Map.Entry<String, Object> entry : params.entrySet()) {
-                            dataOutput.writeBytes("--*****\r\n");
-                            dataOutput.writeBytes("Content-Disposition: form-data; name=\"" + entry.getKey() + "\"\r\n\r\n");
-                            dataOutput.writeBytes(entry.getValue() + "\r\n");
-                        }
-                    }
+                            String key = entry.getKey();
+                            String value = U.toStr(entry.getValue());
 
+                            dataOutput.writeBytes("--" + boundary + "\r\n");
+                            dataOutput.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"\r\n\r\n");
+                            dataOutput.writeBytes(value + "\r\n");
+
+                            paramSbd.append("<").append(key).append(" : ")
+                                    .append(DesensitizationUtil.desByKey(key, value)).append(">");
+                        }
+                        paramSbd.append(")");
+                    }
+                    if (hasParam && hasFile) {
+                        paramSbd.append(" ");
+                    }
                     if (hasFile) {
+                        paramSbd.append("file(");
                         for (Map.Entry<String, File> entry : files.entrySet()) {
+                            String key = entry.getKey();
                             File file = entry.getValue();
-                            dataOutput.writeBytes("--*****\r\n");
-                            dataOutput.writeBytes("Content-Disposition: form-data; name=\"" + entry.getKey()
+
+                            dataOutput.writeBytes("--" + boundary + "\r\n");
+                            dataOutput.writeBytes("Content-Disposition: form-data; name=\"" + key
                                     + "\";filename=\"" + file.getName() + "\"\r\n\r\n");
                             dataOutput.write(Files.readAllBytes(file.toPath()));
                             dataOutput.writeBytes("\r\n");
+
+                            paramSbd.append("<").append(key).append(" : ").append(file).append(">");
                         }
+                        paramSbd.append(")");
                     }
-                    dataOutput.writeBytes("--*****--\r\n");
+                    dataOutput.writeBytes("--" + boundary + "--\r\n");
                     dataOutput.flush();
                 }
             }
@@ -144,11 +193,13 @@ public class HttpUrlConnectionUtil {
                 result = sbd.toString();
             }
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info(collectContext(start, "POST", url, "upload file", reqHeaders, resCode, resHeaders, result));
+                String print = String.format("upload file[%s]", paramSbd);
+                LogUtil.ROOT_LOG.info(collectContext(start, "POST", url, print, reqHeaders, resCode, resHeaders, result));
             }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(collectContext(start, "POST", url, "upload file", reqHeaders, resCode, resHeaders, result), e);
+                String print = String.format("upload file[%s]", paramSbd);
+                LogUtil.ROOT_LOG.error(collectContext(start, "POST", url, print, reqHeaders, resCode, resHeaders, result), e);
             }
         } finally {
             if (con != null) {
@@ -238,7 +289,7 @@ public class HttpUrlConnectionUtil {
         if (hasReqHeader) {
             sbd.append("header(");
             for (Map.Entry<String, List<String>> entry : reqHeaders.entrySet()) {
-                sbd.append("<").append(entry.getKey()).append(": ").append(Joiner.on(",").join(entry.getValue())).append(">");
+                sbd.append("<").append(entry.getKey()).append(" : ").append(Joiner.on(",").join(entry.getValue())).append(">");
             }
             sbd.append(")");
         }
@@ -247,7 +298,7 @@ public class HttpUrlConnectionUtil {
         if (hasResHeader) {
             sbd.append("header(");
             for (Map.Entry<String, List<String>> entry : resHeaders.entrySet()) {
-                sbd.append("<").append(entry.getKey()).append(": ").append(Joiner.on(",").join(entry.getValue())).append(">");
+                sbd.append("<").append(entry.getKey()).append(" : ").append(Joiner.on(",").join(entry.getValue())).append(">");
             }
             sbd.append(")");
         }
