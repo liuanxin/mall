@@ -2,7 +2,6 @@ package com.github.common.http;
 
 import com.github.common.Const;
 import com.github.common.date.DateUtil;
-import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.LogUtil;
@@ -25,44 +24,31 @@ import java.util.Map;
 public class HttpUrlConnectionUtil {
 
     private static final String USER_AGENT = HttpConst.getUserAgent("url_connection");
-    /** 建立连接的超时时间, 单位: 毫秒 */
-    private static final int CONNECT_TIME_OUT = 5000;
-    /** 数据交互的时间, 单位: 毫秒 */
-    private static final int SOCKET_TIME_OUT = 60000;
 
 
     /** 向指定 url 进行 get 请求 */
     public static String get(String url) {
         return get(url, null);
     }
-    /** 向指定 url 进行 get 请求. 有参数 */
+    /** 向指定 url 进行 get 请求 */
     public static String get(String url, Map<String, Object> params) {
         return getWithHeader(url, params, null);
     }
-    /** 向指定 url 进行 get 请求. 有参数和头 */
+    /** 向指定 url 进行 get 请求 */
     public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap) {
-        return handleRequest("GET", U.appendUrl(url) + U.formatParam(false, params), null, headerMap);
+        return handleRequest("GET", HttpConst.handleGetParams(url, params), null, headerMap);
     }
 
 
-    /** 向指定的 url 进行 post 请求. 有参数 */
+    /** 向指定的 url 进行 post 请求(表单) */
     public static String post(String url, Map<String, Object> params) {
         return postWithHeader(url, params, null);
     }
-    /** 向指定的 url 进行 post 请求. 有参数和头 */
+    /** 向指定的 url 进行 post 请求(表单) */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
         return handleRequest("POST", url, U.formatParam(false, params), headers);
     }
 
-
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static String postBody(String url, Map<String, Object> params) {
-        return postBodyWithHeader(url, params, null);
-    }
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static String postBodyWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
-        return postBodyWithHeader(url, JsonUtil.toJson(params), headers);
-    }
     /** 向指定的 url 基于 post 发起 request-body 请求 */
     public static String postBody(String url, String json) {
         return postBodyWithHeader(url, json, null);
@@ -117,11 +103,12 @@ public class HttpUrlConnectionUtil {
         String result = null;
         Map<String, List<String>> resHeaders = null;
         String resCode = "";
+        url = HttpConst.handleEmptyScheme(url);
         try {
             con = (HttpURLConnection) new URL(url).openConnection();
             con.setRequestMethod("POST");
-            con.setConnectTimeout(CONNECT_TIME_OUT);
-            con.setReadTimeout(SOCKET_TIME_OUT);
+            con.setConnectTimeout(HttpConst.CONNECT_TIME_OUT);
+            con.setReadTimeout(HttpConst.READ_TIME_OUT);
             if (A.isNotEmpty(headers)) {
                 for (Map.Entry<String, ?> entry : headers.entrySet()) {
                     con.setRequestProperty(entry.getKey(), U.toStr(entry.getValue()));
@@ -136,7 +123,6 @@ public class HttpUrlConnectionUtil {
             boolean hasParam = A.isNotEmpty(params);
             boolean hasFile = A.isNotEmpty(files);
             if (hasParam || hasFile) {
-                // 默认值 false, 当向远程服务器传送数据/写数据时, 需设置为 true
                 con.setDoOutput(true);
 
                 String boundary = "*****";
@@ -216,11 +202,12 @@ public class HttpUrlConnectionUtil {
         String result = null;
         Map<String, List<String>> resHeaders = null;
         String resCode = "";
+        url = HttpConst.handleEmptyScheme(url);
         try {
             con = (HttpURLConnection) new URL(url).openConnection();
             con.setRequestMethod(method);
-            con.setConnectTimeout(CONNECT_TIME_OUT);
-            con.setReadTimeout(SOCKET_TIME_OUT);
+            con.setConnectTimeout(HttpConst.CONNECT_TIME_OUT);
+            con.setReadTimeout(HttpConst.READ_TIME_OUT);
             if (A.isNotEmpty(headers)) {
                 for (Map.Entry<String, ?> entry : headers.entrySet()) {
                     con.setRequestProperty(entry.getKey(), U.toStr(entry.getValue()));
@@ -266,7 +253,6 @@ public class HttpUrlConnectionUtil {
         }
         return result;
     }
-    /** 收集上下文中的数据, 以便记录日志 */
     private static String collectContext(long start, String method, String url, String params,
                                          Map<String, List<String>> reqHeaders, String resCode,
                                          Map<String, List<String>> resHeaders, String result) {

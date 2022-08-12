@@ -1,7 +1,6 @@
 package com.github.common.http;
 
 import com.github.common.date.DateUtil;
-import com.github.common.json.JsonUtil;
 import com.github.common.util.*;
 import com.google.common.base.Joiner;
 
@@ -43,34 +42,25 @@ public class HttpClientUtil {
     public static String get(String url) {
         return get(url, null);
     }
-    /** 向指定 url 进行 get 请求. 有参数 */
+    /** 向指定 url 进行 get 请求 */
     public static String get(String url, Map<String, Object> params) {
         return getWithHeader(url, params, null);
     }
-    /** 向指定 url 进行 get 请求. 有参数和头 */
+    /** 向指定 url 进行 get 请求 */
     public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap) {
-        return handleRequest("GET", U.appendUrl(url) + U.formatParam(false, params), null, null, headerMap);
+        return handleRequest("GET", HttpConst.handleGetParams(url, params), null, null, headerMap);
     }
 
 
-    /** 向指定的 url 进行 post 请求. 有参数 */
+    /** 向指定的 url 进行 post 请求(表单) */
     public static String post(String url, Map<String, Object> params) {
         return postWithHeader(url, params, null);
     }
-    /** 向指定的 url 进行 post 请求. 有参数和头 */
+    /** 向指定的 url 进行 post 请求(表单) */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
         return handleRequest("POST", url, U.formatParam(false, params), U.formatParam(true, params), headers);
     }
 
-
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static String postBody(String url, Map<String, Object> params) {
-        return postBodyWithHeader(url, params, null);
-    }
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static String postBodyWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
-        return postBodyWithHeader(url, JsonUtil.toJson(params), headers);
-    }
     /** 向指定的 url 基于 post 发起 request-body 请求 */
     public static String postBody(String url, String json) {
         return postBodyWithHeader(url, json, null);
@@ -173,6 +163,7 @@ public class HttpClientUtil {
             }
             HttpRequest.Builder builder = HttpRequest.newBuilder();
             builder.method(method, body);
+            url = HttpConst.handleEmptyScheme(url);
             builder.uri(URI.create(url));
             if (A.isNotEmpty(headers)) {
                 for (Map.Entry<String, Object> entry : headers.entrySet()) {
@@ -205,20 +196,18 @@ public class HttpClientUtil {
     }
 
     private static String handleRequest(String method, String url, String data, String printData, Map<String, Object> headers) {
-        HttpRequest.BodyPublisher body = U.isBlank(data) ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(data);
-        return handleRequest(method, url, U.defaultIfBlank(printData, data), headers, body);
-    }
-    private static String handleRequest(String method, String url, String printData, Map<String, Object> headers, HttpRequest.BodyPublisher body) {
         long start = System.currentTimeMillis();
+        printData = U.defaultIfBlank(printData, data);
         Map<String, List<String>> reqHeaders = null;
         String resCode = "";
         Map<String, List<String>> resHeaders = null;
         String result = null;
-
         try {
             HttpRequest.Builder builder = HttpRequest.newBuilder();
-            builder.method(method, body);
+            builder.method(method, U.isBlank(data) ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(data));
+            url = HttpConst.handleEmptyScheme(url);
             builder.uri(URI.create(url));
+            builder.timeout(Duration.ofMillis(HttpConst.READ_TIME_OUT));
             if (A.isNotEmpty(headers)) {
                 for (Map.Entry<String, Object> entry : headers.entrySet()) {
                     builder.setHeader(entry.getKey(), U.toStr(entry.getValue()));
@@ -241,7 +230,6 @@ public class HttpClientUtil {
         }
         return result;
     }
-    /** 收集上下文中的数据, 以便记录日志 */
     private static String collectContext(long start, String method, String url, String params,
                                          Map<String, List<String>> reqHeaders, String resCode,
                                          Map<String, List<String>> resHeaders, String result) {
