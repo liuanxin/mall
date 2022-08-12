@@ -10,6 +10,7 @@ import okhttp3.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -132,7 +133,7 @@ public class HttpOkClientUtil {
             File file = entry.getValue();
             if (U.isNotNull(file)) {
                 try {
-                    MediaType type = MediaType.parse(java.nio.file.Files.probeContentType(file.toPath()));
+                    MediaType type = MediaType.parse(Files.probeContentType(file.toPath()));
                     builder.addFormDataPart(entry.getKey(), null, RequestBody.create(type, file));
                 } catch (IOException e) {
                     if (LogUtil.ROOT_LOG.isErrorEnabled()) {
