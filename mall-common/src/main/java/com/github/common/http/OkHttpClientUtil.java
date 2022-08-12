@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class HttpOkClientUtil {
+public class OkHttpClientUtil {
 
     // MIME 说明: http://www.w3school.com.cn/media/media_mimeref.asp
 
