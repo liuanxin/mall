@@ -1,19 +1,16 @@
 package com.github.common.bean;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.common.date.DateUtil;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
-import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.google.common.base.Joiner;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -49,37 +46,35 @@ public final class BeanChange {
         }
 
         List<BeanField> fieldList = new ArrayList<>();
-        Class<?> clazz = oldObj.getClass();
-        String orderKey = "order";
-        String valueKey = "value";
         CollectProperty.Group all = CollectProperty.Group.ALL;
-        for (Field field : U.getFields(clazz)) {
+        for (Field field : U.getFields(oldObj)) {
             String fieldName = field.getName();
-            CollectProperty changeProperty = field.getAnnotation(CollectProperty.class);
+            CollectProperty cp = field.getAnnotation(CollectProperty.class);
+            JsonFormat jsonFormat = field.getAnnotation(JsonFormat.class);
             String name;
             int order;
             String dateFormat;
             Map<String, String> map;
             Set<CollectProperty.Group> typeSet;
-            if (U.isNull(changeProperty)) {
+            if (U.isNull(cp)) {
                 name = fieldName;
                 order = Integer.MAX_VALUE;
-                dateFormat = null;
+                dateFormat = U.isNull(jsonFormat) ? null : jsonFormat.pattern();
                 map = Collections.emptyMap();
                 typeSet = Collections.singleton(all);
             } else {
-                name = changeProperty.value();
-                order = changeProperty.order();
-                dateFormat = changeProperty.dateFormat();
-                Map<String, String> valueMapping = JsonUtil.convertType(changeProperty.valueMapping(), MAP_REFERENCE);
+                name = cp.value();
+                order = cp.order();
+                dateFormat = U.isNull(jsonFormat) ? cp.dateFormat() : jsonFormat.pattern();
+                Map<String, String> valueMapping = JsonUtil.convertType(cp.valueMapping(), MAP_REFERENCE);
                 map = A.isEmpty(valueMapping) ? Collections.emptyMap() : valueMapping;
-                typeSet = new HashSet<>(Arrays.asList(changeProperty.group()));
+                typeSet = new HashSet<>(Arrays.asList(cp.group()));
             }
 
             if (collectType == all || typeSet.contains(all) || typeSet.contains(collectType)) {
-                Object oldValue = getField(fieldName, clazz, oldObj);
-                Object newValue = getField(fieldName, clazz, newObj);
-                if (oldValue != newValue) {
+                Object oldValue = getField(fieldName, oldObj);
+                Object newValue = getField(fieldName, newObj);
+                if (U.notEquals(oldValue, newValue)) {
                     String value = compareValue(getValue(oldValue, dateFormat), getValue(newValue, dateFormat), name, map);
                     if (U.isNotBlank(value)) {
                         fieldList.add(new BeanField(order, value));
@@ -93,53 +88,32 @@ public final class BeanChange {
             for (BeanField field : fieldList) {
                 values.add(U.toStr(field.value()));
             }
-            return Joiner.on("; ").join(values).trim();
+            return "<" + Joiner.on(">,<").join(values) + ">";
         }
         return null;
     }
 
-    private static Object getField(String fieldName, Class<?> clazz, Object obj) {
-        if (U.isNull(obj)) {
-            return null;
-        }
-        String key = fieldName + "-" + clazz.getName();
-        Method method = METHOD_CACHE_MAP.getIfPresent(key);
-        if (U.isNull(method)) {
-            try {
-                method = new PropertyDescriptor(fieldName, clazz).getReadMethod();
-            } catch (IntrospectionException e) {
-                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("call({}) get-field({}) exception", clazz.getName(), fieldName, e);
-                }
-            }
-            if (U.isNotNull(method)) {
-                METHOD_CACHE_MAP.put(key, method);
-            }
-        }
-        if (U.isNull(method)) {
-            return null;
-        }
-        try {
-            return method.invoke(obj);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("call({}) get-field({}) exception", clazz.getName(), fieldName, e);
-            }
-            return null;
-        }
+    private static Object getField(String field, Object obj) {
+        return U.invokeMethod(obj, "get" + field.substring(0, 1).toUpperCase() + field.substring(1));
     }
 
     private static String getValue(Object obj, String dateFormat) {
-        if (U.isNull(obj)) {
-            return null;
-        } else if (obj instanceof Date d) {
-            if (U.isBlank(dateFormat)) {
-                return DateUtil.formatDateTime(d);
-            } else {
-                return DateUtil.format(d, dateFormat);
-            }
+        if (obj instanceof Date d) {
+            return U.isBlank(dateFormat) ? DateUtil.formatDateTime(d) : DateUtil.format(d, dateFormat);
         } else {
             return U.toStr(obj);
+        }
+    }
+
+    private static String compareValue(String oldStr, String newStr, String name, Map<String, String> map) {
+        if (U.isNull(oldStr)) {
+            return String.format(INSERT, name, getMapping(map, newStr));
+        } else if (U.isNull(newStr)) {
+            return String.format(REMOVE, name, getMapping(map, oldStr));
+        } else if (!oldStr.equals(newStr)) {
+            return String.format(UPDATE, name, getMapping(map, oldStr), getMapping(map, newStr));
+        } else {
+            return null;
         }
     }
 
@@ -153,19 +127,5 @@ public final class BeanChange {
             return other;
         }
         return str;
-    }
-
-    private static String compareValue(String oldStr, String newStr, String name, Map<String, String> map) {
-        if (U.isNull(oldStr) && U.isNull(newStr)) {
-            return null;
-        } else if (U.isNull(oldStr)) {
-            return String.format(INSERT, name, getMapping(map, newStr));
-        } else if (U.isNull(newStr)) {
-            return String.format(REMOVE, name, getMapping(map, oldStr));
-        } else if (!oldStr.equals(newStr)) {
-            return String.format(UPDATE, name, getMapping(map, oldStr), getMapping(map, newStr));
-        } else {
-            return null;
-        }
     }
 }

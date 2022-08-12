@@ -20,7 +20,7 @@ public @interface CollectProperty {
      */
     String valueMapping() default "";
 
-    /** 如果被标注的属性是时间类型时的输出格式  */
+    /** 如果被标注的属性是时间类型时的输出格式, 如果瓢上有标 @JsonFormat 则以 JF 上的为主 */
     String dateFormat() default "yyyy-MM-dd HH:mm:ss";
 
     /** 排序, 越小越靠前 */

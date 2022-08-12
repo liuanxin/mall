@@ -325,36 +325,17 @@ public final class A {
     }
 
     /** 获取集合的第一个元素 */
-    public static <T> T first(Collection<T> collection) {
-        return isEmpty(collection) ? null : collection.iterator().next();
+    public static <T> T first(Collection<T> list) {
+        return getIndex(list, 0);
     }
     /** 获取集合的最后一个元素 */
-    public static <T> T last(Collection<T> collection) {
-        if (isEmpty(collection)) {
-            return null;
-        }
-
-        // 当类型为 List 时, 直接取得最后一个元素
-        if (collection instanceof List<T> list) {
-            return list.get(list.size() - 1);
-        }
-        // 其他类型通过 iterator 滚动到最后一个元素
-        Iterator<T> iterator = collection.iterator();
-        while (true) {
-            T current = iterator.next();
-            if (!iterator.hasNext()) {
-                return current;
-            }
-        }
+    public static <T> T last(Collection<T> list) {
+        return getIndex(list, list.size() - 1);
     }
     /** 获取集合指定下标的值 */
     public static <T> T getIndex(Collection<T> list, int index) {
-        if (isEmpty(list) || index < 0 || index > list.size()) {
+        if (isEmpty(list) || index < 0 || index >= list.size()) {
             return null;
-        }
-        // 如果是最后一个, 则索引下标减一
-        if (index == list.size()) {
-            index--;
         }
         // 当类型为 List 时, 直接取最后一个元素
         if (list instanceof List<T> l) {
