@@ -58,6 +58,7 @@ public class HttpClientUtil {
     }
     /** 向指定的 url 进行 post 请求(表单) */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
+        // Content-Type 不设置则默认是 application/x-www-form-urlencoded
         return handleRequest("POST", url, U.formatParam(false, params), U.formatParam(true, params), headers);
     }
 

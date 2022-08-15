@@ -60,6 +60,7 @@ public class OkHttpClientUtil {
         RequestBody request = RequestBody.create(MultipartBody.FORM, U.formatParam(false, params));
         Request.Builder builder = new Request.Builder().post(request);
         handleHeader(builder, headers);
+        // Content-Type 不设置则默认是 application/x-www-form-urlencoded
         return handleRequest(url, builder, U.formatParam(params));
     }
 

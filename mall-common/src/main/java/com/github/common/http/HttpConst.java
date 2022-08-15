@@ -26,9 +26,7 @@ final class HttpConst {
 
     /** url 如果不是以 「http://」 或 「https://」 开头就加上 「http://」 */
     static String handleEmptyScheme(String url) {
-        // noinspection HttpUrlsUsage
         if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            // noinspection HttpUrlsUsage
             url = "http://" + url;
         }
         return url;

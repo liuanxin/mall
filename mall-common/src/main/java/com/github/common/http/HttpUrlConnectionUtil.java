@@ -46,6 +46,7 @@ public class HttpUrlConnectionUtil {
     }
     /** 向指定的 url 进行 post 请求(表单) */
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
+        // Content-Type 不设置则默认是 application/x-www-form-urlencoded
         return handleRequest("POST", url, U.formatParam(false, params), headers);
     }
 
@@ -126,6 +127,7 @@ public class HttpUrlConnectionUtil {
                 con.setDoOutput(true);
 
                 String boundary = "*****";
+                // 使用 from 表单上传文件时, 需设置 enctype="multipart/form-data" 属性
                 con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
                 try (DataOutputStream dataOutput = new DataOutputStream(con.getOutputStream())) {
                     if (hasParam) {

@@ -125,6 +125,7 @@ public class ApacheHttpClientUtil {
     public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
         HttpPost request = handlePostParams(url, params);
         handleHeader(request, headers);
+        // Content-Type 不设置则默认是 application/x-www-form-urlencoded
         return handleRequest(request, U.formatParam(params));
     }
 
