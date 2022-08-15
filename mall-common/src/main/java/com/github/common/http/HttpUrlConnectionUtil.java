@@ -7,12 +7,10 @@ import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -234,12 +232,15 @@ public class HttpUrlConnectionUtil {
 
             resHeaders = con.getHeaderFields();
             resCode = con.getResponseCode() + " ";
-            try (InputStream input = con.getInputStream()) {
-                StringBuilder sbd = new StringBuilder();
-                for (int ch; (ch = input.read()) != -1; ) {
-                    sbd.append((char) ch);
+            try (
+                    InputStream input = con.getInputStream();
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream()
+            ) {
+                byte[] buffer = new byte[8192];
+                while (input.read(buffer) != -1) {
+                    stream.write(buffer);
                 }
-                result = sbd.toString();
+                result = stream.toString(StandardCharsets.UTF_8);
             }
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info(collectContext(start, method, url, data, reqHeaders, resCode, resHeaders, result));
