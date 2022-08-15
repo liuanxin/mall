@@ -6,7 +6,6 @@ import com.github.common.util.A;
 import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
-import com.google.common.base.Joiner;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -277,7 +276,9 @@ public class HttpUrlConnectionUtil {
         if (hasReqHeader) {
             sbd.append("header(");
             for (Map.Entry<String, List<String>> entry : reqHeaders.entrySet()) {
-                sbd.append("<").append(entry.getKey()).append(" : ").append(Joiner.on(",").join(entry.getValue())).append(">");
+                String key = entry.getKey();
+                String value = A.toStr(entry.getValue());
+                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
             }
             sbd.append(")");
         }
@@ -286,7 +287,9 @@ public class HttpUrlConnectionUtil {
         if (hasResHeader) {
             sbd.append("header(");
             for (Map.Entry<String, List<String>> entry : resHeaders.entrySet()) {
-                sbd.append("<").append(entry.getKey()).append(" : ").append(Joiner.on(",").join(entry.getValue())).append(">");
+                String key = entry.getKey();
+                String value = A.toStr(entry.getValue());
+                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
             }
             sbd.append(")");
         }

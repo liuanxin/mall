@@ -118,8 +118,7 @@ public class OkHttpClientUtil {
                 String value = U.toStr(entry.getValue());
 
                 builder.addFormDataPart(key, value);
-                paramSbd.append("<").append(key).append(" : ")
-                        .append(DesensitizationUtil.desByKey(key, value)).append(">");
+                paramSbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
             }
             paramSbd.append(")");
         }
@@ -139,7 +138,7 @@ public class OkHttpClientUtil {
                     } catch (IOException e) {
                         throw new RuntimeException(String.format("add file(%s) exception", file.getName()), e);
                     }
-                    paramSbd.append("<").append(key).append(" : ").append(file).append(">");
+                    paramSbd.append("<").append(key).append(" : ").append(file.getPath()).append(">");
                 }
             }
             paramSbd.append(")");
@@ -212,8 +211,9 @@ public class OkHttpClientUtil {
         }
         if (hasReqHeader) {
             sbd.append("header(");
-            for (String name : reqHeaders.names()) {
-                sbd.append("<").append(name).append(" : ").append(reqHeaders.get(name)).append(">");
+            for (String key : reqHeaders.names()) {
+                String value = reqHeaders.get(key);
+                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
             }
             sbd.append(")");
         }
@@ -221,8 +221,9 @@ public class OkHttpClientUtil {
         boolean hasResHeader = U.isNotNull(resHeaders);
         if (hasResHeader) {
             sbd.append(" header(");
-            for (String name : resHeaders.names()) {
-                sbd.append("<").append(name).append(" : ").append(resHeaders.get(name)).append(">");
+            for (String key : resHeaders.names()) {
+                String value = resHeaders.get(key);
+                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
             }
             sbd.append(")");
         }

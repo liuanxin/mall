@@ -496,10 +496,10 @@ public final class U {
     }
 
     public static Boolean getBoolean(Object obj) {
-        return U.isNull(obj) ? null : TRUES.contains(obj.toString().toLowerCase());
+        return isNull(obj) ? null : TRUES.contains(obj.toString().toLowerCase());
     }
     public static boolean getBool(Object obj) {
-        return U.isNotNull(obj) && TRUES.contains(obj.toString().toLowerCase());
+        return isNotNull(obj) && TRUES.contains(obj.toString().toLowerCase());
     }
 
     public static boolean isTrue(Boolean flag) {
@@ -545,7 +545,7 @@ public final class U {
     /**
      * 如果字符长度大于指定长度, 则只输出头尾的固定字符
      * <pre>
-     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3)」 -> 「abc *** 890[36]」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3)」 -> 「abc***890[36]」
      * </pre>
      */
     public static String foggyValue(String value, int max, int leftRight) {

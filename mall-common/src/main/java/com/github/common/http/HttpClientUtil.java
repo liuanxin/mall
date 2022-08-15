@@ -2,7 +2,6 @@ package com.github.common.http;
 
 import com.github.common.date.DateUtil;
 import com.github.common.util.*;
-import com.google.common.base.Joiner;
 
 import java.io.File;
 import java.net.URI;
@@ -133,8 +132,7 @@ public class HttpClientUtil {
                         arr.add(handleBytes("Content-Disposition: form-data; name=\"" + key + "\"\r\n\r\n"));
                         arr.add(handleBytes(value + "\r\n"));
 
-                        paramSbd.append("<").append(key).append(" : ")
-                                .append(DesensitizationUtil.desByKey(key, value)).append(">");
+                        paramSbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
                     }
                     paramSbd.append(")");
                 }
@@ -253,7 +251,9 @@ public class HttpClientUtil {
         if (hasReqHeader) {
             sbd.append("header(");
             for (Map.Entry<String, List<String>> entry : reqHeaders.entrySet()) {
-                sbd.append("<").append(entry.getKey()).append(" : ").append(Joiner.on(",").join(entry.getValue())).append(">");
+                String key = entry.getKey();
+                String value = A.toStr(entry.getValue());
+                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
             }
             sbd.append(")");
         }
@@ -262,7 +262,9 @@ public class HttpClientUtil {
         if (hasResHeader) {
             sbd.append("header(");
             for (Map.Entry<String, List<String>> entry : resHeaders.entrySet()) {
-                sbd.append("<").append(entry.getKey()).append(" : ").append(Joiner.on(",").join(entry.getValue())).append(">");
+                String key = entry.getKey();
+                String value = A.toStr(entry.getValue());
+                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
             }
             sbd.append(")");
         }

@@ -448,7 +448,7 @@ public final class A {
                                               Collection<V> list,
                                               Function<? super V, K> keyFunc,
                                               MapValueDuplicateType duplicateType) {
-        if (A.isNotEmpty(list)) {
+        if (isNotEmpty(list)) {
             for (V v : list) {
                 if (U.isNotNull(v)) {
                     K k = keyFunc.apply(v);
@@ -469,7 +469,7 @@ public final class A {
                                                          Function<? super T, K> keyFunc,
                                                          Function<? super T, V> valueFunc,
                                                          MapValueDuplicateType duplicateType) {
-        if (A.isNotEmpty(list)) {
+        if (isNotEmpty(list)) {
             for (T obj : list) {
                 if (U.isNotNull(obj)) {
                     K k = keyFunc.apply(obj);
