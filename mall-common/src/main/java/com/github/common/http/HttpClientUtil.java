@@ -116,11 +116,13 @@ public class HttpClientUtil {
         String result = null;
 
         try {
-            String boundary = "*****";
+            HttpRequest.Builder builder = HttpRequest.newBuilder();
             boolean hasParam = A.isNotEmpty(params);
             boolean hasFile = A.isNotEmpty(files);
             HttpRequest.BodyPublisher body;
             if (hasParam || hasFile) {
+                String boundary = "*****"; // U.uuid16();
+                builder.setHeader("Content-Type", "multipart/form-data;boundary=" + boundary);
                 List<byte[]> arr = new ArrayList<>();
                 if (hasParam) {
                     paramSbd.append("param(");
@@ -129,7 +131,8 @@ public class HttpClientUtil {
                         String value = U.toStr(entry.getValue());
 
                         arr.add(handleBytes("--" + boundary + "\r\n"));
-                        arr.add(handleBytes("Content-Disposition: form-data; name=\"" + key + "\"\r\n\r\n"));
+                        String paramInfo = "Content-Disposition: form-data; name=\"%s\"\r\n\r\n";
+                        arr.add(handleBytes(String.format(paramInfo, key)));
                         arr.add(handleBytes(value + "\r\n"));
 
                         paramSbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
@@ -146,8 +149,8 @@ public class HttpClientUtil {
                         File file = entry.getValue();
 
                         arr.add(handleBytes("--" + boundary + "\r\n"));
-                        arr.add(handleBytes("Content-Disposition: form-data; name=\"" + key
-                                + "\";filename=\"" + file.getName() + "\"\r\n\r\n"));
+                        String paramInfo = "Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"\r\n\r\n";
+                        arr.add(handleBytes(String.format(paramInfo, key, file.getName())));
                         arr.add(Files.readAllBytes(file.toPath()));
                         arr.add(handleBytes("\r\n"));
 
@@ -160,7 +163,6 @@ public class HttpClientUtil {
             } else {
                 body = HttpRequest.BodyPublishers.noBody();
             }
-            HttpRequest.Builder builder = HttpRequest.newBuilder();
             builder.method(method, body);
             url = HttpConst.handleEmptyScheme(url);
             builder.uri(URI.create(url));
@@ -170,7 +172,6 @@ public class HttpClientUtil {
                 }
             }
             builder.setHeader("User-Agent", USER_AGENT);
-            builder.setHeader("Content-Type", "multipart/form-data;boundary=" + boundary);
             HttpRequest request = builder.build();
             reqHeaders = request.headers().map();
             HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());

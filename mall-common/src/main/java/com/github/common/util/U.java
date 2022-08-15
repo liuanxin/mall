@@ -469,17 +469,15 @@ public final class U {
     public static boolean safeEquals(String a, String b) {
         if (a != null && b != null) {
             int al = a.length();
-            if (al != b.length()) {
-                return false;
+            if (al == b.length()) {
+                int equal = 0;
+                for (int i = 0; i < al; i++) {
+                    equal |= a.charAt(i) ^ b.charAt(i);
+                }
+                return equal == 0;
             }
-            int equal = 0;
-            for (int i = 0; i < al; i++) {
-                equal |= a.charAt(i) ^ b.charAt(i);
-            }
-            return equal == 0;
-        } else {
-            return false;
         }
+        return false;
     }
 
     public static <T> boolean equals(T obj1, T obj2) {
@@ -495,9 +493,11 @@ public final class U {
         return !equalsIgnoreCase(str1, str2);
     }
 
+    /** 空则是 null, 如果是 true、1、on、yes 中的任意一种则是 Boolean 的 True, 否则是 Boolean 的 False */
     public static Boolean getBoolean(Object obj) {
         return isNull(obj) ? null : TRUES.contains(obj.toString().toLowerCase());
     }
+    /** 是 true、1、on、yes 中的任意一种则是 boolean 的 true, 否则是 boolean 的 false */
     public static boolean getBool(Object obj) {
         return isNotNull(obj) && TRUES.contains(obj.toString().toLowerCase());
     }

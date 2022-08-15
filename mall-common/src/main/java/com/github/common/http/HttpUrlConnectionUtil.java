@@ -125,19 +125,20 @@ public class HttpUrlConnectionUtil {
             if (hasParam || hasFile) {
                 con.setDoOutput(true);
 
-                String boundary = "*****";
+                String boundary = "*****"; // U.uuid16();
                 // 使用 from 表单上传文件时, 需设置 enctype="multipart/form-data" 属性
                 con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
-                try (DataOutputStream dataOutput = new DataOutputStream(con.getOutputStream())) {
+                try (DataOutputStream data = new DataOutputStream(con.getOutputStream())) {
                     if (hasParam) {
                         paramSbd.append("param(");
                         for (Map.Entry<String, Object> entry : params.entrySet()) {
                             String key = entry.getKey();
                             String value = U.toStr(entry.getValue());
 
-                            dataOutput.writeBytes("--" + boundary + "\r\n");
-                            dataOutput.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"\r\n\r\n");
-                            dataOutput.writeBytes(value + "\r\n");
+                            data.writeBytes("--" + boundary + "\r\n");
+                            String paramInfo = "Content-Disposition: form-data; name=\"%s\"\r\n\r\n";
+                            data.writeBytes(String.format(paramInfo, key));
+                            data.writeBytes(value + "\r\n");
 
                             paramSbd.append("<").append(key).append(" : ")
                                     .append(DesensitizationUtil.desByKey(key, value)).append(">");
@@ -153,18 +154,18 @@ public class HttpUrlConnectionUtil {
                             String key = entry.getKey();
                             File file = entry.getValue();
 
-                            dataOutput.writeBytes("--" + boundary + "\r\n");
-                            dataOutput.writeBytes("Content-Disposition: form-data; name=\"" + key
-                                    + "\";filename=\"" + file.getName() + "\"\r\n\r\n");
-                            dataOutput.write(Files.readAllBytes(file.toPath()));
-                            dataOutput.writeBytes("\r\n");
+                            data.writeBytes("--" + boundary + "\r\n");
+                            String paramInfo = "Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"\r\n\r\n";
+                            data.writeBytes(String.format(paramInfo, key, file.getName()));
+                            data.write(Files.readAllBytes(file.toPath()));
+                            data.writeBytes("\r\n");
 
                             paramSbd.append("<").append(key).append(" : ").append(file).append(">");
                         }
                         paramSbd.append(")");
                     }
-                    dataOutput.writeBytes("--" + boundary + "--\r\n");
-                    dataOutput.flush();
+                    data.writeBytes("--" + boundary + "--\r\n");
+                    data.flush();
                 }
             }
 
