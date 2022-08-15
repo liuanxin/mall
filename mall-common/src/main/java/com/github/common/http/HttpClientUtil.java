@@ -33,6 +33,7 @@ public class HttpClientUtil {
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_2)
             .executor(EXECUTOR)
+            .followRedirects(HttpClient.Redirect.NORMAL)
             .connectTimeout(Duration.ofMillis(HttpConst.CONNECT_TIME_OUT))
             .build();
 
