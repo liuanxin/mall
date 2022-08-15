@@ -113,7 +113,7 @@ public class ApacheHttpClientUtil {
         url = HttpConst.handleGetParams(url, params);
         HttpGet request = new HttpGet(HttpConst.handleEmptyScheme(url));
         handleHeader(request, headerMap);
-        return handleRequest(request, U.formatParam(params));
+        return handleRequest(request, null);
     }
 
 

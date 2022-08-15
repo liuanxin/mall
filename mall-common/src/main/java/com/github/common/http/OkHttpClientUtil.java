@@ -47,7 +47,7 @@ public class OkHttpClientUtil {
         url = HttpConst.handleGetParams(url, params);
         Request.Builder builder = new Request.Builder();
         handleHeader(builder, headers);
-        return handleRequest(url, builder, U.formatParam(params));
+        return handleRequest(url, builder, null);
     }
 
 
