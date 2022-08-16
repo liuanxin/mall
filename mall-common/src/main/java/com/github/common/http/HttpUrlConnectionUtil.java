@@ -242,10 +242,13 @@ public class HttpUrlConnectionUtil {
                     InputStream input = con.getInputStream();
                     ByteArrayOutputStream stream = new ByteArrayOutputStream()
             ) {
-                byte[] buffer = new byte[8192];
-                while (input.read(buffer) != -1) {
-                    stream.write(buffer);
-                }
+                // int size = 8192;
+                // byte[] buffer = new byte[size];
+                // int read;
+                // while ((read = input.read(buffer, 0, size)) >= 0) {
+                //     stream.write(buffer, 0, read);
+                // }
+                input.transferTo(stream);
                 result = stream.toString(StandardCharsets.UTF_8);
             }
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
