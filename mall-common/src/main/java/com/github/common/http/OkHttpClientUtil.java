@@ -167,6 +167,10 @@ public class OkHttpClientUtil {
         if (U.isNotBlank(traceId)) {
             builder.header(Const.TRACE, traceId);
         }
+        String language = LogUtil.getLanguage();
+        if (U.isNotNull(language)) {
+            builder.header("Accept-Language", language);
+        }
         url = HttpConst.handleEmptyScheme(url);
         Request request = builder.header("User-Agent", USER_AGENT).url(url).build();
         String method = request.method();

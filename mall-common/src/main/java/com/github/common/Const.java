@@ -52,7 +52,7 @@ public final class Const {
 
     /** pc 端传过来的 token 的 key */
     public static final String TOKEN = "X-Token"; // Authorization
-    /** pc 端放在 cookie 中的跟踪号 */
+    /** pc 端放在 header 中的跟踪号 */
     public static final String TRACE = "X-Trace";
     /** pc 端传过来的 version 的 key */
     public static final String VERSION = "X-Version";

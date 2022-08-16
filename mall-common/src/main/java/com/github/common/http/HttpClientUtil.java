@@ -1,5 +1,6 @@
 package com.github.common.http;
 
+import com.github.common.Const;
 import com.github.common.date.DateUtil;
 import com.github.common.util.*;
 
@@ -218,6 +219,14 @@ public class HttpClientUtil {
                 }
             }
             builder.setHeader("User-Agent", USER_AGENT);
+            String traceId = LogUtil.getTraceId();
+            if (U.isNotBlank(traceId)) {
+                builder.header(Const.TRACE, traceId);
+            }
+            String language = LogUtil.getLanguage();
+            if (U.isNotNull(language)) {
+                builder.header("Accept-Language", language);
+            }
             HttpRequest request = builder.build();
             reqHeaders = request.headers().map();
             HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());

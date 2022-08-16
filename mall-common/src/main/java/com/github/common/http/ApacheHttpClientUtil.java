@@ -247,11 +247,15 @@ public class ApacheHttpClientUtil {
     private static ResponseData<String> handleRequest(HttpRequestBase request, String params) {
         request.setConfig(config());
 
+        request.setHeader("User-Agent", USER_AGENT);
         String traceId = LogUtil.getTraceId();
         if (U.isNotBlank(traceId)) {
             request.setHeader(Const.TRACE, traceId);
         }
-        request.setHeader("User-Agent", USER_AGENT);
+        String language = LogUtil.getLanguage();
+        if (U.isNotNull(language)) {
+            request.setHeader("Accept-Language", language);
+        }
         String method = request.getMethod();
         String url = request.getURI().toString();
 

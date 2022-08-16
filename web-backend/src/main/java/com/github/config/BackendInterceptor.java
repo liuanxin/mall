@@ -4,6 +4,7 @@ import com.github.common.annotation.NeedLogin;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
 import com.github.util.BackendSessionUtil;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -39,7 +40,7 @@ public record BackendInterceptor(boolean printHeader) implements HandlerIntercep
     private void bindParam() {
         String traceId = RequestUtil.getTraceId();
         String realIp = RequestUtil.getRealIp();
-        LogUtil.putTraceAndIp(traceId, realIp);
+        LogUtil.putTraceAndIp(traceId, realIp, LocaleContextHolder.getLocale());
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
             String userInfo = BackendSessionUtil.getUserInfo();
             String basicInfo = RequestUtil.logBasicInfo();

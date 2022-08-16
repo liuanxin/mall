@@ -226,7 +226,7 @@ public class GlobalException {
             if (logNotTraceId) {
                 String traceId = RequestUtil.getTraceId();
                 String realIp = RequestUtil.getRealIp();
-                LogUtil.putTraceAndIp(traceId, realIp);
+                LogUtil.putTraceAndIp(traceId, realIp, LocaleContextHolder.getLocale());
 
                 String basicInfo = RequestUtil.logBasicInfo();
                 String requestInfo = RequestUtil.logRequestInfo(printHeader);

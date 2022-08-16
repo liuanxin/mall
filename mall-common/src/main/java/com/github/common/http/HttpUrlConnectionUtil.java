@@ -117,6 +117,10 @@ public class HttpUrlConnectionUtil {
             if (U.isNotBlank(traceId)) {
                 con.setRequestProperty(Const.TRACE, traceId);
             }
+            String language = LogUtil.getLanguage();
+            if (U.isNotNull(language)) {
+                con.setRequestProperty("Accept-Language", language);
+            }
             reqHeaders = con.getRequestProperties();
             boolean hasParam = A.isNotEmpty(params);
             boolean hasFile = A.isNotEmpty(files);
