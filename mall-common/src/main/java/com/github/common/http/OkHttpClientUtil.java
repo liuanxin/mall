@@ -35,15 +35,15 @@ public class OkHttpClientUtil {
 
 
     /** 向指定 url 进行 get 请求 */
-    public static String get(String url) {
+    public static ResponseData<String> get(String url) {
         return get(url, null);
     }
     /** 向指定 url 进行 get 请求 */
-    public static String get(String url, Map<String, Object> params) {
+    public static ResponseData<String> get(String url, Map<String, Object> params) {
         return getWithHeader(url, params, null);
     }
     /** 向指定 url 进行 get 请求 */
-    public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
+    public static ResponseData<String> getWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
         url = HttpConst.handleGetParams(url, params);
         Request.Builder builder = new Request.Builder();
         handleHeader(builder, headers);
@@ -52,11 +52,11 @@ public class OkHttpClientUtil {
 
 
     /** 向指定的 url 进行 post 请求(表单) */
-    public static String post(String url, Map<String, Object> params) {
+    public static ResponseData<String> post(String url, Map<String, Object> params) {
         return postWithHeader(url, params, null);
     }
     /** 向指定的 url 进行 post 请求(表单) */
-    public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
+    public static ResponseData<String> postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
         RequestBody request = RequestBody.create(MultipartBody.FORM, U.formatParam(false, params));
         Request.Builder builder = new Request.Builder().post(request);
         handleHeader(builder, headers);
@@ -65,11 +65,11 @@ public class OkHttpClientUtil {
     }
 
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static String postBody(String url, String json) {
+    public static ResponseData<String> postBody(String url, String json) {
         return postBodyWithHeader(url, json, null);
     }
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static String postBodyWithHeader(String url, String json, Map<String, Object> headers) {
+    public static ResponseData<String> postBodyWithHeader(String url, String json, Map<String, Object> headers) {
         String data = U.toStr(json);
         Request.Builder builder = new Request.Builder().post(RequestBody.create(JSON, json));
         handleHeader(builder, headers);
@@ -79,11 +79,11 @@ public class OkHttpClientUtil {
 
 
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static String put(String url, String json) {
+    public static ResponseData<String> put(String url, String json) {
         return putWithHeader(url, json, null);
     }
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static String putWithHeader(String url, String json, Map<String, Object> headers) {
+    public static ResponseData<String> putWithHeader(String url, String json, Map<String, Object> headers) {
         String data = U.toStr(json);
         Request.Builder builder = new Request.Builder().put(RequestBody.create(JSON, json));
         handleHeader(builder, headers);
@@ -93,11 +93,11 @@ public class OkHttpClientUtil {
 
 
     /** 向指定的 url 基于 delete 发起 request-body 请求 */
-    public static String delete(String url, String json) {
+    public static ResponseData<String> delete(String url, String json) {
         return deleteWithHeader(url, json, null);
     }
     /** 向指定的 url 基于 delete 发起 request-body 请求 */
-    public static String deleteWithHeader(String url, String json, Map<String, Object> headers) {
+    public static ResponseData<String> deleteWithHeader(String url, String json, Map<String, Object> headers) {
         String data = U.toStr(json);
         Request.Builder builder = new Request.Builder().delete(RequestBody.create(JSON, json));
         handleHeader(builder, headers);
@@ -107,7 +107,7 @@ public class OkHttpClientUtil {
 
 
     /** 向指定 url 上传文件 */
-    public static String postFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
+    public static ResponseData<String> postFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
         MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
         StringBuilder paramSbd = new StringBuilder();
         boolean hasParam = A.isNotEmpty(params);
@@ -162,7 +162,7 @@ public class OkHttpClientUtil {
         }
     }
     /** 发起 http 请求 */
-    private static String handleRequest(String url, Request.Builder builder, String params) {
+    private static ResponseData<String> handleRequest(String url, Request.Builder builder, String params) {
         String traceId = LogUtil.getTraceId();
         if (U.isNotBlank(traceId)) {
             builder.header(Const.TRACE, traceId);
@@ -172,24 +172,25 @@ public class OkHttpClientUtil {
         String method = request.method();
         Headers reqHeaders = request.headers();
         Headers resHeaders = null;
+        Integer responseCode = null;
         String statusCode = "";
-        String result = null;
+        String result = "";
         long start = System.currentTimeMillis();
         try (Response response = HTTP_CLIENT.newCall(request).execute()) {
             resHeaders = response.headers();
-            statusCode = response.code() + " ";
+            responseCode = response.code();
+            statusCode = responseCode + " ";
             // noinspection ConstantConditions
             result = response.body().string();
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info(collectContext(start, method, url, params, reqHeaders, statusCode, resHeaders, result));
             }
-            return result;
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error(collectContext(start, method, url, params, reqHeaders, statusCode, resHeaders, result), e);
             }
         }
-        return null;
+        return new ResponseData<>(responseCode, result);
     }
     private static String collectContext(long start, String method, String url, String params, Headers reqHeaders,
                                          String statusCode, Headers resHeaders, String result) {

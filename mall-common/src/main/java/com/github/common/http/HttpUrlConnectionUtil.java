@@ -20,39 +20,39 @@ import java.util.Map;
 @SuppressWarnings("DuplicatedCode")
 public class HttpUrlConnectionUtil {
 
-    private static final String USER_AGENT = HttpConst.getUserAgent("url_connection");
+    private static final String USER_AGENT = HttpConst.getUserAgent("http_url_connection");
 
 
     /** 向指定 url 进行 get 请求 */
-    public static String get(String url) {
+    public static ResponseData<String> get(String url) {
         return get(url, null);
     }
     /** 向指定 url 进行 get 请求 */
-    public static String get(String url, Map<String, Object> params) {
+    public static ResponseData<String> get(String url, Map<String, Object> params) {
         return getWithHeader(url, params, null);
     }
     /** 向指定 url 进行 get 请求 */
-    public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap) {
+    public static ResponseData<String> getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap) {
         return handleRequest("GET", HttpConst.handleGetParams(url, params), null, headerMap);
     }
 
 
     /** 向指定的 url 进行 post 请求(表单) */
-    public static String post(String url, Map<String, Object> params) {
+    public static ResponseData<String> post(String url, Map<String, Object> params) {
         return postWithHeader(url, params, null);
     }
     /** 向指定的 url 进行 post 请求(表单) */
-    public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
+    public static ResponseData<String> postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
         // Content-Type 不设置则默认是 application/x-www-form-urlencoded
         return handleRequest("POST", url, U.formatParam(false, params), headers);
     }
 
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static String postBody(String url, String json) {
+    public static ResponseData<String> postBody(String url, String json) {
         return postBodyWithHeader(url, json, null);
     }
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static String postBodyWithHeader(String url, String json, Map<String, Object> headers) {
+    public static ResponseData<String> postBodyWithHeader(String url, String json, Map<String, Object> headers) {
         Map<String, Object> headerMap = new LinkedHashMap<>();
         if (A.isNotEmpty(headers)) {
             headerMap.putAll(headers);
@@ -63,11 +63,11 @@ public class HttpUrlConnectionUtil {
 
 
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static String put(String url, String json) {
+    public static ResponseData<String> put(String url, String json) {
         return putWithHeader(url, json, null);
     }
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static String putWithHeader(String url, String json, Map<String, Object> headers) {
+    public static ResponseData<String> putWithHeader(String url, String json, Map<String, Object> headers) {
         Map<String, Object> headerMap = new LinkedHashMap<>();
         if (A.isNotEmpty(headers)) {
             headerMap.putAll(headers);
@@ -78,11 +78,11 @@ public class HttpUrlConnectionUtil {
 
 
     /** 向指定的 url 基于 delete 发起 request-body 请求 */
-    public static String delete(String url, String json) {
+    public static ResponseData<String> delete(String url, String json) {
         return deleteWithHeader(url, json, null);
     }
     /** 向指定的 url 基于 delete 发起 request-body 请求 */
-    public static String deleteWithHeader(String url, String json, Map<String, Object> headers) {
+    public static ResponseData<String> deleteWithHeader(String url, String json, Map<String, Object> headers) {
         Map<String, Object> headerMap = new LinkedHashMap<>();
         if (A.isNotEmpty(headers)) {
             headerMap.putAll(headers);
@@ -195,13 +195,14 @@ public class HttpUrlConnectionUtil {
         return result;
     }
 
-    private static String handleRequest(String method, String url, String data, Map<String, Object> headers) {
+    private static ResponseData<String> handleRequest(String method, String url, String data, Map<String, Object> headers) {
         long start = System.currentTimeMillis();
         HttpURLConnection con = null;
         Map<String, List<String>> reqHeaders = null;
-        String result = null;
         Map<String, List<String>> resHeaders = null;
         String resCode = "";
+        Integer responseCode = null;
+        String result = "";
         url = HttpConst.handleEmptyScheme(url);
         try {
             con = (HttpURLConnection) new URL(url).openConnection();
@@ -231,7 +232,8 @@ public class HttpUrlConnectionUtil {
             con.connect();
 
             resHeaders = con.getHeaderFields();
-            resCode = con.getResponseCode() + " ";
+            responseCode = con.getResponseCode();
+            resCode = responseCode + " ";
             try (
                     InputStream input = con.getInputStream();
                     ByteArrayOutputStream stream = new ByteArrayOutputStream()
@@ -254,7 +256,7 @@ public class HttpUrlConnectionUtil {
                 con.disconnect();
             }
         }
-        return result;
+        return new ResponseData<>(responseCode, result);
     }
     private static String collectContext(long start, String method, String url, String params,
                                          Map<String, List<String>> reqHeaders, String resCode,

@@ -39,35 +39,35 @@ public class HttpClientUtil {
 
 
     /** 向指定 url 进行 get 请求 */
-    public static String get(String url) {
+    public static ResponseData<String> get(String url) {
         return get(url, null);
     }
     /** 向指定 url 进行 get 请求 */
-    public static String get(String url, Map<String, Object> params) {
+    public static ResponseData<String> get(String url, Map<String, Object> params) {
         return getWithHeader(url, params, null);
     }
     /** 向指定 url 进行 get 请求 */
-    public static String getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap) {
+    public static ResponseData<String> getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap) {
         return handleRequest("GET", HttpConst.handleGetParams(url, params), null, null, headerMap);
     }
 
 
     /** 向指定的 url 进行 post 请求(表单) */
-    public static String post(String url, Map<String, Object> params) {
+    public static ResponseData<String> post(String url, Map<String, Object> params) {
         return postWithHeader(url, params, null);
     }
     /** 向指定的 url 进行 post 请求(表单) */
-    public static String postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
+    public static ResponseData<String> postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
         // Content-Type 不设置则默认是 application/x-www-form-urlencoded
         return handleRequest("POST", url, U.formatParam(false, params), U.formatParam(true, params), headers);
     }
 
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static String postBody(String url, String json) {
+    public static ResponseData<String> postBody(String url, String json) {
         return postBodyWithHeader(url, json, null);
     }
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static String postBodyWithHeader(String url, String json, Map<String, Object> headers) {
+    public static ResponseData<String> postBodyWithHeader(String url, String json, Map<String, Object> headers) {
         Map<String, Object> headerMap = new LinkedHashMap<>();
         if (A.isNotEmpty(headers)) {
             headerMap.putAll(headers);
@@ -78,11 +78,11 @@ public class HttpClientUtil {
 
 
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static String put(String url, String json) {
+    public static ResponseData<String> put(String url, String json) {
         return putWithHeader(url, json, null);
     }
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static String putWithHeader(String url, String json, Map<String, Object> headers) {
+    public static ResponseData<String> putWithHeader(String url, String json, Map<String, Object> headers) {
         Map<String, Object> headerMap = new LinkedHashMap<>();
         if (A.isNotEmpty(headers)) {
             headerMap.putAll(headers);
@@ -93,11 +93,11 @@ public class HttpClientUtil {
 
 
     /** 向指定的 url 基于 delete 发起 request-body 请求 */
-    public static String delete(String url, String json) {
+    public static ResponseData<String> delete(String url, String json) {
         return deleteWithHeader(url, json, null);
     }
     /** 向指定的 url 基于 delete 发起 request-body 请求 */
-    public static String deleteWithHeader(String url, String json, Map<String, Object> headers) {
+    public static ResponseData<String> deleteWithHeader(String url, String json, Map<String, Object> headers) {
         Map<String, Object> headerMap = new LinkedHashMap<>();
         if (A.isNotEmpty(headers)) {
             headerMap.putAll(headers);
@@ -107,11 +107,12 @@ public class HttpClientUtil {
     }
 
     /** 向指定 url 上传文件 */
-    public static String postFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
+    public static ResponseData<String> postFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
         long start = System.currentTimeMillis();
         String method = "POST";
         Map<String, List<String>> reqHeaders = null;
         StringBuilder paramSbd = new StringBuilder();
+        Integer responseCode = null;
         String resCode = "";
         Map<String, List<String>> resHeaders = null;
         String result = null;
@@ -176,7 +177,8 @@ public class HttpClientUtil {
             HttpRequest request = builder.build();
             reqHeaders = request.headers().map();
             HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-            resCode = response.statusCode() + " ";
+            responseCode = response.statusCode();
+            resCode = responseCode + " ";
             resHeaders = response.headers().map();
             result = response.body();
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
@@ -189,17 +191,18 @@ public class HttpClientUtil {
                 LogUtil.ROOT_LOG.error(collectContext(start, method, url, print, reqHeaders, resCode, resHeaders, result), e);
             }
         }
-        return result;
+        return new ResponseData<>(responseCode, result);
     }
 
     private static byte[] handleBytes(String str) {
         return str.getBytes(StandardCharsets.UTF_8);
     }
 
-    private static String handleRequest(String method, String url, String data, String printData, Map<String, Object> headers) {
+    private static ResponseData<String> handleRequest(String method, String url, String data, String printData, Map<String, Object> headers) {
         long start = System.currentTimeMillis();
         printData = U.defaultIfBlank(printData, data);
         Map<String, List<String>> reqHeaders = null;
+        Integer responseCode = null;
         String resCode = "";
         Map<String, List<String>> resHeaders = null;
         String result = null;
@@ -218,7 +221,8 @@ public class HttpClientUtil {
             HttpRequest request = builder.build();
             reqHeaders = request.headers().map();
             HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-            resCode = response.statusCode() + " ";
+            responseCode = response.statusCode();
+            resCode = responseCode + " ";
             resHeaders = response.headers().map();
             result = response.body();
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
@@ -229,7 +233,7 @@ public class HttpClientUtil {
                 LogUtil.ROOT_LOG.error(collectContext(start, method, url, printData, reqHeaders, resCode, resHeaders, result), e);
             }
         }
-        return result;
+        return new ResponseData<>(responseCode, result);
     }
     private static String collectContext(long start, String method, String url, String params,
                                          Map<String, List<String>> reqHeaders, String resCode,
