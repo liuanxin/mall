@@ -27,7 +27,7 @@ public class HttpClientUtil {
             Math.max(U.PROCESSORS - 1, 1),
             (U.PROCESSORS + 2),
             60L, TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(U.PROCESSORS << 6),
+            new LinkedBlockingQueue<>(U.PROCESSORS << 10),
             AsyncUtil.wrapThreadFactory()
     );
 
