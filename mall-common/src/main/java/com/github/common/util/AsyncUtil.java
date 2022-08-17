@@ -7,11 +7,37 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.*;
 
 @SuppressWarnings("DuplicatedCode")
 public final class AsyncUtil {
+
+    /** IO 密集型的线程池(时间都消耗在了磁盘、网络上) */
+    public static ExecutorService ioExecutor() {
+        // 4 核 CPU, 每个 CPU 的占用率在 85%, 每个任务运行时 CPU 耗时是 10ms 且 IO 耗时 190ms, 则线程数是 68
+        // 4 核 CPU, 每个 CPU 的占用率在 80%, 每个任务运行时 CPU 耗时是 10ms 且 IO 耗时 190ms, 则线程数是 64
+        int poolSize = U.calcPoolSize(0.85, 5, 180);
+        return new ThreadPoolExecutor(
+                poolSize,
+                poolSize + 2,
+                60L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(U.PROCESSORS << 11),
+                AsyncUtil.wrapThreadFactory()
+        );
+    }
+
+    /** CPU 密集型的线程池(时间都消耗在了计算上) */
+    public static ExecutorService cpuExecutor() {
+        // CPU 核心数 + 1
+        int poolSize = U.calcPoolSize(0.8, 999, 1);
+        return new ThreadPoolExecutor(
+                poolSize,
+                poolSize + 2,
+                60L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(U.PROCESSORS << 11),
+                AsyncUtil.wrapThreadFactory()
+        );
+    }
 
     /**
      * 直接用 Executors 的静态方法生成的线程池, 想要线程池里的线程共享主线程的上下文, 构造时使用此方法生成的 ThreadFactory<p/>

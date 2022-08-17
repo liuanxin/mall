@@ -85,6 +85,47 @@ public final class U {
     private static final Map<String, Map<String, Field>> FIELDS_CACHE = new ConcurrentHashMap<>();
 
 
+    /**
+     * <pre>
+     * 《Java Concurrency in Practice》即《java并发编程实践》
+     *     Ncpu = CPU 可用核心数
+     *     Ucpu = CPU 的使用率(0 <= Ucpu <= 1), 通常默认其是 1
+     *     W/C  = 等待时间与计算时间的比率
+     *     最优的池的大小等于: Nthreads = Ncpu x Ucpu x (1 + W/C)
+     *
+     * 《Programming Concurrency on the JVM Mastering》即《Java 虚拟机并发编程》
+     *     线程数 = CPU 可用核心数 / (1 - 阻塞系数), 其中阻塞系数的取值大于 0 且小于 1
+     *     计算密集型任务的阻塞系数为 0, 而 IO 密集型任务的阻塞系数则接近 1. 一个完全阻塞的任务是注定要挂掉的, 所以我们无须担心阻塞系数会达到 1
+     *
+     *
+     * 纯计算型: CPU 密集型
+     *     配置尽可能小的线程数, 如配置 CPU 数 + 1 个线程(当发生未知原因而暂停时, 刚好有 1 个"额外"的线程可以确保在这种情况下 CPU 周期不会中断工作)
+     *
+     * 日常: 小 CPU 密集型 + 大 IO 密集型(网络, 磁盘)
+     *     如果一个任务 CPU 耗时 10ms, IO 耗时 190ms, 则单个 CPU 的利用率是 10 / (10 + 190),
+     *     想要每个 CPU 的使用率达到 90%, 且有 4 个 CPU 核心, 最终: 4 * 0.9 * (10 + 190) / 10 = 72
+     * </pre>
+     *
+     * CPU 利用率 0.85, CPU 时间: 10  , IO 时间: 190 ==> 68
+     * CPU 利用率 0.85, CPU 时间: 20 ,  IO 时间: 180 ==> 34
+     * CPU 利用率 0.85, CPU 时间: 1000, IO 时间: 1   ==> 5
+     * CPU 利用率 0.85, CPU 时间: 10  , IO 时间: 1   ==> 5
+     * CPU 利用率 0.85, CPU 时间: 100 , IO 时间: 300 ==> 14
+     *
+     * @param cpuRate cpu 占用率, 0 ~ 1 之间的小数
+     * @param cpuTime 单个任务中 CPU 占用的毫秒数(1 ~ 999 之间), 当 CPU 密集型时这个值很大(接近 1000), 当 IO 密集型时这个值很小(接近 0)
+     * @param ioTime 单个任务中 IO 占用的毫秒数(1 ~ 999 之间), 当 CPU 密集型时这个值很小(接近 0), 当 IO 密集型时这个值很大(接近 1000)
+     */
+    public static int calcPoolSize(double cpuRate, int cpuTime, int ioTime) {
+        double realRate = (cpuRate > 0 && cpuRate < 1) ? cpuRate : 1;
+        int realCpuTime = (cpuTime <= 0) ? 1 : Math.min(cpuTime, 999);
+        int realIoTime = (ioTime <= 0) ? 1 : Math.min(ioTime, 999);
+        double num = PROCESSORS * realRate * (realCpuTime + realIoTime) / realCpuTime;
+        int calcNum = (int) num;
+        int returnNum = (num == calcNum) ? calcNum : (calcNum + 1);
+        return (returnNum == PROCESSORS) ? (returnNum + 1) : returnNum;
+    }
+
     /** 生成指定位数的随机数: 纯数字 */
     public static String random(int length) {
         if (length <= 0) {

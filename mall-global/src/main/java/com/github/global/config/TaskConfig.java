@@ -42,18 +42,14 @@ public class TaskConfig implements AsyncConfigurer {
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        // 如果 cpu 核心是   1, 则最前面的   1 个异步处理, 接下来的   1024 个(左移 10 位 = * 1024)放进队列, 之后的 2 个(   1 + 2 -   1)异步处理, 再往后的拒绝
-        // 如果 cpu 核心是   2, 则最前面的   1 个异步处理, 接下来的   2048 个(左移 10 位 = * 1024)放进队列, 之后的 3 个(   2 + 2 -   1)异步处理, 再往后的拒绝
-        // 如果 cpu 核心是   4, 则最前面的   3 个异步处理, 接下来的   4096 个(左移 10 位 = * 1024)放进队列, 之后的 3 个(   4 + 2 -   3)异步处理, 再往后的拒绝
-        // 如果 cpu 核心是   8, 则最前面的   7 个异步处理, 接下来的   8192 个(左移 10 位 = * 1024)放进队列, 之后的 3 个(   8 + 2 -   7)异步处理, 再往后的拒绝
-        // 如果 cpu 核心是  16, 则最前面的  15 个异步处理, 接下来的  16384 个(左移 10 位 = * 1024)放进队列, 之后的 3 个(  16 + 2 -  15)异步处理, 再往后的拒绝
-        // 如果 cpu 核心是  32, 则最前面的  31 个异步处理, 接下来的  32768 个(左移 10 位 = * 1024)放进队列, 之后的 3 个(  32 + 2 -  31)异步处理, 再往后的拒绝
-        // 如果 cpu 核心是  64, 则最前面的  63 个异步处理, 接下来的  65536 个(左移 10 位 = * 1024)放进队列, 之后的 3 个(  64 + 2 -  63)异步处理, 再往后的拒绝
-        // 如果 cpu 核心是 128, 则最前面的 127 个异步处理, 接下来的 131072 个(左移 10 位 = * 1024)放进队列, 之后的 3 个( 128 + 2 - 127)异步处理, 再往后的拒绝
-        // 如果 cpu 核心是 256, 则最前面的 255 个异步处理, 接下来的 262144 个(左移 10 位 = * 1024)放进队列, 之后的 3 个( 256 + 2 - 255)异步处理, 再往后的拒绝
-        executor.setCorePoolSize(corePoolSize > 0 ? corePoolSize : Math.max(U.PROCESSORS - 1, 1));
-        executor.setMaxPoolSize(maxPoolSize > 0 ? maxPoolSize : (U.PROCESSORS + 2));
-        executor.setQueueCapacity(queueCapacity > 0 ? queueCapacity : (U.PROCESSORS << 10));
+        // 4 核 CPU, 每个 CPU 的占用率在 80%, 每个任务运行时 CPU 耗时是 10ms 且 IO 耗时 190ms, 则线程数是 64
+        // 4 核 CPU, 每个 CPU 的占用率在 80%, 每个任务运行时 CPU 耗时是 20ms 且 IO 耗时 180ms, 则线程数是 32
+        // 4 核 CPU, 每个 CPU 的占用率在 85%, 每个任务运行时 CPU 耗时是 10ms 且 IO 耗时 190ms, 则线程数是 68
+        // 4 核 CPU, 每个 CPU 的占用率在 85%, 每个任务运行时 CPU 耗时是 20ms 且 IO 耗时 180ms, 则线程数是 34
+        int poolSize = U.calcPoolSize(0.85, 20, 180);
+        executor.setCorePoolSize(corePoolSize > 0 ? corePoolSize : poolSize);
+        executor.setMaxPoolSize(maxPoolSize > 0 ? maxPoolSize : (poolSize + 1));
+        executor.setQueueCapacity(queueCapacity > 0 ? queueCapacity : (U.PROCESSORS << 10)); // * 1024
         executor.setThreadNamePrefix("task-executor-");
         // 见: https://moelholm.com/blog/2017/07/24/spring-43-using-a-taskdecorator-to-copy-mdc-data-to-async-threads
         executor.setTaskDecorator(AsyncUtil::wrapRunContext);

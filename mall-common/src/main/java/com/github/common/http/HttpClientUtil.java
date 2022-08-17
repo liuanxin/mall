@@ -13,27 +13,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("DuplicatedCode")
 public class HttpClientUtil {
 
     private static final String USER_AGENT = HttpConst.getUserAgent("http_client");
 
-    private static final Executor EXECUTOR = new ThreadPoolExecutor(
-            Math.max(U.PROCESSORS - 1, 1),
-            (U.PROCESSORS + 2),
-            60L, TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(U.PROCESSORS << 10),
-            AsyncUtil.wrapThreadFactory()
-    );
-
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_2)
-            .executor(EXECUTOR)
+            .executor(AsyncUtil.ioExecutor())
             .followRedirects(HttpClient.Redirect.NORMAL)
             .connectTimeout(Duration.ofMillis(HttpConst.CONNECT_TIME_OUT))
             .build();
