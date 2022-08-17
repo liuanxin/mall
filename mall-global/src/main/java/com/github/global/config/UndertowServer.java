@@ -1,6 +1,5 @@
 package com.github.global.config;
 
-import com.github.common.util.U;
 import io.undertow.server.DefaultByteBufferPool;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -21,7 +20,8 @@ public class UndertowServer implements WebServerFactoryCustomizer<UndertowServle
     public void customize(UndertowServletWebServerFactory undertow) {
         undertow.addDeploymentInfoCustomizers(deploymentInfo -> {
             WebSocketDeploymentInfo webSocketDeploymentInfo = new WebSocketDeploymentInfo();
-            webSocketDeploymentInfo.setBuffers(new DefaultByteBufferPool(false, (U.PROCESSORS << 1) + 1));
+            int processors = Runtime.getRuntime().availableProcessors();
+            webSocketDeploymentInfo.setBuffers(new DefaultByteBufferPool(false, (processors << 1) + 1));
             deploymentInfo.addServletContextAttribute(WebSocketDeploymentInfo.class.getName(), webSocketDeploymentInfo);
         });
     }
