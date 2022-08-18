@@ -42,11 +42,7 @@ public class TaskConfig implements AsyncConfigurer {
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        // 4 核 CPU, 每个 CPU 的占用率在 80%, 每个任务运行时 CPU 耗时是 10ms 且 IO 耗时 190ms, 则线程数是 64
-        // 4 核 CPU, 每个 CPU 的占用率在 80%, 每个任务运行时 CPU 耗时是 20ms 且 IO 耗时 180ms, 则线程数是 32
-        // 4 核 CPU, 每个 CPU 的占用率在 85%, 每个任务运行时 CPU 耗时是 10ms 且 IO 耗时 190ms, 则线程数是 68
-        // 4 核 CPU, 每个 CPU 的占用率在 85%, 每个任务运行时 CPU 耗时是 20ms 且 IO 耗时 180ms, 则线程数是 34
-        int poolSize = U.calcPoolSize(0.85, 20, 180);
+        int poolSize = U.calcPoolSize(0.8, 20, 180);
         executor.setCorePoolSize(corePoolSize > 0 ? corePoolSize : poolSize);
         executor.setMaxPoolSize(maxPoolSize > 0 ? maxPoolSize : (poolSize + 1));
         executor.setQueueCapacity(queueCapacity > 0 ? queueCapacity : (U.PROCESSORS << 11));

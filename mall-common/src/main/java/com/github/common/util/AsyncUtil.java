@@ -14,27 +14,27 @@ public final class AsyncUtil {
 
     /** IO 密集型的线程池(时间都消耗在了磁盘、网络上) */
     public static ExecutorService ioExecutor() {
-        // 4 核 CPU, 每个 CPU 的占用率在 85%, 每个任务运行时 CPU 耗时是 10ms 且 IO 耗时 190ms, 则线程数是 68
-        // 4 核 CPU, 每个 CPU 的占用率在 80%, 每个任务运行时 CPU 耗时是 10ms 且 IO 耗时 190ms, 则线程数是 64
-        int poolSize = U.calcPoolSize(0.85, 5, 180);
+        int poolSize = U.calcPoolSize(0.75, 10, 190);
         return new ThreadPoolExecutor(
                 poolSize,
-                poolSize + 2,
+                poolSize + 1,
                 60L, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(U.PROCESSORS << 11),
+                queue(),
                 AsyncUtil.wrapThreadFactory()
         );
     }
-
+    private static BlockingQueue<Runnable> queue() {
+        return new LinkedBlockingQueue<>(U.PROCESSORS << 11);
+    }
     /** CPU 密集型的线程池(时间都消耗在了计算上) */
     public static ExecutorService cpuExecutor() {
-        // CPU 核心数 + 1
-        int poolSize = U.calcPoolSize(0.8, 999, 1);
+        // core: CPU 核心数,  max: CPU 核心 + 1,  queue: CPU 核心 * 2048
+        int poolSize = U.PROCESSORS;
         return new ThreadPoolExecutor(
                 poolSize,
-                poolSize + 2,
+                poolSize + 1,
                 60L, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(U.PROCESSORS << 11),
+                queue(),
                 AsyncUtil.wrapThreadFactory()
         );
     }
