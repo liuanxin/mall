@@ -87,13 +87,13 @@ public final class U {
 
     /**
      * <pre>
-     * 《Java Concurrency in Practice》即《java并发编程实践》
+     * 《Java Concurrency in Practice》即《Java 并发编程实战》
      *     Ncpu = CPU 可用核心数
-     *     Ucpu = CPU 的使用率(0 <= Ucpu <= 1), 通常默认其是 1
+     *     Ucpu = CPU 的使用率(0 <= Ucpu <= 1)
      *     W/C  = 等待时间与计算时间的比率
      *     最优的池的大小等于: Nthreads = Ncpu x Ucpu x (1 + W/C)
      *
-     * 《Programming Concurrency on the JVM Mastering》即《Java 虚拟机并发编程》
+     * 《Programming Concurrency on the JVM》即《Java 虚拟机并发编程》
      *     线程数 = CPU 可用核心数 / (1 - 阻塞系数), 其中阻塞系数的取值大于 0 且小于 1
      *     计算密集型任务的阻塞系数为 0, 而 IO 密集型任务的阻塞系数则接近 1. 一个完全阻塞的任务是注定要挂掉的, 所以我们无须担心阻塞系数会达到 1
      *
