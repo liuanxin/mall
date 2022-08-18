@@ -312,6 +312,8 @@ public final class U {
         }
         try {
             double num = Double.parseDouble(obj.toString().trim());
+            // int in = (int) num;
+            // return num == in;
             return Math.abs(num - Math.round(num)) < Double.MIN_VALUE;
         } catch (NumberFormatException e) {
             return false;

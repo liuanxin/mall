@@ -58,10 +58,7 @@ public enum Gender {
                 case 18 -> idCard.substring(16, 17);
                 default -> U.EMPTY;
             };
-            if (U.isNotBlank(gender) && U.isNotInt(gender)) {
-                return Gender.Nil;
-            }
-            return (U.toInt(gender) % 2 == 1) ? Gender.Male : Gender.Female;
+            return (U.isNotBlank(gender) && U.isInt(gender) && U.toInt(gender) % 2 == 1) ? Gender.Male : Gender.Female;
         } else {
             return Gender.Nil;
         }
