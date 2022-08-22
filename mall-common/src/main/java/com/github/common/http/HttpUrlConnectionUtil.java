@@ -175,12 +175,18 @@ public class HttpUrlConnectionUtil {
 
             resHeaders = con.getHeaderFields();
             resCode = con.getResponseCode() + " ";
-            try (InputStream input = con.getInputStream()) {
-                StringBuilder sbd = new StringBuilder();
-                for (int ch; (ch = input.read()) != -1; ) {
-                    sbd.append((char) ch);
-                }
-                result = sbd.toString();
+            try (
+                    InputStream input = con.getInputStream();
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream()
+            ) {
+                // int size = 8192;
+                // byte[] buffer = new byte[size];
+                // int read;
+                // while ((read = input.read(buffer, 0, size)) >= 0) {
+                //     stream.write(buffer, 0, read);
+                // }
+                input.transferTo(stream);
+                result = stream.toString(StandardCharsets.UTF_8);
             }
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 String print = String.format("upload file[%s]", paramSbd);

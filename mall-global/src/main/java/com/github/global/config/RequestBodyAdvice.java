@@ -66,13 +66,13 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                     @Override
                     public InputStream getBody() throws IOException {
                         // Http Request 的 inputStream 读取过后再读取就会异常, 所以这样操作(两处都 new ByteArrayInputStream)
-                        try (InputStream inputStream = inputMessage.getBody()) {
-                            byte[] bytes = inputStream.readAllBytes();
+                        try (InputStream input = inputMessage.getBody()) {
+                            byte[] bytes = input.readAllBytes();
                             if (A.isNotEmptyObj(bytes)) {
-                                // 这样输出的内容可能会有很多空白符(空格, 换行等)
                                 String data = new String(bytes, StandardCharsets.UTF_8);
                                 String str = U.foggyValue(data, maxPrintLength, printLength, printLength);
-                                LogUtil.ROOT_LOG.info("RequestBody({})", str);
+                                // 换行符替换, 避免输出多行
+                                LogUtil.ROOT_LOG.info("RequestBody({})", str.replace("\n", "(n)").replace("\r", "[n]"));
                             }
                             return new ByteArrayInputStream(bytes);
                         }
