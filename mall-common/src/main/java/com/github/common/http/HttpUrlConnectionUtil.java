@@ -118,7 +118,7 @@ public class HttpUrlConnectionUtil {
                 con.setRequestProperty(Const.TRACE, traceId);
             }
             String language = LogUtil.getLanguage();
-            if (U.isNotNull(language)) {
+            if (U.isNotBlank(language)) {
                 con.setRequestProperty("Accept-Language", language);
             }
             reqHeaders = con.getRequestProperties();

@@ -212,7 +212,7 @@ public class HttpClientUtil {
                 builder.header(Const.TRACE, traceId);
             }
             String language = LogUtil.getLanguage();
-            if (U.isNotNull(language)) {
+            if (U.isNotBlank(language)) {
                 builder.header("Accept-Language", language);
             }
             HttpRequest request = builder.build();

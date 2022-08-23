@@ -253,7 +253,7 @@ public class ApacheHttpClientUtil {
             request.setHeader(Const.TRACE, traceId);
         }
         String language = LogUtil.getLanguage();
-        if (U.isNotNull(language)) {
+        if (U.isNotBlank(language)) {
             request.setHeader("Accept-Language", language);
         }
         String method = request.getMethod();
