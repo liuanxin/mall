@@ -71,23 +71,26 @@ public class LanguageFilter implements Filter {
 
         Set<String> languages = new HashSet<>();
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+        PathMatchingResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver(classLoader);
         for (String file : files) {
             try {
                 // i18n/messages -> messages, i18n/validation -> validation
                 String fileName = file.substring(file.lastIndexOf("/") + 1);
                 String location = String.format("classpath*:%s*.properties", file);
-                Resource[] resources = new PathMatchingResourcePatternResolver(classLoader).getResources(location);
-                for (Resource resource : resources) {
-                    // messages.properties, messages_zh_CN.properties, messages_en_US.properties
-                    String filename = resource.getFilename();
-                    if (U.isNotBlank(filename)) {
-                        // noinspection ConstantConditions
-                        String name = filename.substring(0, filename.indexOf(".properties"));
-                        // 只要 zh_CN、en_US 这些带语言的文件, 不带的忽略
-                        if (!name.equals(fileName) && name.startsWith(fileName)) {
-                            String language = name.substring(fileName.length() + 1);
-                            if (U.isNotBlank(language)) {
-                                languages.add(language);
+                Resource[] resources = patternResolver.getResources(location);
+                if (A.isNotEmpty(resources)) {
+                    for (Resource resource : resources) {
+                        // messages.properties, messages_zh_CN.properties, messages_en_US.properties
+                        String filename = resource.getFilename();
+                        if (U.isNotBlank(filename)) {
+                            // noinspection ConstantConditions
+                            String name = filename.substring(0, filename.indexOf(".properties"));
+                            // 只要 zh_CN、en_US 这些带语言的文件, 不带的忽略
+                            if (!name.equals(fileName) && name.startsWith(fileName)) {
+                                String language = name.substring(fileName.length() + 1);
+                                if (U.isNotBlank(language)) {
+                                    languages.add(language);
+                                }
                             }
                         }
                     }
