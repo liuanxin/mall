@@ -36,28 +36,37 @@ public class LanguageFilter implements Filter {
     private final String languageParam;
     private final Set<Locale> locales;
     public LanguageFilter(String languageParam, String i18nBaseNames) {
-        this.languageParam = languageParam;
+        this.languageParam = U.defaultIfBlank(languageParam, "lang");
         this.locales = scanLocale(i18nBaseNames);
     }
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) req;
-        final Locale locale = handleLocale(httpRequest);
 
-        HttpServletRequestWrapper request = new HttpServletRequestWrapper(httpRequest) {
-            @Override
-            public Locale getLocale() {
-                return locale;
+        String paramLang = httpRequest.getParameter(languageParam);
+        String headLang = httpRequest.getHeader(languageParam);
+        String acceptLanguage = httpRequest.getHeader("Accept-Language");
+        Locale originalLocale = httpRequest.getLocale();
+        Locale calcLocale = handleLocale(paramLang, headLang, acceptLanguage, originalLocale);
+
+        if (originalLocale == calcLocale) {
+            chain.doFilter(req, res);
+        } else {
+            HttpServletRequestWrapper request = new HttpServletRequestWrapper(httpRequest) {
+                @Override
+                public Locale getLocale() {
+                    return calcLocale;
+                }
+            };
+
+            LocaleContextHolder.setLocale(calcLocale);
+            LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
+            if (U.isNotNull(localeResolver)) {
+                localeResolver.setLocale(request, (HttpServletResponse) res, calcLocale);
             }
-        };
-
-        LocaleContextHolder.setLocale(locale);
-        LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
-        if (U.isNotNull(localeResolver)) {
-            localeResolver.setLocale(request, (HttpServletResponse) res, locale);
+            chain.doFilter(request, res);
         }
-        chain.doFilter(request, res);
     }
 
     private Set<Locale> scanLocale(String baseNames) {
@@ -115,41 +124,34 @@ public class LanguageFilter implements Filter {
         return sets;
     }
 
-    private Locale handleLocale(HttpServletRequest request) {
-        Locale locale = getLocale(request);
+    private Locale handleLocale(String paramLang, String headLang, String acceptLanguage, Locale originalLocale) {
+        Locale locale = getLocale(paramLang, headLang, acceptLanguage, originalLocale);
         // 「请求的语言」如果是空 或 「请求的语言」不在「国际化对应的语言列表」中 则使用默认语言
-        return (hasBlankLocale(locale) || !locales.contains(locale)) ? Const.DEFAULT_LOCALE : locale;
+        return (blankLocale(locale) || !locales.contains(locale)) ? Const.DEFAULT_LOCALE : locale;
     }
 
-    private Locale getLocale(HttpServletRequest request) {
-        String param = U.defaultIfBlank(languageParam, "lang");
-        Locale paramLocale = parse(request.getParameter(param));
-        if (!hasBlankLocale(paramLocale)) {
+    private Locale getLocale(String paramLang, String headLang, String acceptLanguage, Locale originalLocale) {
+        Locale paramLocale = parse(paramLang);
+        if (notBlankLocale(paramLocale)) {
             return paramLocale;
         }
-        Locale headLocale = parse(request.getHeader(param));
-        if (!hasBlankLocale(headLocale)) {
+        Locale headLocale = parse(headLang);
+        if (notBlankLocale(headLocale)) {
             return headLocale;
         }
-        // 从头中获取 Accept-Language, 使用 request.getLocale() 当语言是 en_US 时将无法解析, 只有 en-US 才行
-        // return request.getLocale();
-        return parse(request.getHeader("Accept-Language"));
+        Locale alLocale = parse(acceptLanguage);
+        if (notBlankLocale(alLocale)) {
+            return alLocale;
+        }
+        return originalLocale;
     }
-
     private Locale parse(String lang) {
-        if (U.isBlank(lang)) {
-            return null;
-        }
-
-        // 兼容 zh-CN 和 zh_CN 两种方式
-        Locale locale = Locale.forLanguageTag(lang);
-        if (U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()))) {
-            return Locale.forLanguageTag(lang.replace("_", "-"));
-        }
-        return locale;
+        return U.isBlank(lang) ? null : Locale.forLanguageTag(lang.replace("_", "-"));
     }
-
-    private boolean hasBlankLocale(Locale locale) {
+    private boolean blankLocale(Locale locale) {
         return U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()));
+    }
+    private boolean notBlankLocale(Locale locale) {
+        return !blankLocale(locale);
     }
 }
