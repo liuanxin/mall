@@ -46,6 +46,10 @@ public class MqRetryHandler {
             for (MqReceive mqReceive : mqReceiveList) {
                 retryReceive(desc, mqReceive);
             }
+            // 如果上面查到的已经是最后一批数据也退出循环, 这样当上面的处理失败, 将会在下一次运行时执行
+            if (mqReceiveList.size() < mqRetryLimit) {
+                return true;
+            }
         }
     }
     private void retryReceive(String desc, MqReceive mqReceive) {
@@ -89,6 +93,10 @@ public class MqRetryHandler {
             }
             for (MqSend mqSend : mqSendList) {
                 retrySend(desc, mqSend);
+            }
+            // 如果上面查到的已经是最后一批数据也退出循环, 这样当上面的处理失败, 将会在下一次运行时执行
+            if (mqSendList.size() < mqRetryLimit) {
+                return true;
             }
         }
     }
