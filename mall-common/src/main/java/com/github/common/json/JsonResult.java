@@ -13,6 +13,7 @@ import java.util.Map;
 /** <span style="color:red;">!!!此实体类请只在 Controller 中使用, 且只调用其 static 方法!!!</span> */
 @Data
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class JsonResult<T> {
 
     // 1. status 返回 200 400 404 500 码, 200 时返回 json, 非 200 时返回 msg
@@ -29,15 +30,12 @@ public class JsonResult<T> {
     private String traceId;
 
     @ApiReturn(value = "错误信息, 只在非生产时返回")
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<String> error;
 
     @ApiReturn(value = "验证失败信息, 返回 { 入参 1 : 错误信息 1, 入参 2 : 错误信息 2 }")
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private Map<String, String> validate;
 
     @ApiReturn("返回数据, 实体 {\"id\":1} | 列表 [{\"id\":1},{\"id\":2}] 看具体的业务")
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private T data;
 
     private JsonResult(JsonCode code, String msg) {

@@ -29,7 +29,7 @@ import java.lang.reflect.Method;
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
 public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice {
 
-    @Value("${log.maxPrintLength:50000}")
+    @Value("${log.maxPrintLength:10000}")
     private int maxPrintLength;
     @Value("${log.printLength:1000}")
     private int printLength;

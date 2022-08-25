@@ -49,9 +49,16 @@
       "description": "响应错误时, 错误码是否以 ResponseStatus 返回."
     },
     {
+      "name": "log.printComplete",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "sourceType": "com.github.global.config.RequestBodyAdvice",
+      "description": "是否在转换前打印日志(false 表示在转换后打印, 但如果转换失败将无法打印)."
+    },
+    {
       "name": "log.maxPrintLength",
       "type": "java.lang.Integer",
-      "defaultValue": 50000,
+      "defaultValue": 10000,
       "description": "打印日志时的最大长度."
     },
     {

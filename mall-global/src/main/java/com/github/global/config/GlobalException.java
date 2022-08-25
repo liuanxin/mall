@@ -26,9 +26,6 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -161,20 +158,8 @@ public class GlobalException {
     }
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<JsonResult<String>> convertJsonException(HttpMessageNotReadableException e) {
-        StringBuilder sbd = new StringBuilder();
-        try (
-                InputStream input = e.getHttpInputMessage().getBody();
-                ByteArrayOutputStream output = new ByteArrayOutputStream()
-        ) {
-            U.inputToOutput(input, output);
-            // 换行符替换, 避免输出多行
-            String data = output.toString(StandardCharsets.UTF_8).replace("\n", "(n)").replace("\r", "[n]");
-            sbd.append("data(").append(data).append(") convert exception");
-        } catch (Exception ex) {
-            sbd.append("data convert exception, read data exception(").append(ex.getMessage()).append(")");
-        }
         int status = (returnStatusCode ? JsonCode.BAD_REQUEST : JsonCode.SUCCESS).getCode();
-        return handle(sbd.toString(), status, handleErrorResult(JsonResult.badRequest("bad request-body", null)), e);
+        return handle("data convert fail", status, handleErrorResult(JsonResult.badRequest("bad request-body", null)), e);
     }
 
     // 以上是 spring 的内部异常
@@ -253,21 +238,13 @@ public class GlobalException {
                 String requestInfo = RequestUtil.logRequestInfo(printHeader);
                 sbd.append(String.format("[%s] [%s] ", basicInfo, requestInfo));
             }
-            boolean knowException = U.isNotBlank(msg);
-            if (knowException) {
+            if (U.isNotBlank(msg)) {
                 sbd.append(msg).append(", ");
             }
             sbd.append(String.format("exception result: (%s)", JsonUtil.toJson(result)));
 
-            // 已知异常用 debug, 否则用 error
-            if (knowException) {
-                if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-                    LogUtil.ROOT_LOG.debug("{}", sbd, e);
-                }
-            } else {
-                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("{}", sbd, e);
-                }
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("{}", sbd, e);
             }
         } finally {
             if (logNotTraceId) {

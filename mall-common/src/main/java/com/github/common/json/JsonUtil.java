@@ -96,6 +96,21 @@ public class JsonUtil {
         return convertType(source, type, false, false);
     }
 
+    /** 将 json 中的空白符去除(先反序列化成 Object, 再序列化成 String) */
+    public static String removeWhiteSpace(String json) {
+        if (U.isBlank(json)) {
+            return json;
+        }
+        try {
+            return EMPTY_OBJECT_MAPPER.writeValueAsString(EMPTY_OBJECT_MAPPER.readValue(json, Object.class));
+        } catch (Exception e) {
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("handle json({}) white exception", U.compress(json), e);
+            }
+            return json;
+        }
+    }
+
     /**
      * 对象转换, 失败将会返回 null
      *
