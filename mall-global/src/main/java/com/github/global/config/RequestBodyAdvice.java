@@ -71,7 +71,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                         // 所以像下面这样操作: 先读取 byte[], 处理后再返回一个输入流
                         try (
                                 InputStream input = inputMessage.getBody();
-                                ByteArrayOutputStream output = new ByteArrayOutputStream();
+                                ByteArrayOutputStream output = new ByteArrayOutputStream()
                         ) {
                             // 用 ByteArrayOutputStream 的方式是最快的
                             // 见: https://stackoverflow.com/questions/309424/how-do-i-read-convert-an-inputstream-into-a-string-in-java
