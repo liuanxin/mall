@@ -51,7 +51,7 @@
     {
       "name": "log.maxPrintLength",
       "type": "java.lang.Integer",
-      "defaultValue": 200000,
+      "defaultValue": 50000,
       "description": "打印日志时的最大长度."
     },
     {

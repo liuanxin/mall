@@ -26,7 +26,7 @@ import java.lang.reflect.Type;
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
 public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
 
-    @Value("${log.maxPrintLength:200000}")
+    @Value("${log.maxPrintLength:50000}")
     private int maxPrintLength;
     @Value("${log.printLength:1000}")
     private int printLength;
