@@ -41,12 +41,13 @@ public class GlobalLogHandler {
     private final ObjectMapper logDesObjectMapper;
 
     public GlobalLogHandler(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+        this.objectMapper = objectMapper.copy();
         // NON_NULL  : null 值不序列化
         // NON_EMPTY : null、空字符串、长度为 0 的 list、长度为 0 的 map 都不序列化
         this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
         this.logDesObjectMapper = objectMapper.copy();
+        this.logDesObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         this.logDesObjectMapper.registerModule(JsonModule.LOG_SENSITIVE_MODULE);
     }
 
