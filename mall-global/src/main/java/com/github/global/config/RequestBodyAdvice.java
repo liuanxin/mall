@@ -2,7 +2,6 @@ package com.github.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.common.json.JsonUtil;
-import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
@@ -22,6 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAd
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
@@ -66,14 +66,22 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
 
                     @Override
                     public InputStream getBody() throws IOException {
-                        // Http Request 的 inputStream 读取过后再读取就会异常, 所以这样操作(两处都 new ByteArrayInputStream)
-                        try (InputStream input = inputMessage.getBody()) {
-                            byte[] bytes = input.readAllBytes();
-                            if (A.isNotEmptyObj(bytes)) {
-                                String data = JsonUtil.removeWhiteSpace(new String(bytes, StandardCharsets.UTF_8));
-                                String str = U.foggyValue(data, maxPrintLength, printLength, printLength);
-                                LogUtil.ROOT_LOG.info("RequestBody({})", str);
-                            }
+                        // inputStream 是通过内部偏移来读取的, 读到末尾后没有指回来(一些实现流 reset 还会 mark/reset not supported 异常),
+                        // 这导致当想要重复读取时就会异常(getXX can't be called after getXXX),
+                        // 所以像下面这样操作: 先读取 byte[], 处理后再返回一个输入流
+                        try (
+                                InputStream input = inputMessage.getBody();
+                                ByteArrayOutputStream output = new ByteArrayOutputStream();
+                        ) {
+                            // 用 ByteArrayOutputStream 的方式是最快的
+                            // 见: https://stackoverflow.com/questions/309424/how-do-i-read-convert-an-inputstream-into-a-string-in-java
+                            U.inputToOutput(input, output);
+                            byte[] bytes = output.toByteArray();
+
+                            String data = JsonUtil.removeWhiteSpace(new String(bytes, StandardCharsets.UTF_8));
+                            String str = U.foggyValue(data, maxPrintLength, printLength, printLength);
+                            LogUtil.ROOT_LOG.info("request-body({})", str);
+
                             return new ByteArrayInputStream(bytes);
                         }
                     }
@@ -90,7 +98,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
             if (!printComplete) {
                 // 这样输出的内容会去除 null 值的属性
                 String json = logHandler.toJson(body);
-                LogUtil.ROOT_LOG.info("RequestBody({})", U.foggyValue(json, maxPrintLength, printLength, printLength));
+                LogUtil.ROOT_LOG.info("request-body({})", U.foggyValue(json, maxPrintLength, printLength, printLength));
             }
         }
         return super.afterBodyRead(body, inputMessage, parameter, targetType, converterType);

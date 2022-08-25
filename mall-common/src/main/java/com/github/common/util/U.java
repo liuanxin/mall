@@ -980,8 +980,7 @@ public final class U {
 
             // jdk-8
             // byte[] buf = new byte[8192];
-            // int length;
-            // while ((length = input.read(buf)) != -1) {
+            // for (int length; (length = input.read(buf)) != -1; ) {
             //     output.write(buf, 0, length);
             // }
 
