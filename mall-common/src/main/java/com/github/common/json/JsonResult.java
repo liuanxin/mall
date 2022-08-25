@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 import java.util.Map;
 
-/** <span style="color:red;">!!!此实体类请只在 Controller 中使用, 且只调用其 static 方法!!!</span> */
 @Data
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
