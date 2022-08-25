@@ -37,7 +37,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
      * 当前端发过来的 RequestBody 数据跟相关的实体对应不上时, 是进不到 afterBodyRead 去的
      * 想要打印入参, 将此值设置为 true(因为复制了一遍字节码, 内存消耗会比 false 时多)
      */
-    @Value("${log.printComplete:false}")
+    @Value("${log.printComplete:true}")
     private boolean printComplete;
 
     @Value("${log.maxPrintLength:10000}")
@@ -66,9 +66,13 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
 
                     @Override
                     public InputStream getBody() throws IOException {
-                        // inputStream 是通过内部偏移来读取的, 读到末尾后没有指回来(一些实现流 reset 还会 mark/reset not supported 异常),
+                        // inputStream 是通过内部偏移来读取的, 读到末尾后没有指回来,
+                        // 一些实现流没有实现 reset 方法, 将会报 inputStream 默认的实现 mark/reset not supported 异常
+                        //   比如 tomcat 的 org.apache.catalina.connector.CoyoteInputStream
+                        //   比如 undertow 的 io.undertow.servlet.spec.ServletInputStreamImpl
+                        //   上面的两者都没有像 ByteArrayInputStream 实现 reset
                         // 这导致当想要重复读取时就会异常(getXX can't be called after getXXX),
-                        // 所以像下面这样操作: 先读取 byte[], 处理后再返回一个输入流
+                        // 所以像下面这样操作: 先读取 byte[], 输出日志后用 byte[] 再返回一个输入流
                         try (
                                 InputStream input = inputMessage.getBody();
                                 ByteArrayOutputStream output = new ByteArrayOutputStream()
