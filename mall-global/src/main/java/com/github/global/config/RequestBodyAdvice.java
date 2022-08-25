@@ -44,8 +44,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                                 Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
         if (LogUtil.ROOT_LOG.isInfoEnabled() && !GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
             String json = logHandler.toJson(body);
-            String str = U.foggyValue(json, maxPrintLength, printLength, printLength);
-            LogUtil.ROOT_LOG.info("RequestBody({})", str);
+            LogUtil.ROOT_LOG.info("RequestBody({})", U.foggyValue(json, maxPrintLength, printLength, printLength));
         }
         return super.afterBodyRead(body, inputMessage, parameter, targetType, converterType);
     }

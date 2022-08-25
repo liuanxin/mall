@@ -2,7 +2,6 @@ package com.github.global.config;
 
 import com.github.common.date.DateUtil;
 import com.github.common.util.LogUtil;
-import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 import com.github.global.constant.GlobalConst;
 import javassist.ClassPool;
@@ -20,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.AbstractMappingJacksonResponseBodyAdvice;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
 
@@ -40,12 +40,7 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
     protected void beforeBodyWriteInternal(MappingJacksonValue bodyContainer, MediaType contentType, MethodParameter parameter,
                                            ServerHttpRequest request, ServerHttpResponse response) {
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-            String uri = RequestUtil.getRequestUri();
-            if (GlobalConst.EXCLUDE_PATH_SET.contains(uri)) {
-                return;
-            }
-            String json = logHandler.toJson(bodyContainer.getValue());
-            if (U.isBlank(json)) {
+            if (GlobalConst.EXCLUDE_PATH_SET.contains(((HttpServletRequest) request).getRequestURI())) {
                 return;
             }
 
@@ -80,6 +75,7 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
                 }
             }
 
+            String json = logHandler.toJson(bodyContainer.getValue());
             sbd.append(" return(").append(U.foggyValue(json, maxPrintLength, printLength, printLength)).append(")");
             LogUtil.ROOT_LOG.info(sbd.toString());
         }
