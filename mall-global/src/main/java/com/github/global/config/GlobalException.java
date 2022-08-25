@@ -134,7 +134,7 @@ public class GlobalException {
 
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<JsonResult<String>> noHandler(NoHandlerFoundException e) {
-        StringBuilder sbd = new StringBuilder("404");
+        StringBuilder sbd = new StringBuilder("not found");
         if (!online) {
             sbd.append(String.format("(%s -> %s)", e.getHttpMethod(), e.getRequestURL()));
         }
