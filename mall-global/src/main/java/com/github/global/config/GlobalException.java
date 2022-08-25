@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -25,6 +26,9 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -154,6 +158,23 @@ public class GlobalException {
         String msg = String.format("Upload File size exceeded the limit: %sM", (e.getMaxUploadSize() >> 20));
         int status = (returnStatusCode ? JsonCode.FAIL : JsonCode.SUCCESS).getCode();
         return handle(msg, status, handleErrorResult(JsonResult.fail(msg)), e);
+    }
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<JsonResult<String>> convertJsonException(HttpMessageNotReadableException e) {
+        StringBuilder sbd = new StringBuilder();
+        try (
+                InputStream input = e.getHttpInputMessage().getBody();
+                ByteArrayOutputStream output = new ByteArrayOutputStream()
+        ) {
+            U.inputToOutput(input, output);
+            // 换行符替换, 避免输出多行
+            String data = output.toString(StandardCharsets.UTF_8).replace("\n", "(n)").replace("\r", "[n]");
+            sbd.append("data(").append(data).append(") convert exception");
+        } catch (Exception ex) {
+            sbd.append("data convert exception, read data exception(").append(ex.getMessage()).append(")");
+        }
+        int status = (returnStatusCode ? JsonCode.BAD_REQUEST : JsonCode.SUCCESS).getCode();
+        return handle(sbd.toString(), status, handleErrorResult(JsonResult.badRequest("bad request-body", null)), e);
     }
 
     // 以上是 spring 的内部异常

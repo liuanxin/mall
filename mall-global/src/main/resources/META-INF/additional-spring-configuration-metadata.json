@@ -49,13 +49,6 @@
       "description": "响应错误时, 错误码是否以 ResponseStatus 返回."
     },
     {
-      "name": "log.printComplete",
-      "type": "java.lang.Boolean",
-      "defaultValue": false,
-      "sourceType": "com.github.global.config.RequestBodyAdvice",
-      "description": "是否在 before 打印日志(false 表示在 after 打印, 但如果转换失败会进不去 after)."
-    },
-    {
       "name": "log.maxPrintLength",
       "type": "java.lang.Integer",
       "defaultValue": 200000,
