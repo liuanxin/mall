@@ -107,27 +107,28 @@ public class OkHttpClientUtil {
 
 
     /** 向指定 url 上传文件 */
-    public static ResponseData<String> postFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
+    public static ResponseData<String> postFile(String url, Map<String, Object> headers,
+                                                Map<String, Object> params, Map<String, File> files) {
         MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
-        StringBuilder paramSbd = new StringBuilder();
+        StringBuilder sbd = new StringBuilder();
         boolean hasParam = A.isNotEmpty(params);
         if (hasParam) {
-            paramSbd.append("param(");
+            sbd.append("param(");
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 String key = entry.getKey();
                 String value = U.toStr(entry.getValue());
 
                 builder.addFormDataPart(key, value);
-                paramSbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
+                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
             }
-            paramSbd.append(")");
+            sbd.append(")");
         }
         boolean hasFile = A.isNotEmpty(files);
         if (hasParam && hasFile) {
-            paramSbd.append(" ");
+            sbd.append(" ");
         }
         if (hasFile) {
-            paramSbd.append("file(");
+            sbd.append("file(");
             for (Map.Entry<String, File> entry : files.entrySet()) {
                 File file = entry.getValue();
                 if (U.isNotNull(file)) {
@@ -138,14 +139,14 @@ public class OkHttpClientUtil {
                     } catch (IOException e) {
                         throw new RuntimeException(String.format("add file(%s) exception", file.getName()), e);
                     }
-                    paramSbd.append("<").append(key).append(" : ").append(file.getPath()).append(">");
+                    sbd.append("<").append(key).append(" : ").append(file.getPath()).append(">");
                 }
             }
-            paramSbd.append(")");
+            sbd.append(")");
         }
         Request.Builder request = new Request.Builder().post(builder.build());
         handleHeader(request, headers);
-        return handleRequest(url, request, String.format("upload file[%s]", paramSbd));
+        return handleRequest(url, request, String.format("upload file[%s]", sbd));
     }
 
 

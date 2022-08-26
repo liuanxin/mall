@@ -100,7 +100,7 @@ public class HttpClientUtil {
         long start = System.currentTimeMillis();
         String method = "POST";
         Map<String, List<String>> reqHeaders = null;
-        StringBuilder paramSbd = new StringBuilder();
+        StringBuilder sbd = new StringBuilder();
         Integer responseCode = null;
         String resCode = "";
         Map<String, List<String>> resHeaders = null;
@@ -116,7 +116,7 @@ public class HttpClientUtil {
                 builder.setHeader("Content-Type", "multipart/form-data;boundary=" + boundary);
                 List<byte[]> arr = new ArrayList<>();
                 if (hasParam) {
-                    paramSbd.append("param(");
+                    sbd.append("param(");
                     for (Map.Entry<String, Object> entry : params.entrySet()) {
                         String key = entry.getKey();
                         String value = U.toStr(entry.getValue());
@@ -126,15 +126,15 @@ public class HttpClientUtil {
                         arr.add(handleBytes(String.format(paramInfo, key)));
                         arr.add(handleBytes(value + "\r\n"));
 
-                        paramSbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
+                        sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
                     }
-                    paramSbd.append(")");
+                    sbd.append(")");
                 }
                 if (hasParam && hasFile) {
-                    paramSbd.append(" ");
+                    sbd.append(" ");
                 }
                 if (hasFile) {
-                    paramSbd.append("file(");
+                    sbd.append("file(");
                     for (Map.Entry<String, File> entry : files.entrySet()) {
                         String key = entry.getKey();
                         File file = entry.getValue();
@@ -145,9 +145,9 @@ public class HttpClientUtil {
                         arr.add(Files.readAllBytes(file.toPath()));
                         arr.add(handleBytes("\r\n"));
 
-                        paramSbd.append("<").append(key).append(" : ").append(file).append(">");
+                        sbd.append("<").append(key).append(" : ").append(file).append(">");
                     }
-                    paramSbd.append(")");
+                    sbd.append(")");
                 }
                 arr.add(handleBytes("--" + boundary + "--"));
                 body = HttpRequest.BodyPublishers.ofByteArrays(arr);
@@ -171,12 +171,12 @@ public class HttpClientUtil {
             resHeaders = response.headers().map();
             result = response.body();
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                String print = String.format("upload file[%s]", paramSbd);
+                String print = String.format("upload file[%s]", sbd);
                 LogUtil.ROOT_LOG.info(collectContext(start, method, url, print, reqHeaders, resCode, resHeaders, result));
             }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                String print = String.format("upload file[%s]", paramSbd);
+                String print = String.format("upload file[%s]", sbd);
                 LogUtil.ROOT_LOG.error(collectContext(start, method, url, print, reqHeaders, resCode, resHeaders, result), e);
             }
         }

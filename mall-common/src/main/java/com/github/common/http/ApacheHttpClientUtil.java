@@ -177,42 +177,43 @@ public class ApacheHttpClientUtil {
 
 
     /** 向指定 url 上传文件 */
-    public static ResponseData<String> postFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
+    public static ResponseData<String> postFile(String url, Map<String, Object> headers,
+                                                Map<String, Object> params, Map<String, File> files) {
         if (A.isEmpty(params)) {
             params = new HashMap<>();
         }
-        StringBuilder paramSbd = new StringBuilder();
+        StringBuilder sbd = new StringBuilder();
         HttpPost request = handlePostParams(url, params);
         handleHeader(request, headers);
         boolean hasParam = A.isNotEmpty(params);
         if (hasParam) {
-            paramSbd.append("param(");
+            sbd.append("param(");
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 String key = entry.getKey();
                 String value = U.toStr(entry.getValue());
-                paramSbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
+                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
             }
-            paramSbd.append(")");
+            sbd.append(")");
         }
         boolean hasFile = A.isNotEmpty(files);
         if (hasParam && hasFile) {
-            paramSbd.append(" ");
+            sbd.append(" ");
         }
         if (hasFile) {
-            paramSbd.append("file(");
+            sbd.append("file(");
             MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create().setLaxMode();
             for (Map.Entry<String, File> entry : files.entrySet()) {
                 File file = entry.getValue();
                 if (U.isNotNull(file)) {
                     String key = entry.getKey();
                     entityBuilder.addBinaryBody(key, file);
-                    paramSbd.append("<").append(key).append(" : ").append(file.getPath()).append(">");
+                    sbd.append("<").append(key).append(" : ").append(file.getPath()).append(">");
                 }
             }
             request.setEntity(entityBuilder.build());
-            paramSbd.append(")");
+            sbd.append(")");
         }
-        return handleRequest(request, String.format("upload file[%s]", paramSbd));
+        return handleRequest(request, String.format("upload file[%s]", sbd));
     }
 
 

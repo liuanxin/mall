@@ -97,7 +97,7 @@ public class HttpUrlConnectionUtil {
         long start = System.currentTimeMillis();
         HttpURLConnection con = null;
         Map<String, List<String>> reqHeaders = null;
-        StringBuilder paramSbd = new StringBuilder();
+        StringBuilder sbd = new StringBuilder();
         String result = null;
         Map<String, List<String>> resHeaders = null;
         String resCode = "";
@@ -132,7 +132,7 @@ public class HttpUrlConnectionUtil {
                 con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
                 try (DataOutputStream data = new DataOutputStream(con.getOutputStream())) {
                     if (hasParam) {
-                        paramSbd.append("param(");
+                        sbd.append("param(");
                         for (Map.Entry<String, Object> entry : params.entrySet()) {
                             String key = entry.getKey();
                             String value = U.toStr(entry.getValue());
@@ -142,16 +142,15 @@ public class HttpUrlConnectionUtil {
                             data.writeBytes(String.format(paramInfo, key));
                             data.writeBytes(value + "\r\n");
 
-                            paramSbd.append("<").append(key).append(" : ")
-                                    .append(DesensitizationUtil.desByKey(key, value)).append(">");
+                            sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
                         }
-                        paramSbd.append(")");
+                        sbd.append(")");
                     }
                     if (hasParam && hasFile) {
-                        paramSbd.append(" ");
+                        sbd.append(" ");
                     }
                     if (hasFile) {
-                        paramSbd.append("file(");
+                        sbd.append("file(");
                         for (Map.Entry<String, File> entry : files.entrySet()) {
                             String key = entry.getKey();
                             File file = entry.getValue();
@@ -162,9 +161,9 @@ public class HttpUrlConnectionUtil {
                             data.write(Files.readAllBytes(file.toPath()));
                             data.writeBytes("\r\n");
 
-                            paramSbd.append("<").append(key).append(" : ").append(file).append(">");
+                            sbd.append("<").append(key).append(" : ").append(file).append(">");
                         }
-                        paramSbd.append(")");
+                        sbd.append(")");
                     }
                     data.writeBytes("--" + boundary + "--\r\n");
                     data.flush();
@@ -177,24 +176,18 @@ public class HttpUrlConnectionUtil {
             resCode = con.getResponseCode() + " ";
             try (
                     InputStream input = con.getInputStream();
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream()
+                    ByteArrayOutputStream output = new ByteArrayOutputStream()
             ) {
-                // int size = 8192;
-                // byte[] buffer = new byte[size];
-                // int read;
-                // while ((read = input.read(buffer, 0, size)) >= 0) {
-                //     stream.write(buffer, 0, read);
-                // }
-                input.transferTo(stream);
-                result = stream.toString(StandardCharsets.UTF_8);
+                U.inputToOutput(input, output);
+                result = output.toString(StandardCharsets.UTF_8);
             }
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                String print = String.format("upload file[%s]", paramSbd);
+                String print = String.format("upload file[%s]", sbd);
                 LogUtil.ROOT_LOG.info(collectContext(start, "POST", url, print, reqHeaders, resCode, resHeaders, result));
             }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                String print = String.format("upload file[%s]", paramSbd);
+                String print = String.format("upload file[%s]", sbd);
                 LogUtil.ROOT_LOG.error(collectContext(start, "POST", url, print, reqHeaders, resCode, resHeaders, result), e);
             }
         } finally {
@@ -246,16 +239,10 @@ public class HttpUrlConnectionUtil {
             resCode = responseCode + " ";
             try (
                     InputStream input = con.getInputStream();
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream()
+                    ByteArrayOutputStream output = new ByteArrayOutputStream()
             ) {
-                // int size = 8192;
-                // byte[] buffer = new byte[size];
-                // int read;
-                // while ((read = input.read(buffer, 0, size)) >= 0) {
-                //     stream.write(buffer, 0, read);
-                // }
-                input.transferTo(stream);
-                result = stream.toString(StandardCharsets.UTF_8);
+                U.inputToOutput(input, output);
+                result = output.toString(StandardCharsets.UTF_8);
             }
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info(collectContext(start, method, url, data, reqHeaders, resCode, resHeaders, result));
