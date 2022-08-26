@@ -1,5 +1,6 @@
 package com.github.common.json;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -13,8 +14,14 @@ import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.U;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class JsonModule {
 
@@ -24,6 +31,7 @@ public final class JsonModule {
             .addSerializer(Long.class, ToStringSerializer.instance)
             .addSerializer(long.class, ToStringSerializer.instance)
             .addSerializer(BigDecimal.class, BigDecimalSerializer.INSTANCE)
+            .addSerializer(Date.class, DateSerializer.INSTANCE) // com.fasterxml.jackson.databind.ser.std.DateSerializer
 
             .addDeserializer(BigDecimal.class, BigDecimalDeserializer.INSTANCE)
             .addDeserializer(Date.class, DateDeserializer.INSTANCE);
@@ -41,6 +49,47 @@ public final class JsonModule {
         @Override
         public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
             gen.writeString(DesensitizationUtil.desByKey(gen.getOutputContext().getCurrentName(), value));
+        }
+    }
+
+    /** 序列化 Date: 将 1970-01-01 当成 null, 否则字段上有标 @JsonFormat 则用注解配置 */
+    public static class DateSerializer extends JsonSerializer<Date> {
+        public static final DateSerializer INSTANCE = new DateSerializer();
+        private static final Map<String, ? super Annotation> FIELD_FORMAT_MAP = new ConcurrentHashMap<>();
+
+        @Override
+        public void serialize(Date value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            // 时间戳为 0 的序列化为 null, 这样当数据库表字段设置 1970-01-01 这样的默认值时, 序列化当成 null 处理
+            if (U.isNull(value) || value.getTime() <= 0) {
+                gen.writeNull();
+            }
+
+            Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
+            if (U.isNotNull(field)) {
+                // noinspection DuplicatedCode
+                JsonFormat jsonFormat = getFormatField(field);
+                if (U.isNotNull(jsonFormat)) {
+                    JsonFormat.Value format = new JsonFormat.Value(jsonFormat);
+                    Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
+                    SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+                    df.setTimeZone(format.hasTimeZone() ? format.getTimeZone() : provider.getTimeZone());
+                    gen.writeString(df.format(value));
+                    return;
+                }
+            }
+
+            provider.defaultSerializeDateValue(value, gen);
+        }
+        private JsonFormat getFormatField(Field field) {
+            String key = field.getType().getName() + "#" + field.getName();
+            JsonFormat format = (JsonFormat) FIELD_FORMAT_MAP.get(key);
+            if (U.isNull(format)) {
+                format = field.getAnnotation(JsonFormat.class);
+                if (U.isNotNull(format)) {
+                    FIELD_FORMAT_MAP.put(key, format);
+                }
+            }
+            return format;
         }
     }
 
@@ -67,7 +116,7 @@ public final class JsonModule {
         @Override
         public Date deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             Date date = DateUtil.parse(p.getText().trim());
-            return (U.isNotNull(date) && date.getTime() == 0) ? null : date;
+            return (U.isNull(date) || date.getTime() <= 0) ? null : date;
         }
     }
 
