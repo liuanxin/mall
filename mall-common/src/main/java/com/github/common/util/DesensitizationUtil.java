@@ -61,16 +61,13 @@ public final class DesensitizationUtil {
             // 去掉尾部的 0(比如 10.00 --> 10, 比如 10.020 -> 10.02)
             return BigDecimal.valueOf(d).setScale(Math.abs(digitsNumber), RoundingMode.DOWN).stripTrailingZeros().toPlainString();
         }
-
         else if (value instanceof BigInteger || value instanceof Long) {
             // long 或 BigInt 使用 String 序列化
             return Long.toString((random != 0) ?  RANDOM.nextLong((long) random) : value.longValue());
         }
-
         else if (value instanceof Integer || value instanceof Short) {
             return (random != 0) ? RANDOM.nextInt((int) random) : value.intValue();
         }
-
         else {
             return value;
         }
