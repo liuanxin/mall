@@ -102,12 +102,26 @@ public class JsonUtil {
             return json;
         }
         try {
-            return EMPTY_OBJECT_MAPPER.writeValueAsString(EMPTY_OBJECT_MAPPER.readValue(json, Object.class));
+            return EMPTY_OBJECT_MAPPER.writeValueAsString(nativeObject(json));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("handle json({}) white exception", U.compress(json), e);
             }
             return json;
+        }
+    }
+    /** 将 json 中转换成原始对象 */
+    public static Object nativeObject(String json) {
+        if (U.isBlank(json)) {
+            return null;
+        }
+        try {
+            return EMPTY_OBJECT_MAPPER.readValue(json, Object.class);
+        } catch (Exception e) {
+            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                LogUtil.ROOT_LOG.error("json({}) to Object exception", U.compress(json), e);
+            }
+            return null;
         }
     }
 

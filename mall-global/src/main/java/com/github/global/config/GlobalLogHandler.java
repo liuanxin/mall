@@ -1,6 +1,5 @@
 package com.github.global.config;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.common.json.JsonModule;
 import com.github.common.util.LogUtil;
@@ -29,11 +28,11 @@ public class GlobalLogHandler {
     private boolean cutJson;
 
     /** json 长度大于这个值才进行截断 */
-    @Value("${json.cutJsonMax:5000}")
+    @Value("${json.cutJsonMax:10000}")
     private int cutJsonMax;
 
     /** json 截断时只取这个值左右的位数 */
-    @Value("${json.cutJsonLeftRightLen:200}")
+    @Value("${json.cutJsonLeftRightLen:1000}")
     private int cutJsonLeftRightLen;
 
 
@@ -42,12 +41,8 @@ public class GlobalLogHandler {
 
     public GlobalLogHandler(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper.copy();
-        // NON_NULL  : null 值不序列化
-        // NON_EMPTY : null、空字符串、长度为 0 的 list、长度为 0 的 map 都不序列化
-        this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
         this.logDesObjectMapper = objectMapper.copy();
-        this.logDesObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         this.logDesObjectMapper.registerModule(JsonModule.LOG_SENSITIVE_MODULE);
     }
 

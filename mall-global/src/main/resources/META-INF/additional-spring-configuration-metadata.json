@@ -11,14 +11,14 @@
       "type": "java.lang.Boolean",
       "defaultValue": false,
       "sourceType": "com.github.global.config.GlobalLogHandler",
-      "description": "是否进行脱敏."
+      "description": "json 是否脱敏( { password: 123 } 将输出成 { password: *** } )."
     },
     {
       "name": "json.hasCompress",
       "type": "java.lang.Boolean",
       "defaultValue": false,
       "sourceType": "com.github.global.config.GlobalLogHandler",
-      "description": "是否进行数据压缩."
+      "description": "json 是否数据压缩."
     },
     {
       "name": "json.cutJson",
@@ -29,15 +29,15 @@
     },
     {
       "name": "json.cutJsonMax",
-      "type": "java.lang.Boolean",
-      "defaultValue": false,
+      "type": "java.lang.Integer",
+      "defaultValue": "10000",
       "sourceType": "com.github.global.config.GlobalLogHandler",
       "description": "json 长度大于这个值才进行截断."
     },
     {
       "name": "json.cutJsonLeftRightLen",
-      "type": "java.lang.Boolean",
-      "defaultValue": false,
+      "type": "java.lang.Integer",
+      "defaultValue": "1000",
       "sourceType": "com.github.global.config.GlobalLogHandler",
       "description": "json 截断时只取这个值左右的位数."
     },
@@ -53,19 +53,7 @@
       "type": "java.lang.Boolean",
       "defaultValue": false,
       "sourceType": "com.github.global.config.RequestBodyAdvice",
-      "description": "是否在转换前打印日志(false 表示在转换后打印, 但如果转换失败将无法打印)."
-    },
-    {
-      "name": "log.maxPrintLength",
-      "type": "java.lang.Integer",
-      "defaultValue": 10000,
-      "description": "打印日志时的最大长度."
-    },
-    {
-      "name": "log.printLength",
-      "type": "java.lang.Integer",
-      "defaultValue": 1000,
-      "description": "打印日志时如果超出最大长度只输出左右的固定长度."
+      "description": "是否在转换前打印日志(false 表示在转换后打印, 但如果转换失败将无法打印, 如果设置在转换前会消耗更多资源)."
     },
     {
       "name": "http.cors.allow-headers",
@@ -79,7 +67,7 @@
       "type": "java.lang.String",
       "defaultValue": "lang",
       "sourceType": "com.github.global.config.GlobalWebConfig",
-      "description": "处理语言时的参数名."
+      "description": "处理语言时的参数名(/path?lang=zh-CN)."
     }
   ]
 }

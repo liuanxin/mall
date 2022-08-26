@@ -40,11 +40,6 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Value("${log.printComplete:true}")
     private boolean printComplete;
 
-    @Value("${log.maxPrintLength:10000}")
-    private int maxPrintLength;
-    @Value("${log.printLength:1000}")
-    private int printLength;
-
     private final GlobalLogHandler logHandler;
     private final ObjectMapper mapper;
 
@@ -70,9 +65,9 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                         // 一些实现流没有实现 reset 方法, 将会报 inputStream 默认的实现 mark/reset not supported 异常
                         //   比如 tomcat 的 org.apache.catalina.connector.CoyoteInputStream
                         //   比如 undertow 的 io.undertow.servlet.spec.ServletInputStreamImpl
-                        //   上面的两者都没有像 ByteArrayInputStream 实现 reset
-                        // 这导致当想要重复读取时就会异常(getXX can't be called after getXXX),
-                        // 所以像下面这样操作: 先读取 byte[], 输出日志后用 byte[] 再返回一个输入流
+                        //   比如 jetty 的 org.eclipse.jetty.server.HttpInputOverHTTP
+                        // 这导致当想要重复读取时会报 getXX can't be called after getXXX 异常,
+                        // 所以像下面这样操作: 先将流读取成 byte[], 输出日志后用 byte[] 再返回一个输入流
                         try (
                                 InputStream input = inputMessage.getBody();
                                 ByteArrayOutputStream output = new ByteArrayOutputStream()
@@ -82,10 +77,10 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                             U.inputToOutput(input, output);
                             byte[] bytes = output.toByteArray();
 
-                            String data = JsonUtil.removeWhiteSpace(new String(bytes, StandardCharsets.UTF_8));
-                            String str = U.foggyValue(data, maxPrintLength, printLength, printLength);
-                            LogUtil.ROOT_LOG.info("request-body({})", str);
+                            Object body = JsonUtil.nativeObject(new String(bytes, StandardCharsets.UTF_8));
+                            LogUtil.ROOT_LOG.info("request-body({})", logHandler.toJson(body));
 
+                            // 在 ByteArrayOutputStream 和 ByteArrayInputStream 上调用 close 是无意义的, 它们也都有实现 reset 方法
                             return new ByteArrayInputStream(bytes);
                         }
                     }
@@ -100,9 +95,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                                 Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
         if (LogUtil.ROOT_LOG.isInfoEnabled() && !GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
             if (!printComplete) {
-                // 这样输出的内容会去除 null 值的属性
-                String json = logHandler.toJson(body);
-                LogUtil.ROOT_LOG.info("request-body({})", U.foggyValue(json, maxPrintLength, printLength, printLength));
+                LogUtil.ROOT_LOG.info("request-body({})", logHandler.toJson(body));
             }
         }
         return super.afterBodyRead(body, inputMessage, parameter, targetType, converterType);

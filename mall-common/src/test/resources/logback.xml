@@ -17,6 +17,7 @@
 
     <logger name="org.springframework" level="warn"/>
     <logger name="org.hibernate" level="warn"/>
+    <logger name="org.eclipse" level="warn"/>
     <logger name="org.mybatis" level="warn"/>
     <logger name="org.apache" level="warn"/>
     <logger name="org.jboss" level="warn"/>

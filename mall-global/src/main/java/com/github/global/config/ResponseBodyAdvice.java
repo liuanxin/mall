@@ -6,7 +6,6 @@ import com.github.common.util.U;
 import com.github.global.constant.GlobalConst;
 import javassist.ClassPool;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
@@ -28,11 +27,6 @@ import java.lang.reflect.Method;
 @ConditionalOnClass({ HttpServletResponse.class, ResponseBody.class })
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
 public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice {
-
-    @Value("${log.maxPrintLength:10000}")
-    private int maxPrintLength;
-    @Value("${log.printLength:1000}")
-    private int printLength;
 
     private final GlobalLogHandler logHandler;
 
@@ -75,8 +69,7 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
                 }
             }
 
-            String json = logHandler.toJson(bodyContainer.getValue());
-            sbd.append(" return(").append(U.foggyValue(json, maxPrintLength, printLength, printLength)).append(")");
+            sbd.append(" return(").append(logHandler.toJson(bodyContainer.getValue())).append(")");
             LogUtil.ROOT_LOG.info(sbd.toString());
         }
     }
