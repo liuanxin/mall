@@ -955,7 +955,7 @@ public final class U {
                 if (isNotNull(source)) {
                     URL location = source.getLocation();
                     if (isNotNull(location)) {
-                        return location.getFile();
+                        return location.toString();
                     }
                 }
             }

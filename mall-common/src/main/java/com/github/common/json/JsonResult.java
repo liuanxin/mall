@@ -25,17 +25,17 @@ public class JsonResult<T> {
     @ApiReturn(value = "返回说明", example = "用户名密码错误 | 收货地址添加成功")
     private String msg;
 
+    @ApiReturn("返回数据, 实体 {\"id\":1} | 列表 [{\"id\":1},{\"id\":2}] 看具体的业务")
+    private T data;
+
     @ApiReturn("跟踪 id")
     private String traceId;
-
-    @ApiReturn(value = "错误信息, 只在非生产时返回")
-    private List<String> error;
 
     @ApiReturn(value = "验证失败信息, 返回 { 入参 1 : 错误信息 1, 入参 2 : 错误信息 2 }")
     private Map<String, String> validate;
 
-    @ApiReturn("返回数据, 实体 {\"id\":1} | 列表 [{\"id\":1},{\"id\":2}] 看具体的业务")
-    private T data;
+    @ApiReturn(value = "错误信息, 只在非生产时返回")
+    private List<String> error;
 
     private JsonResult(JsonCode code, String msg) {
         this.code = code;

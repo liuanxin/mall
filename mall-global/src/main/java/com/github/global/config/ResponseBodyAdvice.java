@@ -2,6 +2,7 @@ package com.github.global.config;
 
 import com.github.common.date.DateUtil;
 import com.github.common.util.LogUtil;
+import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 import com.github.global.constant.GlobalConst;
 import javassist.ClassPool;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.AbstractMappingJacksonResponseBodyAdvice;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
 
@@ -28,13 +28,15 @@ import java.lang.reflect.Method;
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
 public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice {
 
+    private static final ClassPool CLASS_POOL = new ClassPool(ClassPool.getDefault());
+
     private final GlobalLogHandler logHandler;
 
     @Override
     protected void beforeBodyWriteInternal(MappingJacksonValue bodyContainer, MediaType contentType, MethodParameter parameter,
                                            ServerHttpRequest request, ServerHttpResponse response) {
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-            if (GlobalConst.EXCLUDE_PATH_SET.contains(((HttpServletRequest) request).getRequestURI())) {
+            if (GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
                 return;
             }
 
@@ -53,14 +55,14 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
             if (U.isNotBlank(methodName)) {
                 sbd.append("#").append(methodName);
                 try {
-                    ClassPool classPool = new ClassPool(ClassPool.getDefault());
                     String classInFile = U.getClassInFile(clazz);
                     if (U.isNotBlank(classInFile)) {
-                        classPool.appendClassPath(classInFile);
-                    }
-                    int line = classPool.get(className).getDeclaredMethod(methodName).getMethodInfo().getLineNumber(0);
-                    if (line > 1) {
-                        sbd.append("(").append(clazz.getSimpleName()).append(".java:").append(line - 1).append(")");
+                        CLASS_POOL.appendClassPath(classInFile);
+                        int line = CLASS_POOL.get(className).getDeclaredMethod(methodName).getMethodInfo().getLineNumber(0);
+                        if (line > 1) {
+                            sbd.append("(").append(clazz.getSimpleName()).append(".java:").append(line - 1).append(")");
+                        }
+                        sbd.append(" in (").append(classInFile).append(")");
                     }
                 } catch (Exception e) {
                     if (LogUtil.ROOT_LOG.isDebugEnabled()) {
