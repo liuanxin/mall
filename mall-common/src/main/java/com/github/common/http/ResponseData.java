@@ -93,6 +93,9 @@ public class ResponseData<T> {
         this.data = data;
     }
 
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
     public Integer getStatus() {
         return status;
     }
@@ -102,6 +105,9 @@ public class ResponseData<T> {
         return status != null ? REASONS.getOrDefault(status, UNKNOWN_STATUS) : UNKNOWN_STATUS;
     }
 
+    public void setData(T data) {
+        this.data = data;
+    }
     public T getData() {
         return data;
     }
