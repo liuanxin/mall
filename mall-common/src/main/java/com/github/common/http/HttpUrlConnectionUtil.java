@@ -10,6 +10,7 @@ import com.github.common.util.U;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Date;
@@ -183,12 +184,12 @@ public class HttpUrlConnectionUtil {
             }
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 String print = String.format("upload file[%s]", sbd);
-                LogUtil.ROOT_LOG.info(collectContext(start, "POST", url, print, reqHeaders, resCode, resHeaders, result));
+                LogUtil.ROOT_LOG.info(collectContext(start, "POST", url, print, reqHeaders, resCode, resHeaders, 0, result));
             }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 String print = String.format("upload file[%s]", sbd);
-                LogUtil.ROOT_LOG.error(collectContext(start, "POST", url, print, reqHeaders, resCode, resHeaders, result), e);
+                LogUtil.ROOT_LOG.error(collectContext(start, "POST", url, print, reqHeaders, resCode, resHeaders, 0, result), e);
             }
         } finally {
             if (con != null) {
@@ -206,36 +207,49 @@ public class HttpUrlConnectionUtil {
         String resCode = "";
         Integer responseCode = null;
         String result = "";
-        url = HttpConst.handleEmptyScheme(url);
+        String originalUrl = HttpConst.handleEmptyScheme(url);
+        int count = 0;
         try {
-            con = (HttpURLConnection) new URL(url).openConnection();
-            con.setRequestMethod(method);
-            con.setConnectTimeout(HttpConst.CONNECT_TIME_OUT);
-            con.setReadTimeout(HttpConst.READ_TIME_OUT);
-            if (A.isNotEmpty(headers)) {
-                for (Map.Entry<String, ?> entry : headers.entrySet()) {
-                    con.setRequestProperty(entry.getKey(), U.toStr(entry.getValue()));
+            String connUrl = originalUrl;
+            while (true) {
+                con = (HttpURLConnection) new URL(connUrl).openConnection();
+                con.setRequestMethod(method);
+                con.setConnectTimeout(HttpConst.CONNECT_TIME_OUT);
+                con.setReadTimeout(HttpConst.READ_TIME_OUT);
+                if (A.isNotEmpty(headers)) {
+                    for (Map.Entry<String, ?> entry : headers.entrySet()) {
+                        con.setRequestProperty(entry.getKey(), U.toStr(entry.getValue()));
+                    }
                 }
-            }
-            con.setRequestProperty("User-Agent", USER_AGENT);
-            String traceId = LogUtil.getTraceId();
-            if (U.isNotBlank(traceId)) {
-                con.setRequestProperty(Const.TRACE, traceId);
-            }
-            reqHeaders = con.getRequestProperties();
-            if (U.isNotBlank(data)) {
-                // 默认值 false, 当向远程服务器传送数据/写数据时, 需设置为 true
-                con.setDoOutput(true);
-                try (OutputStreamWriter output = new OutputStreamWriter(con.getOutputStream())) {
-                    output.write(data);
-                    output.flush();
+                con.setRequestProperty("User-Agent", USER_AGENT);
+                String traceId = LogUtil.getTraceId();
+                if (U.isNotBlank(traceId)) {
+                    con.setRequestProperty(Const.TRACE, traceId);
                 }
+                reqHeaders = con.getRequestProperties();
+                if (U.isNotBlank(data)) {
+                    // 默认值 false, 当向远程服务器传送数据/写数据时, 需设置为 true
+                    con.setDoOutput(true);
+                    try (OutputStreamWriter output = new OutputStreamWriter(con.getOutputStream())) {
+                        output.write(data);
+                        output.flush();
+                    }
+                }
+
+                con.connect();
+
+                responseCode = con.getResponseCode();
+                switch (responseCode) {
+                    // 301 和 302 自动进行重定向
+                    case HttpURLConnection.HTTP_MOVED_PERM, HttpURLConnection.HTTP_MOVED_TEMP -> {
+                        connUrl = URLDecoder.decode(con.getHeaderField("Location"), StandardCharsets.UTF_8);
+                        count++;
+                        continue;
+                    }
+                }
+                break;
             }
 
-            con.connect();
-
-            resHeaders = con.getHeaderFields();
-            responseCode = con.getResponseCode();
             resCode = responseCode + " ";
             try (
                     InputStream input = con.getInputStream();
@@ -244,12 +258,13 @@ public class HttpUrlConnectionUtil {
                 U.inputToOutput(input, output);
                 result = output.toString(StandardCharsets.UTF_8);
             }
+            resHeaders = con.getHeaderFields();
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info(collectContext(start, method, url, data, reqHeaders, resCode, resHeaders, result));
+                LogUtil.ROOT_LOG.info(collectContext(start, method, url, data, reqHeaders, resCode, resHeaders, count, result));
             }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(collectContext(start, method, url, data, reqHeaders, resCode, resHeaders, result), e);
+                LogUtil.ROOT_LOG.error(collectContext(start, method, url, data, reqHeaders, resCode, resHeaders, count, result), e);
             }
         } finally {
             if (con != null) {
@@ -260,7 +275,7 @@ public class HttpUrlConnectionUtil {
     }
     private static String collectContext(long start, String method, String url, String params,
                                          Map<String, List<String>> reqHeaders, String resCode,
-                                         Map<String, List<String>> resHeaders, String result) {
+                                         Map<String, List<String>> resHeaders, int redirectCount, String result) {
         StringBuilder sbd = new StringBuilder();
         long now = System.currentTimeMillis();
         sbd.append("HttpUrlConnection => [")
@@ -268,6 +283,9 @@ public class HttpUrlConnectionUtil {
                 .append(DateUtil.formatDateTimeMs(new Date(now)))
                 .append("(").append(DateUtil.toHuman(now - start)).append(")")
                 .append("] (").append(method).append(" ").append(url).append(")");
+        if (redirectCount > 0) {
+            sbd.append(" redirect-count(").append(redirectCount).append(")");
+        }
         sbd.append(" req[");
         boolean hasParam = U.isNotBlank(params);
         if (hasParam) {

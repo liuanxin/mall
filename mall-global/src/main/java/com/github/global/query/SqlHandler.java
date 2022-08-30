@@ -14,9 +14,11 @@ public class SqlHandler {
     global:
         is null
         is not null
-        =
+        = (等于)
         <>
-        in
+
+    list:
+        in (批量)
         not in
 
     number/date:
@@ -27,7 +29,7 @@ public class SqlHandler {
         between
 
     string:
-        like
+        like (开头、结尾、包含), 只有开关能走索引
         not like
     */
 
