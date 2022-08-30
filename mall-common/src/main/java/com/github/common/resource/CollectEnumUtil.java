@@ -28,7 +28,7 @@ public final class CollectEnumUtil {
     public static Class[] getEnumClass(Map<String, Class> enumMap) {
         Set<Class> set = new HashSet<>();
         for (Map.Entry<String, Class> entry : enumMap.entrySet()) {
-            List<Class> enums = LoaderClass.getEnumArray(entry.getValue(), Const.enumPath(entry.getKey()));
+            List<Class<?>> enums = LoaderClass.getEnumArray(entry.getValue(), Const.enumPath(entry.getKey()));
             for (Class anEnum : enums) {
                 if (U.isNotNull(anEnum) && anEnum.isEnum()) {
                     // 将每个模块里面的枚举都收集起来, 然后会放入到渲染上下文里面去
@@ -44,7 +44,7 @@ public final class CollectEnumUtil {
     public static Map<String, Object> enumMap(Map<String, Class> enumClassMap) {
         Map<String, Object> returnMap = new HashMap<>();
         for (Map.Entry<String, Class> entry : enumClassMap.entrySet()) {
-            List<Class> enumList = LoaderClass.getEnumArray(entry.getValue(), Const.enumPath(entry.getKey()));
+            List<Class<?>> enumList = LoaderClass.getEnumArray(entry.getValue(), Const.enumPath(entry.getKey()));
             for (Class anEnum : enumList) {
                 if (U.isNotNull(anEnum) && anEnum.isEnum()) {
                     returnMap.put(CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, anEnum.getSimpleName()), enumInfo(anEnum));

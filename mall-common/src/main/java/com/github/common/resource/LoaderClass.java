@@ -18,20 +18,20 @@ import java.util.jar.JarFile;
 public final class LoaderClass {
 
     /** 基于指定的类(会基于此类来获取类加载器), 在指定的包名下获取所有的枚举 */
-    public static List<Class> getEnumArray(Class clazz, String classPackage) {
+    public static List<Class<?>> getEnumArray(Class<?> clazz, String classPackage) {
         return getClassList(clazz, classPackage, true);
     }
 
     /** 基于指定的类(会基于此类来获取类加载器), 在指定的包名下获取所有的实现了 Serializable 接口的类 */
-    public static List<Class> getClassList(Class clazz, String classPackage) {
+    public static List<Class<?>> getClassList(Class<?> clazz, String classPackage) {
         return getClassList(clazz, classPackage, false);
     }
 
-    private static List<Class> getClassList(Class clazz, String classPackage, boolean wasEnum) {
+    private static List<Class<?>> getClassList(Class<?> clazz, String classPackage, boolean wasEnum) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
             LogUtil.ROOT_LOG.debug("{} in ({})", clazz, U.getClassInFile(clazz));
         }
-        List<Class> classList = new ArrayList<>();
+        List<Class<?>> classList = new ArrayList<>();
         String packageName = classPackage.replace(".", "/");
         URL url = clazz.getClassLoader().getResource(packageName);
         if (url != null) {
