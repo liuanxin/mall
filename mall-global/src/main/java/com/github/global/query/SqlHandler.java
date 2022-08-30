@@ -29,7 +29,7 @@ public class SqlHandler {
         between
 
     string:
-        like (开头、结尾、包含), 只有开关能走索引
+        like (开头、结尾、包含), 只有「开头」会走索引(LIKE 'x%'), 结尾是 LIKE '%xx', 包含是 LIKE '%xxx%'
         not like
     */
 
