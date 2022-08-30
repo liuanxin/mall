@@ -1,4 +1,4 @@
-package com.github.global.query;
+package com.github.global.query.annotation;
 
 import java.lang.annotation.*;
 

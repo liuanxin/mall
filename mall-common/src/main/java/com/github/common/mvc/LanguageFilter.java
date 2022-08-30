@@ -33,6 +33,9 @@ import java.util.Set;
  */
 public class LanguageFilter implements Filter {
 
+    private static final PathMatchingResourcePatternResolver PATTERN_RESOLVER
+            = new PathMatchingResourcePatternResolver(ClassLoader.getSystemClassLoader());
+
     private final String languageParam;
     private final Set<Locale> locales;
     public LanguageFilter(String languageParam, String i18nBaseNames) {
@@ -79,15 +82,13 @@ public class LanguageFilter implements Filter {
         }
 
         Set<String> languages = new HashSet<>();
-        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        PathMatchingResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver(classLoader);
+        // i18n/messages, i18n/validation
         for (String file : files) {
             try {
-                // i18n/messages -> messages, i18n/validation -> validation
-                String fileName = file.substring(file.lastIndexOf("/") + 1);
-                String location = String.format("classpath*:%s*.properties", file);
-                Resource[] resources = patternResolver.getResources(location);
+                Resource[] resources = PATTERN_RESOLVER.getResources(String.format("classpath*:%s*.properties", file));
                 if (A.isNotEmpty(resources)) {
+                    // i18n/messages -> messages, i18n/validation -> validation
+                    String fileName = file.substring(file.lastIndexOf("/") + 1);
                     for (Resource resource : resources) {
                         // messages.properties, messages_zh_CN.properties, messages_en_US.properties
                         String filename = resource.getFilename();
