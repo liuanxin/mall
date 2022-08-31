@@ -7,24 +7,24 @@ import java.util.*;
 /**
  * <pre>
  * global:
- *   is null (inu)
+ *   is null     (inu)
  *   is not null (inn)
- *   = (eq)
- *   <> (ne)
+ *   =           (eq)
+ *   <>          (ne)
  *
  * list:
- *   in (批量)
+ *   in     (批量)
  *   not in (ni)
  *
  * number/date:
- *   > (gt)
+ *   >  (gt)
  *   >= (ge)
- *   < (lt)
+ *   <  (lt)
  *   <= (le)
  *   between 区间
  *
  * string:
- *   like (开头、结尾、包含), 只有「开头」会走索引(LIKE 'x%'), 结尾是 LIKE '%xx', 包含是 LIKE '%xxx%'
+ *   like     (开头、结尾、包含), 只有「开头」会走索引(LIKE 'x%'), 结尾是 LIKE '%xx', 包含是 LIKE '%xxx%'
  *   not like (nl)
  *
  *
