@@ -13,6 +13,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ReqResult {
 
-    private String name;
-    private List<ReqResult> children;
+    private String scheme;
+    private List<String> properties;
+    private List<ReqResult> relations;
 }
