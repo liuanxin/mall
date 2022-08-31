@@ -13,4 +13,7 @@ public @interface TableInfo {
 
     /** 数据库表说明 */
     String desc() default "";
+
+    /** 表别名, 为空时则使用类名 */
+    String alias() default "";
 }

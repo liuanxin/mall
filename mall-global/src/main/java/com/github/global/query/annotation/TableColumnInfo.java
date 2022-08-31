@@ -14,6 +14,9 @@ public @interface TableColumnInfo {
     /** 表列说明 */
     String desc() default "";
 
+    /** 表列别名, 为空时则使用类字段名 */
+    String alias() default "";
+
     /** true 表示这个 类字段 不与 表列名 有关联 */
     boolean ignore() default false;
 
@@ -27,5 +30,5 @@ public @interface TableColumnInfo {
     /** 一对多关联的表里的列名, 配合 toManyTable 一起使用, 只在「从表是多」的类上标即可, 主表上无需标注 */
     String toManyColumn() default "";
 
-    // 不做 Many to Many 的关联: 这种情况下建多一个「中间表」, 由「中间表」跟「目标表」关联成 一对多 来实现
+    // 不做 Many to Many 的关联: 这种情况下建多一个「中间表」, 由「中间表」跟「目标表」关联成两个多对一来实现
 }

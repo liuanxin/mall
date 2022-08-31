@@ -12,6 +12,5 @@ import lombok.NoArgsConstructor;
 public class RequestInfo {
 
     private ReqParam req;
-
     private ReqResult res;
 }

@@ -7,33 +7,22 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ReqParamCondition {
+public class ReqParamCondition<T> {
 
-    private String field;
-    /*
-    global:
-        is null (nil)
-        is not null (nn)
-        = (eq)
-        <>
+    private String column;
+    private ReqParamConditionType type = ReqParamConditionType.EQ;
+    private T value;
+    private T start;
+    private T end;
 
-    list:
-        in (批量)
-        not in
+    public ReqParamCondition(String column, T value) {
+        this.column = column;
+        this.value = value;
+    }
 
-    number/date:
-        >
-        >=
-        <
-        <=
-        between
-
-    string:
-        like (开头、结尾、包含), 只有「开头」会走索引(LIKE 'x%'), 结尾是 LIKE '%xx', 包含是 LIKE '%xxx%'
-        not like
-    */
-    private String type = "eq";
-    private String value;
-    private String start;
-    private String end;
+    public ReqParamCondition(String column, T start, T end) {
+        this.column = column;
+        this.start = start;
+        this.end = end;
+    }
 }
