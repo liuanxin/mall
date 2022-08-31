@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class RequestInfo {
 
-    private ReqParam param;
+    private ReqParam req;
 
-    private ReqResult result;
+    private ReqResult res;
 }

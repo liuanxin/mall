@@ -12,9 +12,9 @@ public class ReqParamCondition {
     private String field;
     /*
     global:
-        is null
-        is not null
-        = (等于)
+        is null (nil)
+        is not null (nn)
+        = (eq)
         <>
 
     list:

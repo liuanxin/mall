@@ -14,5 +14,5 @@ import java.util.List;
 public class ReqResult {
 
     private String name;
-    private List<String> children;
+    private List<ReqResult> children;
 }
