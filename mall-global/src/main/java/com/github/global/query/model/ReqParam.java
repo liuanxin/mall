@@ -1,23 +1,22 @@
 package com.github.global.query.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ReqParam {
 
     private List<ReqParamCondition<?>> conditions;
 
-    private List<String> groups;
+    /** { "create_time": "desc", "id", "asc" } */
+    private Map<String, String> orders;
 
-    private List<ReqParamOrder> orders;
-
-    private ReqParamPage page;
+    private Integer page;
+    private Integer limit;
 }
