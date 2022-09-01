@@ -31,7 +31,8 @@ import java.util.*;
  *
  * 针对业务系统时, 只需要:
  *   针对 string 类型提供 等于(eq)、批量(in)、包含(like)、开头(ll)、结尾(rl) 条件
- *   针对 number/date 类型提供 等于(eq)、大于(>)、小于(<)、大于等于(>=)、小于等于(<=) 条件
+ *   针对 number 类型提供 等于(eq)、大于(>)、小于(<)、大于等于(>=)、小于等于(<=)、区间(bet) 条件
+ *   针对 date 类型提供 大于(>)、小于(<)、大于等于(>=)、小于等于(<=)、区间(bet) 条件
  *   针对 非 string/number/date 类型提供 等于(eq) 条件
  * </pre>
  */
@@ -166,7 +167,7 @@ public enum ReqParamConditionType {
 
     private static final Map<Class<?>, Set<ReqParamConditionType>> CONDITION_TYPE_MAP = Map.of(
             String.class, new LinkedHashSet<>(List.of(EQ, IN, LIKE, LIKE_START, LIKE_END)),
-            Number.class, new LinkedHashSet<>(List.of(EQ, GT, GE, LT, LE)),
+            Number.class, new LinkedHashSet<>(List.of(EQ, GT, GE, LT, LE, BETWEEN)),
             Date.class, new LinkedHashSet<>(List.of(GT, GE, LT, LE, BETWEEN))
     );
     private static final Set<ReqParamConditionType> OTHER_CONDITION_TYPE = Set.of(EQ);
