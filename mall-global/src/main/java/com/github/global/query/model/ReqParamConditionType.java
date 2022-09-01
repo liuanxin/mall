@@ -1,5 +1,6 @@
 package com.github.global.query.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.*;
@@ -144,6 +145,19 @@ public enum ReqParamConditionType {
     }
     public String getMsg() {
         return msg;
+    }
+
+    @JsonCreator
+    public static ReqParamConditionType deserializer(Object obj) {
+        if (obj != null) {
+            String str = obj.toString().trim();
+            for (ReqParamConditionType e : values()) {
+                if (str.equalsIgnoreCase(e.name()) || str.equalsIgnoreCase(e.value)) {
+                    return e;
+                }
+            }
+        }
+        return null;
     }
 
 
