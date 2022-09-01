@@ -13,4 +13,7 @@ public class RequestInfo {
 
     private ReqParam req;
     private ReqResult res;
+
+    private String reqAlias;
+    private String resAlias;
 }
