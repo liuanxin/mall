@@ -160,7 +160,7 @@ public enum ReqParamConditionType {
     }
 
 
-    abstract String generateSql(String column, Object value, List<Object> params);
+    public abstract String generateSql(String column, Object value, List<Object> params);
 
 
     private static final Map<Class<?>, Set<ReqParamConditionType>> CONDITION_TYPE_MAP = Map.of(
