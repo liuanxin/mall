@@ -30,8 +30,9 @@ import java.util.*;
  *
  *
  * 针对业务系统时, 只需要:
- *   针对 string 类型的列提供 等于(eq)、批量(in)、包含(like)、开头(ll)、结尾(rl) 这几种方式
- *   针对 number/date 类型的列提供 等于(eq)、大于(>)、小于(<)、大于等于(>=)、小于等于(<=) 这几种方式
+ *   针对 string 类型提供 等于(eq)、批量(in)、包含(like)、开头(ll)、结尾(rl) 条件
+ *   针对 number/date 类型提供 等于(eq)、大于(>)、小于(<)、大于等于(>=)、小于等于(<=) 条件
+ *   针对 非 string/number/date 类型提供 等于(eq) 条件
  * </pre>
  */
 public enum ReqParamConditionType {
@@ -160,7 +161,7 @@ public enum ReqParamConditionType {
     }
 
 
-    public abstract String generateSql(String column, Object value, List<Object> params);
+    abstract String generateSql(String column, Object value, List<Object> params);
 
 
     private static final Map<Class<?>, Set<ReqParamConditionType>> CONDITION_TYPE_MAP = Map.of(
