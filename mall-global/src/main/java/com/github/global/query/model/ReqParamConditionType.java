@@ -35,101 +35,159 @@ import java.util.*;
  */
 public enum ReqParamConditionType {
 
-    IS_NULL("inu") {
+    IS_NULL("inu", "为空") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return String.format(" %s IS NULL", column);
         }
     },
-    IS_NOT_NULL("inn") {
+    IS_NOT_NULL("inn", "不为空") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return String.format(" %s IS NOT NULL", column);
         }
     },
 
-    EQ("eq") {
+    EQ("eq", "等于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateValue(column, value, params, "=");
         }
     },
-    NOT_EQ("ne") {
+    NOT_EQ("ne", "不等于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateValue(column, value, params, "<>");
         }
     },
 
-    IN("in") {
+    IN("in", "批量") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateMultiValue(column, value, params, "IN");
         }
     },
-    NOT_IN("ni") {
+    NOT_IN("ni", "不在列表") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateMultiValue(column, value, params, "NOT IN");
         }
     },
 
-    BETWEEN("between") {
+    BETWEEN("between", "区间") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateMultiValue(column, value, params, "BETWEEN");
         }
     },
-    GT("gt") {
+    GT("gt", "大于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateValue(column, value, params, ">");
         }
     },
-    GE("gt") {
+    GE("gt", "大于等于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateValue(column, value, params, ">=");
         }
     },
-    LT("lt") {
+    LT("lt", "小于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateValue(column, value, params, "<");
         }
     },
-    LE("le") {
+    LE("le", "小于等于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateValue(column, value, params, "<=");
         }
     },
 
-    LIKE("like") {
+    LIKE("like", "包含") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateValue(column, ("%" + value + "%"), params, "LIKE");
         }
     },
-    LIKE_START("rl") {
+    LIKE_START("rl", "开头") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateValue(column, (value + "%"), params, "LIKE");
         }
     },
-    LIKE_END("ll") {
+    LIKE_END("ll", "结尾") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateValue(column, ("%" + value), params, "LIKE");
         }
     },
-    NOT_LIKE("nl") {
+    NOT_LIKE("nl", "不包含") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateValue(column, ("%" + value + "%"), params, "NOT LIKE");
         }
     }
     ;
+
+
+    private final String value;
+    private final String msg;
+    ReqParamConditionType(String value, String msg) {
+        this.value = value;
+        this.msg = msg;
+    }
+    @JsonValue
+    public String getValue() {
+        return value;
+    }
+    public String getMsg() {
+        return msg;
+    }
+
+
+    abstract String generateSql(String column, Object value, List<Object> params);
+
+
+    public void checkType(Class<?> type) {
+        Map<Class<?>, Set<ReqParamConditionType>> conditionTypeMap = Map.of(
+                String.class, Set.of(EQ, IN, LIKE, LIKE_START, LIKE_END),
+                Number.class, Set.of(EQ, GT, GE, LT, LE),
+                Date.class, Set.of(GT, GE, LT, LE, BETWEEN)
+        );
+        Set<ReqParamConditionType> otherConditionType = Set.of(EQ);
+        Map<Class<?>, String> typeInfoMap = Map.of(
+                String.class, "字符串",
+                Number.class, "数字",
+                Date.class, "日期时间"
+        );
+        String otherTypeInfo = "非「字符串, 数字, 日期时间」";
+
+        Set<ReqParamConditionType> conditionTypes = conditionTypeMap.getOrDefault(type, otherConditionType);
+        if (!conditionTypes.contains(this)) {
+            StringJoiner sj = new StringJoiner(", ");
+            for (ReqParamConditionType conditionType : conditionTypes) {
+                sj.add(String.format("%s(%s)", conditionType.msg, conditionType.value));
+            }
+            String typeInfo = typeInfoMap.getOrDefault(type, otherTypeInfo);
+            throw new RuntimeException(String.format("「%s」类型只能使用「%s」条件", typeInfo, sj));
+        }
+    }
+
+    public static ReqParamConditionType getType(String type) {
+        if (type != null && !type.isEmpty()) {
+            for (ReqParamConditionType ct : values()) {
+                if (ct.getValue().equalsIgnoreCase(type)) {
+                    return ct;
+                }
+                if (ct.name().equalsIgnoreCase(type)) {
+                    return ct;
+                }
+            }
+        }
+        return null;
+    }
 
     private static String generateValue(String column, Object value, List<Object> params, String symbol) {
         if (value == null) {
@@ -182,59 +240,5 @@ public enum ReqParamConditionType {
         } else {
             throw new RuntimeException("数据需要是集合");
         }
-    }
-
-
-    private final String value;
-    ReqParamConditionType(String value) {
-        this.value = value;
-    }
-    @JsonValue
-    public String getValue() {
-        return value;
-    }
-
-
-    abstract String generateSql(String column, Object value, List<Object> params);
-
-
-    public void checkType(Class<?> type) {
-        if (String.class.isAssignableFrom(type)) {
-            if (!Set.of(EQ, IN, LIKE, LIKE_START, LIKE_END).contains(this)) {
-                throw new RuntimeException(
-                        String.format("「字符串」类型的列只能使用「等于(%s), 批量(%s), 包含(%s), 开头(%s), 结尾(%s)」的条件",
-                                EQ.value, IN.value, LIKE.value, LIKE_START.value, LIKE_END.value));
-            }
-        } else if (Number.class.isAssignableFrom(type)) {
-            if (!Set.of(EQ, GT, GE, LT, LE).contains(this)) {
-                throw new RuntimeException(
-                        String.format("「数字」类型的列只能使用「等于(%s), 大于(%s), 大于等于(%s), 小于(%s), 小于等于(%s)」的条件",
-                                EQ.value, GT.value, GE.value, LT.value, LE.value));
-            }
-        } else if (Date.class.isAssignableFrom(type)) {
-            if (!Set.of(GT, GE, LT, LE, BETWEEN).contains(this)) {
-                throw new RuntimeException(
-                        String.format("「日期时间」类型的列只能使用「大于(%s), 大于等于(%s), 小于(%s), 小于等于(%s), 区间(%s)」的条件",
-                                GT.value, GE.value, LT.value, LE.value, BETWEEN.value));
-            }
-        } else {
-            if (EQ != this) {
-                throw new RuntimeException(String.format("非「字符串, 数字, 日期时间」类型的列只能使用「等于(%s)」的条件", EQ.value));
-            }
-        }
-    }
-
-    public static ReqParamConditionType getType(String type) {
-        if (type != null && !type.isEmpty()) {
-            for (ReqParamConditionType ct : values()) {
-                if (ct.getValue().equalsIgnoreCase(type)) {
-                    return ct;
-                }
-                if (ct.name().equalsIgnoreCase(type)) {
-                    return ct;
-                }
-            }
-        }
-        return null;
     }
 }

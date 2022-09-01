@@ -20,7 +20,6 @@ public class DynamicQueryHandler {
 
     private static final MetadataReaderFactory READER = new CachingMetadataReaderFactory(RESOLVER);
 
-
     public static Set<Class<?>> scanPackage(String classPackage) {
         if (U.isBlank(classPackage)) {
             return Collections.emptySet();
@@ -46,7 +45,7 @@ public class DynamicQueryHandler {
                     }
                 } catch (Exception e) {
                     if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                        LogUtil.ROOT_LOG.error("get({}) resource exception", path, e);
+                        LogUtil.ROOT_LOG.error("get({}) class exception", path, e);
                     }
                 }
             }
