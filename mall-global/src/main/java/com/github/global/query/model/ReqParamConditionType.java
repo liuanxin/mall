@@ -150,18 +150,22 @@ public enum ReqParamConditionType {
     abstract String generateSql(String column, Object value, List<Object> params);
 
 
-    public void checkType(Class<?> type) {
-        Map<Class<?>, Set<ReqParamConditionType>> conditionTypeMap = Map.of(
-                String.class, Set.of(EQ, IN, LIKE, LIKE_START, LIKE_END),
-                Number.class, Set.of(EQ, GT, GE, LT, LE),
-                Date.class, Set.of(GT, GE, LT, LE, BETWEEN)
-        );
-        Map<Class<?>, String> typeInfoMap = new LinkedHashMap<>();
-        typeInfoMap.put(String.class, "字符串");
-        typeInfoMap.put(Number.class, "数字");
-        typeInfoMap.put(Date.class, "日期时间");
+    private static final Map<Class<?>, Set<ReqParamConditionType>> CONDITION_TYPE_MAP = Map.of(
+            String.class, new LinkedHashSet<>(List.of(EQ, IN, LIKE, LIKE_START, LIKE_END)),
+            Number.class, new LinkedHashSet<>(List.of(EQ, GT, GE, LT, LE)),
+            Date.class, new LinkedHashSet<>(List.of(GT, GE, LT, LE, BETWEEN))
+    );
+    private static final Set<ReqParamConditionType> OTHER_CONDITION_TYPE = Set.of(EQ);
 
-        for (Map.Entry<Class<?>, Set<ReqParamConditionType>> entry : conditionTypeMap.entrySet()) {
+    private static final Map<Class<?>, String> TYPE_INFO_MAP = Map.of(
+            String.class, "字符串",
+            Number.class, "数字",
+            Date.class, "日期时间"
+    );
+    private static final String OTHER_TYPE_INFO = "非「字符串, 数字, 日期时间」";
+
+    public void checkType(Class<?> type) {
+        for (Map.Entry<Class<?>, Set<ReqParamConditionType>> entry : CONDITION_TYPE_MAP.entrySet()) {
             Class<?> clazz = entry.getKey();
             if (clazz.isAssignableFrom(type)) {
                 Set<ReqParamConditionType> conditionTypes = entry.getValue();
@@ -170,7 +174,7 @@ public enum ReqParamConditionType {
                     for (ReqParamConditionType conditionType : conditionTypes) {
                         sj.add(String.format("%s(%s)", conditionType.msg, conditionType.value));
                     }
-                    throw new RuntimeException(String.format("「%s」类型只能使用「%s」条件", typeInfoMap.get(clazz), sj));
+                    throw new RuntimeException(String.format("「%s」类型只能用「%s」条件", TYPE_INFO_MAP.get(clazz), sj));
                 }
             }
         }
@@ -181,11 +185,7 @@ public enum ReqParamConditionType {
             for (ReqParamConditionType conditionType : otherConditionType) {
                 sj.add(String.format("%s(%s)", conditionType.msg, conditionType.value));
             }
-
-            StringJoiner typeJoin = new StringJoiner(", ");
-            typeInfoMap.values().forEach(typeJoin::add);
-            String otherTypeInfo = String.format("非「%s」", typeJoin);
-            throw new RuntimeException(String.format("「%s」类型只能使用「%s」条件", otherTypeInfo, sj));
+            throw new RuntimeException(String.format("%s类型只能用「%s」条件", OTHER_TYPE_INFO, sj));
         }
     }
 
