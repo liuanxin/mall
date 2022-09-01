@@ -5,17 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ReqResult {
+public class ReqResultColumn {
 
-    private String scheme;
-    private List<String> properties;
-    private List<ReqResultColumn> functions;
-
-    private List<ReqResult> relations;
+    private ReqResultFunction function;
+    private String column;
 }

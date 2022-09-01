@@ -129,8 +129,7 @@ public enum ReqParamConditionType {
         public String generateSql(String column, Object value, List<Object> params) {
             return generateCondition(column, ("%" + value + "%"), params, "NOT LIKE");
         }
-    }
-    ;
+    };
 
 
     private final String value;
@@ -182,13 +181,13 @@ public enum ReqParamConditionType {
         for (Map.Entry<Class<?>, Set<ReqParamConditionType>> entry : CONDITION_TYPE_MAP.entrySet()) {
             Class<?> clazz = entry.getKey();
             if (clazz.isAssignableFrom(type)) {
-                checkType(TYPE_INFO_MAP.get(clazz), entry.getValue());
+                checkTypes(TYPE_INFO_MAP.get(clazz), entry.getValue());
             }
         }
 
-        checkType(OTHER_TYPE_INFO, OTHER_CONDITION_TYPE);
+        checkTypes(OTHER_TYPE_INFO, OTHER_CONDITION_TYPE);
     }
-    private void checkType(String typeInfo, Set<ReqParamConditionType> types) {
+    private void checkTypes(String typeInfo, Set<ReqParamConditionType> types) {
         if (!types.contains(this)) {
             StringJoiner sj = new StringJoiner(", ");
             for (ReqParamConditionType conditionType : types) {
@@ -198,30 +197,23 @@ public enum ReqParamConditionType {
         }
     }
 
-    public static ReqParamConditionType getType(String type) {
-        if (type != null && !type.isEmpty()) {
-            for (ReqParamConditionType conditionType : values()) {
-                if (conditionType.value.equalsIgnoreCase(type)) {
-                    return conditionType;
-                }
-                if (conditionType.name().equalsIgnoreCase(type)) {
-                    return conditionType;
-                }
-            }
-        }
-        return null;
-    }
-
     private static String generateCondition(String column, Object value, List<Object> params, String symbol) {
-        if (value == null) {
+        if (value == null || isNullString(value)) {
             return "";
         }
 
         params.add(value);
         return String.format(" %s %s ?", column, symbol);
     }
+    private static boolean isNullString(Object value) {
+        if (value instanceof String) {
+            String str = ((String) value).trim();
+            return str.isEmpty() || "null".equalsIgnoreCase(str) || "undefined".equalsIgnoreCase(str);
+        }
+        return false;
+    }
     private static String generateMulti(String column, Object value, List<Object> params, String symbol) {
-        if (value == null) {
+        if (value == null || isNullString(value)) {
             return "";
         }
 
@@ -229,24 +221,26 @@ public enum ReqParamConditionType {
             if (c.isEmpty()) {
                 return "";
             }
-            if ("BETWEEN".equalsIgnoreCase(symbol)) {
+            if ("BETWEEN".equals(symbol)) {
                 Object[] arr = c.toArray();
                 Object start = arr[0];
                 Object end = arr.length > 1 ? arr[1] : null;
 
                 StringBuilder sbd = new StringBuilder();
-                if (start != null) {
+                if (start != null && end != null) {
                     params.add(start);
-                    sbd.append(" ").append(column).append(" >= ?");
-                }
-                if (end != null) {
                     params.add(end);
-                    if (sbd.length() > 0) {
-                        sbd.append(" AND");
+                    sbd.append(" ").append(column).append(" BETWEEN ? AND ?");
+                } else {
+                    if (start != null) {
+                        params.add(start);
+                        sbd.append(" ").append(column).append(" >= ?");
                     }
-                    sbd.append(" ").append(column).append(" <= ?");
+                    if (end != null) {
+                        params.add(end);
+                        sbd.append(" ").append(column).append(" <= ?");
+                    }
                 }
-                // 用 >= ? AND <= ? 来实现 BETWEEN ? AND ?
                 return sbd.toString();
             } else {
                 boolean hasChange = false;
