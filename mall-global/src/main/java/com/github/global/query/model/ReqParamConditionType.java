@@ -21,7 +21,7 @@ import java.util.*;
  *   >= (ge)
  *   <  (lt)
  *   <= (le)
- *   between 区间
+ *   between (bet)
  *
  * string:
  *   like     (开头、结尾、包含), 只有「开头」会走索引(LIKE 'x%'), 结尾是 LIKE '%xx', 包含是 LIKE '%xxx%'
@@ -51,82 +51,82 @@ public enum ReqParamConditionType {
     EQ("eq", "等于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateValue(column, value, params, "=");
+            return generateCondition(column, value, params, "=");
         }
     },
     NOT_EQ("ne", "不等于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateValue(column, value, params, "<>");
+            return generateCondition(column, value, params, "<>");
         }
     },
 
     IN("in", "批量") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateMultiValue(column, value, params, "IN");
+            return generateMulti(column, value, params, "IN");
         }
     },
     NOT_IN("ni", "不在列表") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateMultiValue(column, value, params, "NOT IN");
+            return generateMulti(column, value, params, "NOT IN");
         }
     },
 
-    BETWEEN("between", "区间") {
+    BETWEEN("bet", "区间") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateMultiValue(column, value, params, "BETWEEN");
+            return generateMulti(column, value, params, "BETWEEN");
         }
     },
     GT("gt", "大于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateValue(column, value, params, ">");
+            return generateCondition(column, value, params, ">");
         }
     },
     GE("gt", "大于等于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateValue(column, value, params, ">=");
+            return generateCondition(column, value, params, ">=");
         }
     },
     LT("lt", "小于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateValue(column, value, params, "<");
+            return generateCondition(column, value, params, "<");
         }
     },
     LE("le", "小于等于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateValue(column, value, params, "<=");
+            return generateCondition(column, value, params, "<=");
         }
     },
 
     LIKE("like", "包含") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateValue(column, ("%" + value + "%"), params, "LIKE");
+            return generateCondition(column, ("%" + value + "%"), params, "LIKE");
         }
     },
     LIKE_START("rl", "开头") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateValue(column, (value + "%"), params, "LIKE");
+            return generateCondition(column, (value + "%"), params, "LIKE");
         }
     },
     LIKE_END("ll", "结尾") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateValue(column, ("%" + value), params, "LIKE");
+            return generateCondition(column, ("%" + value), params, "LIKE");
         }
     },
     NOT_LIKE("nl", "不包含") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateValue(column, ("%" + value + "%"), params, "NOT LIKE");
+            return generateCondition(column, ("%" + value + "%"), params, "NOT LIKE");
         }
     }
     ;
@@ -177,19 +177,19 @@ public enum ReqParamConditionType {
 
     public static ReqParamConditionType getType(String type) {
         if (type != null && !type.isEmpty()) {
-            for (ReqParamConditionType ct : values()) {
-                if (ct.getValue().equalsIgnoreCase(type)) {
-                    return ct;
+            for (ReqParamConditionType conditionType : values()) {
+                if (conditionType.value.equalsIgnoreCase(type)) {
+                    return conditionType;
                 }
-                if (ct.name().equalsIgnoreCase(type)) {
-                    return ct;
+                if (conditionType.name().equalsIgnoreCase(type)) {
+                    return conditionType;
                 }
             }
         }
         return null;
     }
 
-    private static String generateValue(String column, Object value, List<Object> params, String symbol) {
+    private static String generateCondition(String column, Object value, List<Object> params, String symbol) {
         if (value == null) {
             return "";
         }
@@ -197,7 +197,7 @@ public enum ReqParamConditionType {
         params.add(value);
         return String.format(" %s %s ?", column, symbol);
     }
-    private static String generateMultiValue(String column, Object value, List<Object> params, String symbol) {
+    private static String generateMulti(String column, Object value, List<Object> params, String symbol) {
         if (value == null) {
             return "";
         }
