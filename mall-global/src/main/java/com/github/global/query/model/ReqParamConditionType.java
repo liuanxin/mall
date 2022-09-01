@@ -156,22 +156,36 @@ public enum ReqParamConditionType {
                 Number.class, Set.of(EQ, GT, GE, LT, LE),
                 Date.class, Set.of(GT, GE, LT, LE, BETWEEN)
         );
-        Set<ReqParamConditionType> otherConditionType = Set.of(EQ);
-        Map<Class<?>, String> typeInfoMap = Map.of(
-                String.class, "字符串",
-                Number.class, "数字",
-                Date.class, "日期时间"
-        );
-        String otherTypeInfo = "非「字符串, 数字, 日期时间」";
+        Map<Class<?>, String> typeInfoMap = new LinkedHashMap<>();
+        typeInfoMap.put(String.class, "字符串");
+        typeInfoMap.put(Number.class, "数字");
+        typeInfoMap.put(Date.class, "日期时间");
 
-        Set<ReqParamConditionType> conditionTypes = conditionTypeMap.getOrDefault(type, otherConditionType);
-        if (!conditionTypes.contains(this)) {
+        for (Map.Entry<Class<?>, Set<ReqParamConditionType>> entry : conditionTypeMap.entrySet()) {
+            Class<?> clazz = entry.getKey();
+            if (clazz.isAssignableFrom(type)) {
+                Set<ReqParamConditionType> conditionTypes = entry.getValue();
+                if (!conditionTypes.contains(this)) {
+                    StringJoiner sj = new StringJoiner(", ");
+                    for (ReqParamConditionType conditionType : conditionTypes) {
+                        sj.add(String.format("%s(%s)", conditionType.msg, conditionType.value));
+                    }
+                    throw new RuntimeException(String.format("「%s」类型只能使用「%s」条件", typeInfoMap.get(clazz), sj));
+                }
+            }
+        }
+
+        Set<ReqParamConditionType> otherConditionType = Set.of(EQ);
+        if (!otherConditionType.contains(this)) {
             StringJoiner sj = new StringJoiner(", ");
-            for (ReqParamConditionType conditionType : conditionTypes) {
+            for (ReqParamConditionType conditionType : otherConditionType) {
                 sj.add(String.format("%s(%s)", conditionType.msg, conditionType.value));
             }
-            String typeInfo = typeInfoMap.getOrDefault(type, otherTypeInfo);
-            throw new RuntimeException(String.format("「%s」类型只能使用「%s」条件", typeInfo, sj));
+
+            StringJoiner typeJoin = new StringJoiner(", ");
+            typeInfoMap.values().forEach(typeJoin::add);
+            String otherTypeInfo = String.format("非「%s」", typeJoin);
+            throw new RuntimeException(String.format("「%s」类型只能使用「%s」条件", otherTypeInfo, sj));
         }
     }
 
