@@ -68,7 +68,7 @@ public enum ReqParamConditionType {
             return generateMulti(column, value, params, "IN");
         }
     },
-    NOT_IN("ni", "不在列表") {
+    NOT_IN("ni", "不在") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateMulti(column, value, params, "NOT IN");
