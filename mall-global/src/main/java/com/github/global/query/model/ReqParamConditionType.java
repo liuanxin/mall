@@ -158,9 +158,9 @@ public enum ReqParamConditionType {
     private static final Set<ReqParamConditionType> OTHER_CONDITION_TYPE = Set.of(EQ);
 
     private static final Map<Class<?>, String> TYPE_INFO_MAP = Map.of(
-            String.class, "字符串",
-            Number.class, "数字",
-            Date.class, "日期时间"
+            String.class, "「字符串」",
+            Number.class, "「数字」",
+            Date.class, "「日期时间」"
     );
     private static final String OTHER_TYPE_INFO = "非「字符串, 数字, 日期时间」";
 
@@ -168,24 +168,19 @@ public enum ReqParamConditionType {
         for (Map.Entry<Class<?>, Set<ReqParamConditionType>> entry : CONDITION_TYPE_MAP.entrySet()) {
             Class<?> clazz = entry.getKey();
             if (clazz.isAssignableFrom(type)) {
-                Set<ReqParamConditionType> conditionTypes = entry.getValue();
-                if (!conditionTypes.contains(this)) {
-                    StringJoiner sj = new StringJoiner(", ");
-                    for (ReqParamConditionType conditionType : conditionTypes) {
-                        sj.add(String.format("%s(%s)", conditionType.msg, conditionType.value));
-                    }
-                    throw new RuntimeException(String.format("「%s」类型只能用「%s」条件", TYPE_INFO_MAP.get(clazz), sj));
-                }
+                checkType(TYPE_INFO_MAP.get(clazz), entry.getValue());
             }
         }
 
-        Set<ReqParamConditionType> otherConditionType = Set.of(EQ);
-        if (!otherConditionType.contains(this)) {
+        checkType(OTHER_TYPE_INFO, OTHER_CONDITION_TYPE);
+    }
+    private void checkType(String typeInfo, Set<ReqParamConditionType> types) {
+        if (!types.contains(this)) {
             StringJoiner sj = new StringJoiner(", ");
-            for (ReqParamConditionType conditionType : otherConditionType) {
+            for (ReqParamConditionType conditionType : types) {
                 sj.add(String.format("%s(%s)", conditionType.msg, conditionType.value));
             }
-            throw new RuntimeException(String.format("%s类型只能用「%s」条件", OTHER_TYPE_INFO, sj));
+            throw new RuntimeException(String.format("%s类型只能用「%s」条件", typeInfo, sj));
         }
     }
 
