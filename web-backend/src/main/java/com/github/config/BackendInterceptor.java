@@ -14,7 +14,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @SuppressWarnings("NullableProblems")
-public record BackendInterceptor(boolean printHeader) implements HandlerInterceptor {
+public class BackendInterceptor implements HandlerInterceptor {
+
+    private final boolean printHeader;
+    public BackendInterceptor(boolean printHeader) {
+        this.printHeader = printHeader;
+    }
 
     @Override
     public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) {

@@ -165,6 +165,7 @@ public enum ReqParamConditionType {
     abstract String generateSql(String column, Object value, List<Object> params);
 
 
+    private static final Set<ReqParamConditionType> MULTI_TYPE = Set.of(IN, NOT_IN, BETWEEN);
     private static final Map<Class<?>, Set<ReqParamConditionType>> CONDITION_TYPE_MAP = Map.of(
             String.class, new LinkedHashSet<>(List.of(EQ, IN, LIKE, LIKE_START, LIKE_END)),
             Number.class, new LinkedHashSet<>(List.of(EQ, GT, GE, LT, LE, BETWEEN)),
@@ -196,6 +197,30 @@ public enum ReqParamConditionType {
                 sj.add(String.format("%s(%s)", conditionType.msg, conditionType.value));
             }
             throw new RuntimeException(String.format("%s类型只能用「%s」条件", typeInfo, sj));
+        }
+    }
+    public void checkValue(String column, Class<?> type, Object value) {
+        if (value != null) {
+            if (MULTI_TYPE.contains(this)) {
+                if (value instanceof Collection<?> c) {
+                    StringJoiner errorSj = new StringJoiner(", ");
+                    for (Object obj : c) {
+                        if (obj != null && !type.isAssignableFrom(obj.getClass())) {
+                            errorSj.add(obj.toString());
+                        }
+                    }
+                    String error = errorSj.toString();
+                    if (!error.isEmpty()) {
+                        throw new RuntimeException(String.format("列(%s)数据(%s)错误", column, errorSj));
+                    }
+                } else {
+                    throw new RuntimeException(String.format("列(%s)数据需要是集合", column));
+                }
+            } else {
+                if (!type.isAssignableFrom(value.getClass())) {
+                    throw new RuntimeException(String.format("列(%s)数据(%s)有误", column, value));
+                }
+            }
         }
     }
 
@@ -249,7 +274,9 @@ public enum ReqParamConditionType {
                 StringJoiner sj = new StringJoiner(", ");
                 for (Object obj : c) {
                     if (obj != null) {
-                        hasChange = true;
+                        if (!hasChange) {
+                            hasChange = true;
+                        }
                         sj.add("?");
                         params.add(obj);
                     }

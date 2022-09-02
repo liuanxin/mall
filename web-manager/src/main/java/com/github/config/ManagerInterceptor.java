@@ -18,7 +18,12 @@ import java.util.Arrays;
 import java.util.List;
 
 @SuppressWarnings("NullableProblems")
-public record ManagerInterceptor(boolean printHeader) implements HandlerInterceptor {
+public class ManagerInterceptor implements HandlerInterceptor {
+
+    private final boolean printHeader;
+    public ManagerInterceptor(boolean printHeader) {
+        this.printHeader = printHeader;
+    }
 
     private static final List<String> LET_IT_GO = Arrays.asList(
             "/error", "/api/project", "/api/info", "/api/example/*"

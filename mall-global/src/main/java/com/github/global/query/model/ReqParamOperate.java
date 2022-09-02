@@ -11,35 +11,38 @@ import java.util.List;
 
 /**
  * <pre>
- * name like 'abc%'   and gender = 1   and age between 18 and 40   and time >= now()
+ * name like 'abc%'   and gender = 1   and age between 18 and 40   and province in ( 'x', 'y', 'z' )   and city like '%xx%'   and time >= now()
  * {
+ *   -- "operate": "and", -- 如果是 and 可以省略
  *   "conditions": [
  *     [ "name", "rl", "abc" ],
- *     [ "gender", "eq", 1 ],
- *     [ "age", "between", [ 18, 40 ] ],
+ *     [ "gender", -- "eq", --  1 ],  -- eq 可以省略
+ *     [ "age", "bet", [ 18, 40 ] ],
+ *     [ "province", "in", [ "x", "y", "z" ] ],
+ *     [ "city", "like", "xx" ],
  *     [ "time", "ge", "xxxx-xx-xx xx:xx:xx" ]
  *   ]
  * }
  *
  *
- * name like 'abc%'   and time >= now()   and ( gender = 1 or age between 18 and 40 )   and ( province in ( 'x', 'y', 'z' ) or city like '%xx%' )
+ * name like 'abc%'   and ( gender = 1 or age between 18 and 40 )   and ( province in ( 'x', 'y', 'z' ) or city like '%xx%' )   and time >= now()
  * {
  *   "conditions": [
  *     [ "name", "rl", "abc" ],
  *     [ "time", "ge", "xxxx-xx-xx xx:xx:xx" ]
  *   ],
- *   "composes": [
+ *   "composes": [  -- 需要组合, 且与上面的条件不是同一个类型的条件就用这种方式
  *     {
  *       "operate": "or",
  *       "conditions": [
- *         [ "gender", "eq", 1 ],
- *         [ "age", "between", [ 18, 40 ] ]
+ *         [ "gender", 1 ],
+ *         [ "age", "bet", [ 18, 40 ] ]
  *       ]
  *     },
  *     {
  *       "operate": "or",
  *       "conditions": [
- *         [ "province", "in",  [ "x", "y", "z" ] ],
+ *         [ "province", "in", [ "x", "y", "z" ] ],
  *         [ "city", "like", "xx" ]
  *       ]
  *     }
@@ -47,13 +50,15 @@ import java.util.List;
  * }
  *
  *
- * name like 'abc%'   or gender = 1   or age between 18 and 40   or time >= now()
+ * name like 'abc%'   or gender = 1   or age between 18 and 40   or province in ( 'x', 'y', 'z' )   or city like '%xx%'   or time >= now()
  * {
  *   "operate": "or",
  *   "conditions": [
  *     [ "name", "rl", "abc" ],
- *     [ "gender", "eq", 1 ],
- *     [ "age", "between", [ 18, 40 ] ],
+ *     [ "gender", 1 ],
+ *     [ "age", "bet", [ 18, 40 ] ],
+ *     [ "province", "in", [ "x", "y", "z" ] ],
+ *     [ "city", "like", "xx" ],
  *     [ "time", "ge", "xxxx-xx-xx xx:xx:xx" ]
  *   ]
  * }
@@ -69,13 +74,13 @@ import java.util.List;
  *   "composes": [
  *     {
  *       "conditions": [
- *         [ "gender", "eq", 1 ],
- *         [ "age", "between", [ 18, 40 ] ]
+ *         [ "gender", 1 ],
+ *         [ "age", "bet", [ 18, 40 ] ]
  *       ]
  *     },
  *     {
  *       "conditions": [
- *         [ "province", "in",  [ "x", "y", "z" ] ],
+ *         [ "province", "in", [ "x", "y", "z" ] ],
  *         [ "city", "like", "xx" ]
  *       ]
  *     }
@@ -94,25 +99,49 @@ public class ReqParamOperate {
 
     private List<ReqParamOperate> composes;
 
-    public List<List<ReqParamCondition>> handleCondition() {
+    public List<ReqParamCondition> checkCondition() {
         if (conditions == null || conditions.isEmpty()) {
             return Collections.emptyList();
         }
 
-        List<List<ReqParamCondition>> conditionList = new ArrayList<>();
+        List<ReqParamCondition> conditionList = new ArrayList<>();
         for (List<Object> condition : conditions) {
             if (condition != null && !condition.isEmpty()) {
-                if (condition.size() != 3) {
+                int size = condition.size();
+                if (size < 2) {
                     throw new RuntimeException("条件构建有误");
                 }
 
-                ReqParamConditionType type = ReqParamConditionType.deserializer(condition.get(1));
                 String column = toStr(condition.get(0));
-                Object value = condition.get(2);
+                ReqParamConditionType type;
+                Object value;
+                if (size == 2) {
+                    type = ReqParamConditionType.EQ;
+                    value = condition.get(1);
+                } else {
+                    type = ReqParamConditionType.deserializer(condition.get(1));
+                    value = condition.get(2);
+                }
+                if (type  == null) {
+                    throw new RuntimeException(String.format("列(%s)条件有误", column));
+                }
+
+                Class<?> columnType = getColumnType(column);
+                // 检查条件
+                type.checkType(columnType);
+
+                // 检查值
+                type.checkValue(column, columnType, value);
+                conditionList.add(new ReqParamCondition(column, type, value));
             }
         }
         return conditionList;
     }
+    private Class<?> getColumnType(String column) {
+        // todo
+        return Void.class;
+    }
+
     private static String toStr(Object obj) {
         return obj == null ? "" : obj.toString().trim();
     }
