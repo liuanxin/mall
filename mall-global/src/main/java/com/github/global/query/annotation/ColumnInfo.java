@@ -6,7 +6,7 @@ import java.lang.annotation.*;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface TableColumnInfo {
+public @interface ColumnInfo {
 
     /** 表列名, 为空则自动基于 类字段名 来(类字段 userName --> 表列 user_name) */
     String value() default "";
