@@ -212,7 +212,7 @@ public class ExportExcel {
     }
     private static Workbook create(boolean excel07) {
         // 声明一个工作薄. HSSFWorkbook 是 Office 2003 的版本, XSSFWorkbook 是 2007
-        //Workbook workbook = excel07 ? new XSSFWorkbook() : new HSSFWorkbook();
+        // return excel07 ? new XSSFWorkbook() : new HSSFWorkbook();
         if (excel07) {
             // http://poi.apache.org/components/spreadsheet/how-to.html#sxssf
             // sxssf 会把数据缓存到磁盘来完成 数据量比较大时 的输出
