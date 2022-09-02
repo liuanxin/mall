@@ -1,17 +1,24 @@
 package com.github.global.query;
 
-import com.github.common.util.LogUtil;
+import com.github.common.util.U;
+import com.github.global.query.annotation.ColumnInfo;
 import com.github.global.query.annotation.SchemeInfo;
 import com.github.global.query.model.Scheme;
+import com.github.global.query.model.SchemeColumn;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.util.StringUtils;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 public class DynamicQueryHandler {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DynamicQueryHandler.class);
 
     private static final PathMatchingResourcePatternResolver RESOLVER =
             new PathMatchingResourcePatternResolver(ClassLoader.getSystemClassLoader());
@@ -38,8 +45,8 @@ public class DynamicQueryHandler {
                     }
                 }
             } catch (Exception e) {
-                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("get({}) class exception", path, e);
+                if (LOG.isErrorEnabled()) {
+                    LOG.error("get({}) class exception", path, e);
                 }
             }
         }
@@ -56,12 +63,68 @@ public class DynamicQueryHandler {
                 schemeDesc = schemeInfo.desc();
                 schemeAlias = schemeInfo.alias();
             } else {
-                schemeName = schemeDesc = schemeAlias = clazz.getSimpleName();
+                schemeDesc = "";
+                schemeAlias = clazz.getSimpleName();
+                schemeName = convertTableName(schemeAlias);
             }
-            if (returnMap.containsKey(schemeName)) {
-                throw new RuntimeException("存在同名表名(" + schemeName + ")");
+            if (returnMap.containsKey(schemeAlias)) {
+                throw new RuntimeException("存在同名表(" + schemeName + ")");
             }
+
+            Map<String, SchemeColumn> columnMap = new LinkedHashMap<>();
+            for (Field field : U.getFields(clazz)) {
+                ColumnInfo columnInfo = field.getAnnotation(ColumnInfo.class);
+                String columnName, columnDesc, columnAlias;
+                if (columnInfo != null) {
+                    if (columnInfo.ignore()) {
+                        continue;
+                    }
+
+                    columnName = columnInfo.value();
+                    columnDesc = columnInfo.desc();
+                    columnAlias = columnInfo.alias();
+                } else {
+                    columnDesc = "";
+                    columnAlias = field.getName();
+                    columnName = convertColumnName(columnAlias);
+                }
+                if (columnMap.containsKey(columnAlias)) {
+                    throw new RuntimeException("表(" + schemeName + ")中存在同名属性(" + columnAlias + ")");
+                }
+
+                columnMap.put(columnAlias, new SchemeColumn(columnName, columnDesc, columnAlias, field.getType()));
+            }
+            returnMap.put(schemeAlias, new Scheme(schemeName, schemeDesc, schemeAlias, columnMap));
         }
         return returnMap;
+    }
+
+    private static String convertTableName(String className) {
+        StringBuilder sbd = new StringBuilder();
+        char[] chars = className.toCharArray();
+        int len = chars.length;
+        for (int i = 0; i < len; i++) {
+            char c = chars[i];
+            if (Character.isUpperCase(c)) {
+                if (i > 0) {
+                    sbd.append("_");
+                }
+                sbd.append(Character.toLowerCase(c));
+            } else {
+                sbd.append(c);
+            }
+        }
+        return sbd.toString();
+    }
+    private static String convertColumnName(String fieldName) {
+        StringBuilder sbd = new StringBuilder();
+        for (char c : fieldName.toCharArray()) {
+            if (Character.isUpperCase(c)) {
+                sbd.append("_").append(Character.toLowerCase(c));
+            } else {
+                sbd.append(c);
+            }
+        }
+        return sbd.toString();
     }
 }
