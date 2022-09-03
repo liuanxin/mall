@@ -21,6 +21,9 @@ public class SchemeColumn {
     /** 表列别名 */
     private String alias;
 
+    /** true 表示是主键字段 */
+    private boolean primary;
+
     /** 表列对应的实体的类型 */
     @JsonIgnore
     private Class<?> columnType;

@@ -16,4 +16,7 @@ public @interface SchemeInfo {
 
     /** 表别名, 为空时则使用类名 */
     String alias() default "";
+
+    /** true 表示这个类不与表有关联 */
+    boolean ignore() default false;
 }

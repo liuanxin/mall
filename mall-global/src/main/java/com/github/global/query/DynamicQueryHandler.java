@@ -63,6 +63,10 @@ public class DynamicQueryHandler {
             SchemeInfo schemeInfo = clazz.getAnnotation(SchemeInfo.class);
             String schemeName, schemeDesc, schemeAlias;
             if (schemeInfo != null) {
+                if (schemeInfo.ignore()) {
+                    continue;
+                }
+
                 schemeName = schemeInfo.value();
                 schemeDesc = schemeInfo.desc();
                 schemeAlias = schemeInfo.alias();
@@ -79,6 +83,7 @@ public class DynamicQueryHandler {
             for (Field field : U.getFields(clazz)) {
                 ColumnInfo columnInfo = field.getAnnotation(ColumnInfo.class);
                 String columnName, columnDesc, columnAlias;
+                boolean primary;
                 if (columnInfo != null) {
                     if (columnInfo.ignore()) {
                         continue;
@@ -87,16 +92,18 @@ public class DynamicQueryHandler {
                     columnName = columnInfo.value();
                     columnDesc = columnInfo.desc();
                     columnAlias = columnInfo.alias();
+                    primary = columnInfo.primary();
                 } else {
                     columnDesc = "";
                     columnAlias = field.getName();
                     columnName = convertColumnName(columnAlias);
+                    primary = "id".equalsIgnoreCase(field.getName());
                 }
                 if (columnMap.containsKey(columnAlias)) {
                     throw new RuntimeException("表(" + schemeName + ")中存在同名属性(" + columnAlias + ")");
                 }
 
-                columnMap.put(columnAlias, new SchemeColumn(columnName, columnDesc, columnAlias, field.getType()));
+                columnMap.put(columnAlias, new SchemeColumn(columnName, columnDesc, columnAlias, primary, field.getType()));
             }
             returnMap.put(schemeAlias, new Scheme(schemeName, schemeDesc, schemeAlias, columnMap));
         }
