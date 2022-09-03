@@ -52,10 +52,7 @@ public class ReqResult {
                     sj.add(String.format(group.getValue(), column) + " AS " + alias);
                 }
             }
-            String groupBy = sj.toString();
-            if (groupBy.isEmpty()) {
-                return " GROUP BY " + groupBy;
-            }
+            return sj.toString();
         }
         return "";
     }
