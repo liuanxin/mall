@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -17,5 +18,5 @@ public class ReqResult {
     private List<String> properties;
     private List<ReqResultColumn> functions;
 
-    private List<ReqResult> relations;
+    private Map<String, ReqResult> relations;
 }

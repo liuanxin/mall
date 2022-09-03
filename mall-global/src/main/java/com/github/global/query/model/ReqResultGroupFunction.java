@@ -27,7 +27,7 @@ public enum ReqResultGroupFunction {
         if (obj != null) {
             String str = obj.toString().trim();
             for (ReqResultGroupFunction e : values()) {
-                if (str.equalsIgnoreCase(e.name()) || str.equalsIgnoreCase(e.value)) {
+                if (str.equalsIgnoreCase(e.name())) {
                     return e;
                 }
             }
