@@ -1,11 +1,22 @@
 package com.github.global.query.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.github.global.query.util.QueryUtil;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.*;
 
+/**
+ * <pre>
+ * {
+ *   "query": ...
+ *   "group": [ "", "" ]
+ *   "sort": { "createTime": "desc", "id", "asc" },
+ *   "page": [ 1, 20 ]
+ * }
+ * </pre>
+ */
 @Data
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -16,36 +27,33 @@ public class ReqParam {
 
     private ReqParamOperate query;
 
+    private List<String> group;
+
     /** { "createTime": "desc", "id", "asc" } */
-    private Map<String, String> order;
+    private Map<String, String> sort;
 
-    private Integer page;
-    private Integer limit;
+    private List<Integer> page;
 
-    public String checkOrder(String defaultScheme, Map<String, Scheme> schemeMap) {
-        if (order != null && !order.isEmpty()) {
+    public String generateGroupSql(String defaultScheme, Map<String, Scheme> schemeMap) {
+        if (group != null && !group.isEmpty()) {
             StringJoiner orderSj = new StringJoiner(", ");
-            for (Map.Entry<String, String> entry : order.entrySet()) {
+            for (String column : group) {
+                QueryUtil.checkColumnName(column, defaultScheme, schemeMap, "group");
+                orderSj.add(column);
+            }
+            if (!orderSj.toString().isEmpty()) {
+                return " GROUP BY " + orderSj;
+            }
+        }
+        return "";
+    }
+
+    public String generateOrderSql(String defaultScheme, Map<String, Scheme> schemeMap) {
+        if (sort != null && !sort.isEmpty()) {
+            StringJoiner orderSj = new StringJoiner(", ");
+            for (Map.Entry<String, String> entry : sort.entrySet()) {
                 String column = entry.getKey();
-                String schemeName, columnName;
-                if (column.contains(".")) {
-                    String[] arr = column.split("\\.");
-                    schemeName = arr[0].trim();
-                    columnName = arr[1].trim();
-                } else {
-                    schemeName = defaultScheme;
-                    columnName = column;
-                }
-
-                Scheme scheme = schemeMap.get(schemeName);
-                if (scheme == null) {
-                    throw new RuntimeException("no scheme(" + schemeName + ") in order");
-                }
-                SchemeColumn schemeColumn = scheme.getColumnMap().get(columnName);
-                if (schemeColumn == null) {
-                    throw new RuntimeException("scheme(" + schemeName + ") no column(" + columnName + ") in order");
-                }
-
+                QueryUtil.checkColumnName(column, defaultScheme, schemeMap, "order");
                 orderSj.add(column + " " + ("asc".equalsIgnoreCase(entry.getValue()) ? "ASC" : "DESC"));
             }
             if (!orderSj.toString().isEmpty()) {
@@ -55,18 +63,23 @@ public class ReqParam {
         return "";
     }
 
-    private String checkPage() {
-        if (page != null && page <= 0) {
-            page = 1;
-        }
-        limit = LIMIT_SET.contains(limit) ? limit : MIN_LIMIT;
-        if (page != null) {
-            return " LIMIT " + (page == 1 ? limit : (((page - 1) * limit) + ", " + limit));
+    private String generatePageSql(List<Object> params) {
+        if (page != null && !page.isEmpty()) {
+            int indexParam = page.get(0);
+            int index = indexParam <= 0 ? 1 : indexParam;
+
+            int limitParam = page.size() > 1 ? page.get(1) : 0;
+            int limit = LIMIT_SET.contains(limitParam) ? limitParam : MIN_LIMIT;
+
+            if (index == 1) {
+                params.add(limit);
+                return " LIMIT ?";
+            } else {
+                params.add((index - 1) * limit);
+                params.add(limit);
+                return " LIMIT ?, ?";
+            }
         }
         return "";
-    }
-
-    public boolean needPage() {
-        return page != null && limit != null;
     }
 }

@@ -1,6 +1,7 @@
 package com.github.global.query.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.github.global.query.util.QueryUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -131,34 +132,13 @@ public class ReqParamOperate {
                 }
 
                 // 用传入的列名获取其结构上定义的类型
-                Class<?> columnType = checkAndGetColumnType(column, defaultScheme, schemeMap);
+                Class<?> columnType = QueryUtil.checkColumnName(column, defaultScheme, schemeMap, "query").getColumnType();
                 // 检查列类型和传入的值是否对应
                 type.checkTypeAndValue(columnType, column, value);
                 conditionList.add(new ReqParamCondition(column, type, value));
             }
         }
         return conditionList;
-    }
-    private Class<?> checkAndGetColumnType(String column, String defaultScheme, Map<String, Scheme> schemeMap) {
-        String schemeName, columnName;
-        if (column.contains(".")) {
-            String[] arr = column.split("\\.");
-            schemeName = arr[0];
-            columnName = arr[1];
-        } else {
-            schemeName = defaultScheme;
-            columnName = column;
-        }
-
-        Scheme scheme = schemeMap.get(schemeName);
-        if (scheme == null) {
-            throw new RuntimeException("no scheme(" + schemeName + ") in query");
-        }
-        SchemeColumn schemeColumn = scheme.getColumnMap().get(columnName);
-        if (schemeColumn == null) {
-            throw new RuntimeException("scheme(" + schemeName + ") no column(" + columnName + ") in query");
-        }
-        return schemeColumn.getColumnType();
     }
 
     private static String toStr(Object obj) {
