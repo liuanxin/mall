@@ -2,6 +2,8 @@ package com.github.global.query.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.*;
 
@@ -36,6 +38,8 @@ import java.util.*;
  *   针对 非 string/number/date 类型提供 等于(eq) 条件
  * </pre>
  */
+@Getter
+@RequiredArgsConstructor
 public enum ReqParamConditionType {
 
     IS_NULL("inu", "为空") {
@@ -134,19 +138,9 @@ public enum ReqParamConditionType {
     };
 
 
+    @JsonValue
     private final String value;
     private final String msg;
-    ReqParamConditionType(String value, String msg) {
-        this.value = value;
-        this.msg = msg;
-    }
-    @JsonValue
-    public String getValue() {
-        return value;
-    }
-    public String getMsg() {
-        return msg;
-    }
 
     @JsonCreator
     public static ReqParamConditionType deserializer(Object obj) {
@@ -180,7 +174,12 @@ public enum ReqParamConditionType {
     );
     private static final String OTHER_TYPE_INFO = "非「字符串, 数字, 日期时间」";
 
-    public void checkType(Class<?> type) {
+    public void checkTypeAndValue(Class<?> type, String column, Object value) {
+        checkType(type);
+        checkValue(type, column, value);
+    }
+
+    private void checkType(Class<?> type) {
         for (Map.Entry<Class<?>, Set<ReqParamConditionType>> entry : CONDITION_TYPE_MAP.entrySet()) {
             Class<?> clazz = entry.getKey();
             if (clazz.isAssignableFrom(type)) {
@@ -199,7 +198,8 @@ public enum ReqParamConditionType {
             throw new RuntimeException(String.format("%s类型只能用「%s」条件", typeInfo, sj));
         }
     }
-    public void checkValue(String column, Class<?> type, Object value) {
+
+    private void checkValue(Class<?> type, String column, Object value) {
         if (value != null) {
             if (MULTI_TYPE.contains(this)) {
                 if (value instanceof Collection<?> c) {
@@ -223,6 +223,7 @@ public enum ReqParamConditionType {
             }
         }
     }
+
 
     private static String generateCondition(String column, Object value, List<Object> params, String symbol) {
         if (value == null || isNullString(value)) {

@@ -2,7 +2,9 @@ package com.github.global.query.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public enum ReqResultFunction {
 
     COUNT("COUNT(*)", "条数"),
@@ -10,19 +12,10 @@ public enum ReqResultFunction {
     GROUP_CONCAT("GROUP_CONCAT(%s)", "组拼接"),
     ;
 
+
+    @JsonValue
     private final String value;
     private final String msg;
-    ReqResultFunction(String value, String msg) {
-        this.value = value;
-        this.msg = msg;
-    }
-    @JsonValue
-    public String getValue() {
-        return value;
-    }
-    public String getMsg() {
-        return msg;
-    }
 
     @JsonCreator
     public static ReqResultFunction deserializer(Object obj) {

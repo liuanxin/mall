@@ -24,8 +24,4 @@ public class SchemeColumn {
     /** 表列对应的实体的类型 */
     @JsonIgnore
     private Class<?> columnType;
-
-    public String getType() {
-        return columnType.getSimpleName();
-    }
 }

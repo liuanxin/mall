@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <pre>
@@ -99,7 +100,7 @@ public class ReqParamOperate {
 
     private List<ReqParamOperate> composes;
 
-    public List<ReqParamCondition> checkCondition() {
+    public List<ReqParamCondition> checkCondition(String defaultScheme, Map<String, Scheme> schemeMap) {
         if (conditions == null || conditions.isEmpty()) {
             return Collections.emptyList();
         }
@@ -113,6 +114,9 @@ public class ReqParamOperate {
                 }
 
                 String column = toStr(condition.get(0));
+                if (column.isEmpty()) {
+                    return Collections.emptyList();
+                }
                 ReqParamConditionType type;
                 Object value;
                 if (size == 2) {
@@ -126,20 +130,35 @@ public class ReqParamOperate {
                     throw new RuntimeException(String.format("列(%s)条件有误", column));
                 }
 
-                Class<?> columnType = getColumnType(column);
-                // 检查条件
-                type.checkType(columnType);
-
-                // 检查值
-                type.checkValue(column, columnType, value);
+                // 用传入的列名获取其结构上定义的类型
+                Class<?> columnType = checkAndGetColumnType(column, defaultScheme, schemeMap);
+                // 检查列类型和传入的值是否对应
+                type.checkTypeAndValue(columnType, column, value);
                 conditionList.add(new ReqParamCondition(column, type, value));
             }
         }
         return conditionList;
     }
-    private Class<?> getColumnType(String column) {
-        // todo
-        return Void.class;
+    private Class<?> checkAndGetColumnType(String column, String defaultScheme, Map<String, Scheme> schemeMap) {
+        String schemeName, columnName;
+        if (column.contains(".")) {
+            String[] arr = column.split("\\.");
+            schemeName = arr[0];
+            columnName = arr[1];
+        } else {
+            schemeName = defaultScheme;
+            columnName = column;
+        }
+
+        Scheme scheme = schemeMap.get(schemeName);
+        if (scheme == null) {
+            throw new RuntimeException("no scheme(" + schemeName + ")");
+        }
+        SchemeColumn schemeColumn = scheme.getColumnMap().get(columnName);
+        if (schemeColumn == null) {
+            throw new RuntimeException("scheme(" + schemeName + ") no column(" + columnName + ")");
+        }
+        return schemeColumn.getColumnType();
     }
 
     private static String toStr(Object obj) {

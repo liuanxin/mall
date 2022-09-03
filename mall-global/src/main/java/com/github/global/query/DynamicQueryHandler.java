@@ -25,11 +25,15 @@ public class DynamicQueryHandler {
 
     private static final MetadataReaderFactory READER = new CachingMetadataReaderFactory(RESOLVER);
 
-    public static Set<Class<?>> scanPackage(String classPackage) {
-        if (classPackage == null || classPackage.isEmpty()) {
+    public static Map<String, Scheme> scanScheme(String classPackages) {
+        return handleTable(scanPackage(classPackages));
+    }
+
+    private static Set<Class<?>> scanPackage(String classPackages) {
+        if (classPackages == null || classPackages.isEmpty()) {
             return Collections.emptySet();
         }
-        String[] paths = StringUtils.commaDelimitedListToStringArray(StringUtils.trimAllWhitespace(classPackage));
+        String[] paths = StringUtils.commaDelimitedListToStringArray(StringUtils.trimAllWhitespace(classPackages));
         if (paths.length == 0) {
             return Collections.emptySet();
         }
