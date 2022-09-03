@@ -152,11 +152,11 @@ public class ReqParamOperate {
 
         Scheme scheme = schemeMap.get(schemeName);
         if (scheme == null) {
-            throw new RuntimeException("no scheme(" + schemeName + ")");
+            throw new RuntimeException("no scheme(" + schemeName + ") in query");
         }
         SchemeColumn schemeColumn = scheme.getColumnMap().get(columnName);
         if (schemeColumn == null) {
-            throw new RuntimeException("scheme(" + schemeName + ") no column(" + columnName + ")");
+            throw new RuntimeException("scheme(" + schemeName + ") no column(" + columnName + ") in query");
         }
         return schemeColumn.getColumnType();
     }
