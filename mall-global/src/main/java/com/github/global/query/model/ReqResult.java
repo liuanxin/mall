@@ -18,11 +18,16 @@ import java.util.StringJoiner;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ReqResult {
 
+    /** 结构 */
     private String scheme;
-    private List<String> properties;
+    /** 结构里的属性 */
+    private List<String> columns;
+    /** 函数 */
     private List<List<String>> functions;
 
+    /** 结构里的关系 */
     private Map<String, ReqResult> relations;
+
 
     public String generateFunctionSql(Map<String, Scheme> schemeMap) {
         if (functions != null && !functions.isEmpty()) {
