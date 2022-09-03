@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ReqResultColumn {
 
-    private ReqResultFunction function;
+    private ReqResultGroupFunction function;
     private String column;
 }

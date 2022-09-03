@@ -11,7 +11,7 @@ import java.util.*;
  * <pre>
  * {
  *   "query": ...
- *   "group": [ "", "" ]
+// *   "group": [ "sku", "" ]
  *   "sort": { "createTime": "desc", "id", "asc" },
  *   "page": [ 1, 20 ]
  * }
@@ -27,26 +27,25 @@ public class ReqParam {
 
     private ReqParamOperate query;
 
-    private List<String> group;
+//    private List<String> group;
 
-    /** { "createTime": "desc", "id", "asc" } */
     private Map<String, String> sort;
 
     private List<Integer> page;
 
-    public String generateGroupSql(String defaultScheme, Map<String, Scheme> schemeMap) {
-        if (group != null && !group.isEmpty()) {
-            StringJoiner orderSj = new StringJoiner(", ");
-            for (String column : group) {
-                QueryUtil.checkColumnName(column, defaultScheme, schemeMap, "group");
-                orderSj.add(column);
-            }
-            if (!orderSj.toString().isEmpty()) {
-                return " GROUP BY " + orderSj;
-            }
-        }
-        return "";
-    }
+//    public String generateGroupSql(String defaultScheme, Map<String, Scheme> schemeMap) {
+//        if (group != null && !group.isEmpty()) {
+//            StringJoiner groupSj = new StringJoiner(", ");
+//            for (String column : group) {
+//                QueryUtil.checkColumnName(column, defaultScheme, schemeMap, "group");
+//                groupSj.add(column);
+//            }
+//            if (!groupSj.toString().isEmpty()) {
+//                return " GROUP BY " + groupSj;
+//            }
+//        }
+//        return "";
+//    }
 
     public String generateOrderSql(String defaultScheme, Map<String, Scheme> schemeMap) {
         if (sort != null && !sort.isEmpty()) {
