@@ -369,7 +369,6 @@ public final class RequestUtil {
     }
     public static String logRequestInfo(boolean printHeader) {
         boolean des = true;
-        String params = formatParam(des);
 
         StringBuilder sbd = new StringBuilder();
         if (printHeader) {
@@ -378,6 +377,8 @@ public final class RequestUtil {
                 sbd.append(" headers(").append(heads).append(")");
             }
         }
+
+        String params = formatParam(des);
         if (U.isNotBlank(params)) {
             sbd.append(" params(").append(params).append(")");
         }
