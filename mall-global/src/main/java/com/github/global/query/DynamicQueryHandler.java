@@ -103,7 +103,8 @@ public class DynamicQueryHandler {
                     throw new RuntimeException("表(" + schemeName + ")中存在同名属性(" + columnAlias + ")");
                 }
 
-                columnMap.put(columnAlias, new SchemeColumn(columnName, columnDesc, columnAlias, primary, field.getType()));
+                SchemeColumn column = new SchemeColumn(columnName, columnDesc, columnAlias, primary, field.getType());
+                columnMap.put(columnAlias, column);
             }
             returnMap.put(schemeAlias, new Scheme(schemeName, schemeDesc, schemeAlias, columnMap));
         }
