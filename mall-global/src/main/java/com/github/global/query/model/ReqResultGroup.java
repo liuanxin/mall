@@ -14,8 +14,7 @@ public enum ReqResultGroup {
     MIN("MIN(%s)", "最小"),
     MAX("MAX(%s)", "最大"),
     AVG("AVG(%s)", "平均"),
-    GROUP_CONCAT("GROUP_CONCAT(%s)", "组拼接"),
-    ;
+    GROUP_CONCAT("GROUP_CONCAT(%s)", "组拼接");
 
 
     @JsonValue
