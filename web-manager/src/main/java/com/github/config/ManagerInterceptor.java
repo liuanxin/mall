@@ -5,7 +5,6 @@ import com.github.common.annotation.NotNeedPermission;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
 import com.github.util.ManagerSessionUtil;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -31,7 +30,7 @@ public class ManagerInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) {
-        bindParam();
+        printParam();
         checkLoginAndPermission(req.getRequestURI(), handler);
         return true;
     }
@@ -47,23 +46,15 @@ public class ManagerInterceptor implements HandlerInterceptor {
                 LogUtil.ROOT_LOG.error("request was over, but have exception", e);
             }
         }
-        unbindParam();
     }
 
-    private void bindParam() {
-        String traceId = RequestUtil.getTraceId();
-        String realIp = RequestUtil.getRealIp();
-        LogUtil.putTraceAndIp(traceId, realIp, LocaleContextHolder.getLocale());
+    private void printParam() {
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
             String userInfo = ManagerSessionUtil.getUserInfo();
             String basicInfo = RequestUtil.logBasicInfo();
             String requestInfo = RequestUtil.logRequestInfo(printHeader);
             LogUtil.ROOT_LOG.info("[{}] [{}] [{}]", userInfo, basicInfo, requestInfo);
         }
-    }
-
-    private void unbindParam() {
-        LogUtil.unbind();
     }
 
     /** 检查登录及权限 */

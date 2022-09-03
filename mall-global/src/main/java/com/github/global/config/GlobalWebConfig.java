@@ -2,6 +2,7 @@ package com.github.global.config;
 
 import com.github.common.mvc.CorsFilter;
 import com.github.common.mvc.LanguageFilter;
+import com.github.common.mvc.LogTraceFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -48,6 +49,15 @@ public class GlobalWebConfig {
         LanguageFilter filter = new LanguageFilter(languageParam, i18nBaseNames);
         FilterRegistrationBean<LanguageFilter> filterBean = new FilterRegistrationBean<>(filter);
         filterBean.setOrder(Integer.MIN_VALUE + 3);
+        return filterBean;
+    }
+
+    @Bean
+    @Order(4)
+    public FilterRegistrationBean<LogTraceFilter> traceFilter() {
+        LogTraceFilter filter = new LogTraceFilter();
+        FilterRegistrationBean<LogTraceFilter> filterBean = new FilterRegistrationBean<>(filter);
+        filterBean.setOrder(Integer.MIN_VALUE + 4);
         return filterBean;
     }
 }

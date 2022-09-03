@@ -4,7 +4,6 @@ import com.github.common.annotation.NeedLogin;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
 import com.github.util.BackendSessionUtil;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -23,7 +22,7 @@ public class BackendInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) {
-        bindParam();
+        printParam();
         checkLoginAndPermission(handler);
         return true;
     }
@@ -39,22 +38,15 @@ public class BackendInterceptor implements HandlerInterceptor {
                 LogUtil.ROOT_LOG.error("request was over, but have exception", e);
             }
         }
-        unbindParam();
     }
 
-    private void bindParam() {
-        String traceId = RequestUtil.getTraceId();
-        String realIp = RequestUtil.getRealIp();
-        LogUtil.putTraceAndIp(traceId, realIp, LocaleContextHolder.getLocale());
+    private void printParam() {
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
             String userInfo = BackendSessionUtil.getUserInfo();
             String basicInfo = RequestUtil.logBasicInfo();
             String requestInfo = RequestUtil.logRequestInfo(printHeader);
             LogUtil.ROOT_LOG.info("[{}] [{}] [{}]", userInfo, basicInfo, requestInfo);
         }
-    }
-    private void unbindParam() {
-        LogUtil.unbind();
     }
 
     /** 检查登录 */
