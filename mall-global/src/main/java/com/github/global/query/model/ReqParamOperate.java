@@ -96,10 +96,14 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ReqParamOperate {
 
+    /** 条件拼接类型: and 还是 or */
     private ReqParamOperateType operate;
+    /** 条件 */
     private List<List<Object>> conditions;
 
+    /** 组合的条件 */
     private List<ReqParamOperate> composes;
+
 
     public List<ReqParamCondition> checkCondition(String defaultScheme, Map<String, Scheme> schemeMap) {
         if (conditions == null || conditions.isEmpty()) {
