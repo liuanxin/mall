@@ -1,21 +1,21 @@
 package com.github.global.query.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.github.common.json.JsonUtil;
 import com.github.global.query.util.QueryUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * <pre>
  * name like 'abc%'   and gender = 1   and age between 18 and 40   and province in ( 'x', 'y', 'z' )   and city like '%xx%'   and time >= now()
  * {
- *   -- "operate": "and", -- 如果是 and 可以省略
+ *   -- "scheme": "order",   -- 忽略将从 requestInfo 中获取
+ *   -- "operate": "and",    -- 如果是 and 可以省略
  *   "conditions": [
  *     [ "name", "rl", "abc" ],
  *     [ "gender", -- "eq", --  1 ],  -- eq 可以省略
@@ -31,9 +31,6 @@ import java.util.Map;
  * {
  *   "conditions": [
  *     [ "name", "rl", "abc" ],
- *     [ "time", "ge", "xxxx-xx-xx xx:xx:xx" ]
- *   ],
- *   "composes": [  -- 需要组合, 且与上面的条件不是同一个类型的条件就用这种方式
  *     {
  *       "operate": "or",
  *       "conditions": [
@@ -47,7 +44,8 @@ import java.util.Map;
  *         [ "province", "in", [ "x", "y", "z" ] ],
  *         [ "city", "like", "xx" ]
  *       ]
- *     }
+ *     },
+ *     [ "time", "ge", "xxxx-xx-xx xx:xx:xx" ]
  *   ]
  * }
  *
@@ -71,9 +69,7 @@ import java.util.Map;
  *   "operate": "or",
  *   "conditions": [
  *     [ "name", "rl", "abc" ],
- *     [ "time", "ge", "xxxx-xx-xx xx:xx:xx" ]
- *   ],
- *   "composes": [
+ *     [ "time", "ge", "xxxx-xx-xx xx:xx:xx" ],
  *     {
  *       "conditions": [
  *         [ "gender", 1 ],
@@ -96,56 +92,63 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ReqParamOperate {
 
+    private String scheme;
     /** 条件拼接类型: and 还是 or */
     private ReqParamOperateType operate;
     /** 条件 */
-    private List<List<Object>> conditions;
-
-    /** 组合的条件 */
-    private List<ReqParamOperate> composes;
+    private List<Object> conditions;
 
 
-    public List<ReqParamCondition> checkCondition(String defaultScheme, Map<String, Scheme> schemeMap) {
+    public void checkCondition(String mainScheme, TableColumnInfo columnInfo) {
         if (conditions == null || conditions.isEmpty()) {
-            return Collections.emptyList();
+            return;
+        }
+
+        String currentScheme = (scheme == null || scheme.trim().isEmpty()) ? mainScheme : scheme.trim();
+        if (currentScheme == null || currentScheme.isEmpty()) {
+            throw new RuntimeException("param need scheme");
         }
 
         List<ReqParamCondition> conditionList = new ArrayList<>();
-        for (List<Object> condition : conditions) {
-            if (condition != null && !condition.isEmpty()) {
-                int size = condition.size();
-                if (size < 2) {
-                    throw new RuntimeException("条件构建有误");
-                }
+        for (Object condition : conditions) {
+            if (condition != null) {
+                if (condition instanceof List<?> list) {
+                    if (!list.isEmpty()) {
+                        int size = list.size();
+                        if (size < 2) {
+                            throw new RuntimeException("condition(" + condition + ") error");
+                        }
 
-                String column = toStr(condition.get(0));
-                if (column.isEmpty()) {
-                    return Collections.emptyList();
-                }
-                ReqParamConditionType type;
-                Object value;
-                if (size == 2) {
-                    type = ReqParamConditionType.EQ;
-                    value = condition.get(1);
+                        String column = QueryUtil.toStr(list.get(0));
+                        if (!column.isEmpty()) {
+                            ReqParamConditionType type;
+                            Object value;
+                            if (size == 2) {
+                                type = ReqParamConditionType.EQ;
+                                value = list.get(1);
+                            } else {
+                                type = ReqParamConditionType.deserializer(list.get(1));
+                                value = list.get(2);
+                            }
+                            if (type == null) {
+                                throw new RuntimeException(String.format("condition column(%s) need type", column));
+                            }
+
+                            // 用传入的列名获取其结构上定义的类型
+                            SchemeColumn schemeColumn = QueryUtil.checkColumnName(column, currentScheme,
+                                    columnInfo, "query condition");
+                            // 检查列类型和传入的值是否对应
+                            type.checkTypeAndValue(schemeColumn.getColumnType(), column, value);
+                        }
+                    }
                 } else {
-                    type = ReqParamConditionType.deserializer(condition.get(1));
-                    value = condition.get(2);
+                    ReqParamOperate compose = JsonUtil.convert(condition, ReqParamOperate.class);
+                    if (compose == null) {
+                        throw new RuntimeException("compose condition(" + condition + ") error");
+                    }
+                    compose.checkCondition(currentScheme, columnInfo);
                 }
-                if (type  == null) {
-                    throw new RuntimeException(String.format("列(%s)条件有误", column));
-                }
-
-                // 用传入的列名获取其结构上定义的类型
-                Class<?> columnType = QueryUtil.checkColumnName(column, defaultScheme, schemeMap, "query").getColumnType();
-                // 检查列类型和传入的值是否对应
-                type.checkTypeAndValue(columnType, column, value);
-                conditionList.add(new ReqParamCondition(column, type, value));
             }
         }
-        return conditionList;
-    }
-
-    private static String toStr(Object obj) {
-        return obj == null ? "" : obj.toString().trim();
     }
 }

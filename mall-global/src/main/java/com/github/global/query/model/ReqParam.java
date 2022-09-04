@@ -11,7 +11,6 @@ import java.util.*;
  * <pre>
  * {
  *   "query": ...
-// *   "group": [ "sku", "" ]
  *   "sort": { "createTime": "desc", "id", "asc" },
  *   "page": [ 1, 20 ]
  * }
@@ -22,41 +21,45 @@ import java.util.*;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ReqParam {
 
-    private static final Set<Integer> LIMIT_SET = new LinkedHashSet<>(Arrays.asList(20, 50, 100, 500, 1000));
-    private static final Integer MIN_LIMIT = LIMIT_SET.iterator().next();
+    private static final Integer MIN_LIMIT = 20;
+    private static final Set<Integer> LIMIT_SET = new HashSet<>(Arrays.asList(
+            MIN_LIMIT, 50, 100, 200, 500, 1000)
+    );
 
+
+    /** 查询信息 */
     private ReqParamOperate query;
 
-//    private List<String> group;
-
+    /** 排序信息 */
     private Map<String, String> sort;
 
+    /** 分页信息 */
     private List<Integer> page;
 
-//    public String generateGroupSql(String defaultScheme, Map<String, Scheme> schemeMap) {
-//        if (group != null && !group.isEmpty()) {
-//            StringJoiner groupSj = new StringJoiner(", ");
-//            for (String column : group) {
-//                QueryUtil.checkColumnName(column, defaultScheme, schemeMap, "group");
-//                groupSj.add(column);
-//            }
-//            if (!groupSj.toString().isEmpty()) {
-//                return " GROUP BY " + groupSj;
-//            }
-//        }
-//        return "";
-//    }
 
-    public String generateOrderSql(String defaultScheme, Map<String, Scheme> schemeMap) {
+    public void checkParam(String mainScheme, TableColumnInfo columnInfo) {
+        if (query == null) {
+            throw new RuntimeException("no query param");
+        }
+        query.checkCondition(mainScheme, columnInfo);
+
+        if (sort != null && !sort.isEmpty()) {
+            for (Map.Entry<String, String> entry : sort.entrySet()) {
+                String column = entry.getKey();
+                QueryUtil.checkColumnName(column, mainScheme, columnInfo, "query order");
+            }
+        }
+    }
+
+    public String generateOrderSql(String mainScheme, Map<String, Scheme> schemeMap) {
         if (sort != null && !sort.isEmpty()) {
             StringJoiner orderSj = new StringJoiner(", ");
             for (Map.Entry<String, String> entry : sort.entrySet()) {
-                String column = entry.getKey();
-                QueryUtil.checkColumnName(column, defaultScheme, schemeMap, "order");
-                orderSj.add(column + " " + ("asc".equalsIgnoreCase(entry.getValue()) ? "ASC" : "DESC"));
+                orderSj.add(entry.getKey() + " " + ("asc".equalsIgnoreCase(entry.getValue()) ? "ASC" : "DESC"));
             }
-            if (!orderSj.toString().isEmpty()) {
-                return " ORDER BY " + orderSj;
+            String orderBy = orderSj.toString();
+            if (!orderBy.isEmpty()) {
+                return " ORDER BY " + orderBy;
             }
         }
         return "";

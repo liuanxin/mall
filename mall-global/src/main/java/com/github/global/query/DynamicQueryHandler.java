@@ -2,9 +2,13 @@ package com.github.global.query;
 
 import com.github.common.util.U;
 import com.github.global.query.annotation.ColumnInfo;
+import com.github.global.query.annotation.RelationType;
 import com.github.global.query.annotation.SchemeInfo;
+import com.github.global.query.constant.QueryConst;
 import com.github.global.query.model.Scheme;
 import com.github.global.query.model.SchemeColumn;
+import com.github.global.query.model.TableColumnInfo;
+import com.github.global.query.model.TableColumnRelation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -25,12 +29,13 @@ public class DynamicQueryHandler {
 
     private static final MetadataReaderFactory READER = new CachingMetadataReaderFactory(RESOLVER);
 
-    public static Map<String, Scheme> scanScheme(String classPackages) {
+
+    public static TableColumnInfo scanScheme(String classPackages) {
         return handleTable(scanPackage(classPackages));
     }
 
     private static Set<Class<?>> scanPackage(String classPackages) {
-        if (classPackages == null || classPackages.isEmpty()) {
+        if (classPackages == null || classPackages.trim().isEmpty()) {
             return Collections.emptySet();
         }
         String[] paths = StringUtils.commaDelimitedListToStringArray(StringUtils.trimAllWhitespace(classPackages));
@@ -57,8 +62,12 @@ public class DynamicQueryHandler {
         return set;
     }
 
-    private static Map<String, Scheme> handleTable(Set<Class<?>> classes) {
-        Map<String, Scheme> returnMap = new LinkedHashMap<>();
+    private static TableColumnInfo handleTable(Set<Class<?>> classes) {
+        Map<String, String> aliasMap = new HashMap<>();
+        Map<String, Scheme> schemeMap = new LinkedHashMap<>();
+        Map<String, TableColumnRelation> relationMap = new HashMap<>();
+
+        Map<String, ColumnInfo> columnInfoMap = new LinkedHashMap<>();
         for (Class<?> clazz : classes) {
             SchemeInfo schemeInfo = clazz.getAnnotation(SchemeInfo.class);
             String schemeName, schemeDesc, schemeAlias;
@@ -75,7 +84,7 @@ public class DynamicQueryHandler {
                 schemeAlias = clazz.getSimpleName();
                 schemeName = convertTableName(schemeAlias);
             }
-            if (returnMap.containsKey(schemeAlias)) {
+            if (schemeMap.containsKey(schemeAlias)) {
                 throw new RuntimeException("存在同名表(" + schemeName + ")");
             }
 
@@ -93,6 +102,8 @@ public class DynamicQueryHandler {
                     columnDesc = columnInfo.desc();
                     columnAlias = columnInfo.alias();
                     primary = columnInfo.primary();
+
+                    columnInfoMap.put(schemeName + "." + columnName, columnInfo);
                 } else {
                     columnDesc = "";
                     columnAlias = field.getName();
@@ -104,11 +115,35 @@ public class DynamicQueryHandler {
                 }
 
                 SchemeColumn column = new SchemeColumn(columnName, columnDesc, columnAlias, primary, field.getType());
+                aliasMap.put(QueryConst.COLUMN_PREFIX + columnName, columnAlias);
                 columnMap.put(columnAlias, column);
             }
-            returnMap.put(schemeAlias, new Scheme(schemeName, schemeDesc, schemeAlias, columnMap));
+            aliasMap.put(QueryConst.SCHEME_PREFIX + schemeName, schemeAlias);
+            schemeMap.put(schemeAlias, new Scheme(schemeName, schemeDesc, schemeAlias, columnMap));
         }
-        return returnMap;
+
+        for (Map.Entry<String, ColumnInfo> entry : columnInfoMap.entrySet()) {
+            ColumnInfo columnInfo = entry.getValue();
+            RelationType relationType = columnInfo.relationType();
+            if (relationType != RelationType.NULL) {
+                String relationScheme = columnInfo.relationScheme();
+                String relationColumn = columnInfo.relationColumn();
+                if (!relationScheme.isEmpty() && !relationColumn.isEmpty()) {
+                    String schemeAndColumn = entry.getKey();
+                    Scheme scheme = schemeMap.get(aliasMap.get(QueryConst.SCHEME_PREFIX + relationScheme));
+                    if (scheme == null) {
+                        throw new RuntimeException(schemeAndColumn + "'s relation no scheme(" + relationScheme + ")");
+                    }
+                    if (!scheme.getColumnMap().containsKey(aliasMap.get(QueryConst.COLUMN_PREFIX + relationColumn))) {
+                        throw new RuntimeException(schemeAndColumn + "'s relation no scheme-column("
+                                + relationScheme + "." + relationColumn + ")");
+                    }
+                    relationMap.put(schemeAndColumn, new TableColumnRelation(relationType, relationScheme));
+                }
+            }
+        }
+
+        return new TableColumnInfo(aliasMap, schemeMap, relationMap);
     }
 
     private static String convertTableName(String className) {

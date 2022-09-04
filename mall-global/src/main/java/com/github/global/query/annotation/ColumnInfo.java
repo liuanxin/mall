@@ -23,17 +23,12 @@ public @interface ColumnInfo {
     /** true 表示是主键字段 */
     boolean primary() default false;
 
-    /** 一对多关联的表, 配合 relationColumn 一起使用, 只在从表的上标即可, 主表上无需标注 */
-    SchemeRelationType relationType() default SchemeRelationType.NULL;
+    /** 关联类型, 设置了 relationScheme 和 relationColumn 才有效, 只在「从表」对应的类上标, 主表上无需标注 */
+    RelationType relationType() default RelationType.NULL;
 
-    /** 关联表的列名, 配合 relationType 一起使用, 只在「从表是多」的类上标即可, 主表上无需标注 */
+    /** 设置了 relationType 非 NULL 时有效, 关联表的列名, 配合 relationType 一起使用, 只在「从表」对应的类上标, 主表上无需标注 */
+    String relationScheme() default "";
+
+    /** 设置了 relationType 非 NULL 时有效, 关联表的列名, 配合 relationScheme 一起使用, 只在「从表」对应的类上标, 主表上无需标注 */
     String relationColumn() default "";
-
-    enum SchemeRelationType {
-        NULL,
-
-        ONE_TO_ONE,
-        ONE_TO_MANY;
-        // 不做 Many to Many 的关联: 这种情况下建多一个「中间表」, 由「中间表」跟「目标表」关联成两个多对一来实现
-    }
 }
