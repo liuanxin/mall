@@ -130,11 +130,18 @@ public class DynamicQueryHandler {
                 String relationColumn = columnInfo.relationColumn();
                 if (!relationScheme.isEmpty() && !relationColumn.isEmpty()) {
                     String schemeAndColumn = entry.getKey();
-                    Scheme scheme = schemeMap.get(aliasMap.get(QueryConst.SCHEME_PREFIX + relationScheme));
+                    String realSchemeName = aliasMap.get(QueryConst.SCHEME_PREFIX + relationScheme);
+                    Scheme scheme = (realSchemeName == null || realSchemeName.isEmpty())
+                            ? schemeMap.get(relationScheme) : schemeMap.get(realSchemeName);
                     if (scheme == null) {
                         throw new RuntimeException(schemeAndColumn + "'s relation no scheme(" + relationScheme + ")");
                     }
-                    if (!scheme.getColumnMap().containsKey(aliasMap.get(QueryConst.COLUMN_PREFIX + relationColumn))) {
+
+                    Map<String, SchemeColumn> columnMap = scheme.getColumnMap();
+                    String realColumnName = aliasMap.get(QueryConst.COLUMN_PREFIX + relationColumn);
+                    boolean exists = (realColumnName == null || realColumnName.isEmpty())
+                            ? columnMap.containsKey(relationColumn) : columnMap.containsKey(realColumnName);
+                    if (!exists) {
                         throw new RuntimeException(schemeAndColumn + "'s relation no scheme-column("
                                 + relationScheme + "." + relationColumn + ")");
                     }

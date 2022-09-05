@@ -13,7 +13,8 @@ public class QueryUtil {
         return obj == null ? "" : obj.toString().trim();
     }
 
-    public static SchemeColumn checkColumnName(String column, String mainScheme, TableColumnInfo columnInfo, String type) {
+    public static SchemeColumn checkColumnName(String column, String mainScheme,
+                                               TableColumnInfo columnInfo, String type) {
         String schemeName, columnName;
         if (column.contains(".")) {
             String[] arr = column.split("\\.");
@@ -26,7 +27,8 @@ public class QueryUtil {
         return checkSchemeAndColumnName(schemeName, columnName, columnInfo, type);
     }
 
-    public static SchemeColumn checkSchemeAndColumnName(String schemeName, String columnName, TableColumnInfo columnInfo, String type) {
+    public static SchemeColumn checkSchemeAndColumnName(String schemeName, String columnName,
+                                                        TableColumnInfo columnInfo, String type) {
         if (schemeName == null || schemeName.isEmpty()) {
             throw new RuntimeException("scheme can't be blank with: " + type);
         }
@@ -37,14 +39,16 @@ public class QueryUtil {
         Map<String, String> aliasMap = columnInfo.getAliasMap();
         Map<String, Scheme> schemeMap = columnInfo.getSchemeMap();
         String realSchemeName = aliasMap.get(QueryConst.SCHEME_PREFIX + schemeName);
-        Scheme scheme = (realSchemeName == null || realSchemeName.isEmpty()) ? schemeMap.get(schemeName) : schemeMap.get(realSchemeName);
+        Scheme scheme = (realSchemeName == null || realSchemeName.isEmpty())
+                ? schemeMap.get(schemeName) : schemeMap.get(realSchemeName);
         if (scheme == null) {
             throw new RuntimeException("no scheme(" + schemeName + ") defined with: " + type);
         }
 
         Map<String, SchemeColumn> columnMap = scheme.getColumnMap();
         String realColumnName = aliasMap.get(QueryConst.COLUMN_PREFIX + columnName);
-        SchemeColumn schemeColumn = (realColumnName == null || realColumnName.isEmpty()) ? columnMap.get(columnName) : columnMap.get(realColumnName);
+        SchemeColumn schemeColumn = (realColumnName == null || realColumnName.isEmpty())
+                ? columnMap.get(columnName) : columnMap.get(realColumnName);
         if (schemeColumn == null) {
             throw new RuntimeException("scheme(" + schemeName + ") no column(" + columnName + ") defined with: " + type);
         }
