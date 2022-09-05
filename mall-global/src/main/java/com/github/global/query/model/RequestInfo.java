@@ -1,6 +1,5 @@
 package com.github.global.query.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +9,6 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class RequestInfo {
 
     /** 主结构, 如果入参和出参是相同的, 只需要在这里定义一次就可以了 */

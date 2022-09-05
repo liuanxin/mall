@@ -2,13 +2,9 @@ package com.github.global.query;
 
 import com.github.common.util.U;
 import com.github.global.query.annotation.ColumnInfo;
-import com.github.global.query.annotation.RelationType;
 import com.github.global.query.annotation.SchemeInfo;
 import com.github.global.query.constant.QueryConst;
-import com.github.global.query.model.Scheme;
-import com.github.global.query.model.SchemeColumn;
-import com.github.global.query.model.TableColumnInfo;
-import com.github.global.query.model.TableColumnRelation;
+import com.github.global.query.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -124,8 +120,8 @@ public class DynamicQueryHandler {
 
         for (Map.Entry<String, ColumnInfo> entry : columnInfoMap.entrySet()) {
             ColumnInfo columnInfo = entry.getValue();
-            RelationType relationType = columnInfo.relationType();
-            if (relationType != RelationType.NULL) {
+            SchemeRelationType relationType = columnInfo.relationType();
+            if (relationType != SchemeRelationType.NULL) {
                 String relationScheme = columnInfo.relationScheme();
                 String relationColumn = columnInfo.relationColumn();
                 if (!relationScheme.isEmpty() && !relationColumn.isEmpty()) {

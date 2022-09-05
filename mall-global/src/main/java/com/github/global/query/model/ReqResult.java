@@ -1,6 +1,5 @@
 package com.github.global.query.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.common.json.JsonUtil;
 import com.github.global.query.constant.QueryConst;
 import com.github.global.query.util.QueryUtil;
@@ -47,7 +46,6 @@ import java.util.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ReqResult {
 
     private String scheme;

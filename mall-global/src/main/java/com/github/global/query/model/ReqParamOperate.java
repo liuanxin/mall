@@ -1,6 +1,5 @@
 package com.github.global.query.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.common.json.JsonUtil;
 import com.github.global.query.util.QueryUtil;
 import lombok.AllArgsConstructor;
@@ -95,7 +94,6 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ReqParamOperate {
 
     private String scheme;

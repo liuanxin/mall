@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,8 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class PageReturn<T> implements Serializable {
-    private static final long serialVersionUID = 0L;
+public class PageReturn<T> {
 
     private static final PageReturn EMPTY = new PageReturn<>(0, Collections.emptyList());
 

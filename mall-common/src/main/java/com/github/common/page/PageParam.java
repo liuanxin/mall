@@ -6,12 +6,9 @@ import com.github.liuanxin.api.annotation.ApiParamIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.Serializable;
-
 @Setter
 @Getter
-public class PageParam implements Serializable {
-    private static final long serialVersionUID = 0L;
+public class PageParam {
 
     /** 前台传递过来的分页参数名 */
     public static final String GLOBAL_PAGE = "page";

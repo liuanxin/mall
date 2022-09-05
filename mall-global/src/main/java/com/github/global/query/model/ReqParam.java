@@ -1,6 +1,5 @@
 package com.github.global.query.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.global.query.constant.QueryConst;
 import com.github.global.query.util.QueryUtil;
 import lombok.Data;
@@ -19,7 +18,6 @@ import java.util.*;
  */
 @Data
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ReqParam {
 
     /** 查询信息 */
