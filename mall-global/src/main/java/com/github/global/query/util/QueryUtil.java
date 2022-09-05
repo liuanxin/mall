@@ -1,5 +1,6 @@
 package com.github.global.query.util;
 
+import com.github.global.query.constant.QueryConst;
 import com.github.global.query.model.Scheme;
 import com.github.global.query.model.SchemeColumn;
 import com.github.global.query.model.TableColumnInfo;
@@ -35,11 +36,15 @@ public class QueryUtil {
 
         Map<String, String> aliasMap = columnInfo.getAliasMap();
         Map<String, Scheme> schemeMap = columnInfo.getSchemeMap();
-        Scheme scheme = schemeMap.getOrDefault(schemeName, schemeMap.get(aliasMap.get(schemeName)));
+        String realSchemeName = aliasMap.get(QueryConst.SCHEME_PREFIX + schemeName);
+        Scheme scheme = (realSchemeName == null || realSchemeName.isEmpty()) ? schemeMap.get(schemeName) : schemeMap.get(realSchemeName);
         if (scheme == null) {
             throw new RuntimeException("no scheme(" + schemeName + ") defined with: " + type);
         }
-        SchemeColumn schemeColumn = scheme.getColumnMap().get(columnName);
+
+        Map<String, SchemeColumn> columnMap = scheme.getColumnMap();
+        String realColumnName = aliasMap.get(QueryConst.COLUMN_PREFIX + columnName);
+        SchemeColumn schemeColumn = (realColumnName == null || realColumnName.isEmpty()) ? columnMap.get(columnName) : columnMap.get(realColumnName);
         if (schemeColumn == null) {
             throw new RuntimeException("scheme(" + schemeName + ") no column(" + columnName + ") defined with: " + type);
         }
