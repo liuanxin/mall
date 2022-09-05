@@ -9,10 +9,12 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <pre>
- * name like 'abc%'   and gender = 1   and age between 18 and 40   and province in ( 'x', 'y', 'z' )   and city like '%xx%'   and time >= now()
+ * name like 'abc%'   and gender = 1   and age between 18 and 40
+ * and province in ( 'x', 'y', 'z' )   and city like '%xx%'   and time >= now()
  * {
  *   -- "scheme": "order",   -- 忽略将从 requestInfo 中获取
  *   -- "operate": "and",    -- 如果是 and 可以省略
@@ -27,7 +29,8 @@ import java.util.List;
  * }
  *
  *
- * name like 'abc%'   and ( gender = 1 or age between 18 and 40 )   and ( province in ( 'x', 'y', 'z' ) or city like '%xx%' )   and time >= now()
+ * name like 'abc%'   and ( gender = 1 or age between 18 and 40 )
+ * and ( province in ( 'x', 'y', 'z' ) or city like '%xx%' )   and time >= now()
  * {
  *   "conditions": [
  *     [ "name", "rl", "abc" ],
@@ -50,7 +53,8 @@ import java.util.List;
  * }
  *
  *
- * name like 'abc%'   or gender = 1   or age between 18 and 40   or province in ( 'x', 'y', 'z' )   or city like '%xx%'   or time >= now()
+ * name like 'abc%'   or gender = 1   or age between 18 and 40
+ * or province in ( 'x', 'y', 'z' )   or city like '%xx%'   or time >= now()
  * {
  *   "operate": "or",
  *   "conditions": [
@@ -64,7 +68,9 @@ import java.util.List;
  * }
  *
  *
- * name like 'abc%'   or time >= now()   or ( gender = 1 and age between 18 and 40 )   or ( province in ( 'x', 'y', 'z' ) and city like '%xx%' )
+ * name like 'abc%'   or time >= now()
+ * or ( gender = 1 and age between 18 and 40 )
+ * or ( province in ( 'x', 'y', 'z' ) and city like '%xx%' )
  * {
  *   "operate": "or",
  *   "conditions": [
@@ -147,6 +153,30 @@ public class ReqParamOperate {
                         throw new RuntimeException("compose condition(" + condition + ") error");
                     }
                     compose.checkCondition(currentScheme, columnInfo);
+                }
+            }
+        }
+    }
+
+    public void allScheme(String mainScheme, Set<String> set) {
+        if (conditions == null || conditions.isEmpty()) {
+            return;
+        }
+
+        String currentScheme = (scheme == null || scheme.trim().isEmpty()) ? mainScheme : scheme.trim();
+
+        List<ReqParamCondition> conditionList = new ArrayList<>();
+        for (Object condition : conditions) {
+            if (condition != null) {
+                if (condition instanceof List<?> list) {
+                    if (!list.isEmpty()) {
+                        set.add(QueryUtil.getSchemeName(QueryUtil.toStr(list.get(0)), currentScheme));
+                    }
+                } else {
+                    ReqParamOperate compose = JsonUtil.convert(condition, ReqParamOperate.class);
+                    if (compose != null) {
+                        compose.allScheme(currentScheme, set);
+                    }
                 }
             }
         }

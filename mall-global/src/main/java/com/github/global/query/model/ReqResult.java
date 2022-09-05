@@ -2,28 +2,33 @@ package com.github.global.query.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.common.json.JsonUtil;
+import com.github.global.query.constant.QueryConst;
 import com.github.global.query.util.QueryUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 
 /**
  * <pre>
- * select id, orderNo from order ...
- * select id, address, phone from orderAddress ...
+ * select id, orderNo from t_order ...
+ * select id, address, phone from t_order_address ...
+ * select id, name, price from t_order_item ...
  * {
  *   -- "scheme": "order",   -- 忽略将从 requestInfo 中获取
  *   "columns": [
  *     "id",
  *     "orderNo",
  *     {
- *       "scheme": "orderAddress",
- *       columns: [ "id", "address", "phone" ]
+ *       "address": {
+ *         "scheme": "orderAddress",
+ *         "columns": [ "id", "address", "phone" ]
+ *       },
+ *       "items": {
+ *         "scheme": "orderItem",
+ *         "columns": [ "id", "name", "price" ]
+ *       }
  *     }
  *   ]
  * }
@@ -63,17 +68,23 @@ public class ReqResult {
 
         if (columns != null && !columns.isEmpty()) {
             StringJoiner sj = new StringJoiner(", ");
+            Set<String> columnSet = new HashSet<>();
+            List<Object> innerList = new ArrayList<>();
             for (Object obj : columns) {
                 if (obj != null) {
                     if (obj instanceof String column) {
                         if (!column.isEmpty()) {
                             QueryUtil.checkSchemeAndColumnName(currentScheme, column, columnInfo, "result select");
+                            if (columnSet.contains(column)) {
+                                throw new RuntimeException("res column(" + column + ") has repeated");
+                            }
+                            columnSet.add(column);
                         }
                     } else if (obj instanceof List<?> groups) {
                         if (!groups.isEmpty()) {
                             int size = groups.size();
                             if (size < 2) {
-                                throw new RuntimeException("result function(" + groups + ") error");
+                                throw new RuntimeException("res function(" + groups + ") error");
                             }
                             ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
                             String column = QueryUtil.toStr(groups.get(1));
@@ -88,15 +99,51 @@ public class ReqResult {
                             }
                         }
                     } else {
-                        ReqResult inner = JsonUtil.convert(obj, ReqResult.class);
-                        if (inner == null) {
-                            throw new RuntimeException("relation result(" + obj + ") error");
+                        innerList.add(obj);
+                    }
+                }
+            }
+            for (Object obj : innerList) {
+                Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
+                if (inner == null) {
+                    throw new RuntimeException("res relation(" + obj + ") error");
+                }
+                for (Map.Entry<String, ReqResult> entry : inner.entrySet()) {
+                    String column = entry.getKey();
+                    if (columnSet.contains(column)) {
+                        throw new RuntimeException("res relation column(" + column + ") has repeated");
+                    }
+                    ReqResult innerResult = entry.getValue();
+                }
+            }
+        }
+    }
+
+    public Set<String> allResultScheme(String mainScheme) {
+        Set<String> set = new LinkedHashSet<>();
+        String currentScheme = (scheme == null || scheme.trim().isEmpty()) ? mainScheme : scheme.trim();
+        if (columns != null && !columns.isEmpty()) {
+            StringJoiner sj = new StringJoiner(", ");
+            for (Object obj : columns) {
+                if (obj != null) {
+                    if (obj instanceof String column) {
+                        set.add(QueryUtil.getSchemeName(column, mainScheme));
+                    } else if (obj instanceof List<?> groups) {
+                        if (!groups.isEmpty()) {
+                            set.add(QueryUtil.getSchemeName(QueryUtil.toStr(groups.get(1)), mainScheme));
                         }
-                        inner.checkResult(currentScheme, columnInfo);
+                    } else {
+                        Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
+                        if (inner != null) {
+                            for (ReqResult innerResult : inner.values()) {
+                                set.addAll(innerResult.allResultScheme(currentScheme));
+                            }
+                        }
                     }
                 }
             }
         }
+        return set;
     }
 
     public String generateSelectSql(String mainScheme, TableColumnInfo columnInfo) {

@@ -1,10 +1,14 @@
 package com.github.global.query.constant;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.global.query.model.ReqParamConditionType;
+import com.github.global.query.model.ReqResult;
 
 import java.util.*;
 
 public class QueryConst {
+
+    public static final TypeReference<Map<String, ReqResult>> RESULT_TYPE = new TypeReference<>() {};
 
     public static final String SCHEME_PREFIX = "scheme-";
     public static final String COLUMN_PREFIX = "column-";
