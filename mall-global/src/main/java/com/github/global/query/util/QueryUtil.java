@@ -29,7 +29,6 @@ public class QueryUtil {
     public static TableColumnInfo scanScheme(String classPackages) {
         return handleTable(scanPackage(classPackages));
     }
-
     private static Set<Class<?>> scanPackage(String classPackages) {
         if (classPackages == null || classPackages.trim().isEmpty()) {
             return Collections.emptySet();
@@ -57,7 +56,6 @@ public class QueryUtil {
         }
         return set;
     }
-
     private static TableColumnInfo handleTable(Set<Class<?>> classes) {
         Map<String, String> aliasMap = new HashMap<>();
         Map<String, Scheme> schemeMap = new LinkedHashMap<>();
@@ -148,7 +146,6 @@ public class QueryUtil {
 
         return new TableColumnInfo(aliasMap, schemeMap, relationMap);
     }
-
     private static String convertTableName(String className) {
         StringBuilder sbd = new StringBuilder();
         char[] chars = className.toCharArray();
@@ -177,6 +174,7 @@ public class QueryUtil {
         }
         return sbd.toString();
     }
+
 
     public static String toStr(Object obj) {
         return obj == null ? "" : obj.toString().trim();

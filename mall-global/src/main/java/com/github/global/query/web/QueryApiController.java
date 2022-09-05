@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/scheme")
+@RequestMapping("/scheme-info")
 @RequiredArgsConstructor
 public class QueryApiController {
 
@@ -33,8 +33,8 @@ public class QueryApiController {
         return JsonResult.success("scheme info", queryList);
     }
 
-    @PostMapping("/query")
+    @PostMapping
     public JsonResult<Object> query(@RequestBody RequestInfo req) {
-        return JsonResult.success("query scheme");
+        return JsonResult.success("query scheme-info");
     }
 }
