@@ -13,6 +13,14 @@ public class QueryUtil {
         return obj == null ? "" : obj.toString().trim();
     }
 
+    public static boolean isNullString(Object value) {
+        if (value instanceof String) {
+            String str = ((String) value).trim();
+            return str.isEmpty() || "null".equalsIgnoreCase(str) || "undefined".equalsIgnoreCase(str);
+        }
+        return false;
+    }
+
     public static SchemeColumn checkColumnName(String column, String mainScheme,
                                                TableColumnInfo columnInfo, String type) {
         String schemeName, columnName;

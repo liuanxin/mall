@@ -85,7 +85,7 @@ public class DynamicQueryHandler {
                 schemeName = convertTableName(schemeAlias);
             }
             if (schemeMap.containsKey(schemeAlias)) {
-                throw new RuntimeException("存在同名表(" + schemeName + ")");
+                throw new RuntimeException("scheme(" + schemeName + ") has renamed");
             }
 
             Map<String, SchemeColumn> columnMap = new LinkedHashMap<>();
@@ -111,7 +111,7 @@ public class DynamicQueryHandler {
                     primary = "id".equalsIgnoreCase(field.getName());
                 }
                 if (columnMap.containsKey(columnAlias)) {
-                    throw new RuntimeException("表(" + schemeName + ")中存在同名属性(" + columnAlias + ")");
+                    throw new RuntimeException("scheme(" + schemeName + ") has same column(" + columnAlias + ")");
                 }
 
                 SchemeColumn column = new SchemeColumn(columnName, columnDesc, columnAlias, primary, field.getType());

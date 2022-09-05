@@ -1,11 +1,14 @@
 package com.github.global.query.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.github.global.query.constant.QueryConst;
 import com.github.global.query.util.QueryUtil;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
 
 /**
  * <pre>
@@ -21,11 +24,6 @@ import java.util.*;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ReqParam {
 
-    private static final Integer MIN_LIMIT = 20;
-    private static final Set<Integer> LIMIT_SET = new HashSet<>(Arrays.asList(
-            MIN_LIMIT, 50, 100, 200, 500, 1000)
-    );
-
 
     /** 查询信息 */
     private ReqParamOperate query;
@@ -39,7 +37,7 @@ public class ReqParam {
 
     public void checkParam(String mainScheme, TableColumnInfo columnInfo) {
         if (query == null) {
-            throw new RuntimeException("no query param");
+            throw new RuntimeException("no query");
         }
         query.checkCondition(mainScheme, columnInfo);
 
@@ -71,7 +69,7 @@ public class ReqParam {
             int index = indexParam <= 0 ? 1 : indexParam;
 
             int limitParam = page.size() > 1 ? page.get(1) : 0;
-            int limit = LIMIT_SET.contains(limitParam) ? limitParam : MIN_LIMIT;
+            int limit = QueryConst.LIMIT_SET.contains(limitParam) ? limitParam : QueryConst.MIN_LIMIT;
 
             if (index == 1) {
                 params.add(limit);

@@ -2,6 +2,8 @@ package com.github.global.query.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.github.global.query.constant.QueryConst;
+import com.github.global.query.util.QueryUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -31,11 +33,10 @@ import java.util.*;
  *   not like (nl)
  *
  *
- * 针对业务系统时, 只需要:
- *   针对 string 类型提供 等于(eq)、批量(in)、包含(like)、开头(ll)、结尾(rl) 条件
- *   针对 number 类型提供 等于(eq)、大于(>)、小于(<)、大于等于(>=)、小于等于(<=)、区间(bet) 条件
- *   针对 date 类型提供 大于(>)、小于(<)、大于等于(>=)、小于等于(<=)、区间(bet) 条件
- *   针对 非 string/number/date 类型提供 等于(eq) 条件
+ * string 类型: 只 等于(eq)、不等于(ne)、批量(in)、包含(like)、开头(ll)、结尾(rl)、不包含(nl) 条件
+ * number 类型: 只 等于(eq)、大于(gt)、大于等于(ge)、小于(lt)、小于等于(le)、区间(bet) 条件
+ * date 类型: 只 大于(gt)、大于等于(ge)、小于(lt)、小于等于(le)、区间(bet) 条件
+ * 非 string/number/date 类型: 只 等于(eq)、不等于(ne) 条件
  * </pre>
  */
 @Getter
@@ -159,35 +160,20 @@ public enum ReqParamConditionType {
     abstract String generateSql(String column, Object value, List<Object> params);
 
 
-    private static final Set<ReqParamConditionType> MULTI_TYPE = Set.of(IN, NOT_IN, BETWEEN);
-    private static final Map<Class<?>, Set<ReqParamConditionType>> CONDITION_TYPE_MAP = Map.of(
-            String.class, new LinkedHashSet<>(List.of(EQ, IN, LIKE, LIKE_START, LIKE_END)),
-            Number.class, new LinkedHashSet<>(List.of(EQ, GT, GE, LT, LE, BETWEEN)),
-            Date.class, new LinkedHashSet<>(List.of(GT, GE, LT, LE, BETWEEN))
-    );
-    private static final Set<ReqParamConditionType> OTHER_CONDITION_TYPE = Set.of(EQ);
-
-    private static final Map<Class<?>, String> TYPE_INFO_MAP = Map.of(
-            String.class, "「字符串」",
-            Number.class, "「数字」",
-            Date.class, "「日期时间」"
-    );
-    private static final String OTHER_TYPE_INFO = "非「字符串, 数字, 日期时间」";
-
     public void checkTypeAndValue(Class<?> type, String column, Object value) {
         checkType(type);
         checkValue(type, column, value);
     }
 
     private void checkType(Class<?> type) {
-        for (Map.Entry<Class<?>, Set<ReqParamConditionType>> entry : CONDITION_TYPE_MAP.entrySet()) {
+        for (Map.Entry<Class<?>, Set<ReqParamConditionType>> entry : QueryConst.CONDITION_TYPE_MAP.entrySet()) {
             Class<?> clazz = entry.getKey();
             if (clazz.isAssignableFrom(type)) {
-                checkTypes(TYPE_INFO_MAP.get(clazz), entry.getValue());
+                checkTypes(QueryConst.TYPE_INFO_MAP.get(clazz), entry.getValue());
             }
         }
 
-        checkTypes(OTHER_TYPE_INFO, OTHER_CONDITION_TYPE);
+        checkTypes(QueryConst.OTHER_TYPE_INFO, QueryConst.OTHER_CONDITION_TYPE);
     }
     private void checkTypes(String typeInfo, Set<ReqParamConditionType> types) {
         if (!types.contains(this)) {
@@ -195,13 +181,13 @@ public enum ReqParamConditionType {
             for (ReqParamConditionType conditionType : types) {
                 sj.add(String.format("%s(%s)", conditionType.msg, conditionType.value));
             }
-            throw new RuntimeException(String.format("%s类型只能用「%s」条件", typeInfo, sj));
+            throw new RuntimeException(String.format("%s type can only be used in 「%s」 conditions", typeInfo, sj));
         }
     }
 
     private void checkValue(Class<?> type, String column, Object value) {
         if (value != null) {
-            if (MULTI_TYPE.contains(this)) {
+            if (QueryConst.MULTI_TYPE.contains(this)) {
                 if (value instanceof Collection<?> c) {
                     StringJoiner errorSj = new StringJoiner(", ");
                     for (Object obj : c) {
@@ -211,14 +197,14 @@ public enum ReqParamConditionType {
                     }
                     String error = errorSj.toString();
                     if (!error.isEmpty()) {
-                        throw new RuntimeException(String.format("列(%s)数据(%s)错误", column, errorSj));
+                        throw new RuntimeException(String.format("column(%s) data(%s) error", column, errorSj));
                     }
                 } else {
-                    throw new RuntimeException(String.format("列(%s)数据需要是集合", column));
+                    throw new RuntimeException(String.format("column(%s) data need been Collection", column));
                 }
             } else {
                 if (!type.isAssignableFrom(value.getClass())) {
-                    throw new RuntimeException(String.format("列(%s)数据(%s)有误", column, value));
+                    throw new RuntimeException(String.format("column(%s) data(%s) error", column, value));
                 }
             }
         }
@@ -226,22 +212,15 @@ public enum ReqParamConditionType {
 
 
     private static String generateCondition(String column, Object value, List<Object> params, String symbol) {
-        if (value == null || isNullString(value)) {
+        if (value == null || QueryUtil.isNullString(value)) {
             return "";
         }
 
         params.add(value);
         return String.format(" %s %s ?", column, symbol);
     }
-    private static boolean isNullString(Object value) {
-        if (value instanceof String) {
-            String str = ((String) value).trim();
-            return str.isEmpty() || "null".equalsIgnoreCase(str) || "undefined".equalsIgnoreCase(str);
-        }
-        return false;
-    }
     private static String generateMulti(String column, Object value, List<Object> params, String symbol) {
-        if (value == null || isNullString(value)) {
+        if (value == null) {
             return "";
         }
 
@@ -285,7 +264,7 @@ public enum ReqParamConditionType {
                 return hasChange ? String.format(" %s %s (%s)", column, symbol, sj) : "";
             }
         } else {
-            throw new RuntimeException("数据需要是集合");
+            throw new RuntimeException("data(" + value + ") has been Collection");
         }
     }
 }
