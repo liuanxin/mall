@@ -7,6 +7,7 @@ import com.github.global.query.model.RequestInfo;
 import com.github.global.query.model.Scheme;
 import com.github.global.query.model.SchemeColumn;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.List;
 public class QueryApiController {
 
     private final QuerySchemeInfo schemeInfo;
+    private final JdbcTemplate jdbcTemplate;
 
     @GetMapping
     public JsonResult<List<QueryInfo>> query() {
@@ -35,6 +37,7 @@ public class QueryApiController {
 
     @PostMapping
     public JsonResult<Object> query(@RequestBody RequestInfo req) {
+        req.check(schemeInfo.getTableColumnInfo());
         return JsonResult.success("query scheme-info");
     }
 }

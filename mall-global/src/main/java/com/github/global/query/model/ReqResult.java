@@ -152,7 +152,7 @@ public class ReqResult {
                     if (!column.isEmpty()) {
                         sj.add(QueryUtil.checkSchemeAndColumnName(mainScheme, column, columnInfo, "result select").getName());
                     }
-//                } else {
+//                } else { // todo
 
                 }
             }
