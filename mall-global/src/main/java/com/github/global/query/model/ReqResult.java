@@ -112,8 +112,12 @@ public class ReqResult {
                     if (columnCheckRepeatedSet.contains(column)) {
                         throw new RuntimeException("res relation column(" + column + ") has repeated");
                     }
-                    columnCheckRepeatedSet.add(column);
                     ReqResult innerResult = entry.getValue();
+                    if (innerResult == null) {
+                        throw new RuntimeException("res relation column(" + column + ") error");
+                    }
+                    columnCheckRepeatedSet.add(column);
+                    innerResult.checkResult(currentSchema, columnInfo);
                 }
             }
         }
