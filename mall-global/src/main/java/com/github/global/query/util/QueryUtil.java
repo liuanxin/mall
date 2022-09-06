@@ -76,7 +76,7 @@ public class QueryUtil {
             } else {
                 schemaDesc = "";
                 schemaAlias = clazz.getSimpleName();
-                schemaName = convertTableName(schemaAlias);
+                schemaName = aliasToSchemaName(schemaAlias);
             }
             if (schemaMap.containsKey(schemaAlias)) {
                 throw new RuntimeException("schema(" + schemaName + ") has renamed");
@@ -101,16 +101,15 @@ public class QueryUtil {
                 } else {
                     columnDesc = "";
                     columnAlias = field.getName();
-                    columnName = convertColumnName(columnAlias);
-                    primary = "id".equalsIgnoreCase(field.getName());
+                    columnName = aliasToColumnName(columnAlias);
+                    primary = "id".equalsIgnoreCase(columnAlias);
                 }
                 if (columnMap.containsKey(columnAlias)) {
                     throw new RuntimeException("schema(" + schemaName + ") has same column(" + columnAlias + ")");
                 }
 
-                SchemaColumn column = new SchemaColumn(columnName, columnDesc, columnAlias, primary, field.getType());
                 aliasMap.put(QueryConst.COLUMN_PREFIX + columnName, columnAlias);
-                columnMap.put(columnAlias, column);
+                columnMap.put(columnAlias, new SchemaColumn(columnName, columnDesc, columnAlias, primary, field.getType()));
             }
             aliasMap.put(QueryConst.SCHEMA_PREFIX + schemaName, schemaAlias);
             schemaMap.put(schemaAlias, new Schema(schemaName, schemaDesc, schemaAlias, columnMap));
@@ -143,10 +142,10 @@ public class QueryUtil {
                 }
             }
         }
-
         return new SchemaColumnInfo(aliasMap, schemaMap, relationMap);
     }
-    private static String convertTableName(String className) {
+    /** UserInfo --> user_info */
+    private static String aliasToSchemaName(String className) {
         StringBuilder sbd = new StringBuilder();
         char[] chars = className.toCharArray();
         int len = chars.length;
@@ -163,13 +162,51 @@ public class QueryUtil {
         }
         return sbd.toString();
     }
-    private static String convertColumnName(String fieldName) {
+    /** userName --> user_name */
+    private static String aliasToColumnName(String fieldName) {
         StringBuilder sbd = new StringBuilder();
         for (char c : fieldName.toCharArray()) {
             if (Character.isUpperCase(c)) {
                 sbd.append("_").append(Character.toLowerCase(c));
             } else {
                 sbd.append(c);
+            }
+        }
+        return sbd.toString();
+    }
+
+    /** user_info | USER_INFO --> UserInfo */
+    public static String schemaNameToAlias(String schemaName) {
+        if (schemaName.toLowerCase().startsWith("t_")) {
+            schemaName = schemaName.substring(2);
+        }
+        StringBuilder sbd = new StringBuilder();
+        char[] chars = schemaName.toCharArray();
+        sbd.append(Character.toUpperCase(chars[0]));
+        int len = chars.length;
+        for (int i = 1; i < len; i++) {
+            char c = chars[i];
+            if (c == '_') {
+                i++;
+                sbd.append(Character.toUpperCase(chars[i]));
+            } else {
+                sbd.append(Character.toLowerCase(c));
+            }
+        }
+        return sbd.toString();
+    }
+    /** user_name | USER_NAME --> userName */
+    public static String columnNameToAlias(String columnName) {
+        StringBuilder sbd = new StringBuilder();
+        char[] chars = columnName.toCharArray();
+        int len = chars.length;
+        for (int i = 0; i < len; i++) {
+            char c = chars[i];
+            if (c == '_') {
+                i++;
+                sbd.append(Character.toUpperCase(chars[i]));
+            } else {
+                sbd.append(Character.toLowerCase(c));
             }
         }
         return sbd.toString();

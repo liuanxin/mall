@@ -33,13 +33,13 @@ import java.util.*;
  * }
  *
  *
- * SELECT name, COUNT(*) AS CNT, COUNT(name) AS CNT_name, MIN(id) AS MIN_id from ... group by name
+ * SELECT name, COUNT(*) AS `CNT_*`, COUNT(name) AS CNT_name, MIN(id) AS MIN_id from ... group by name
  * {
  *   "columns": [
  *     "name",
- *     [ "count", "*" ],     -- 别名 CNT 是写死的, 避免 sql 注入
- *     [ "count", "name" ],  -- 别名 CNT_name 拼起来的前缀是写死的, 避免 sql 注入
- *     [ "min", "id" ]       -- 别名 MIN_id 拼起来的前缀是写死的, 避免 sql 注入
+ *     [ "count", "*" ],     -- 别名「CNT_*」拼起来的前缀是写死的, 避免 sql 注入
+ *     [ "count", "name" ],  -- 别名「CNT_name」拼起来的前缀是写死的, 避免 sql 注入
+ *     [ "min", "id" ]       -- 别名「MIN_id」拼起来的前缀是写死的, 避免 sql 注入
  *   ]
  * }
  * </pre>

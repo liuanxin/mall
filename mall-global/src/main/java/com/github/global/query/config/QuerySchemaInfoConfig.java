@@ -41,6 +41,7 @@ public class QuerySchemaInfoConfig {
 
         for (Map<String, Object> schemaInfo : schemaList) {
             String schemaName = QueryUtil.toStr(schemaInfo.get("tn"));
+            String schemaAlias = QueryUtil.schemaNameToAlias(schemaName);
             String schemaDesc = QueryUtil.toStr(schemaInfo.get("tc"));
             Map<String, SchemaColumn> columnMap = new LinkedHashMap<>();
 
@@ -48,15 +49,15 @@ public class QuerySchemaInfoConfig {
             for (Map<String, Object> columnInfo : columnList) {
                 Class<?> clazz = mappingClass(QueryUtil.toStr(columnInfo.get("ct")));
                 String columnName = QueryUtil.toStr(columnInfo.get("cn"));
+                String columnAlias = QueryUtil.columnNameToAlias(columnName);
                 String columnDesc = QueryUtil.toStr(columnInfo.get("cc"));
                 boolean primary = "PRI".equalsIgnoreCase(QueryUtil.toStr(columnInfo.get("cc")));
 
-                SchemaColumn column = new SchemaColumn(columnName, columnDesc, columnName, primary, clazz);
-                aliasMap.put(QueryConst.COLUMN_PREFIX + columnName, columnName);
-                columnMap.put(columnName, column);
+                aliasMap.put(QueryConst.COLUMN_PREFIX + columnName, columnAlias);
+                columnMap.put(columnAlias, new SchemaColumn(columnName, columnDesc, columnAlias, primary, clazz));
             }
-            aliasMap.put(QueryConst.SCHEMA_PREFIX + schemaName, schemaName);
-            schemaMap.put(schemaName, new Schema(schemaName, schemaDesc, schemaName, columnMap));
+            aliasMap.put(QueryConst.SCHEMA_PREFIX + schemaName, schemaAlias);
+            schemaMap.put(schemaAlias, new Schema(schemaName, schemaDesc, schemaAlias, columnMap));
         }
         return new SchemaColumnInfo(aliasMap, schemaMap, Collections.emptyMap());
     }

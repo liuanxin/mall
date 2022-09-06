@@ -12,7 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public enum ReqResultGroup {
 
-    COUNT("COUNT(%s) AS CNT%s", "总条数"),
+    COUNT("COUNT(%s) AS `CNT%s`", "总条数"),
     SUM("SUM(%s) AS SUM%s", "总和"),
     MIN("MIN(%s) AS MIN%s", "最小"),
     MAX("MAX(%s) AS MAX%s", "最大"),
@@ -50,10 +50,7 @@ public enum ReqResultGroup {
         if (column.isEmpty()) {
             return "";
         }
-        if (this == ReqResultGroup.COUNT && column.contains("*")) {
-            return String.format(value, column, "");
-        } else {
-            return String.format(value, column, ("_" + column));
-        }
+
+        return String.format(value, column, ("_" + column));
     }
 }
