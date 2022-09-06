@@ -112,6 +112,7 @@ public class ReqResult {
                     if (columnSet.contains(column)) {
                         throw new RuntimeException("res relation column(" + column + ") has repeated");
                     }
+                    columnSet.add(column);
                     ReqResult innerResult = entry.getValue();
                 }
             }
