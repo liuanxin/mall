@@ -12,129 +12,129 @@ import java.util.*;
 /**
  * <pre>
  * global:
- *   is null     ($inu)
- *   is not null ($inn)
- *   =           ($eq)
- *   <>          ($ne)
+ *   is null     (inu)
+ *   is not null (inn)
+ *   =           (eq)
+ *   <>          (ne)
  *
  * list:
- *   in     ($in 批量)
- *   not in ($ni)
+ *   in     (in 批量)
+ *   not in (ni)
  *
  * number/date:
- *   >  ($gt)
- *   >= ($ge)
- *   <  ($lt)
- *   <= ($le)
- *   between ($bet)
+ *   >  (gt)
+ *   >= (ge)
+ *   <  (lt)
+ *   <= (le)
+ *   between (bet)
  *
  * string:
- *   like     ($rl 开头、$ll 结尾、$lk 包含), 只有「开头」会走索引(LIKE 'x%'), 结尾是 LIKE '%xx', 包含是 LIKE '%xxx%'
- *   not like ($nl)
+ *   like     (rl 开头、ll 结尾、lk 包含), 只有「开头」会走索引(LIKE 'x%'), 结尾是 LIKE '%xx', 包含是 LIKE '%xxx%'
+ *   not like (nl)
  *
  *
- * string 类型: 只 等于($eq)、不等于($ne)、批量($in)、包含($lk)、开头($rl)、结尾($ll)、不包含($nl) 条件
- * number 类型: 只 等于($eq)、大于($gt)、大于等于($ge)、小于($lt)、小于等于($le)、区间($bet) 条件
- * date 类型: 只 大于($gt)、大于等于($ge)、小于($lt)、小于等于($le)、区间($bet) 条件
- * 非 string/number/date 类型: 只 等于($eq)、不等于($ne) 条件
+ * string 类型: 只 等于(eq)、不等于(ne)、批量(in)、包含(lk)、开头(rl)、结尾(ll)、不包含(nl) 条件
+ * number 类型: 只 等于(eq)、大于(gt)、大于等于(ge)、小于(lt)、小于等于(le)、区间(bet) 条件
+ * date 类型: 只 大于(gt)、大于等于(ge)、小于(lt)、小于等于(le)、区间(bet) 条件
+ * 非 string/number/date 类型: 只 等于(eq)、不等于(ne) 条件
  * </pre>
  */
 @Getter
 @RequiredArgsConstructor
 public enum ReqParamConditionType {
 
-    IS_NULL("$inu", "为空") {
+    INU("IS NULL", "为空") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return String.format(" %s IS NULL", column);
+            return String.format(" %s %s", column, getValue());
         }
     },
-    IS_NOT_NULL("$inn", "不为空") {
+    INN("IS NOT NULL", "不为空") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return String.format(" %s IS NOT NULL", column);
-        }
-    },
-
-    EQ("$eq", "等于") {
-        @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, value, params, "=");
-        }
-    },
-    NOT_EQ("$ne", "不等于") {
-        @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, value, params, "<>");
+            return String.format(" %s %s", column, getValue());
         }
     },
 
-    IN("$in", "批量") {
+    EQ("=", "等于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateMulti(column, value, params, "IN");
+            return generateCondition(column, value, params);
         }
     },
-    NOT_IN("$ni", "不在") {
+    NE("<>", "不等于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateMulti(column, value, params, "NOT IN");
-        }
-    },
-
-    BETWEEN("$bet", "区间") {
-        @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateMulti(column, value, params, "BETWEEN");
-        }
-    },
-    GT("$gt", "大于") {
-        @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, value, params, ">");
-        }
-    },
-    GE("$gt", "大于等于") {
-        @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, value, params, ">=");
-        }
-    },
-    LT("$lt", "小于") {
-        @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, value, params, "<");
-        }
-    },
-    LE("$le", "小于等于") {
-        @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, value, params, "<=");
+            return generateCondition(column, value, params);
         }
     },
 
-    LIKE("$lk", "包含") {
+    IN("IN", "批量") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, ("%" + value + "%"), params, "LIKE");
+            return generateMulti(column, value, params);
         }
     },
-    LIKE_START("$rl", "开头") {
+    NI("NOT IN", "不在") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, (value + "%"), params, "LIKE");
+            return generateMulti(column, value, params);
         }
     },
-    LIKE_END("$ll", "结尾") {
+
+    BET("BETWEEN", "区间") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, ("%" + value), params, "LIKE");
+            return generateMulti(column, value, params);
         }
     },
-    NOT_LIKE("$nl", "不包含") {
+    GT(">", "大于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, ("%" + value + "%"), params, "NOT LIKE");
+            return generateCondition(column, value, params);
+        }
+    },
+    GE(">=", "大于等于") {
+        @Override
+        public String generateSql(String column, Object value, List<Object> params) {
+            return generateCondition(column, value, params);
+        }
+    },
+    LT("<", "小于") {
+        @Override
+        public String generateSql(String column, Object value, List<Object> params) {
+            return generateCondition(column, value, params);
+        }
+    },
+    LE("<=", "小于等于") {
+        @Override
+        public String generateSql(String column, Object value, List<Object> params) {
+            return generateCondition(column, value, params);
+        }
+    },
+
+    LK("LIKE", "包含") {
+        @Override
+        public String generateSql(String column, Object value, List<Object> params) {
+            return generateCondition(column, ("%" + value + "%"), params);
+        }
+    },
+    LKS("LIKE", "开头") {
+        @Override
+        public String generateSql(String column, Object value, List<Object> params) {
+            return generateCondition(column, (value + "%"), params);
+        }
+    },
+    LKE("LIKE", "结尾") {
+        @Override
+        public String generateSql(String column, Object value, List<Object> params) {
+            return generateCondition(column, ("%" + value), params);
+        }
+    },
+    NL("NOT LIKE", "不包含") {
+        @Override
+        public String generateSql(String column, Object value, List<Object> params) {
+            return generateCondition(column, ("%" + value + "%"), params);
         }
     };
 
@@ -157,7 +157,7 @@ public enum ReqParamConditionType {
     }
 
 
-    abstract String generateSql(String column, Object value, List<Object> params);
+    public abstract String generateSql(String column, Object value, List<Object> params);
 
 
     public void checkTypeAndValue(Class<?> type, String column, Object value) {
@@ -197,7 +197,7 @@ public enum ReqParamConditionType {
                     }
                     String error = errorSj.toString();
                     if (!error.isEmpty()) {
-                        throw new RuntimeException(String.format("column(%s) data(%s) error", column, errorSj));
+                        throw new RuntimeException(String.format("column(%s) data(%s) error", column, error));
                     }
                 } else {
                     throw new RuntimeException(String.format("column(%s) data need been Collection", column));
@@ -211,60 +211,58 @@ public enum ReqParamConditionType {
     }
 
 
-    private static String generateCondition(String column, Object value, List<Object> params, String symbol) {
+    protected String generateCondition(String column, Object value, List<Object> params) {
         if (value == null || QueryUtil.isNullString(value)) {
             return "";
         }
 
         params.add(value);
-        return String.format(" %s %s ?", column, symbol);
+        return String.format(" %s %s ?", column, getValue());
     }
-    private static String generateMulti(String column, Object value, List<Object> params, String symbol) {
-        if (value == null) {
+    protected String generateMulti(String column, Object value, List<Object> params) {
+        if (value == null || !QueryConst.MULTI_TYPE.contains(this)) {
             return "";
         }
 
-        if (value instanceof Collection<?> c) {
-            if (c.isEmpty()) {
-                return "";
-            }
-            if ("BETWEEN".equals(symbol)) {
-                Object[] arr = c.toArray();
-                Object start = arr[0];
-                Object end = arr.length > 1 ? arr[1] : null;
+        Collection<?> c = (Collection<?>) value;
+        if (c.isEmpty()) {
+            return "";
+        }
+        String symbol = getValue();
+        if ("BETWEEN".equals(symbol)) {
+            Object[] arr = c.toArray();
+            Object start = arr[0];
+            Object end = arr.length > 1 ? arr[1] : null;
 
-                StringBuilder sbd = new StringBuilder();
-                if (start != null && end != null) {
-                    params.add(start);
-                    params.add(end);
-                    sbd.append(" ").append(column).append(" BETWEEN ? AND ?");
-                } else {
-                    if (start != null) {
-                        params.add(start);
-                        sbd.append(" ").append(column).append(" >= ?");
-                    }
-                    if (end != null) {
-                        params.add(end);
-                        sbd.append(" ").append(column).append(" <= ?");
-                    }
-                }
-                return sbd.toString();
+            StringBuilder sbd = new StringBuilder();
+            if (start != null && end != null) {
+                params.add(start);
+                params.add(end);
+                sbd.append(" ").append(column).append(" BETWEEN ? AND ?");
             } else {
-                boolean hasChange = false;
-                StringJoiner sj = new StringJoiner(", ");
-                for (Object obj : c) {
-                    if (obj != null) {
-                        if (!hasChange) {
-                            hasChange = true;
-                        }
-                        sj.add("?");
-                        params.add(obj);
-                    }
+                if (start != null) {
+                    params.add(start);
+                    sbd.append(" ").append(column).append(" >= ?");
                 }
-                return hasChange ? String.format(" %s %s (%s)", column, symbol, sj) : "";
+                if (end != null) {
+                    params.add(end);
+                    sbd.append(" ").append(column).append(" <= ?");
+                }
             }
+            return sbd.toString();
         } else {
-            throw new RuntimeException("data(" + value + ") has been Collection");
+            boolean hasChange = false;
+            StringJoiner sj = new StringJoiner(", ");
+            for (Object obj : c) {
+                if (obj != null) {
+                    if (!hasChange) {
+                        hasChange = true;
+                    }
+                    sj.add("?");
+                    params.add(obj);
+                }
+            }
+            return hasChange ? String.format(" %s %s (%s)", column, symbol, sj) : "";
         }
     }
 }

@@ -61,12 +61,12 @@ public final class QueryConst {
     public static final Map<Class<?>, Set<ReqParamConditionType>> CONDITION_TYPE_MAP = Map.of(
             String.class, new LinkedHashSet<>(Arrays.asList(
                     ReqParamConditionType.EQ,
-                    ReqParamConditionType.NOT_EQ,
+                    ReqParamConditionType.NE,
                     ReqParamConditionType.IN,
-                    ReqParamConditionType.LIKE,
-                    ReqParamConditionType.LIKE_START,
-                    ReqParamConditionType.LIKE_END,
-                    ReqParamConditionType.NOT_LIKE
+                    ReqParamConditionType.LK,
+                    ReqParamConditionType.LKS,
+                    ReqParamConditionType.LKE,
+                    ReqParamConditionType.NL
             )),
             Number.class, new LinkedHashSet<>(Arrays.asList(
                     ReqParamConditionType.EQ,
@@ -74,26 +74,26 @@ public final class QueryConst {
                     ReqParamConditionType.GE,
                     ReqParamConditionType.LT,
                     ReqParamConditionType.LE,
-                    ReqParamConditionType.BETWEEN
+                    ReqParamConditionType.BET
             )),
             Date.class, new LinkedHashSet<>(Arrays.asList(
                     ReqParamConditionType.GT,
                     ReqParamConditionType.GE,
                     ReqParamConditionType.LT,
                     ReqParamConditionType.LE,
-                    ReqParamConditionType.BETWEEN
+                    ReqParamConditionType.BET
             ))
     );
     public static final String OTHER_TYPE_INFO = "非「字符串, 数字, 日期时间」";
     /**  非 string/number/date 类型: 只 等于(eq)、不等于(ne) 条件 */
     public static final Set<ReqParamConditionType> OTHER_CONDITION_TYPE = Set.of(
             ReqParamConditionType.EQ,
-            ReqParamConditionType.NOT_EQ
+            ReqParamConditionType.NE
     );
 
     public static final Set<ReqParamConditionType> MULTI_TYPE = Set.of(
             ReqParamConditionType.IN,
-            ReqParamConditionType.NOT_IN,
-            ReqParamConditionType.BETWEEN
+            ReqParamConditionType.NI,
+            ReqParamConditionType.BET
     );
 }
