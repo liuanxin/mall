@@ -86,7 +86,18 @@ public class QuerySchemaInfoConfig {
 
     public Object query(RequestInfo req) {
         req.check(schemaColumnInfo);
+
         // todo
+        List<Object> params = new ArrayList<>();
+        String mainSql = generateMainSql(req, params);
+        List<Map<String, Object>> maps = jdbcTemplate.queryForList(mainSql, params);
+
+        return null;
+    }
+    private String generateMainSql(RequestInfo req, List<Object> params) {
+        String mainSchema = req.getSchema();
+        Set<String> paramSchema = req.getParam().allParamSchema(mainSchema);
+        Set<String> resultSchema = req.getResult().allResultSchema(mainSchema);
         return null;
     }
 }
