@@ -9,19 +9,22 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ReqParamOperateType {
 
-    AND("and", "并且"),
-    OR("or", "或者");
+    AND("并且"),
+    OR("或者");
+
+    private final String msg;
 
     @JsonValue
-    private final String value;
-    private final String msg;
+    public String value() {
+        return name().toLowerCase();
+    }
 
     @JsonCreator
     public static ReqParamOperateType deserializer(Object obj) {
         if (obj != null) {
             String str = obj.toString().trim();
             for (ReqParamOperateType e : values()) {
-                if (str.equalsIgnoreCase(e.name()) || str.equalsIgnoreCase(e.value)) {
+                if (str.equalsIgnoreCase(e.name())) {
                     return e;
                 }
             }
