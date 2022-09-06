@@ -11,9 +11,9 @@ import java.util.*;
 
 /**
  * <pre>
- * select id, orderNo from t_order ...
- * select id, address, phone from t_order_address ...
- * select id, name, price from t_order_item ...
+ * SELECT id, orderNo FROM t_order ...
+ * SELECT id, address, phone FROM t_order_address ...
+ * SELECT id, name, price FROM t_order_item ...
  * {
  *   -- "schema": "order",   -- 忽略将从 requestInfo 中获取
  *   "columns": [
@@ -33,12 +33,13 @@ import java.util.*;
  * }
  *
  *
- * select name, count(*) as cnt, min(id) as mid from ... group by name
+ * SELECT name, COUNT(*) AS CNT, COUNT(name) AS CNT_name, MIN(id) AS MIN_id from ... group by name
  * {
  *   "columns": [
  *     "name",
- *     [ "count", "*", "cnt" ],
- *     [ "min", "id", "mid" ]
+ *     [ "count", "*" ],     -- 别名 CNT 是写死的, 避免 sql 注入
+ *     [ "count", "name" ],  -- 别名 CNT_name 拼起来的前缀是写死的, 避免 sql 注入
+ *     [ "min", "id" ]       -- 别名 MIN_id 拼起来的前缀是写死的, 避免 sql 注入
  *   ]
  * }
  * </pre>

@@ -2,19 +2,22 @@ package com.github.global.query.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.github.global.query.util.QueryUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
 public enum ReqResultGroup {
 
-    COUNT("COUNT(%s)", "总条数"),
-    SUM("SUM(%s)", "总和"),
-    MIN("MIN(%s)", "最小"),
-    MAX("MAX(%s)", "最大"),
-    AVG("AVG(%s)", "平均"),
-    GROUP_CONCAT("GROUP_CONCAT(%s)", "组拼接");
+    COUNT("COUNT(%s) AS CNT%s", "总条数"),
+    SUM("SUM(%s) AS SUM%s", "总和"),
+    MIN("MIN(%s) AS MIN%s", "最小"),
+    MAX("MAX(%s) AS MAX%s", "最大"),
+    AVG("AVG(%s) AS AVG%s", "平均"),
+    GROUP_CONCAT("GROUP_CONCAT(%s) AS GC%s", "组拼接");
 
 
     @JsonValue
@@ -32,5 +35,25 @@ public enum ReqResultGroup {
             }
         }
         return null;
+    }
+
+    public String generateSql(List<?> groups) {
+        if (groups == null) {
+            return "";
+        }
+        int size = groups.size();
+        if (size < 2) {
+            return "";
+        }
+
+        String column = QueryUtil.toStr(groups.get(1));
+        if (column.isEmpty()) {
+            return "";
+        }
+        if (this == ReqResultGroup.COUNT && column.contains("*")) {
+            return String.format(value, column, "");
+        } else {
+            return String.format(value, column, ("_" + column));
+        }
     }
 }
