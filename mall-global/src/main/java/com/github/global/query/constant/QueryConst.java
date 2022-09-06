@@ -12,29 +12,26 @@ public final class QueryConst {
     public static final String DB_SQL = "SELECT DATABASE()";
     public static final String SCHEMA_SQL = "SELECT `TABLE_NAME` tn, `TABLE_COMMENT` tc" +
             " FROM information_schema.`TABLES` WHERE `TABLE_SCHEMA` = ?";
-    public static final String COLUMN_SQL = "SELECT `COLUMN_NAME` cn, `COLUMN_TYPE` ct, `COLUMN_COMMENT` cc," +
-            " `COLUMN_KEY` ck FROM information_schema.`COLUMNS` WHERE `TABLE_SCHEMA` = ? AND `TABLE_NAME` = ?";
+    public static final String COLUMN_SQL = "SELECT `TABLE_NAME` tn, `COLUMN_NAME` cn, `COLUMN_TYPE` ct," +
+            " `COLUMN_COMMENT` cc, `COLUMN_KEY` ck" +
+            " FROM information_schema.`COLUMNS` WHERE `TABLE_SCHEMA` = ?" +
+            " ORDER BY `TABLE_NAME`, `ORDINAL_POSITION`";
 
-    public static final Map<String, Class<?>> DB_TYPE_MAP = new HashMap<>();
+    public static final Map<String, Class<?>> DB_TYPE_MAP = new LinkedHashMap<>();
     static {
-        DB_TYPE_MAP.put("tinyint", Integer.class);
-        DB_TYPE_MAP.put("smallint", Integer.class);
-        DB_TYPE_MAP.put("mediumint", Integer.class);
+        DB_TYPE_MAP.put("tinyint(1)", Boolean.class);
         DB_TYPE_MAP.put("int", Integer.class);
-        DB_TYPE_MAP.put("bigint", Long.class);
 
         DB_TYPE_MAP.put("char", String.class);
-        DB_TYPE_MAP.put("varchar", String.class);
         DB_TYPE_MAP.put("text", String.class);
-        DB_TYPE_MAP.put("longtext", String.class);
 
-        DB_TYPE_MAP.put("year", Date.class);
         DB_TYPE_MAP.put("date", Date.class);
         DB_TYPE_MAP.put("time", Date.class);
-        DB_TYPE_MAP.put("datetime", Date.class);
-        DB_TYPE_MAP.put("timestamp", Date.class);
+        DB_TYPE_MAP.put("year", Date.class);
 
         DB_TYPE_MAP.put("decimal", BigDecimal.class);
+        DB_TYPE_MAP.put("float", Float.class);
+        DB_TYPE_MAP.put("double", Double.class);
     }
 
     public static final TypeReference<Map<String, ReqResult>> RESULT_TYPE = new TypeReference<>() {};
