@@ -67,17 +67,17 @@ public class ReqResult {
 
         if (columns != null && !columns.isEmpty()) {
             StringJoiner sj = new StringJoiner(", ");
-            Set<String> columnSet = new HashSet<>();
+            Set<String> columnCheckRepeatedSet = new HashSet<>();
             List<Object> innerList = new ArrayList<>();
             for (Object obj : columns) {
                 if (obj != null) {
                     if (obj instanceof String column) {
                         if (!column.isEmpty()) {
                             QueryUtil.checkSchemaAndColumnName(currentSchema, column, columnInfo, "result select");
-                            if (columnSet.contains(column)) {
+                            if (columnCheckRepeatedSet.contains(column)) {
                                 throw new RuntimeException("res column(" + column + ") has repeated");
                             }
-                            columnSet.add(column);
+                            columnCheckRepeatedSet.add(column);
                         }
                     } else if (obj instanceof List<?> groups) {
                         if (!groups.isEmpty()) {
@@ -109,10 +109,10 @@ public class ReqResult {
                 }
                 for (Map.Entry<String, ReqResult> entry : inner.entrySet()) {
                     String column = entry.getKey();
-                    if (columnSet.contains(column)) {
+                    if (columnCheckRepeatedSet.contains(column)) {
                         throw new RuntimeException("res relation column(" + column + ") has repeated");
                     }
-                    columnSet.add(column);
+                    columnCheckRepeatedSet.add(column);
                     ReqResult innerResult = entry.getValue();
                 }
             }
