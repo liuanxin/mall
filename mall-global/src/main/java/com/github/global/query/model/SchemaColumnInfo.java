@@ -9,9 +9,9 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TableColumnInfo {
+public class SchemaColumnInfo {
 
     private Map<String, String> aliasMap;
-    private Map<String, Scheme> schemeMap;
-    private Map<String, TableColumnRelation> relationMap;
+    private Map<String, Schema> schemaMap;
+    private Map<String, SchemaColumnRelation> relationMap;
 }

@@ -4,13 +4,42 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.global.query.model.ReqParamConditionType;
 import com.github.global.query.model.ReqResult;
 
+import java.math.BigDecimal;
 import java.util.*;
 
-public class QueryConst {
+public final class QueryConst {
+
+    public static final String DB_SQL = "SELECT DATABASE()";
+    public static final String SCHEMA_SQL = "SELECT `TABLE_NAME` tn, `TABLE_COMMENT` tc" +
+            " FROM information_schema.`TABLES` WHERE `TABLE_SCHEMA` = ?";
+    public static final String COLUMN_SQL = "SELECT `COLUMN_NAME` cn, `COLUMN_TYPE` ct, `COLUMN_COMMENT` cc," +
+            " `COLUMN_KEY` ck FROM information_schema.`COLUMNS` WHERE `TABLE_SCHEMA` = ? AND `TABLE_NAME` = ?";
+
+    public static final Map<String, Class<?>> DB_TYPE_MAP = new HashMap<>();
+    static {
+        DB_TYPE_MAP.put("tinyint", Integer.class);
+        DB_TYPE_MAP.put("smallint", Integer.class);
+        DB_TYPE_MAP.put("mediumint", Integer.class);
+        DB_TYPE_MAP.put("int", Integer.class);
+        DB_TYPE_MAP.put("bigint", Long.class);
+
+        DB_TYPE_MAP.put("char", String.class);
+        DB_TYPE_MAP.put("varchar", String.class);
+        DB_TYPE_MAP.put("text", String.class);
+        DB_TYPE_MAP.put("longtext", String.class);
+
+        DB_TYPE_MAP.put("year", Date.class);
+        DB_TYPE_MAP.put("date", Date.class);
+        DB_TYPE_MAP.put("time", Date.class);
+        DB_TYPE_MAP.put("datetime", Date.class);
+        DB_TYPE_MAP.put("timestamp", Date.class);
+
+        DB_TYPE_MAP.put("decimal", BigDecimal.class);
+    }
 
     public static final TypeReference<Map<String, ReqResult>> RESULT_TYPE = new TypeReference<>() {};
 
-    public static final String SCHEME_PREFIX = "scheme-";
+    public static final String SCHEMA_PREFIX = "schema-";
     public static final String COLUMN_PREFIX = "column-";
 
 

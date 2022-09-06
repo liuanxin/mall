@@ -30,15 +30,15 @@ public class ReqParam {
     private List<Integer> page;
 
 
-    public void checkParam(String mainScheme, TableColumnInfo columnInfo) {
+    public void checkParam(String mainSchema, SchemaColumnInfo columnInfo) {
         if (query == null) {
             throw new RuntimeException("param no query");
         }
-        query.checkCondition(mainScheme, columnInfo);
+        query.checkCondition(mainSchema, columnInfo);
 
         if (sort != null && !sort.isEmpty()) {
             for (String column : sort.keySet()) {
-                QueryUtil.checkColumnName(column, mainScheme, columnInfo, "query order");
+                QueryUtil.checkColumnName(column, mainSchema, columnInfo, "query order");
             }
         }
 
@@ -50,18 +50,18 @@ public class ReqParam {
         }
     }
 
-    public Set<String> allParamScheme(String mainScheme) {
+    public Set<String> allParamSchema(String mainSchema) {
         Set<String> set = new LinkedHashSet<>();
-        query.allScheme(mainScheme, set);
+        query.allSchema(mainSchema, set);
         if (sort != null && !sort.isEmpty()) {
             for (String column : sort.keySet()) {
-                set.add(QueryUtil.getSchemeName(column, mainScheme));
+                set.add(QueryUtil.getSchemaName(column, mainSchema));
             }
         }
         return set;
     }
 
-    public String generateOrderSql(String mainScheme, Map<String, Scheme> schemeMap) {
+    public String generateOrderSql(String mainSchema, Map<String, Schema> schemaMap) {
         if (sort != null && !sort.isEmpty()) {
             StringJoiner orderSj = new StringJoiner(", ");
             for (Map.Entry<String, String> entry : sort.entrySet()) {

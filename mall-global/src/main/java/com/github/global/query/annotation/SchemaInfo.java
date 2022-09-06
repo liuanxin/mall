@@ -6,7 +6,7 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface SchemeInfo {
+public @interface SchemaInfo {
 
     /** 数据库表名, 为空则自动基于类名来(类 UserInfo --> 表 user_info) */
     String value() default "";

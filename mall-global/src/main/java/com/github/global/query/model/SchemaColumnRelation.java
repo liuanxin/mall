@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TableColumnRelation {
+public class SchemaColumnRelation {
 
-    private SchemeRelationType type;
+    private SchemaRelationType type;
     private String tableColumn;
 }

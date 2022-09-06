@@ -12,7 +12,7 @@ import java.util.Map;
 public class RequestInfo {
 
     /** 主结构, 如果入参和出参是相同的, 只需要在这里定义一次就可以了 */
-    private String scheme;
+    private String schema;
 
     /** 入参 */
     private ReqParam param;
@@ -21,22 +21,22 @@ public class RequestInfo {
     private ReqResult result;
 
 
-    public void check(TableColumnInfo columnInfo) {
-        if (scheme != null && !scheme.isEmpty()) {
-            Map<String, Scheme> schemeMap = columnInfo.getSchemeMap();
-            if (!schemeMap.containsKey(scheme)) {
-                throw new RuntimeException("no scheme(" + scheme + ") defined");
+    public void check(SchemaColumnInfo columnInfo) {
+        if (schema != null && !schema.isEmpty()) {
+            Map<String, Schema> schemaMap = columnInfo.getSchemaMap();
+            if (!schemaMap.containsKey(schema)) {
+                throw new RuntimeException("no schema(" + schema + ") defined");
             }
         }
 
         if (param == null) {
             throw new RuntimeException("request need param");
         }
-        param.checkParam(scheme, columnInfo);
+        param.checkParam(schema, columnInfo);
 
         if (result == null) {
             throw new RuntimeException("request need result");
         }
-        result.checkResult(scheme, columnInfo);
+        result.checkResult(schema, columnInfo);
     }
 }

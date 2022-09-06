@@ -15,7 +15,7 @@ import java.util.Set;
  * name like 'abc%'   and gender = 1   and age between 18 and 40
  * and province in ( 'x', 'y', 'z' )   and city like '%xx%'   and time >= now()
  * {
- *   -- "scheme": "order",   -- 忽略将从 requestInfo 中获取
+ *   -- "schema": "order",   -- 忽略将从 requestInfo 中获取
  *   -- "operate": "and",    -- 如果是 and 可以省略
  *   "conditions": [
  *     [ "name", "rl", "abc" ],
@@ -96,21 +96,21 @@ import java.util.Set;
 @AllArgsConstructor
 public class ReqParamOperate {
 
-    private String scheme;
+    private String schema;
     /** 条件拼接类型: and 还是 or */
     private ReqParamOperateType operate;
     /** 条件 */
     private List<Object> conditions;
 
 
-    public void checkCondition(String mainScheme, TableColumnInfo columnInfo) {
+    public void checkCondition(String mainSchema, SchemaColumnInfo columnInfo) {
         if (conditions == null || conditions.isEmpty()) {
             return;
         }
 
-        String currentScheme = (scheme == null || scheme.trim().isEmpty()) ? mainScheme : scheme.trim();
-        if (currentScheme == null || currentScheme.isEmpty()) {
-            throw new RuntimeException("param need scheme");
+        String currentSchema = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
+        if (currentSchema == null || currentSchema.isEmpty()) {
+            throw new RuntimeException("param need schema");
         }
 
         List<ReqParamCondition> conditionList = new ArrayList<>();
@@ -139,10 +139,10 @@ public class ReqParamOperate {
                             }
 
                             // 用传入的列名获取其结构上定义的类型
-                            SchemeColumn schemeColumn = QueryUtil.checkColumnName(column, currentScheme,
+                            SchemaColumn schemaColumn = QueryUtil.checkColumnName(column, currentSchema,
                                     columnInfo, "query condition");
                             // 检查列类型和传入的值是否对应
-                            type.checkTypeAndValue(schemeColumn.getColumnType(), column, value);
+                            type.checkTypeAndValue(schemaColumn.getColumnType(), column, value);
                         }
                     }
                 } else {
@@ -150,30 +150,30 @@ public class ReqParamOperate {
                     if (compose == null) {
                         throw new RuntimeException("compose condition(" + condition + ") error");
                     }
-                    compose.checkCondition(currentScheme, columnInfo);
+                    compose.checkCondition(currentSchema, columnInfo);
                 }
             }
         }
     }
 
-    public void allScheme(String mainScheme, Set<String> set) {
+    public void allSchema(String mainSchema, Set<String> set) {
         if (conditions == null || conditions.isEmpty()) {
             return;
         }
 
-        String currentScheme = (scheme == null || scheme.trim().isEmpty()) ? mainScheme : scheme.trim();
+        String currentSchema = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
 
         List<ReqParamCondition> conditionList = new ArrayList<>();
         for (Object condition : conditions) {
             if (condition != null) {
                 if (condition instanceof List<?> list) {
                     if (!list.isEmpty()) {
-                        set.add(QueryUtil.getSchemeName(QueryUtil.toStr(list.get(0)), currentScheme));
+                        set.add(QueryUtil.getSchemaName(QueryUtil.toStr(list.get(0)), currentSchema));
                     }
                 } else {
                     ReqParamOperate compose = JsonUtil.convert(condition, ReqParamOperate.class);
                     if (compose != null) {
-                        compose.allScheme(currentScheme, set);
+                        compose.allSchema(currentSchema, set);
                     }
                 }
             }

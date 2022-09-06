@@ -2,7 +2,7 @@ package com.github.global.query.util;
 
 import com.github.common.util.U;
 import com.github.global.query.annotation.ColumnInfo;
-import com.github.global.query.annotation.SchemeInfo;
+import com.github.global.query.annotation.SchemaInfo;
 import com.github.global.query.constant.QueryConst;
 import com.github.global.query.model.*;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ public class QueryUtil {
     private static final MetadataReaderFactory READER = new CachingMetadataReaderFactory(RESOLVER);
 
 
-    public static TableColumnInfo scanScheme(String classPackages) {
+    public static SchemaColumnInfo scanSchema(String classPackages) {
         return handleTable(scanPackage(classPackages));
     }
     private static Set<Class<?>> scanPackage(String classPackages) {
@@ -56,33 +56,33 @@ public class QueryUtil {
         }
         return set;
     }
-    private static TableColumnInfo handleTable(Set<Class<?>> classes) {
+    private static SchemaColumnInfo handleTable(Set<Class<?>> classes) {
         Map<String, String> aliasMap = new HashMap<>();
-        Map<String, Scheme> schemeMap = new LinkedHashMap<>();
-        Map<String, TableColumnRelation> relationMap = new HashMap<>();
+        Map<String, Schema> schemaMap = new LinkedHashMap<>();
+        Map<String, SchemaColumnRelation> relationMap = new HashMap<>();
 
         Map<String, ColumnInfo> columnInfoMap = new LinkedHashMap<>();
         for (Class<?> clazz : classes) {
-            SchemeInfo schemeInfo = clazz.getAnnotation(SchemeInfo.class);
-            String schemeName, schemeDesc, schemeAlias;
-            if (schemeInfo != null) {
-                if (schemeInfo.ignore()) {
+            SchemaInfo schemaInfo = clazz.getAnnotation(SchemaInfo.class);
+            String schemaName, schemaDesc, schemaAlias;
+            if (schemaInfo != null) {
+                if (schemaInfo.ignore()) {
                     continue;
                 }
 
-                schemeName = schemeInfo.value();
-                schemeDesc = schemeInfo.desc();
-                schemeAlias = schemeInfo.alias();
+                schemaName = schemaInfo.value();
+                schemaDesc = schemaInfo.desc();
+                schemaAlias = schemaInfo.alias();
             } else {
-                schemeDesc = "";
-                schemeAlias = clazz.getSimpleName();
-                schemeName = convertTableName(schemeAlias);
+                schemaDesc = "";
+                schemaAlias = clazz.getSimpleName();
+                schemaName = convertTableName(schemaAlias);
             }
-            if (schemeMap.containsKey(schemeAlias)) {
-                throw new RuntimeException("scheme(" + schemeName + ") has renamed");
+            if (schemaMap.containsKey(schemaAlias)) {
+                throw new RuntimeException("schema(" + schemaName + ") has renamed");
             }
 
-            Map<String, SchemeColumn> columnMap = new LinkedHashMap<>();
+            Map<String, SchemaColumn> columnMap = new LinkedHashMap<>();
             for (Field field : U.getFields(clazz)) {
                 ColumnInfo columnInfo = field.getAnnotation(ColumnInfo.class);
                 String columnName, columnDesc, columnAlias;
@@ -97,7 +97,7 @@ public class QueryUtil {
                     columnAlias = columnInfo.alias();
                     primary = columnInfo.primary();
 
-                    columnInfoMap.put(schemeName + "." + columnName, columnInfo);
+                    columnInfoMap.put(schemaName + "." + columnName, columnInfo);
                 } else {
                     columnDesc = "";
                     columnAlias = field.getName();
@@ -105,46 +105,46 @@ public class QueryUtil {
                     primary = "id".equalsIgnoreCase(field.getName());
                 }
                 if (columnMap.containsKey(columnAlias)) {
-                    throw new RuntimeException("scheme(" + schemeName + ") has same column(" + columnAlias + ")");
+                    throw new RuntimeException("schema(" + schemaName + ") has same column(" + columnAlias + ")");
                 }
 
-                SchemeColumn column = new SchemeColumn(columnName, columnDesc, columnAlias, primary, field.getType());
+                SchemaColumn column = new SchemaColumn(columnName, columnDesc, columnAlias, primary, field.getType());
                 aliasMap.put(QueryConst.COLUMN_PREFIX + columnName, columnAlias);
                 columnMap.put(columnAlias, column);
             }
-            aliasMap.put(QueryConst.SCHEME_PREFIX + schemeName, schemeAlias);
-            schemeMap.put(schemeAlias, new Scheme(schemeName, schemeDesc, schemeAlias, columnMap));
+            aliasMap.put(QueryConst.SCHEMA_PREFIX + schemaName, schemaAlias);
+            schemaMap.put(schemaAlias, new Schema(schemaName, schemaDesc, schemaAlias, columnMap));
         }
 
         for (Map.Entry<String, ColumnInfo> entry : columnInfoMap.entrySet()) {
             ColumnInfo columnInfo = entry.getValue();
-            SchemeRelationType relationType = columnInfo.relationType();
-            if (relationType != SchemeRelationType.NULL) {
-                String relationScheme = columnInfo.relationScheme();
+            SchemaRelationType relationType = columnInfo.relationType();
+            if (relationType != SchemaRelationType.NULL) {
+                String relationSchema = columnInfo.relationSchema();
                 String relationColumn = columnInfo.relationColumn();
-                if (!relationScheme.isEmpty() && !relationColumn.isEmpty()) {
-                    String schemeAndColumn = entry.getKey();
-                    String realSchemeName = aliasMap.get(QueryConst.SCHEME_PREFIX + relationScheme);
-                    Scheme scheme = (realSchemeName == null || realSchemeName.isEmpty())
-                            ? schemeMap.get(relationScheme) : schemeMap.get(realSchemeName);
-                    if (scheme == null) {
-                        throw new RuntimeException(schemeAndColumn + "'s relation no scheme(" + relationScheme + ")");
+                if (!relationSchema.isEmpty() && !relationColumn.isEmpty()) {
+                    String schemaAndColumn = entry.getKey();
+                    String realSchemaName = aliasMap.get(QueryConst.SCHEMA_PREFIX + relationSchema);
+                    Schema schema = (realSchemaName == null || realSchemaName.isEmpty())
+                            ? schemaMap.get(relationSchema) : schemaMap.get(realSchemaName);
+                    if (schema == null) {
+                        throw new RuntimeException(schemaAndColumn + "'s relation no schema(" + relationSchema + ")");
                     }
 
-                    Map<String, SchemeColumn> columnMap = scheme.getColumnMap();
+                    Map<String, SchemaColumn> columnMap = schema.getColumnMap();
                     String realColumnName = aliasMap.get(QueryConst.COLUMN_PREFIX + relationColumn);
                     boolean exists = (realColumnName == null || realColumnName.isEmpty())
                             ? columnMap.containsKey(relationColumn) : columnMap.containsKey(realColumnName);
                     if (!exists) {
-                        throw new RuntimeException(schemeAndColumn + "'s relation no scheme-column("
-                                + relationScheme + "." + relationColumn + ")");
+                        throw new RuntimeException(schemaAndColumn + "'s relation no schema-column("
+                                + relationSchema + "." + relationColumn + ")");
                     }
-                    relationMap.put(schemeAndColumn, new TableColumnRelation(relationType, relationScheme));
+                    relationMap.put(schemaAndColumn, new SchemaColumnRelation(relationType, relationSchema));
                 }
             }
         }
 
-        return new TableColumnInfo(aliasMap, schemeMap, relationMap);
+        return new SchemaColumnInfo(aliasMap, schemaMap, relationMap);
     }
     private static String convertTableName(String className) {
         StringBuilder sbd = new StringBuilder();
@@ -188,55 +188,55 @@ public class QueryUtil {
         return false;
     }
 
-    public static String getSchemeName(String column, String mainScheme) {
-        return column.contains(".") ? column.split("\\.")[0].trim() : mainScheme;
+    public static String getSchemaName(String column, String mainSchema) {
+        return column.contains(".") ? column.split("\\.")[0].trim() : mainSchema;
     }
 
     public static String getColumnName(String column) {
         return column.contains(".") ? column.split("\\.")[1].trim() : column.trim();
     }
 
-    public static SchemeColumn checkColumnName(String column, String mainScheme,
-                                               TableColumnInfo columnInfo, String type) {
-        String schemeName = getSchemeName(column, mainScheme);
+    public static SchemaColumn checkColumnName(String column, String mainSchema,
+                                               SchemaColumnInfo columnInfo, String type) {
+        String schemaName = getSchemaName(column, mainSchema);
         String columnName = getColumnName(column);
-        return checkSchemeAndColumnName(schemeName, columnName, columnInfo, type);
+        return checkSchemaAndColumnName(schemaName, columnName, columnInfo, type);
     }
 
-    public static SchemeColumn checkSchemeAndColumnName(String schemeName, String columnName,
-                                                        TableColumnInfo columnInfo, String type) {
+    public static SchemaColumn checkSchemaAndColumnName(String schemaName, String columnName,
+                                                        SchemaColumnInfo columnInfo, String type) {
         Map<String, String> aliasMap = columnInfo.getAliasMap();
-        Scheme scheme = queryScheme(type, schemeName, aliasMap, columnInfo.getSchemeMap());
-        return queryColumn(type, schemeName, columnName, aliasMap, scheme.getColumnMap());
+        Schema schema = querySchema(type, schemaName, aliasMap, columnInfo.getSchemaMap());
+        return queryColumn(type, schemaName, columnName, aliasMap, schema.getColumnMap());
     }
 
-    public static Scheme queryScheme(String type, String schemeName, Map<String, String> aliasMap,
-                                     Map<String, Scheme> schemeMap) {
-        if (schemeName == null || schemeName.isEmpty()) {
-            throw new RuntimeException("scheme can't be blank with: " + type);
+    public static Schema querySchema(String type, String schemaName, Map<String, String> aliasMap,
+                                     Map<String, Schema> schemaMap) {
+        if (schemaName == null || schemaName.isEmpty()) {
+            throw new RuntimeException("schema can't be blank with: " + type);
         }
 
-        String realSchemeName = aliasMap.get(QueryConst.SCHEME_PREFIX + schemeName);
-        Scheme scheme = (realSchemeName == null || realSchemeName.isEmpty())
-                ? schemeMap.get(schemeName) : schemeMap.get(realSchemeName);
-        if (scheme == null) {
-            throw new RuntimeException("no scheme(" + schemeName + ") defined with: " + type);
+        String realSchemaName = aliasMap.get(QueryConst.SCHEMA_PREFIX + schemaName);
+        Schema schema = (realSchemaName == null || realSchemaName.isEmpty())
+                ? schemaMap.get(schemaName) : schemaMap.get(realSchemaName);
+        if (schema == null) {
+            throw new RuntimeException("no schema(" + schemaName + ") defined with: " + type);
         }
-        return scheme;
+        return schema;
     }
 
-    public static SchemeColumn queryColumn(String type, String schemeName, String columnName,
-                                           Map<String, String> aliasMap, Map<String, SchemeColumn> columnMap) {
+    public static SchemaColumn queryColumn(String type, String schemaName, String columnName,
+                                           Map<String, String> aliasMap, Map<String, SchemaColumn> columnMap) {
         if (columnName.isEmpty()) {
-            throw new RuntimeException("scheme(" + columnName + ") column cant' be blank with: " + type);
+            throw new RuntimeException("schema(" + columnName + ") column cant' be blank with: " + type);
         }
 
         String realColumnName = aliasMap.get(QueryConst.COLUMN_PREFIX + columnName);
-        SchemeColumn schemeColumn = (realColumnName == null || realColumnName.isEmpty())
+        SchemaColumn schemaColumn = (realColumnName == null || realColumnName.isEmpty())
                 ? columnMap.get(columnName) : columnMap.get(realColumnName);
-        if (schemeColumn == null) {
-            throw new RuntimeException("scheme(" + schemeName + ") no column(" + columnName + ") defined with: " + type);
+        if (schemaColumn == null) {
+            throw new RuntimeException("schema(" + schemaName + ") no column(" + columnName + ") defined with: " + type);
         }
-        return schemeColumn;
+        return schemaColumn;
     }
 }

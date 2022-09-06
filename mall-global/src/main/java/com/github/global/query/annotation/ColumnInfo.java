@@ -1,6 +1,6 @@
 package com.github.global.query.annotation;
 
-import com.github.global.query.model.SchemeRelationType;
+import com.github.global.query.model.SchemaRelationType;
 
 import java.lang.annotation.*;
 
@@ -25,12 +25,12 @@ public @interface ColumnInfo {
     /** true 表示是主键字段 */
     boolean primary() default false;
 
-    /** 关联类型, 设置了 relationScheme 和 relationColumn 才有效, 只在「从表」对应的类上标, 主表上无需标注 */
-    SchemeRelationType relationType() default SchemeRelationType.NULL;
+    /** 关联类型, 设置了 relationSchema 和 relationColumn 才有效, 只在「从表」对应的类上标, 主表上无需标注 */
+    SchemaRelationType relationType() default SchemaRelationType.NULL;
 
     /** 设置了 relationType 非 NULL 时有效, 关联表的列名, 配合 relationType 一起使用, 只在「从表」对应的类上标, 主表上无需标注 */
-    String relationScheme() default "";
+    String relationSchema() default "";
 
-    /** 设置了 relationType 非 NULL 时有效, 关联表的列名, 配合 relationScheme 一起使用, 只在「从表」对应的类上标, 主表上无需标注 */
+    /** 设置了 relationType 非 NULL 时有效, 关联表的列名, 配合 relationSchema 一起使用, 只在「从表」对应的类上标, 主表上无需标注 */
     String relationColumn() default "";
 }

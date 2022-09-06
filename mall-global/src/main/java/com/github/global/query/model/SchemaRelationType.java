@@ -1,6 +1,6 @@
 package com.github.global.query.model;
 
-public enum SchemeRelationType {
+public enum SchemaRelationType {
 
     NULL,
 
