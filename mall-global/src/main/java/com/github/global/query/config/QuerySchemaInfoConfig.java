@@ -1,18 +1,32 @@
-package com.github.global.query.util;
+package com.github.global.query.config;
 
 import com.github.common.collection.MapMultiUtil;
 import com.github.common.collection.MapMultiValue;
 import com.github.global.query.constant.QueryConst;
-import com.github.global.query.model.Schema;
-import com.github.global.query.model.SchemaColumn;
-import com.github.global.query.model.SchemaColumnInfo;
+import com.github.global.query.model.*;
+import com.github.global.query.util.QueryUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-public class QueryDbUtil {
+@Component
+public class QuerySchemaInfoConfig {
 
-    public static SchemaColumnInfo scanSchema(JdbcTemplate jdbcTemplate) {
+    @Value("${query.scan-packages:}")
+    private String scanPackages;
+
+    private final JdbcTemplate jdbcTemplate;
+    private final SchemaColumnInfo schemaColumnInfo;
+
+    public QuerySchemaInfoConfig(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+
+        SchemaColumnInfo info = QueryUtil.scanSchema(scanPackages);
+        schemaColumnInfo = info.getSchemaMap().isEmpty() ? initWithDb() : info;
+    }
+    private SchemaColumnInfo initWithDb() {
         Map<String, String> aliasMap = new HashMap<>();
         Map<String, Schema> schemaMap = new LinkedHashMap<>();
 
@@ -32,12 +46,12 @@ public class QueryDbUtil {
 
             List<Map<String, Object>> columnList = schemaColumnMap.get(schemaName);
             for (Map<String, Object> columnInfo : columnList) {
+                Class<?> clazz = mappingClass(QueryUtil.toStr(columnInfo.get("ct")));
                 String columnName = QueryUtil.toStr(columnInfo.get("cn"));
-                String columnType = QueryUtil.toStr(columnInfo.get("ct"));
                 String columnDesc = QueryUtil.toStr(columnInfo.get("cc"));
                 boolean primary = "PRI".equalsIgnoreCase(QueryUtil.toStr(columnInfo.get("cc")));
 
-                SchemaColumn column = new SchemaColumn(columnName, columnDesc, columnName, primary, mappingClass(columnType));
+                SchemaColumn column = new SchemaColumn(columnName, columnDesc, columnName, primary, clazz);
                 aliasMap.put(QueryConst.COLUMN_PREFIX + columnName, columnName);
                 columnMap.put(columnName, column);
             }
@@ -46,14 +60,33 @@ public class QueryDbUtil {
         }
         return new SchemaColumnInfo(aliasMap, schemaMap, Collections.emptyMap());
     }
-
-    private static Class<?> mappingClass(String dbType) {
-        String type = dbType.contains("(") ? dbType.substring(0, dbType.indexOf("(")) : dbType;
+    private Class<?> mappingClass(String dbType) {
+        String type = (dbType.contains("(") ? dbType.substring(0, dbType.indexOf("(")) : dbType).toLowerCase();
         for (Map.Entry<String, Class<?>> entry : QueryConst.DB_TYPE_MAP.entrySet()) {
-            if (dbType.contains(entry.getKey())) {
+            if (type.contains(entry.getKey().toLowerCase())) {
                 return entry.getValue();
             }
         }
         throw new RuntimeException("unknown db type" + dbType);
+    }
+
+
+    public List<QueryInfo> queryInfo() {
+        List<QueryInfo> queryList = new ArrayList<>();
+        for (Schema schema : schemaColumnInfo.getSchemaMap().values()) {
+            List<QueryInfo.QueryColumn> columnList = new ArrayList<>();
+            for (SchemaColumn column : schema.getColumnMap().values()) {
+                String type = column.getColumnType().getSimpleName();
+                columnList.add(new QueryInfo.QueryColumn(column.getAlias(), column.getDesc(), type));
+            }
+            queryList.add(new QueryInfo(schema.getAlias(), schema.getDesc(), columnList));
+        }
+        return queryList;
+    }
+
+    public Object query(RequestInfo req) {
+        req.check(schemaColumnInfo);
+        // todo
+        return null;
     }
 }

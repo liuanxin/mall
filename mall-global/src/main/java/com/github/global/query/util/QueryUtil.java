@@ -139,7 +139,7 @@ public class QueryUtil {
                         throw new RuntimeException(schemaAndColumn + "'s relation no schema-column("
                                 + relationSchema + "." + relationColumn + ")");
                     }
-                    relationMap.put(schemaAndColumn, new SchemaColumnRelation(relationType, relationSchema));
+                    relationMap.put(schemaAndColumn, new SchemaColumnRelation(relationType, relationSchema, relationColumn));
                 }
             }
         }

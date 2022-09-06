@@ -12,126 +12,126 @@ import java.util.*;
 /**
  * <pre>
  * global:
- *   is null     (inu)
- *   is not null (inn)
- *   =           (eq)
- *   <>          (ne)
+ *   is null     ($inu)
+ *   is not null ($inn)
+ *   =           ($eq)
+ *   <>          ($ne)
  *
  * list:
- *   in     (批量)
- *   not in (ni)
+ *   in     ($in 批量)
+ *   not in ($ni)
  *
  * number/date:
- *   >  (gt)
- *   >= (ge)
- *   <  (lt)
- *   <= (le)
- *   between (bet)
+ *   >  ($gt)
+ *   >= ($ge)
+ *   <  ($lt)
+ *   <= ($le)
+ *   between ($bet)
  *
  * string:
- *   like     (开头、结尾、包含), 只有「开头」会走索引(LIKE 'x%'), 结尾是 LIKE '%xx', 包含是 LIKE '%xxx%'
- *   not like (nl)
+ *   like     ($rl 开头、$ll 结尾、$lk 包含), 只有「开头」会走索引(LIKE 'x%'), 结尾是 LIKE '%xx', 包含是 LIKE '%xxx%'
+ *   not like ($nl)
  *
  *
- * string 类型: 只 等于(eq)、不等于(ne)、批量(in)、包含(like)、开头(ll)、结尾(rl)、不包含(nl) 条件
- * number 类型: 只 等于(eq)、大于(gt)、大于等于(ge)、小于(lt)、小于等于(le)、区间(bet) 条件
- * date 类型: 只 大于(gt)、大于等于(ge)、小于(lt)、小于等于(le)、区间(bet) 条件
- * 非 string/number/date 类型: 只 等于(eq)、不等于(ne) 条件
+ * string 类型: 只 等于($eq)、不等于($ne)、批量($in)、包含($lk)、开头($rl)、结尾($ll)、不包含($nl) 条件
+ * number 类型: 只 等于($eq)、大于($gt)、大于等于($ge)、小于($lt)、小于等于($le)、区间($bet) 条件
+ * date 类型: 只 大于($gt)、大于等于($ge)、小于($lt)、小于等于($le)、区间($bet) 条件
+ * 非 string/number/date 类型: 只 等于($eq)、不等于($ne) 条件
  * </pre>
  */
 @Getter
 @RequiredArgsConstructor
 public enum ReqParamConditionType {
 
-    IS_NULL("inu", "为空") {
+    IS_NULL("$inu", "为空") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return String.format(" %s IS NULL", column);
         }
     },
-    IS_NOT_NULL("inn", "不为空") {
+    IS_NOT_NULL("$inn", "不为空") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return String.format(" %s IS NOT NULL", column);
         }
     },
 
-    EQ("eq", "等于") {
+    EQ("$eq", "等于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateCondition(column, value, params, "=");
         }
     },
-    NOT_EQ("ne", "不等于") {
+    NOT_EQ("$ne", "不等于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateCondition(column, value, params, "<>");
         }
     },
 
-    IN("in", "批量") {
+    IN("$in", "批量") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateMulti(column, value, params, "IN");
         }
     },
-    NOT_IN("ni", "不在") {
+    NOT_IN("$ni", "不在") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateMulti(column, value, params, "NOT IN");
         }
     },
 
-    BETWEEN("bet", "区间") {
+    BETWEEN("$bet", "区间") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateMulti(column, value, params, "BETWEEN");
         }
     },
-    GT("gt", "大于") {
+    GT("$gt", "大于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateCondition(column, value, params, ">");
         }
     },
-    GE("gt", "大于等于") {
+    GE("$gt", "大于等于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateCondition(column, value, params, ">=");
         }
     },
-    LT("lt", "小于") {
+    LT("$lt", "小于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateCondition(column, value, params, "<");
         }
     },
-    LE("le", "小于等于") {
+    LE("$le", "小于等于") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateCondition(column, value, params, "<=");
         }
     },
 
-    LIKE("like", "包含") {
+    LIKE("$lk", "包含") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateCondition(column, ("%" + value + "%"), params, "LIKE");
         }
     },
-    LIKE_START("rl", "开头") {
+    LIKE_START("$rl", "开头") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateCondition(column, (value + "%"), params, "LIKE");
         }
     },
-    LIKE_END("ll", "结尾") {
+    LIKE_END("$ll", "结尾") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateCondition(column, ("%" + value), params, "LIKE");
         }
     },
-    NOT_LIKE("nl", "不包含") {
+    NOT_LIKE("$nl", "不包含") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
             return generateCondition(column, ("%" + value + "%"), params, "NOT LIKE");

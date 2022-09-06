@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class SchemaColumnRelation {
 
     private SchemaRelationType type;
-    private String tableColumn;
+    private String schema;
+    private String SchemaColumn;
 }
