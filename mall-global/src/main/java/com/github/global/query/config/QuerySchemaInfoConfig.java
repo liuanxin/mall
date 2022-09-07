@@ -2,6 +2,7 @@ package com.github.global.query.config;
 
 import com.github.common.collection.MapMultiUtil;
 import com.github.common.collection.MapMultiValue;
+import com.github.common.page.PageReturn;
 import com.github.global.query.constant.QueryConst;
 import com.github.global.query.model.*;
 import com.github.global.query.util.QueryUtil;
@@ -136,6 +137,16 @@ public class QuerySchemaInfoConfig {
         req.check(schemaColumnInfo);
 
         // todo
+        ReqParam param = req.getParam();
+        if (param.needQueryPage()) {
+            if (param.needQueryCount()) {
+                long count = queryCount();
+                List<?> pageList = param.needQueryCurrentPage(count) ? queryPageList() : Collections.emptyList();
+                return new PageReturn<>(count, pageList);
+            } else {
+                return queryPageList();
+            }
+        }
         List<Object> params = new ArrayList<>();
         String mainSql = generateMainSql(req, params);
         List<Map<String, Object>> maps = jdbcTemplate.queryForList(mainSql, params);
@@ -144,9 +155,18 @@ public class QuerySchemaInfoConfig {
     }
     private String generateMainSql(RequestInfo req, List<Object> params) {
         String mainSchema = req.getSchema();
-        Set<String> paramSchema = req.getParam().allParamSchema(mainSchema);
+        Set<String> paramSchema = req.getParam().allParamSchema(mainSchema, schemaColumnInfo);
         Set<String> resultSchema = req.getResult().allResultSchema(mainSchema);
         // todo check schema relation
         return null;
+    }
+    private long queryCount() {
+        String countSql = "SELECT COUNT(*) FROM t_xx";
+        return QueryUtil.toLong(jdbcTemplate.queryForObject(countSql, Long.class), 0);
+    }
+    private List<?> queryPageList() {
+        String listSql = "SELECT * FROM t_xx";
+        List<Object> params = new ArrayList<>();
+        return jdbcTemplate.queryForList(listSql, params.toArray());
     }
 }

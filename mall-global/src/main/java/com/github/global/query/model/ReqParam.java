@@ -1,5 +1,6 @@
 package com.github.global.query.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.global.query.constant.QueryConst;
 import com.github.global.query.util.QueryUtil;
 import lombok.Data;
@@ -11,8 +12,9 @@ import java.util.*;
  * <pre>
  * {
  *   "query": ...
- *   "sort": { "createTime": "desc", "id", "asc" },
- *   "page": [ 1, 20 ]
+ *   "sort": { "create_time": "desc", "id", "asc" },
+ *   "page": [ 1, 20 ],
+ *   "not_count": true
  * }
  * </pre>
  */
@@ -28,6 +30,10 @@ public class ReqParam {
 
     /** 分页信息 */
     private List<Integer> page;
+
+    /** 当上面的分页数据有值, 当前值是 true 时表示不发起 count 查询总条数, 当移动端时无需 */
+    @JsonProperty("not_count")
+    private Boolean notCount;
 
 
     public void checkParam(String mainSchema, SchemaColumnInfo columnInfo) {
@@ -50,12 +56,18 @@ public class ReqParam {
         }
     }
 
-    public Set<String> allParamSchema(String mainSchema) {
+    public Set<String> allParamSchema(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
         Set<String> set = new LinkedHashSet<>();
         query.allSchema(mainSchema, set);
         if (sort != null && !sort.isEmpty()) {
             for (String column : sort.keySet()) {
                 set.add(QueryUtil.getSchemaName(column, mainSchema));
+            }
+        }
+        if (set.size() > 1) {
+            Map<String, String> aliasMap = schemaColumnInfo.getAliasMap();
+            for (String schema : set) {
+
             }
         }
         return set;
@@ -78,6 +90,9 @@ public class ReqParam {
     public boolean needQueryPage() {
         return page != null && !page.isEmpty();
     }
+    public boolean needQueryCount() {
+        return notCount != null && notCount;
+    }
     public String generatePageSql(List<Object> params) {
         if (needQueryPage()) {
             int index = page.get(0);
@@ -99,12 +114,9 @@ public class ReqParam {
         return QueryConst.LIMIT_SET.contains(limitParam) ? limitParam : QueryConst.MIN_LIMIT;
     }
     public boolean needQueryCurrentPage(long count) {
-        if (needQueryPage()) {
-            int index = page.get(0);
-            int limit = calcLimit();
-            // 比如总条数有 100 条, index 是 11, limit 是 10, 这时候是没必要发起 limit 查询的, 只有 index 在 1 ~ 10 才需要
-            return ((long) index * limit) <= count;
-        }
-        return false;
+        int index = page.get(0);
+        int limit = calcLimit();
+        // 比如总条数有 100 条, index 是 11, limit 是 10, 这时候是没必要发起 limit 查询的, 只有 index 在 1 ~ 10 才需要
+        return ((long) index * limit) <= count;
     }
 }

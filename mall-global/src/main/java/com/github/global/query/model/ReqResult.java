@@ -16,12 +16,14 @@ import java.util.*;
  * SELECT id, address, phone FROM t_order_address ...
  * SELECT id, name, price FROM t_order_item ...
  * {
- *   -- "schema": "order",   -- 忽略将从 requestInfo 中获取
+ *   -- "schema": "order", -- 不设置则从 requestInfo 中获取
+ *   "type": "obj",        -- 对象(obj) 和 数组(arr) 两种, 不设置则默认是数组
  *   "columns": [
  *     "id",
  *     "orderNo",
  *     {
  *       "address": {
+ *         "type": "obj",
  *         "schema": "orderAddress",
  *         "columns": [ "id", "address", "phone" ]
  *       },
@@ -36,7 +38,7 @@ import java.util.*;
  *
  * SELECT
  *   name,
- *   COUNT(*) AS `cnt_*`,
+ *   COUNT(*) AS cnt,
  *   COUNT(name) AS cnt_name,
  *   SUM(price) AS sum_price,
  *   MIN(id) AS min_id,
@@ -48,13 +50,13 @@ import java.util.*;
  * {
  *   "columns": [
  *     "name",
- *     [ "count", "*" ],     -- 别名 「CNT_*」
- *     [ "count", "name" ],  -- 别名 「CNT_name」
- *     [ "sum", "price" ],   -- 别名 「sum_price」
- *     [ "min", "id" ],      -- 别名 「min_id」
- *     [ "max", "id" ],      -- 别名 「max_id」
- *     [ "avg", "price" ],   -- 别名 「avg_price」
- *     [ "gct", "name" ],    -- 别名 「gct_name」
+ *     [ "count", "*", "total" ],    -- 第三个参数表示接口响应回去时的属性
+ *     [ "count", "name", "xx" ],
+ *     [ "sum", "price", "xxx" ],
+ *     [ "min", "id", "minId" ],
+ *     [ "max", "id", "maxId" ],
+ *     [ "avg", "price", "avgPrice" ],
+ *     [ "gct", "name", "groupName" ]
  *   ]
  * }
  * </pre>
@@ -64,7 +66,10 @@ import java.util.*;
 @AllArgsConstructor
 public class ReqResult {
 
+    /** 结构 */
     private String schema;
+    /** 结构类型, 对象(obj)还是数组(arr) */
+    private ReqResultType type;
     /** 结构里的列 */
     private List<Object> columns;
 
@@ -97,12 +102,11 @@ public class ReqResult {
                     } else if (obj instanceof List<?> groups) {
                         if (!groups.isEmpty()) {
                             int size = groups.size();
-                            if (size < 2) {
+                            if (size < 3) {
                                 throw new RuntimeException("res function(" + groups + ") error");
                             }
                             ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
                             String column = QueryUtil.toStr(groups.get(1));
-
                             String checkType = "result function(" + group.name().toLowerCase() + ")";
                             if (group == ReqResultGroup.COUNT) {
                                 if (!Set.of("*", "1", "0").contains(column)) {

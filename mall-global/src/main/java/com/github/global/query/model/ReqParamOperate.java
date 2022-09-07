@@ -15,8 +15,8 @@ import java.util.Set;
  * name like 'abc%'   and gender = 1   and age between 18 and 40
  * and province in ( 'x', 'y', 'z' )   and city like '%xx%'   and time >= now()
  * {
- *   -- "schema": "order",   -- 忽略将从 requestInfo 中获取
- *   -- "operate": "and",    -- 如果是 and 可以省略
+ *   -- "schema": "order",   -- 不设置则从 requestInfo 中获取
+ *   -- "operate": "and",    -- 并且(and) 和 或者(or) 两种, 不设置则默认是 并且
  *   "conditions": [
  *     [ "name", "rl", "abc" ],
  *     [ "gender", -- "eq", --  1 ],  -- eq 可以省略

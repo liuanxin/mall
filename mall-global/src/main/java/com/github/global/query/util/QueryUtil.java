@@ -229,6 +229,20 @@ public class QueryUtil {
         return obj == null ? "" : obj.toString().trim();
     }
 
+    public static long toLong(Object obj, long defaultLong) {
+        if (obj == null) {
+            return defaultLong;
+        }
+        if (obj instanceof Number n) {
+            return n.longValue();
+        }
+        try {
+            return Long.parseLong(obj.toString().trim());
+        } catch (NumberFormatException e) {
+            return defaultLong;
+        }
+    }
+
     public static String defaultIfBlank(String str1, String defaultStr) {
         return (str1 == null || str1.isEmpty()) ? defaultStr : str1;
     }

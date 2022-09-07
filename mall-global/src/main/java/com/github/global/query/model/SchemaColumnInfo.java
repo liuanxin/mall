@@ -17,6 +17,12 @@ public class SchemaColumnInfo {
     private Map<String, Schema> schemaMap;
     private Map<String, SchemaColumnRelation> relationMap;
 
+    public Schema findSchema(String schemaName) {
+        String schemaAlias = aliasMap.get(QueryConst.SCHEMA_PREFIX + schemaName);
+        Schema schema = schemaMap.get(schemaAlias);
+        return schema == null ? schemaMap.get(schemaName) : schema;
+    }
+
     public SchemaColumnRelation findRelation(String schemaAndColumn) {
         if (relationMap.isEmpty() || schemaAndColumn == null || !schemaAndColumn.contains(".")) {
             return null;

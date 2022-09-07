@@ -13,12 +13,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public enum ReqResultGroup {
 
-    COUNT("COUNT(%s) AS `cnt_%s`", "总条数"),
-    SUM("SUM(%s) AS sum_%s", "总和"),
-    MIN("MIN(%s) AS min_%s", "最小"),
-    MAX("MAX(%s) AS max_%s", "最大"),
-    AVG("AVG(%s) AS avg_%s", "平均"),
-    GCT("GROUP_CONCAT(%s) AS gct_%s", "组拼接");
+    COUNT("COUNT(%s) AS `cnt%s`", "总条数"),
+    SUM("SUM(%s) AS sum%s", "总和"),
+    MIN("MIN(%s) AS min%s", "最小"),
+    MAX("MAX(%s) AS max%s", "最大"),
+    AVG("AVG(%s) AS avg%s", "平均"),
+    GCT("GROUP_CONCAT(%s) AS gct%s", "组拼接");
 
 
     @JsonValue
@@ -52,6 +52,6 @@ public enum ReqResultGroup {
             return "";
         }
 
-        return String.format(value, MysqlKeyWordUtil.toSql(column), column);
+        return String.format(value, MysqlKeyWordUtil.toSql(column), ("*".equals(column) ? "" : ("_" + column)));
     }
 }
