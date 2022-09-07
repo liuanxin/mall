@@ -31,7 +31,7 @@ public class ReqParam {
     /** 分页信息 */
     private List<Integer> page;
 
-    /** 当上面的分页数据有值, 当前值是 true 时表示不发起 count 查询总条数, 当移动端时无需 */
+    /** 当上面的分页数据有值, 当前值是 true 时表示不发起 count 查询总条数, 在移动端瀑布流时是无需查询总条数的 */
     @JsonProperty("not_count")
     private Boolean notCount;
 
@@ -88,20 +88,17 @@ public class ReqParam {
         return notCount != null && notCount;
     }
     public String generatePageSql(List<Object> params) {
-        if (needQueryPage()) {
-            int index = page.get(0);
-            int limit = calcLimit();
+        int index = page.get(0);
+        int limit = calcLimit();
 
-            if (index == 1) {
-                params.add(limit);
-                return " LIMIT ?";
-            } else {
-                params.add((index - 1) * limit);
-                params.add(limit);
-                return " LIMIT ?, ?";
-            }
+        if (index == 1) {
+            params.add(limit);
+            return " LIMIT ?";
+        } else {
+            params.add((index - 1) * limit);
+            params.add(limit);
+            return " LIMIT ?, ?";
         }
-        return "";
     }
     private int calcLimit() {
         Integer limitParam = page.size() > 1 ? page.get(1) : 0;

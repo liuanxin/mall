@@ -138,6 +138,9 @@ public class QuerySchemaInfoConfig {
         ReqParam param = req.getParam();
         if (param.needQueryPage()) {
             if (param.needQueryCount()) {
+                // 移动端瀑布流
+                return queryPageList();
+            } else {
                 long count = queryCount();
                 List<?> pageList;
                 if (count > 0 && param.needQueryCurrentPage(count)) {
@@ -149,8 +152,6 @@ public class QuerySchemaInfoConfig {
                 pageInfo.put("total", count);
                 pageInfo.put("list", pageList);
                 return pageInfo;
-            } else {
-                return queryPageList();
             }
         }
 
@@ -158,17 +159,11 @@ public class QuerySchemaInfoConfig {
         if (result.getType() == ReqResultType.OBJ) {
         } else {
         }
-        List<Object> params = new ArrayList<>();
-        String mainSql = generateMainSql(req, params);
-        List<Map<String, Object>> maps = jdbcTemplate.queryForList(mainSql, params);
 
         return null;
     }
-    private String generateMainSql(RequestInfo req, List<Object> params) {
-        // todo check schema relation
-        return null;
-    }
     private long queryCount() {
+        // todo
         String countSql = "SELECT COUNT(*) FROM t_xx";
         return QueryUtil.toLong(jdbcTemplate.queryForObject(countSql, Long.class), 0);
     }
