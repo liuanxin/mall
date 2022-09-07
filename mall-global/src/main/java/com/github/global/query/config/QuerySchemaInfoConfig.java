@@ -136,31 +136,27 @@ public class QuerySchemaInfoConfig {
         req.check(schemaColumnInfo);
 
         ReqParam param = req.getParam();
-        if (param.needQueryPage()) {
-            if (param.needQueryCount()) {
-                // 移动端瀑布流
-                return queryPageList();
+        // 非移动端瀑布流才需要请求 COUNT(*)
+        if (param.needQueryCount()) {
+            long count = queryCount();
+            List<?> pageList;
+            if (count > 0 && param.needQueryCurrentPage(count)) {
+                pageList = queryPageList();
             } else {
-                long count = queryCount();
-                List<?> pageList;
-                if (count > 0 && param.needQueryCurrentPage(count)) {
-                    pageList = queryPageList();
-                } else {
-                    pageList = Collections.emptyList();
-                }
-                Map<String, Object> pageInfo = new LinkedHashMap<>();
-                pageInfo.put("total", count);
-                pageInfo.put("list", pageList);
-                return pageInfo;
+                pageList = Collections.emptyList();
             }
+            Map<String, Object> pageInfo = new LinkedHashMap<>();
+            pageInfo.put("total", count);
+            pageInfo.put("list", pageList);
+            return pageInfo;
         }
 
         ReqResult result = req.getResult();
         if (result.getType() == ReqResultType.OBJ) {
+            return queryPageList().get(0);
         } else {
+            return queryPageList();
         }
-
-        return null;
     }
     private long queryCount() {
         // todo

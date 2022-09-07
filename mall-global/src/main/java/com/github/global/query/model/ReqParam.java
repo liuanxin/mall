@@ -85,7 +85,7 @@ public class ReqParam {
         return page != null && !page.isEmpty();
     }
     public boolean needQueryCount() {
-        return notCount != null && notCount;
+        return needQueryPage() && (notCount == null || !notCount);
     }
     public String generatePageSql(List<Object> params) {
         int index = page.get(0);
