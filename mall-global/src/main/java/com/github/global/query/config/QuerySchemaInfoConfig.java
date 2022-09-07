@@ -141,6 +141,7 @@ public class QuerySchemaInfoConfig {
         String mainSchema = req.getSchema();
         Set<String> paramSchema = req.getParam().allParamSchema(mainSchema);
         Set<String> resultSchema = req.getResult().allResultSchema(mainSchema);
+        // todo check schema relation
         return null;
     }
 }

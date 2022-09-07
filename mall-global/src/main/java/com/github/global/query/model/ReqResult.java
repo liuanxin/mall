@@ -168,20 +168,20 @@ public class ReqResult {
     }
 
     public String generateSelectSql(String mainSchema, SchemaColumnInfo columnInfo) {
-        if (columns != null && !columns.isEmpty()) {
-            StringJoiner sj = new StringJoiner(", ");
-            for (Object obj : columns) {
-                if (obj instanceof String column) {
-                    if (!column.isEmpty()) {
-                        sj.add(QueryUtil.checkSchemaAndColumnName(mainSchema, column, columnInfo, "result select").getName());
-                    }
-//                } else { // todo
-
-                }
-            }
-            return sj.toString();
+        if (columns == null || columns.isEmpty()) {
+            return "";
         }
-        return "";
+
+        StringJoiner sj = new StringJoiner(", ");
+        for (Object obj : columns) {
+            if (obj instanceof String column) {
+                if (!column.isEmpty()) {
+                    sj.add(QueryUtil.checkSchemaAndColumnName(mainSchema, column, columnInfo, "result select").getName());
+                }
+//                } else { // todo
+            }
+        }
+        return sj.toString();
     }
 
 //    public String generateFunctionSql(String mainSchema, TableColumnInfo columnInfo) {
@@ -216,19 +216,14 @@ public class ReqResult {
 //        return "";
 //    }
 
-    public String generateGroupSql(String functionSql, String mainSchema, SchemaColumnInfo columnInfo) {
-        if (functionSql != null && !functionSql.trim().isEmpty()) {
-            StringJoiner groupSj = new StringJoiner(", ");
-            for (Object obj : columns) {
-                if (obj instanceof String column && !column.isEmpty()) {
-                    groupSj.add(MysqlKeyWordUtil.toSql(column));
-                }
-            }
-            String groupBy = groupSj.toString();
-            if (!groupBy.isEmpty()) {
-                return " GROUP BY " + groupBy;
+    public String generateGroupSql() {
+        StringJoiner groupSj = new StringJoiner(", ");
+        for (Object obj : columns) {
+            if (obj instanceof String column && !column.isEmpty()) {
+                groupSj.add(MysqlKeyWordUtil.toSql(column));
             }
         }
-        return "";
+        String groupBy = groupSj.toString();
+        return groupBy.isEmpty() ? "" : (" GROUP BY " + groupBy);
     }
 }
