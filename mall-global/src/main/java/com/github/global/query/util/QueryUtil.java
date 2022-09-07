@@ -62,6 +62,7 @@ public class QueryUtil {
         Map<String, SchemaColumnRelation> relationMap = new HashMap<>();
 
         Map<String, ColumnInfo> columnInfoMap = new LinkedHashMap<>();
+        Map<String, Class<?>> columnClassMap = new HashMap<>();
         for (Class<?> clazz : classes) {
             SchemaInfo schemaInfo = clazz.getAnnotation(SchemaInfo.class);
             String schemaName, schemaDesc, schemaAlias;
@@ -72,7 +73,7 @@ public class QueryUtil {
 
                 schemaName = schemaInfo.value();
                 schemaDesc = schemaInfo.desc();
-                schemaAlias = schemaInfo.alias();
+                schemaAlias = QueryUtil.defaultIfBlank(schemaInfo.alias(), schemaName);
             } else {
                 schemaDesc = "";
                 schemaAlias = clazz.getSimpleName();
@@ -85,6 +86,7 @@ public class QueryUtil {
             Map<String, SchemaColumn> columnMap = new LinkedHashMap<>();
             for (Field field : U.getFields(clazz)) {
                 ColumnInfo columnInfo = field.getAnnotation(ColumnInfo.class);
+                Class<?> type = field.getType();
                 String columnName, columnDesc, columnAlias;
                 boolean primary;
                 if (columnInfo != null) {
@@ -94,10 +96,12 @@ public class QueryUtil {
 
                     columnName = columnInfo.value();
                     columnDesc = columnInfo.desc();
-                    columnAlias = columnInfo.alias();
+                    columnAlias = QueryUtil.defaultIfBlank(columnInfo.alias(), columnName);
                     primary = columnInfo.primary();
 
-                    columnInfoMap.put(schemaName + "." + columnName, columnInfo);
+                    String schemaAndColumn = schemaAlias + "." + columnAlias;
+                    columnInfoMap.put(schemaAndColumn, columnInfo);
+                    columnClassMap.put(schemaAndColumn, type);
                 } else {
                     columnDesc = "";
                     columnAlias = field.getName();
@@ -109,7 +113,7 @@ public class QueryUtil {
                 }
 
                 aliasMap.put(QueryConst.COLUMN_PREFIX + columnName, columnAlias);
-                columnMap.put(columnAlias, new SchemaColumn(columnName, columnDesc, columnAlias, primary, field.getType()));
+                columnMap.put(columnAlias, new SchemaColumn(columnName, columnDesc, columnAlias, primary, type));
             }
             aliasMap.put(QueryConst.SCHEMA_PREFIX + schemaName, schemaAlias);
             schemaMap.put(schemaAlias, new Schema(schemaName, schemaDesc, schemaAlias, columnMap));
@@ -124,19 +128,23 @@ public class QueryUtil {
                 if (!relationSchema.isEmpty() && !relationColumn.isEmpty()) {
                     String schemaAndColumn = entry.getKey();
                     String realSchemaName = aliasMap.get(QueryConst.SCHEMA_PREFIX + relationSchema);
-                    Schema schema = (realSchemaName == null || realSchemaName.isEmpty())
-                            ? schemaMap.get(relationSchema) : schemaMap.get(realSchemaName);
+                    Schema schema = schemaMap.get(defaultIfBlank(realSchemaName, relationSchema));
                     if (schema == null) {
                         throw new RuntimeException(schemaAndColumn + "'s relation no schema(" + relationSchema + ")");
                     }
 
                     Map<String, SchemaColumn> columnMap = schema.getColumnMap();
                     String realColumnName = aliasMap.get(QueryConst.COLUMN_PREFIX + relationColumn);
-                    boolean exists = (realColumnName == null || realColumnName.isEmpty())
-                            ? columnMap.containsKey(relationColumn) : columnMap.containsKey(realColumnName);
-                    if (!exists) {
+                    SchemaColumn column = columnMap.get(defaultIfBlank(realColumnName, relationColumn));
+                    if (column == null) {
                         throw new RuntimeException(schemaAndColumn + "'s relation no schema-column("
                                 + relationSchema + "." + relationColumn + ")");
+                    }
+                    Class<?> sourceClass = columnClassMap.get(schemaAndColumn);
+                    Class<?> targetClass = column.getColumnType();
+                    if (sourceClass != targetClass) {
+                        throw new RuntimeException(schemaAndColumn + "'s data type has " + sourceClass.getSimpleName()
+                                + ", but relation " + relationSchema + "'s data type has" + targetClass.getSimpleName());
                     }
                     relationMap.put(schemaAndColumn, new SchemaColumnRelation(relationType, relationSchema, relationColumn));
                 }
@@ -215,6 +223,10 @@ public class QueryUtil {
 
     public static String toStr(Object obj) {
         return obj == null ? "" : obj.toString().trim();
+    }
+
+    public static String defaultIfBlank(String str1, String defaultStr) {
+        return (str1 == null || str1.isEmpty()) ? defaultStr : str1;
     }
 
     public static boolean isNullString(Object value) {

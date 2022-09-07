@@ -8,8 +8,8 @@ import java.lang.annotation.*;
 @Documented
 public @interface SchemaInfo {
 
-    /** 数据库表名, 为空则自动基于类名来(类 UserInfo --> 表 user_info) */
-    String value() default "";
+    /** 数据库表名 */
+    String value();
 
     /** 数据库表说明 */
     String desc() default "";

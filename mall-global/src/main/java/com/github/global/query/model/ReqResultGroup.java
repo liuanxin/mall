@@ -2,6 +2,7 @@ package com.github.global.query.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.github.global.query.util.MysqlKeyWordUtil;
 import com.github.global.query.util.QueryUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -12,12 +13,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public enum ReqResultGroup {
 
-    COUNT("COUNT(%s) AS `CNT%s`", "总条数"),
-    SUM("SUM(%s) AS SUM%s", "总和"),
-    MIN("MIN(%s) AS MIN%s", "最小"),
-    MAX("MAX(%s) AS MAX%s", "最大"),
-    AVG("AVG(%s) AS AVG%s", "平均"),
-    GROUP_CONCAT("GROUP_CONCAT(%s) AS GC%s", "组拼接");
+    COUNT("COUNT(%s) AS `cnt_%s`", "总条数"),
+    SUM("SUM(%s) AS sum_%s", "总和"),
+    MIN("MIN(%s) AS min_%s", "最小"),
+    MAX("MAX(%s) AS max_%s", "最大"),
+    AVG("AVG(%s) AS avg_%s", "平均"),
+    GCT("GROUP_CONCAT(%s) AS gct_%s", "组拼接");
 
 
     @JsonValue
@@ -51,6 +52,6 @@ public enum ReqResultGroup {
             return "";
         }
 
-        return String.format(value, column, ("_" + column));
+        return String.format(value, MysqlKeyWordUtil.toSql(column), column);
     }
 }

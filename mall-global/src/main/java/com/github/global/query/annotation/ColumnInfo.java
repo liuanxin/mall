@@ -10,8 +10,8 @@ import java.lang.annotation.*;
 @Documented
 public @interface ColumnInfo {
 
-    /** 表列名, 为空则自动基于 类字段名 来(类字段 userName --> 表列 user_name) */
-    String value() default "";
+    /** 表列名 */
+    String value();
 
     /** 表列说明 */
     String desc() default "";

@@ -2,6 +2,7 @@ package com.github.global.query.model;
 
 import com.github.common.json.JsonUtil;
 import com.github.global.query.constant.QueryConst;
+import com.github.global.query.util.MysqlKeyWordUtil;
 import com.github.global.query.util.QueryUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,13 +34,27 @@ import java.util.*;
  * }
  *
  *
- * SELECT name, COUNT(*) AS `CNT_*`, COUNT(name) AS CNT_name, MIN(id) AS MIN_id from ... group by name
+ * SELECT
+ *   name,
+ *   COUNT(*) AS `cnt_*`,
+ *   COUNT(name) AS cnt_name,
+ *   SUM(price) AS sum_price,
+ *   MIN(id) AS min_id,
+ *   MAX(id) AS max_id,
+ *   AVG(price) AS avg_price,
+ *   GROUP_CONCAT(name) AS gct_name
+ * from ...
+ * GROUP BY name
  * {
  *   "columns": [
  *     "name",
- *     [ "count", "*" ],     -- 别名「CNT_*」拼起来的前缀是写死的, 避免 sql 注入
- *     [ "count", "name" ],  -- 别名「CNT_name」拼起来的前缀是写死的, 避免 sql 注入
- *     [ "min", "id" ]       -- 别名「MIN_id」拼起来的前缀是写死的, 避免 sql 注入
+ *     [ "count", "*" ],     -- 别名 「CNT_*」
+ *     [ "count", "name" ],  -- 别名 「CNT_name」
+ *     [ "sum", "price" ],   -- 别名 「sum_price」
+ *     [ "min", "id" ],      -- 别名 「min_id」
+ *     [ "max", "id" ],      -- 别名 「max_id」
+ *     [ "avg", "price" ],   -- 别名 「avg_price」
+ *     [ "gct", "name" ],    -- 别名 「gct_name」
  *   ]
  * }
  * </pre>
@@ -102,6 +117,8 @@ public class ReqResult {
                     }
                 }
             }
+
+            Map<String, SchemaColumnRelation> relationMap = columnInfo.getRelationMap();
             for (Object obj : innerList) {
                 Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
                 if (inner == null) {
@@ -203,8 +220,8 @@ public class ReqResult {
         if (functionSql != null && !functionSql.trim().isEmpty()) {
             StringJoiner groupSj = new StringJoiner(", ");
             for (Object obj : columns) {
-                if (obj instanceof String column) {
-                    groupSj.add(column);
+                if (obj instanceof String column && !column.isEmpty()) {
+                    groupSj.add(MysqlKeyWordUtil.toSql(column));
                 }
             }
             String groupBy = groupSj.toString();
