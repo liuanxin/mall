@@ -64,12 +64,6 @@ public class ReqParam {
                 set.add(QueryUtil.getSchemaName(column, mainSchema));
             }
         }
-        if (set.size() > 1) {
-            Map<String, String> aliasMap = schemaColumnInfo.getAliasMap();
-            for (String schema : set) {
-
-            }
-        }
         return set;
     }
 

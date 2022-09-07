@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Map;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -38,5 +39,11 @@ public class SchemaColumnInfo {
         String realSchema = QueryUtil.defaultIfBlank(schemaAlias, schema);
         String realColumn = QueryUtil.defaultIfBlank(columnAlias, column);
         return relationMap.get(realSchema + "." + realColumn);
+    }
+
+    public void checkSchemaRelation(Set<String> schemaNames) {
+        // todo
+    }
+    public void checkParamResultSchema(Set<String> paramSchemaNames, Set<String> resultSchemaNames) {
     }
 }

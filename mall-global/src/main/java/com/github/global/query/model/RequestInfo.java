@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Map;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -32,11 +33,24 @@ public class RequestInfo {
         if (param == null) {
             throw new RuntimeException("request need param");
         }
-        param.checkParam(schema, columnInfo);
-
         if (result == null) {
             throw new RuntimeException("request need result");
         }
+
+        param.checkParam(schema, columnInfo);
+        Set<String> paramSchema = param.allParamSchema(schema, columnInfo);
+        if (paramSchema.size() > 1) {
+            columnInfo.checkSchemaRelation(paramSchema);
+        }
+
         result.checkResult(schema, columnInfo);
+        Set<String> resultSchema = result.allResultSchema(schema, columnInfo);
+        if (paramSchema.size() > 1) {
+            columnInfo.checkSchemaRelation(paramSchema);
+        }
+
+        if (paramSchema.size() > 1 && resultSchema.size() > 1) {
+            columnInfo.checkParamResultSchema(paramSchema, resultSchema);
+        }
     }
 }

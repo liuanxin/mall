@@ -36,10 +36,13 @@ import java.util.*;
  * }
  *
  *
+ * COUNT(*) 跟 COUNT(1) 是等价的, 使用标准 COUNT(*) 即可
+ * 见: https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count
+ *
  * SELECT
  *   name,
  *   COUNT(*) AS cnt,
- *   COUNT(name) AS cnt_name,
+ *   COUNT(name) AS cnt_name,   -- 别名是自动拼装的
  *   SUM(price) AS sum_price,
  *   MIN(id) AS min_id,
  *   MAX(id) AS max_id,
@@ -50,13 +53,13 @@ import java.util.*;
  * {
  *   "columns": [
  *     "name",
- *     [ "count", "*", "total" ],    -- 第三个参数表示接口响应回去时的属性
+ *     [ "count", "*", "x" ],    -- 第三个参数表示接口响应回去时的属性
  *     [ "count", "name", "xx" ],
  *     [ "sum", "price", "xxx" ],
- *     [ "min", "id", "minId" ],
- *     [ "max", "id", "maxId" ],
- *     [ "avg", "price", "avgPrice" ],
- *     [ "gct", "name", "groupName" ]
+ *     [ "min", "id", "y" ],
+ *     [ "max", "id", "yy" ],
+ *     [ "avg", "price", "yyy" ],
+ *     [ "gct", "name", "z" ]
  *   ]
  * }
  * </pre>
@@ -144,7 +147,7 @@ public class ReqResult {
         }
     }
 
-    public Set<String> allResultSchema(String mainSchema) {
+    public Set<String> allResultSchema(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
         Set<String> set = new LinkedHashSet<>();
         String currentSchema = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
         if (columns != null && !columns.isEmpty()) {
@@ -161,7 +164,7 @@ public class ReqResult {
                         Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
                         if (inner != null) {
                             for (ReqResult innerResult : inner.values()) {
-                                set.addAll(innerResult.allResultSchema(currentSchema));
+                                set.addAll(innerResult.allResultSchema(currentSchema, schemaColumnInfo));
                             }
                         }
                     }
