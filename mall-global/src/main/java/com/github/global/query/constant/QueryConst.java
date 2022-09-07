@@ -14,14 +14,14 @@ public final class QueryConst {
             " FROM information_schema.`TABLES` WHERE `TABLE_SCHEMA` = ?";
     public static final String COLUMN_SQL = "SELECT `TABLE_NAME` tn, `COLUMN_NAME` cn, `COLUMN_TYPE` ct," +
             " `COLUMN_COMMENT` cc, `COLUMN_KEY` ck" +
-            " FROM information_schema.`COLUMNS` WHERE `TABLE_SCHEMA` = ?" +
+            " FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = ?" +
             " ORDER BY `TABLE_NAME`, `ORDINAL_POSITION`";
-    public static final String RELATION_SQL = "SELECT `TABLE_NAME` tn, `COLUMN_NAME` cn," +
-            " `REFERENCED_TABLE_NAME` ftn, `REFERENCED_COLUMN_NAME` fcn" +
-            " FROM information_schema.`KEY_COLUMN_USAGE`" +
+    public static final String RELATION_SQL = "SELECT `REFERENCED_TABLE_NAME` ftn, `REFERENCED_COLUMN_NAME` fcn," +
+            " `TABLE_NAME` tn, `COLUMN_NAME` cn" +
+            " FROM `information_schema`.`KEY_COLUMN_USAGE`" +
             " WHERE `REFERENCED_TABLE_SCHEMA` = ?";
     public static final String INDEX_SQL = "SELECT `TABLE_NAME` tn, `COLUMN_NAME` cn, COUNT(`SEQ_IN_INDEX`) sii" +
-            " FROM INFORMATION_SCHEMA.`STATISTICS`" +
+            " FROM `INFORMATION_SCHEMA`.`STATISTICS`" +
             " WHERE `NON_UNIQUE` = 0 AND `TABLE_SCHEMA` = ?" +
             " GROUP BY tn, cn HAVING sii = 1";
 

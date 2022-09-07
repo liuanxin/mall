@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SchemaColumnRelation {
 
+    private String oneSchema;
+    private String oneColumn;
     private SchemaRelationType type;
-    private String schema;
-    private String SchemaColumn;
+    private String oneOrManySchema;
+    private String oneOrManyColumn;
 }

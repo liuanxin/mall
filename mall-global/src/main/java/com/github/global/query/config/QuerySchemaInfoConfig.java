@@ -32,9 +32,13 @@ public class QuerySchemaInfoConfig {
         Map<String, SchemaColumnRelation> relationMap = new HashMap<>();
 
         String dbName = jdbcTemplate.queryForObject(QueryConst.DB_SQL, String.class);
+        // table_name, table_comment
         List<Map<String, Object>> schemaList = jdbcTemplate.queryForList(QueryConst.SCHEMA_SQL, dbName);
+        // table_name, column_name, column_type, column_comment, has_pri
         List<Map<String, Object>> schemaColumnList = jdbcTemplate.queryForList(QueryConst.COLUMN_SQL, dbName);
+        // table_name, column_name, relation_table_name, relation_column_name (relation : one or many)
         List<Map<String, Object>> relationColumnList = jdbcTemplate.queryForList(QueryConst.RELATION_SQL, dbName);
+        // table_name, column_name, has_single_unique
         List<Map<String, Object>> indexList = jdbcTemplate.queryForList(QueryConst.INDEX_SQL, dbName);
 
         MapMultiValue<String, Map<String, Object>, List<Map<String, Object>>> schemaColumnMap = MapMultiUtil.createMapList();
@@ -74,7 +78,7 @@ public class QuerySchemaInfoConfig {
                 String columnName = QueryUtil.toStr(columnInfo.get("cn"));
                 String columnAlias = QueryUtil.columnNameToAlias(columnName);
                 String columnDesc = QueryUtil.toStr(columnInfo.get("cc"));
-                boolean primary = "PRI".equalsIgnoreCase(QueryUtil.toStr(columnInfo.get("cc")));
+                boolean primary = "PRI".equalsIgnoreCase(QueryUtil.toStr(columnInfo.get("ck")));
 
                 aliasMap.put(QueryConst.COLUMN_PREFIX + columnName, columnAlias);
                 columnMap.put(columnAlias, new SchemaColumn(columnName, columnDesc, columnAlias, primary, clazz));
@@ -85,19 +89,20 @@ public class QuerySchemaInfoConfig {
 
         if (!relationColumnMap.isEmpty()) {
             for (Map.Entry<String, Map<String, Map<String, Object>>> entry : relationColumnMap.entrySet()) {
-                String schemaName = entry.getKey();
-                Set<String> uniqueColumnSet = columnUniqueMap.get(schemaName);
+                String relationSchema = entry.getKey();
+                Set<String> uniqueColumnSet = columnUniqueMap.get(relationSchema);
                 for (Map.Entry<String, Map<String, Object>> columnEntry : entry.getValue().entrySet()) {
-                    String columnName = columnEntry.getKey();
-                    SchemaRelationType type = uniqueColumnSet.contains(columnName)
+                    String relationColumn = columnEntry.getKey();
+                    SchemaRelationType type = uniqueColumnSet.contains(relationColumn)
                             ? SchemaRelationType.ONE_TO_ONE : SchemaRelationType.ONE_TO_MANY;
 
                     Map<String, Object> relationInfoMap = columnEntry.getValue();
-                    String relationSchema = QueryUtil.toStr(relationInfoMap.get("ftn"));
-                    String relationColumn = QueryUtil.toStr(relationInfoMap.get("fcn"));
+                    String oneSchema = QueryUtil.toStr(relationInfoMap.get("ftn"));
+                    String oneColumn = QueryUtil.toStr(relationInfoMap.get("fcn"));
 
-                    String schemaAndColumn = schemaName + "." + columnName;
-                    relationMap.put(schemaAndColumn, new SchemaColumnRelation(type, relationSchema, relationColumn));
+                    String schemaAndColumn = relationSchema + "." + relationColumn;
+                    relationMap.put(schemaAndColumn,
+                            new SchemaColumnRelation(oneSchema, oneColumn, type, relationSchema, relationColumn));
                 }
             }
         }
