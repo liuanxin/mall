@@ -29,14 +29,37 @@ public class QuerySchemaInfoConfig {
     private SchemaColumnInfo initWithDb() {
         Map<String, String> aliasMap = new HashMap<>();
         Map<String, Schema> schemaMap = new LinkedHashMap<>();
+        Map<String, SchemaColumnRelation> relationMap = new HashMap<>();
 
         String dbName = jdbcTemplate.queryForObject(QueryConst.DB_SQL, String.class);
         List<Map<String, Object>> schemaList = jdbcTemplate.queryForList(QueryConst.SCHEMA_SQL, dbName);
         List<Map<String, Object>> schemaColumnList = jdbcTemplate.queryForList(QueryConst.COLUMN_SQL, dbName);
+        List<Map<String, Object>> relationColumnList = jdbcTemplate.queryForList(QueryConst.RELATION_SQL, dbName);
+        List<Map<String, Object>> indexList = jdbcTemplate.queryForList(QueryConst.INDEX_SQL, dbName);
 
         MapMultiValue<String, Map<String, Object>, List<Map<String, Object>>> schemaColumnMap = MapMultiUtil.createMapList();
-        for (Map<String, Object> schemaColumn : schemaColumnList) {
-            schemaColumnMap.put(QueryUtil.toStr(schemaColumn.get("tn")), schemaColumn);
+        if (!schemaColumnList.isEmpty()) {
+            for (Map<String, Object> schemaColumn : schemaColumnList) {
+                schemaColumnMap.put(QueryUtil.toStr(schemaColumn.get("tn")), schemaColumn);
+            }
+        }
+        Map<String, Map<String, Map<String, Object>>> relationColumnMap = new HashMap<>();
+        if (!relationColumnList.isEmpty()) {
+            for (Map<String, Object> relationColumn : relationColumnList) {
+                String schemaName = QueryUtil.toStr(relationColumn.get("tn"));
+                Map<String, Map<String, Object>> columnMap = relationColumnMap.getOrDefault(schemaName, new HashMap<>());
+                columnMap.put(QueryUtil.toStr(relationColumn.get("cn")), relationColumn);
+                relationColumnMap.put(schemaName, columnMap);
+            }
+        }
+        Map<String, Set<String>> columnUniqueMap = new HashMap<>();
+        if (!indexList.isEmpty()) {
+            for (Map<String, Object> index : indexList) {
+                String schemaName = QueryUtil.toStr(index.get("tn"));
+                Set<String> uniqueColumnSet = columnUniqueMap.getOrDefault(schemaName, new HashSet<>());
+                uniqueColumnSet.add(QueryUtil.toStr(index.get("cn")));
+                columnUniqueMap.put(schemaName, uniqueColumnSet);
+            }
         }
 
         for (Map<String, Object> schemaInfo : schemaList) {
@@ -59,7 +82,26 @@ public class QuerySchemaInfoConfig {
             aliasMap.put(QueryConst.SCHEMA_PREFIX + schemaName, schemaAlias);
             schemaMap.put(schemaAlias, new Schema(schemaName, schemaDesc, schemaAlias, columnMap));
         }
-        return new SchemaColumnInfo(aliasMap, schemaMap, Collections.emptyMap());
+
+        if (!relationColumnMap.isEmpty()) {
+            for (Map.Entry<String, Map<String, Map<String, Object>>> entry : relationColumnMap.entrySet()) {
+                String schemaName = entry.getKey();
+                Set<String> uniqueColumnSet = columnUniqueMap.get(schemaName);
+                for (Map.Entry<String, Map<String, Object>> columnEntry : entry.getValue().entrySet()) {
+                    String columnName = columnEntry.getKey();
+                    SchemaRelationType type = uniqueColumnSet.contains(columnName)
+                            ? SchemaRelationType.ONE_TO_ONE : SchemaRelationType.ONE_TO_MANY;
+
+                    Map<String, Object> relationInfoMap = columnEntry.getValue();
+                    String relationSchema = QueryUtil.toStr(relationInfoMap.get("ftn"));
+                    String relationColumn = QueryUtil.toStr(relationInfoMap.get("fcn"));
+
+                    String schemaAndColumn = schemaName + "." + columnName;
+                    relationMap.put(schemaAndColumn, new SchemaColumnRelation(type, relationSchema, relationColumn));
+                }
+            }
+        }
+        return new SchemaColumnInfo(aliasMap, schemaMap, relationMap);
     }
     private Class<?> mappingClass(String dbType) {
         String type = (dbType.contains("(") ? dbType.substring(0, dbType.indexOf("(")) : dbType).toLowerCase();
