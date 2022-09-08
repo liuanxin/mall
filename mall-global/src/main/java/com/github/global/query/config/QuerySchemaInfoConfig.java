@@ -145,7 +145,6 @@ public class QuerySchemaInfoConfig {
 
         if (param.needQueryPage()) {
             if (param.needQueryCount()) {
-                // 非移动端瀑布流才需要请求 COUNT(*)
                 long count = queryCount(fromAndWhere, mainSchema, result, params);
                 List<?> pageList;
                 if (count > 0 && param.needQueryCurrentPage(count)) {
@@ -158,6 +157,7 @@ public class QuerySchemaInfoConfig {
                 pageInfo.put("list", pageList);
                 return pageInfo;
             } else {
+                // 「移动端-瀑布流」时才需要「SELECT COUNT(*)」
                 return pageList(fromAndWhere, mainSchema, param, result, params);
             }
         } else {
@@ -177,7 +177,7 @@ public class QuerySchemaInfoConfig {
 
     private List<Map<String, Object>> pageList(String fromAndWhere, String mainSchema, ReqParam param,
                                                ReqResult result, List<Object> params) {
-        String pageSql = QuerySqlUtil.pageSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+        String pageSql = QuerySqlUtil.toPageSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
         List<Map<String, Object>> list = jdbcTemplate.queryForList(pageSql, params.toArray());
         assemblyResult(list);
         return list;
@@ -193,7 +193,7 @@ public class QuerySchemaInfoConfig {
 
     private Map<String, Object> queryObj(String fromAndWhere, String mainSchema, ReqParam param,
                                          ReqResult result, List<Object> params) {
-        String objSql = QuerySqlUtil.objSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+        String objSql = QuerySqlUtil.toObjSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
         List<Map<String, Object>> list = jdbcTemplate.queryForList(objSql, params.toArray());
         assemblyResult(list);
         return list.get(0);

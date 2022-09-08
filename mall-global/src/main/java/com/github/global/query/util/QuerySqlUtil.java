@@ -44,14 +44,14 @@ public class QuerySqlUtil {
         return select + param.generateOrderSql();
     }
 
-    public static String pageSql(SchemaColumnInfo columnInfo, String fromAndWhere, String mainSchema,
-                                 ReqParam param, ReqResult result, List<Object> params) {
+    public static String toPageSql(SchemaColumnInfo columnInfo, String fromAndWhere, String mainSchema,
+                                   ReqParam param, ReqResult result, List<Object> params) {
         String list = toListSql(columnInfo, fromAndWhere, mainSchema, param, result);
         return list + param.generatePageSql(params);
     }
 
-    public static String objSql(SchemaColumnInfo columnInfo, String fromAndWhere, String mainSchema,
-                                 ReqParam param, ReqResult result, List<Object> params) {
+    public static String toObjSql(SchemaColumnInfo columnInfo, String fromAndWhere, String mainSchema,
+                                  ReqParam param, ReqResult result, List<Object> params) {
         String list = toListSql(columnInfo, fromAndWhere, mainSchema, param, result);
         return list + param.generateArrToObjSql(params);
     }
