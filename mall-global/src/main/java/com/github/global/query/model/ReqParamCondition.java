@@ -1,5 +1,6 @@
 package com.github.global.query.model;
 
+import com.github.global.query.enums.ReqParamConditionType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

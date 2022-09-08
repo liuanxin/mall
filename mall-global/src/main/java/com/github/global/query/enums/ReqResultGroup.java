@@ -1,8 +1,7 @@
-package com.github.global.query.model;
+package com.github.global.query.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.github.global.query.util.MysqlKeyWordUtil;
 import com.github.global.query.util.QueryUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +51,6 @@ public enum ReqResultGroup {
             return "";
         }
 
-        return String.format(value, MysqlKeyWordUtil.toSql(column), ("*".equals(column) ? "" : ("_" + column)));
+        return String.format(value, QueryUtil.toSqlField(column), ("*".equals(column) ? "" : ("_" + column)));
     }
 }

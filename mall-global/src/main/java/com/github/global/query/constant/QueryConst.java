@@ -1,7 +1,7 @@
 package com.github.global.query.constant;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.github.global.query.model.ReqParamConditionType;
+import com.github.global.query.enums.ReqParamConditionType;
 import com.github.global.query.model.ReqResult;
 
 import java.math.BigDecimal;

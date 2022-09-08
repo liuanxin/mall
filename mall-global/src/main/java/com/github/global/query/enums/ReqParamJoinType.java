@@ -1,4 +1,4 @@
-package com.github.global.query.model;
+package com.github.global.query.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -7,10 +7,10 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ReqResultType {
+public enum ReqParamJoinType {
 
-    OBJ("对象"),
-    ARR("数组");
+    LEFT("左联"),
+    RIGHT("右连");
 
     private final String msg;
 
@@ -20,10 +20,10 @@ public enum ReqResultType {
     }
 
     @JsonCreator
-    public static ReqResultType deserializer(Object obj) {
+    public static ReqParamJoinType deserializer(Object obj) {
         if (obj != null) {
             String str = obj.toString().trim();
-            for (ReqResultType e : values()) {
+            for (ReqParamJoinType e : values()) {
                 if (str.equalsIgnoreCase(e.name())) {
                     return e;
                 }

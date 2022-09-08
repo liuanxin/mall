@@ -68,8 +68,16 @@ public class ReqParam {
         query.checkCondition(mainSchema, columnInfo);
 
         if (sort != null && !sort.isEmpty()) {
+            Set<String> useSchemaSet = allParamSchema(mainSchema);
             for (String column : sort.keySet()) {
                 QueryUtil.checkColumnName(column, mainSchema, columnInfo, "query order");
+
+                if (!column.contains(".")) {
+                    String orderSchemaName = QueryUtil.getSchemaName(column, mainSchema);
+                    if (!useSchemaSet.contains(orderSchemaName)) {
+                        throw new RuntimeException("no order schema(" + orderSchemaName + ") in query condition");
+                    }
+                }
             }
         }
 
@@ -81,10 +89,10 @@ public class ReqParam {
         }
     }
 
-    public Set<String> allParamSchema(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
+    public Set<String> allParamSchema(String mainSchema) {
         Set<String> set = new LinkedHashSet<>();
-        set.add(mainSchema);
         query.allSchema(mainSchema, set);
+
         if (sort != null && !sort.isEmpty()) {
             for (String column : sort.keySet()) {
                 set.add(QueryUtil.getSchemaName(column, mainSchema));
@@ -93,7 +101,7 @@ public class ReqParam {
         return set;
     }
 
-    public String generateOrderSql(String mainSchema, Map<String, Schema> schemaMap) {
+    public String generateOrderSql() {
         if (sort != null && !sort.isEmpty()) {
             StringJoiner orderSj = new StringJoiner(", ");
             for (Map.Entry<String, String> entry : sort.entrySet()) {
@@ -113,19 +121,6 @@ public class ReqParam {
     public boolean needQueryCount() {
         return needQueryPage() && (notCount == null || !notCount);
     }
-    public String generatePageSql(List<Object> params) {
-        int index = page.get(0);
-        int limit = calcLimit();
-
-        if (index == 1) {
-            params.add(limit);
-            return " LIMIT ?";
-        } else {
-            params.add((index - 1) * limit);
-            params.add(limit);
-            return " LIMIT ?, ?";
-        }
-    }
     private int calcLimit() {
         Integer limitParam = page.size() > 1 ? page.get(1) : 0;
         return QueryConst.LIMIT_SET.contains(limitParam) ? limitParam : QueryConst.MIN_LIMIT;
@@ -135,5 +130,26 @@ public class ReqParam {
         int limit = calcLimit();
         // 比如总条数有 100 条, index 是 11, limit 是 10, 这时候是没必要发起 limit 查询的, 只有 index 在 1 ~ 10 才需要
         return ((long) index * limit) <= count;
+    }
+
+    public String generatePageSql(List<Object> params) {
+        if (needQueryPage()) {
+            int index = page.get(0);
+            int limit = calcLimit();
+
+            if (index == 1) {
+                params.add(limit);
+                return " LIMIT ?";
+            } else {
+                params.add((index - 1) * limit);
+                params.add(limit);
+                return " LIMIT ?, ?";
+            }
+        }
+        return "";
+    }
+    public String generateArrToObjSql(List<Object> params) {
+        params.add(1);
+        return " LIMIT ?";
     }
 }

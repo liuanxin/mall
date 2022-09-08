@@ -8,7 +8,7 @@ import java.util.Set;
  * https://dev.mysql.com/doc/refman/5.7/en/keywords.html<p/>
  * https://dev.mysql.com/doc/refman/8.0/en/keywords.html
  */
-public class MysqlKeyWordUtil {
+class MysqlKeyWordUtil {
 
     private static final Set<String> MYSQL5 = new HashSet<>(Arrays.asList(
             "ACCESSIBLE",
@@ -1395,12 +1395,7 @@ public class MysqlKeyWordUtil {
         KEY.addAll(MYSQL8);
     }
 
-
-    public static boolean hasKeyWord(String columnName) {
+    static boolean hasKeyWord(String columnName) {
         return KEY.contains(columnName.toUpperCase());
-    }
-
-    public static String toSql(String columnName) {
-        return hasKeyWord(columnName) ? ("`" + columnName + "`") : columnName;
     }
 }

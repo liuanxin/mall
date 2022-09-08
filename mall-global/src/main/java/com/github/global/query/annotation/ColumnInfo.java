@@ -1,6 +1,6 @@
 package com.github.global.query.annotation;
 
-import com.github.global.query.model.SchemaRelationType;
+import com.github.global.query.enums.SchemaRelationType;
 
 import java.lang.annotation.*;
 

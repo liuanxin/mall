@@ -34,19 +34,17 @@ public class RequestInfo {
         }
 
         param.checkParam(schema, columnInfo);
-        Set<String> paramSchema = param.allParamSchema(schema, columnInfo);
+        Set<String> paramSchema = param.allParamSchema(schema);
+        paramSchema.remove(schema);
         if (paramSchema.size() > 1) {
-            columnInfo.checkSchemaRelation(paramSchema);
+            columnInfo.checkSchemaRelation(schema, paramSchema, "param");
         }
 
         result.checkResult(schema, columnInfo);
-        Set<String> resultSchema = result.allResultSchema(schema, columnInfo);
-        if (paramSchema.size() > 1) {
-            columnInfo.checkSchemaRelation(paramSchema);
-        }
-
-        if (paramSchema.size() > 1 && resultSchema.size() > 1) {
-            columnInfo.checkParamResultSchema(paramSchema, resultSchema);
+        Set<String> resultSchema = result.allResultSchema(schema);
+        resultSchema.remove(schema);
+        if (resultSchema.size() > 1) {
+            columnInfo.checkSchemaRelation(schema, resultSchema, "result");
         }
     }
 }

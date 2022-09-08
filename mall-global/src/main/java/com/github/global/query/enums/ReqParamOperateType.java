@@ -1,4 +1,4 @@
-package com.github.global.query.model;
+package com.github.global.query.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

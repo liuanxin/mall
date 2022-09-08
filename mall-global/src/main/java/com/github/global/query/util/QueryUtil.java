@@ -4,7 +4,11 @@ import com.github.common.util.U;
 import com.github.global.query.annotation.ColumnInfo;
 import com.github.global.query.annotation.SchemaInfo;
 import com.github.global.query.constant.QueryConst;
-import com.github.global.query.model.*;
+import com.github.global.query.enums.SchemaRelationType;
+import com.github.global.query.model.Schema;
+import com.github.global.query.model.SchemaColumn;
+import com.github.global.query.model.SchemaColumnInfo;
+import com.github.global.query.model.SchemaColumnRelation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -304,5 +308,9 @@ public class QueryUtil {
             throw new RuntimeException("schema(" + schemaName + ") no column(" + columnName + ") defined with: " + type);
         }
         return schemaColumn;
+    }
+
+    public static String toSqlField(String field) {
+        return MysqlKeyWordUtil.hasKeyWord(field) ? ("`" + field + "`") : field;
     }
 }

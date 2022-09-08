@@ -1,4 +1,4 @@
-package com.github.global.query.model;
+package com.github.global.query.enums;
 
 public enum SchemaRelationType {
 

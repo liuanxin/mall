@@ -2,7 +2,8 @@ package com.github.global.query.model;
 
 import com.github.common.json.JsonUtil;
 import com.github.global.query.constant.QueryConst;
-import com.github.global.query.util.MysqlKeyWordUtil;
+import com.github.global.query.enums.ReqResultGroup;
+import com.github.global.query.enums.ReqResultType;
 import com.github.global.query.util.QueryUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -71,7 +72,7 @@ public class ReqResult {
 
     /** 结构 */
     private String schema;
-    /** 结构类型, 对象(obj)还是数组(arr) */
+    /** 结构类型, 对象(obj)还是数组(arr), 不设置则默认是数组 */
     private ReqResultType type;
     /** 结构里的列 */
     private List<Object> columns;
@@ -82,75 +83,73 @@ public class ReqResult {
         if (currentSchema == null || currentSchema.isEmpty()) {
             throw new RuntimeException("res need schema");
         }
-
         Map<String, Schema> schemaMap = columnInfo.getSchemaMap();
         if (!schemaMap.containsKey(currentSchema)) {
-            throw new RuntimeException("no schema(" + currentSchema + ") defined");
+            throw new RuntimeException("no res schema(" + currentSchema + ") defined");
+        }
+        if (columns == null || columns.isEmpty()) {
+            throw new RuntimeException("res need columns");
         }
 
-        if (columns != null && !columns.isEmpty()) {
-            StringJoiner sj = new StringJoiner(", ");
-            Set<String> columnCheckRepeatedSet = new HashSet<>();
-            List<Object> innerList = new ArrayList<>();
-            for (Object obj : columns) {
-                if (obj != null) {
-                    if (obj instanceof String column) {
-                        if (!column.isEmpty()) {
-                            QueryUtil.checkSchemaAndColumnName(currentSchema, column, columnInfo, "result select");
-                            if (columnCheckRepeatedSet.contains(column)) {
-                                throw new RuntimeException("res column(" + column + ") has repeated");
-                            }
-                            columnCheckRepeatedSet.add(column);
+        Set<String> columnCheckRepeatedSet = new HashSet<>();
+        List<Object> innerList = new ArrayList<>();
+        for (Object obj : columns) {
+            if (obj != null) {
+                if (obj instanceof String column) {
+                    if (!column.isEmpty()) {
+                        QueryUtil.checkSchemaAndColumnName(currentSchema, column, columnInfo, "result select");
+                        if (columnCheckRepeatedSet.contains(column)) {
+                            throw new RuntimeException("res column(" + column + ") has repeated");
                         }
-                    } else if (obj instanceof List<?> groups) {
-                        if (!groups.isEmpty()) {
-                            int size = groups.size();
-                            if (size < 3) {
-                                throw new RuntimeException("res function(" + groups + ") error");
-                            }
-                            ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
-                            String column = QueryUtil.toStr(groups.get(1));
-                            String checkType = "result function(" + group.name().toLowerCase() + ")";
-                            if (group == ReqResultGroup.COUNT) {
-                                if (!Set.of("*", "1", "0").contains(column)) {
-                                    QueryUtil.checkColumnName(column, currentSchema, columnInfo, checkType);
-                                }
-                            } else {
+                        columnCheckRepeatedSet.add(column);
+                    }
+                } else if (obj instanceof List<?> groups) {
+                    if (!groups.isEmpty()) {
+                        int size = groups.size();
+                        if (size < 3) {
+                            throw new RuntimeException("res function(" + groups + ") error");
+                        }
+                        ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
+                        String column = QueryUtil.toStr(groups.get(1));
+                        String checkType = "result function(" + group.name().toLowerCase() + ")";
+                        if (group == ReqResultGroup.COUNT) {
+                            if (!Set.of("*", "1", "0").contains(column)) {
                                 QueryUtil.checkColumnName(column, currentSchema, columnInfo, checkType);
                             }
+                        } else {
+                            QueryUtil.checkColumnName(column, currentSchema, columnInfo, checkType);
                         }
-                    } else {
-                        innerList.add(obj);
                     }
+                } else {
+                    innerList.add(obj);
                 }
             }
+        }
 
-            for (Object obj : innerList) {
-                Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
-                if (inner == null) {
-                    throw new RuntimeException("res relation(" + obj + ") error");
+        for (Object obj : innerList) {
+            Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
+            if (inner == null) {
+                throw new RuntimeException("res relation(" + obj + ") error");
+            }
+            for (Map.Entry<String, ReqResult> entry : inner.entrySet()) {
+                String column = entry.getKey();
+                if (columnCheckRepeatedSet.contains(column)) {
+                    throw new RuntimeException("res relation column(" + column + ") has repeated");
                 }
-                for (Map.Entry<String, ReqResult> entry : inner.entrySet()) {
-                    String column = entry.getKey();
-                    if (columnCheckRepeatedSet.contains(column)) {
-                        throw new RuntimeException("res relation column(" + column + ") has repeated");
-                    }
-                    ReqResult innerResult = entry.getValue();
-                    if (innerResult == null) {
-                        throw new RuntimeException("res relation column(" + column + ") error");
-                    }
-                    columnCheckRepeatedSet.add(column);
-                    innerResult.checkResult(currentSchema, columnInfo);
+                ReqResult innerResult = entry.getValue();
+                if (innerResult == null) {
+                    throw new RuntimeException("res relation column(" + column + ") error");
                 }
+                columnCheckRepeatedSet.add(column);
+                innerResult.checkResult(currentSchema, columnInfo);
             }
         }
     }
 
-    public Set<String> allResultSchema(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
+    public Set<String> allResultSchema(String mainSchema) {
         Set<String> set = new LinkedHashSet<>();
         String currentSchema = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
         if (columns != null && !columns.isEmpty()) {
-            StringJoiner sj = new StringJoiner(", ");
             for (Object obj : columns) {
                 if (obj != null) {
                     if (obj instanceof String column) {
@@ -163,7 +162,7 @@ public class ReqResult {
                         Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
                         if (inner != null) {
                             for (ReqResult innerResult : inner.values()) {
-                                set.addAll(innerResult.allResultSchema(currentSchema, schemaColumnInfo));
+                                set.addAll(innerResult.allResultSchema(currentSchema));
                             }
                         }
                     }
@@ -184,7 +183,7 @@ public class ReqResult {
                 if (!column.isEmpty()) {
                     sj.add(QueryUtil.checkSchemaAndColumnName(mainSchema, column, columnInfo, "result select").getName());
                 }
-//                } else { // todo
+//                } else {
             }
         }
         return sj.toString();
@@ -224,12 +223,24 @@ public class ReqResult {
 
     public String generateGroupSql() {
         StringJoiner groupSj = new StringJoiner(", ");
+        boolean hasGroup = false;
         for (Object obj : columns) {
             if (obj instanceof String column && !column.isEmpty()) {
-                groupSj.add(MysqlKeyWordUtil.toSql(column));
+                groupSj.add(QueryUtil.toSqlField(column));
+            } else if (obj instanceof List<?> groups) {
+                if (!groups.isEmpty()) {
+                    hasGroup = true;
+                }
             }
+        }
+        if (!hasGroup) {
+            return "";
         }
         String groupBy = groupSj.toString();
         return groupBy.isEmpty() ? "" : (" GROUP BY " + groupBy);
+    }
+
+    public String generateHavingSql() {
+        return "";
     }
 }

@@ -1,12 +1,13 @@
 package com.github.global.query.model;
 
 import com.github.common.json.JsonUtil;
+import com.github.global.query.enums.ReqParamConditionType;
+import com.github.global.query.enums.ReqParamOperateType;
 import com.github.global.query.util.QueryUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -113,7 +114,6 @@ public class ReqParamOperate {
             throw new RuntimeException("param need schema");
         }
 
-        List<ReqParamCondition> conditionList = new ArrayList<>();
         for (Object condition : conditions) {
             if (condition != null) {
                 if (condition instanceof List<?> list) {
