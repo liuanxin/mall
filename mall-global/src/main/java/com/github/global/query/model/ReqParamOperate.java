@@ -162,8 +162,8 @@ public class ReqParamOperate {
         }
 
         String currentSchema = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
+        set.add(currentSchema);
 
-        List<ReqParamCondition> conditionList = new ArrayList<>();
         for (Object condition : conditions) {
             if (condition != null) {
                 if (condition instanceof List<?> list) {

@@ -59,7 +59,7 @@ public class QueryUtil {
     private static SchemaColumnInfo handleTable(Set<Class<?>> classes) {
         Map<String, String> aliasMap = new HashMap<>();
         Map<String, Schema> schemaMap = new LinkedHashMap<>();
-        Map<String, SchemaColumnRelation> relationMap = new HashMap<>();
+        List<SchemaColumnRelation> relationList = new ArrayList<>();
 
         Map<String, ColumnInfo> columnInfoMap = new LinkedHashMap<>();
         Map<String, Class<?>> columnClassMap = new HashMap<>();
@@ -149,12 +149,11 @@ public class QueryUtil {
                     String[] arr = schemaAndColumn.split("\\.");
                     String relationSchema = arr[0];
                     String relationColumn = arr[1];
-                    relationMap.put(schemaAndColumn,
-                            new SchemaColumnRelation(oneSchema, oneColumn, relationType, relationSchema, relationColumn));
+                    relationList.add(new SchemaColumnRelation(oneSchema, oneColumn, relationType, relationSchema, relationColumn));
                 }
             }
         }
-        return new SchemaColumnInfo(aliasMap, schemaMap, relationMap);
+        return new SchemaColumnInfo(aliasMap, schemaMap, relationList);
     }
     /** UserInfo --> user_info */
     private static String aliasToSchemaName(String className) {

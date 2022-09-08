@@ -125,7 +125,6 @@ public class ReqResult {
                 }
             }
 
-            Map<String, SchemaColumnRelation> relationMap = columnInfo.getRelationMap();
             for (Object obj : innerList) {
                 Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
                 if (inner == null) {

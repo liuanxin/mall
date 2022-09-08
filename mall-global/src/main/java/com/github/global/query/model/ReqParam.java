@@ -10,9 +10,18 @@ import java.util.*;
 
 /**
  * <pre>
+ * FROM order
+// *   LEFT JOIN orderAddress ON ...
+// *   LEFT JOIN orderItem ON ...
+// *   RIGHT JOIN userInfo ON ...
+// *   RIGHT JOIN user ON ...
+ * WHERE ...
+ * ORDER BY create_time DESC, id ASC
+ * LIMIT 20
  * {
+// *   "relation": { "left": [ "orderAddress", "orderItem" ], "right": [ "userInfo", "user" ] },
  *   "query": ...
- *   "sort": { "create_time": "desc", "id", "asc" },
+ *   "sort": { "createTime": "desc", "id", "asc" },
  *   "page": [ 1, 20 ],
  *   "not_count": true
  * }
@@ -21,6 +30,9 @@ import java.util.*;
 @Data
 @NoArgsConstructor
 public class ReqParam {
+
+//    /** 结构关联方式 */
+//    private Map<ReqParamJoinType, List<String>> relation;
 
     /** 查询信息 */
     private ReqParamOperate query;
@@ -37,6 +49,19 @@ public class ReqParam {
 
 
     public void checkParam(String mainSchema, SchemaColumnInfo columnInfo) {
+//        if (relation != null && !relation.isEmpty()) {
+//            List<String> relationList = new ArrayList<>();
+//            for (List<String> list : relation.values()) {
+//                for (String str : list) {
+//                    if (columnInfo.findSchema(str) == null) {
+//                        relationList.add(str);
+//                    }
+//                }
+//            }
+//            if (!relationList.isEmpty()) {
+//                throw new RuntimeException("param relation schema" + relationList + " no defined");
+//            }
+//        }
         if (query == null) {
             throw new RuntimeException("param no query");
         }
@@ -58,6 +83,7 @@ public class ReqParam {
 
     public Set<String> allParamSchema(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
         Set<String> set = new LinkedHashSet<>();
+        set.add(mainSchema);
         query.allSchema(mainSchema, set);
         if (sort != null && !sort.isEmpty()) {
             for (String column : sort.keySet()) {
@@ -71,7 +97,7 @@ public class ReqParam {
         if (sort != null && !sort.isEmpty()) {
             StringJoiner orderSj = new StringJoiner(", ");
             for (Map.Entry<String, String> entry : sort.entrySet()) {
-                orderSj.add(entry.getKey() + " " + ("asc".equalsIgnoreCase(entry.getValue()) ? "ASC" : "DESC"));
+                orderSj.add(entry.getKey() + ("asc".equalsIgnoreCase(entry.getValue()) ? " ASC" : " DESC"));
             }
             String orderBy = orderSj.toString();
             if (!orderBy.isEmpty()) {

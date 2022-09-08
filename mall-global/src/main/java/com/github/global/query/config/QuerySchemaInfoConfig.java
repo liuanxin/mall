@@ -29,7 +29,7 @@ public class QuerySchemaInfoConfig {
     private SchemaColumnInfo initWithDb() {
         Map<String, String> aliasMap = new HashMap<>();
         Map<String, Schema> schemaMap = new LinkedHashMap<>();
-        Map<String, SchemaColumnRelation> relationMap = new HashMap<>();
+        List<SchemaColumnRelation> relationList = new ArrayList<>();
 
         String dbName = jdbcTemplate.queryForObject(QueryConst.DB_SQL, String.class);
         // table_name, table_comment
@@ -101,12 +101,11 @@ public class QuerySchemaInfoConfig {
                     String oneColumn = QueryUtil.toStr(relationInfoMap.get("fcn"));
 
                     String schemaAndColumn = relationSchema + "." + relationColumn;
-                    relationMap.put(schemaAndColumn,
-                            new SchemaColumnRelation(oneSchema, oneColumn, type, relationSchema, relationColumn));
+                    relationList.add(new SchemaColumnRelation(oneSchema, oneColumn, type, relationSchema, relationColumn));
                 }
             }
         }
-        return new SchemaColumnInfo(aliasMap, schemaMap, relationMap);
+        return new SchemaColumnInfo(aliasMap, schemaMap, relationList);
     }
     private Class<?> mappingClass(String dbType) {
         String type = (dbType.contains("(") ? dbType.substring(0, dbType.indexOf("(")) : dbType).toLowerCase();
