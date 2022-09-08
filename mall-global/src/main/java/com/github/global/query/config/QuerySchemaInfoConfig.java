@@ -6,6 +6,7 @@ import com.github.global.query.constant.QueryConst;
 import com.github.global.query.enums.ReqResultType;
 import com.github.global.query.enums.SchemaRelationType;
 import com.github.global.query.model.*;
+import com.github.global.query.util.QuerySqlUtil;
 import com.github.global.query.util.QueryUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -134,12 +135,13 @@ public class QuerySchemaInfoConfig {
 
     public Object query(RequestInfo req) {
         req.check(schemaColumnInfo);
-        String mainSchema = req.getSchema();
 
+        String mainSchema = req.getSchema();
         ReqParam param = req.getParam();
         ReqResult result = req.getResult();
+
         List<Object> params = new ArrayList<>();
-        String fromAndWhere = schemaColumnInfo.generateFromAndWhereSql(mainSchema, param, params);
+        String fromAndWhere = QuerySqlUtil.toFromWhereSql(schemaColumnInfo, mainSchema, param, params);
 
         if (param.needQueryPage()) {
             if (param.needQueryCount()) {
@@ -168,15 +170,14 @@ public class QuerySchemaInfoConfig {
     }
 
     private long queryCount(String fromAndWhere, String mainSchema, ReqResult result, List<Object> params) {
-        String sql = countSql(fromAndWhere, mainSchema, result);
+        String sql = QuerySqlUtil.toCountSql(schemaColumnInfo, fromAndWhere, mainSchema, result);
         Long number = jdbcTemplate.queryForObject(sql, Long.class, params.toArray());
         return QueryUtil.toLong(number, 0);
     }
 
     private List<Map<String, Object>> pageList(String fromAndWhere, String mainSchema, ReqParam param,
                                                ReqResult result, List<Object> params) {
-        String sql = listSql(fromAndWhere, mainSchema, param, result);
-        String pageSql = sql + param.generatePageSql(params);
+        String pageSql = QuerySqlUtil.pageSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
         List<Map<String, Object>> list = jdbcTemplate.queryForList(pageSql, params.toArray());
         assemblyResult(list);
         return list;
@@ -184,38 +185,18 @@ public class QuerySchemaInfoConfig {
 
     private List<Map<String, Object>> queryList(String fromAndWhere, String mainSchema, ReqParam param,
                                                 ReqResult result, List<Object> params) {
-        String sql = listSql(fromAndWhere, mainSchema, param, result);
-        List<Map<String, Object>> list = jdbcTemplate.queryForList(sql, params.toArray());
+        String listSql = QuerySqlUtil.toListSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result);
+        List<Map<String, Object>> list = jdbcTemplate.queryForList(listSql, params.toArray());
         assemblyResult(list);
         return list;
     }
 
     private Map<String, Object> queryObj(String fromAndWhere, String mainSchema, ReqParam param,
                                          ReqResult result, List<Object> params) {
-        String sql = listSql(fromAndWhere, mainSchema, param, result);
-        String objSql = sql + param.generateArrToObjSql(params);
+        String objSql = QuerySqlUtil.objSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
         List<Map<String, Object>> list = jdbcTemplate.queryForList(objSql, params.toArray());
         assemblyResult(list);
         return list.get(0);
-    }
-
-    private String countSql(String fromAndWhere, String mainSchema, ReqResult result) {
-        String group = result.generateGroupSql() + result.generateHavingSql();
-        if (group.isEmpty()) {
-            return "SELECT COUNT(*) " + fromAndWhere;
-        } else {
-            return "SELECT COUNT(*) FROM ( " + groupSql(fromAndWhere, mainSchema, result) + " ) TMP";
-        }
-    }
-    private String groupSql(String fromAndWhere, String mainSchema, ReqResult result) {
-        return "SELECT"
-                + result.generateSelectSql(mainSchema, schemaColumnInfo)
-                + fromAndWhere
-                + result.generateGroupSql()
-                + result.generateHavingSql();
-    }
-    private String listSql(String fromAndWhere, String mainSchema, ReqParam param, ReqResult result) {
-        return groupSql(fromAndWhere, mainSchema, result) + param.generateOrderSql();
     }
 
     private void assemblyResult(List<Map<String, Object>> list) {

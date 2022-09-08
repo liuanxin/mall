@@ -2,6 +2,7 @@ package com.github.global.query.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.github.global.query.util.QuerySqlUtil;
 import com.github.global.query.util.QueryUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,6 @@ public enum ReqResultGroup {
             return "";
         }
 
-        return String.format(value, QueryUtil.toSqlField(column), ("*".equals(column) ? "" : ("_" + column)));
+        return String.format(value, QuerySqlUtil.toSqlField(column), ("*".equals(column) ? "" : ("_" + column)));
     }
 }

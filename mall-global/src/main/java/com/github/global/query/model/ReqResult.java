@@ -4,6 +4,7 @@ import com.github.common.json.JsonUtil;
 import com.github.global.query.constant.QueryConst;
 import com.github.global.query.enums.ReqResultGroup;
 import com.github.global.query.enums.ReqResultType;
+import com.github.global.query.util.QuerySqlUtil;
 import com.github.global.query.util.QueryUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -226,7 +227,7 @@ public class ReqResult {
         boolean hasGroup = false;
         for (Object obj : columns) {
             if (obj instanceof String column && !column.isEmpty()) {
-                groupSj.add(QueryUtil.toSqlField(column));
+                groupSj.add(QuerySqlUtil.toSqlField(column));
             } else if (obj instanceof List<?> groups) {
                 if (!groups.isEmpty()) {
                     hasGroup = true;

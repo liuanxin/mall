@@ -309,8 +309,4 @@ public class QueryUtil {
         }
         return schemaColumn;
     }
-
-    public static String toSqlField(String field) {
-        return MysqlKeyWordUtil.hasKeyWord(field) ? ("`" + field + "`") : field;
-    }
 }
