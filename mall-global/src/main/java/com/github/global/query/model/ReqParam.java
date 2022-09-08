@@ -35,13 +35,10 @@ public class ReqParam {
 
     /** 查询信息 */
     private ReqParamOperate query;
-
     /** 排序信息 */
     private Map<String, String> sort;
-
     /** 分页信息 */
     private List<Integer> page;
-
     /** 当上面的分页数据有值, 当前值是 true 时表示不发起 count 查询总条数, 在「移动端-瀑布流」时是「无需查询总条数」的 */
     private Boolean notCount;
 
