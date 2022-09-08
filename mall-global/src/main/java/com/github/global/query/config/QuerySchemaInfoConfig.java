@@ -144,7 +144,7 @@ public class QuerySchemaInfoConfig {
         if (param.needQueryPage()) {
             if (param.needQueryCount()) {
                 // 非移动端瀑布流才需要请求 COUNT(*)
-                long count = queryCount(fromAndWhere, params);
+                long count = queryCount(fromAndWhere, mainSchema, result, params);
                 List<?> pageList;
                 if (count > 0 && param.needQueryCurrentPage(count)) {
                     pageList = pageList(fromAndWhere, mainSchema, param, result, params);
@@ -167,15 +167,15 @@ public class QuerySchemaInfoConfig {
         }
     }
 
-    private long queryCount(String fromAndWhere, List<Object> params) {
-        String sql = countSql(fromAndWhere);
+    private long queryCount(String fromAndWhere, String mainSchema, ReqResult result, List<Object> params) {
+        String sql = countSql(fromAndWhere, mainSchema, result);
         Long number = jdbcTemplate.queryForObject(sql, Long.class, params.toArray());
         return QueryUtil.toLong(number, 0);
     }
 
     private List<Map<String, Object>> pageList(String fromAndWhere, String mainSchema, ReqParam param,
                                                ReqResult result, List<Object> params) {
-        String sql = listSql(fromAndWhere, mainSchema, param, result, params);
+        String sql = listSql(fromAndWhere, mainSchema, param, result);
         String pageSql = sql + param.generatePageSql(params);
         List<Map<String, Object>> list = jdbcTemplate.queryForList(pageSql, params.toArray());
         assemblyResult(list);
@@ -184,7 +184,7 @@ public class QuerySchemaInfoConfig {
 
     private List<Map<String, Object>> queryList(String fromAndWhere, String mainSchema, ReqParam param,
                                                 ReqResult result, List<Object> params) {
-        String sql = listSql(fromAndWhere, mainSchema, param, result, params);
+        String sql = listSql(fromAndWhere, mainSchema, param, result);
         List<Map<String, Object>> list = jdbcTemplate.queryForList(sql, params.toArray());
         assemblyResult(list);
         return list;
@@ -192,25 +192,30 @@ public class QuerySchemaInfoConfig {
 
     private Map<String, Object> queryObj(String fromAndWhere, String mainSchema, ReqParam param,
                                          ReqResult result, List<Object> params) {
-        String sql = listSql(fromAndWhere, mainSchema, param, result, params);
+        String sql = listSql(fromAndWhere, mainSchema, param, result);
         String objSql = sql + param.generateArrToObjSql(params);
         List<Map<String, Object>> list = jdbcTemplate.queryForList(objSql, params.toArray());
         assemblyResult(list);
         return list.get(0);
     }
 
-    private String countSql(String fromAndWhere) {
-        return "SELECT COUNT(*) " + fromAndWhere;
+    private String countSql(String fromAndWhere, String mainSchema, ReqResult result) {
+        String group = result.generateGroupSql() + result.generateHavingSql();
+        if (group.isEmpty()) {
+            return "SELECT COUNT(*) " + fromAndWhere;
+        } else {
+            return "SELECT COUNT(*) FROM ( " + groupSql(fromAndWhere, mainSchema, result) + " ) TMP";
+        }
     }
-
-    private String listSql(String fromAndWhere, String mainSchema, ReqParam param,
-                           ReqResult result, List<Object> params) {
-        return "SELECT "
+    private String groupSql(String fromAndWhere, String mainSchema, ReqResult result) {
+        return "SELECT"
                 + result.generateSelectSql(mainSchema, schemaColumnInfo)
                 + fromAndWhere
                 + result.generateGroupSql()
-                + result.generateHavingSql()
-                + param.generateOrderSql();
+                + result.generateHavingSql();
+    }
+    private String listSql(String fromAndWhere, String mainSchema, ReqParam param, ReqResult result) {
+        return groupSql(fromAndWhere, mainSchema, result) + param.generateOrderSql();
     }
 
     private void assemblyResult(List<Map<String, Object>> list) {
