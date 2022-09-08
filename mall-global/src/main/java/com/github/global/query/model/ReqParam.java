@@ -43,7 +43,7 @@ public class ReqParam {
     /** 分页信息 */
     private List<Integer> page;
 
-    /** 当上面的分页数据有值, 当前值是 true 时表示不发起 count 查询总条数, 在移动端瀑布流时是无需查询总条数的 */
+    /** 当上面的分页数据有值, 当前值是 true 时表示不发起 count 查询总条数, 在「移动端-瀑布流」时是「无需查询总条数」的 */
     @JsonProperty("not_count")
     private Boolean notCount;
 
@@ -119,7 +119,7 @@ public class ReqParam {
         return page != null && !page.isEmpty();
     }
     public boolean needQueryCount() {
-        return needQueryPage() && (notCount == null || !notCount);
+        return notCount == null || !notCount;
     }
     private int calcLimit() {
         Integer limitParam = page.size() > 1 ? page.get(1) : 0;

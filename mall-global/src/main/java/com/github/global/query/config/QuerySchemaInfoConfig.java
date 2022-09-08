@@ -146,7 +146,7 @@ public class QuerySchemaInfoConfig {
         if (param.needQueryPage()) {
             if (param.needQueryCount()) {
                 long count = queryCount(fromAndWhere, mainSchema, result, params);
-                List<?> pageList;
+                List<Map<String, Object>> pageList;
                 if (count > 0 && param.needQueryCurrentPage(count)) {
                     pageList = pageList(fromAndWhere, mainSchema, param, result, params);
                 } else {
@@ -157,7 +157,7 @@ public class QuerySchemaInfoConfig {
                 pageInfo.put("list", pageList);
                 return pageInfo;
             } else {
-                // 「移动端-瀑布流」时才需要「SELECT COUNT(*)」
+                // 「移动端-瀑布流」时不需要「SELECT COUNT(*)」
                 return pageList(fromAndWhere, mainSchema, param, result, params);
             }
         } else {
