@@ -113,7 +113,8 @@ public class QueryUtil {
                     columnAlias = QueryUtil.defaultIfBlank(columnInfo.alias(), columnName);
                     primary = columnInfo.primary();
 
-                    String schemaAndColumn = schemaAlias + "." + columnAlias;
+                    // 用类名 + 列名
+                    String schemaAndColumn = schemaName + "." + columnName;
                     columnInfoMap.put(schemaAndColumn, columnInfo);
                     columnClassMap.put(schemaAndColumn, type);
                 } else {
@@ -169,8 +170,8 @@ public class QueryUtil {
                     String[] arr = schemaAndColumn.split("\\.");
                     String relationSchema = arr[0];
                     String relationColumn = arr[1];
-                    // todo 用表名 列名, 避免用别名
-                    relationList.add(new SchemaColumnRelation(oneSchema, oneColumn, relationType, relationSchema, relationColumn));
+                    relationList.add(new SchemaColumnRelation(schema.getName(), column.getName(),
+                            relationType, relationSchema, relationColumn));
                 }
             }
         }

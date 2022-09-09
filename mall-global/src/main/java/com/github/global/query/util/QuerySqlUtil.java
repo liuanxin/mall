@@ -1,6 +1,5 @@
 package com.github.global.query.util;
 
-import com.github.global.query.enums.SchemaRelationType;
 import com.github.global.query.model.*;
 
 import java.util.List;
@@ -30,20 +29,15 @@ public class QuerySqlUtil {
                 if (relation == null) {
                     throw new RuntimeException(mainSchema + " - " + childSchemaName + " has no relation");
                 }
-                String masterColumn = relation.getOneColumn();
                 String childColumn = relation.getOneOrManyColumn();
 
-                SchemaColumn mainSchemaColumn = schemaColumnInfo.findSchemaColumn(mainSchema, masterColumn);
                 SchemaColumn childSchemaColumn = schemaColumnInfo.findSchemaColumn(childSchemaName, childColumn);
+                String childAlias = childSchemaColumn.getAlias();
 
-                Schema childSchema = schemaColumnInfo.findSchema(childSchemaName);
-                String childSchemaAlias = childSchema.getAlias();
-
-                if (relation.getType() == SchemaRelationType.ONE_TO_ONE) {
-                    sbd.append(" INNER JOIN ").append(childSchemaColumn.getName());
-                    sbd.append(" AS ").append(childSchemaColumn.getAlias());
-                    sbd.append(" ON ").append(mainSchemaAlias).append(".").append(relation.getOneColumn());
-                }
+                sbd.append(" INNER JOIN ").append(childSchemaColumn.getName());
+                sbd.append(" AS ").append(childAlias);
+                sbd.append(" ON ").append(mainSchemaAlias).append(".").append(relation.getOneColumn());
+                sbd.append(" = ").append(childAlias).append(relation.getOneOrManyColumn());
             }
         }
         return sbd.toString();
