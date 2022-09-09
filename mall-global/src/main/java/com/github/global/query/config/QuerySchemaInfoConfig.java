@@ -13,19 +13,21 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Component
 public class QuerySchemaInfoConfig {
 
+    private static final Lock LOCK = new ReentrantLock();
+
     @Value("${query.scan-packages:}")
     private String scanPackages;
+    private volatile SchemaColumnInfo schemaColumnInfo;
 
     private final JdbcTemplate jdbcTemplate;
-    private final SchemaColumnInfo schemaColumnInfo;
-
     public QuerySchemaInfoConfig(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.schemaColumnInfo = scanPackages.isEmpty() ? initWithDb() : QueryUtil.scanSchema(scanPackages);
     }
     private SchemaColumnInfo initWithDb() {
         Map<String, String> aliasMap = new HashMap<>();
@@ -117,10 +119,25 @@ public class QuerySchemaInfoConfig {
         throw new RuntimeException("unknown db type" + dbType);
     }
 
+    public SchemaColumnInfo schemaColumnInfo() {
+        if (schemaColumnInfo == null) {
+            LOCK.lock();
+            try {
+                if (schemaColumnInfo == null) {
+                    schemaColumnInfo = (scanPackages == null || scanPackages.isEmpty())
+                            ? initWithDb() : QueryUtil.scanSchema(scanPackages);
+                }
+            } finally {
+                LOCK.unlock();
+            }
+        }
+        return schemaColumnInfo;
+    }
+
 
     public List<QueryInfo> queryInfo() {
         List<QueryInfo> queryList = new ArrayList<>();
-        for (Schema schema : schemaColumnInfo.getSchemaMap().values()) {
+        for (Schema schema : schemaColumnInfo().getSchemaMap().values()) {
             List<QueryInfo.QueryColumn> columnList = new ArrayList<>();
             for (SchemaColumn column : schema.getColumnMap().values()) {
                 String type = column.getColumnType().getSimpleName();
@@ -132,14 +149,14 @@ public class QuerySchemaInfoConfig {
     }
 
     public Object query(RequestInfo req) {
-        req.check(schemaColumnInfo);
+        req.check(schemaColumnInfo());
 
         String mainSchema = req.getSchema();
         ReqParam param = req.getParam();
         ReqResult result = req.getResult();
 
         List<Object> params = new ArrayList<>();
-        String fromAndWhere = QuerySqlUtil.toFromWhereSql(schemaColumnInfo, mainSchema, param, result, params);
+        String fromAndWhere = QuerySqlUtil.toFromWhereSql(schemaColumnInfo(), mainSchema, param, result, params);
 
         if (param.needQueryPage()) {
             if (param.needQueryCount()) {
@@ -148,13 +165,15 @@ public class QuerySchemaInfoConfig {
                 if (result.generateGroupSql().isEmpty()) {
                     count = queryCount(QuerySqlUtil.toCountSql(fromAndWhere), params);
                     if (param.needQueryCurrentPage(count)) {
-                        String pageSql = QuerySqlUtil.toPageSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+                        String pageSql = QuerySqlUtil.toPageSql(schemaColumnInfo(),
+                                fromAndWhere, mainSchema, param, result, params);
                         pageList = querySqlList(pageSql, params);
                     } else {
                         pageList = Collections.emptyList();
                     }
                 } else {
-                    String selectSql = QuerySqlUtil.toSelectSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+                    String selectSql = QuerySqlUtil.toSelectSql(schemaColumnInfo(),
+                            fromAndWhere, mainSchema, param, result, params);
                     count = queryCount(QuerySqlUtil.toCountGroupSql(selectSql), params);
                     if (param.needQueryCurrentPage(count)) {
                         String pageSql = selectSql + param.generatePageSql(params);
@@ -186,7 +205,7 @@ public class QuerySchemaInfoConfig {
 
     private List<Map<String, Object>> pageList(String fromAndWhere, String mainSchema, ReqParam param,
                                                ReqResult result, List<Object> params) {
-        String pageSql = QuerySqlUtil.toPageSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+        String pageSql = QuerySqlUtil.toPageSql(schemaColumnInfo(), fromAndWhere, mainSchema, param, result, params);
         List<Map<String, Object>> list = jdbcTemplate.queryForList(pageSql, params.toArray());
         assemblyResult(list);
         return list;
@@ -194,7 +213,7 @@ public class QuerySchemaInfoConfig {
 
     private List<Map<String, Object>> queryList(String fromAndWhere, String mainSchema, ReqParam param,
                                                 ReqResult result, List<Object> params) {
-        String listSql = QuerySqlUtil.toListSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+        String listSql = QuerySqlUtil.toListSql(schemaColumnInfo(), fromAndWhere, mainSchema, param, result, params);
         return querySqlList(listSql, params);
     }
 
@@ -206,7 +225,7 @@ public class QuerySchemaInfoConfig {
 
     private Map<String, Object> queryObj(String fromAndWhere, String mainSchema, ReqParam param,
                                          ReqResult result, List<Object> params) {
-        String objSql = QuerySqlUtil.toObjSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+        String objSql = QuerySqlUtil.toObjSql(schemaColumnInfo(), fromAndWhere, mainSchema, param, result, params);
         List<Map<String, Object>> list = jdbcTemplate.queryForList(objSql, params.toArray());
         assemblyResult(list);
         return list.isEmpty() ? Collections.emptyMap() : list.get(0);

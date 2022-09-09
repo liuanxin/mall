@@ -18,11 +18,11 @@ public class QueryApiController {
 
     @GetMapping("/list")
     public JsonResult<List<QueryInfo>> query() {
-        return JsonResult.success("schema-info list", schemaInfoConfig.queryInfo());
+        return JsonResult.success("schema info list", schemaInfoConfig.queryInfo());
     }
 
     @PostMapping("/query")
     public JsonResult<Object> query(@RequestBody RequestInfo req) {
-        return JsonResult.success("query schema-info", schemaInfoConfig.query(req));
+        return JsonResult.success("query schema info", schemaInfoConfig.query(req));
     }
 }

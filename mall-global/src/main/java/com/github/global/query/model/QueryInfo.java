@@ -1,5 +1,6 @@
 package com.github.global.query.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class QueryInfo {
 
     /** 表使用名 */
@@ -23,6 +25,7 @@ public class QueryInfo {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public static class QueryColumn {
 
         /** 表列名 */
