@@ -169,6 +169,7 @@ public class QueryUtil {
                     String[] arr = schemaAndColumn.split("\\.");
                     String relationSchema = arr[0];
                     String relationColumn = arr[1];
+                    // todo 用表名 列名, 避免用别名
                     relationList.add(new SchemaColumnRelation(oneSchema, oneColumn, relationType, relationSchema, relationColumn));
                 }
             }

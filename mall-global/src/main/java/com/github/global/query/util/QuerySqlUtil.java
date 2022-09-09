@@ -40,9 +40,9 @@ public class QuerySqlUtil {
                 String childSchemaAlias = childSchema.getAlias();
 
                 if (relation.getType() == SchemaRelationType.ONE_TO_ONE) {
-                    sbd.append(" INNER JOIN ").append(childSchemaName);
-                    sbd.append(" AS ").append(childSchemaAlias);
-                    sbd.append(" on ").append(childColumn);
+                    sbd.append(" INNER JOIN ").append(childSchemaColumn.getName());
+                    sbd.append(" AS ").append(childSchemaColumn.getAlias());
+                    sbd.append(" ON ").append(mainSchemaAlias).append(".").append(relation.getOneColumn());
                 }
             }
         }
