@@ -25,9 +25,7 @@ public class QuerySchemaInfoConfig {
 
     public QuerySchemaInfoConfig(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-
-        SchemaColumnInfo info = QueryUtil.scanSchema(scanPackages);
-        schemaColumnInfo = info.getSchemaMap().isEmpty() ? initWithDb() : info;
+        this.schemaColumnInfo = scanPackages.isEmpty() ? initWithDb() : QueryUtil.scanSchema(scanPackages);
     }
     private SchemaColumnInfo initWithDb() {
         Map<String, String> aliasMap = new HashMap<>();
