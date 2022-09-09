@@ -5,6 +5,7 @@ import com.github.global.query.config.QuerySchemaInfoConfig;
 import com.github.global.query.model.QueryInfo;
 import com.github.global.query.model.RequestInfo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,11 +15,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class QueryApiController {
 
+    @Value("${query.online:false}")
+    private boolean online;
+
     private final QuerySchemaInfoConfig schemaInfoConfig;
 
     @GetMapping("/list")
     public JsonResult<List<QueryInfo>> query() {
-        return JsonResult.success("schema info list", schemaInfoConfig.queryInfo());
+        return JsonResult.success("schema info list", online ? null : schemaInfoConfig.queryInfo());
     }
 
     @PostMapping("/query")
