@@ -211,7 +211,7 @@ public class QuerySchemaInfoConfig {
         String objSql = QuerySqlUtil.toObjSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
         List<Map<String, Object>> list = jdbcTemplate.queryForList(objSql, params.toArray());
         assemblyResult(list);
-        return list.get(0);
+        return list.isEmpty() ? Collections.emptyMap() : list.get(0);
     }
 
     private void assemblyResult(List<Map<String, Object>> list) {

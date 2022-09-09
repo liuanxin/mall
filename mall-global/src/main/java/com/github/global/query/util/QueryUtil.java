@@ -67,6 +67,10 @@ public class QueryUtil {
 
         Map<String, ColumnInfo> columnInfoMap = new LinkedHashMap<>();
         Map<String, Class<?>> columnClassMap = new HashMap<>();
+        Set<String> schemaNameSet = new HashSet<>();
+        Set<String> schemaAliasSet = new HashSet<>();
+        Set<String> columnNameSet = new HashSet<>();
+        Set<String> columnAliasSet = new HashSet<>();
         for (Class<?> clazz : classes) {
             SchemaInfo schemaInfo = clazz.getAnnotation(SchemaInfo.class);
             String schemaName, schemaDesc, schemaAlias;
@@ -83,9 +87,15 @@ public class QueryUtil {
                 schemaAlias = clazz.getSimpleName();
                 schemaName = aliasToSchemaName(schemaAlias);
             }
-            if (schemaMap.containsKey(schemaAlias)) {
+
+            if (schemaNameSet.contains(schemaName)) {
                 throw new RuntimeException("schema(" + schemaName + ") has renamed");
             }
+            schemaNameSet.add(schemaName);
+            if (schemaAliasSet.contains(schemaAlias)) {
+                throw new RuntimeException("schema alias(" + schemaName + ") has renamed");
+            }
+            schemaAliasSet.add(schemaAlias);
 
             Map<String, SchemaColumn> columnMap = new LinkedHashMap<>();
             for (Field field : U.getFields(clazz)) {
@@ -112,9 +122,15 @@ public class QueryUtil {
                     columnName = aliasToColumnName(columnAlias);
                     primary = "id".equalsIgnoreCase(columnAlias);
                 }
-                if (columnMap.containsKey(columnAlias)) {
-                    throw new RuntimeException("schema(" + schemaName + ") has same column(" + columnAlias + ")");
+
+                if (columnNameSet.contains(columnName)) {
+                    throw new RuntimeException("schema(" + schemaAlias + ") has same column(" + columnName + ")");
                 }
+                columnNameSet.add(columnName);
+                if (columnAliasSet.contains(columnAlias)) {
+                    throw new RuntimeException("schema(" + schemaAlias + ") has same column(" + columnAlias + ")");
+                }
+                columnAliasSet.add(columnAlias);
 
                 aliasMap.put(QueryConst.COLUMN_PREFIX + columnName, columnAlias);
                 columnMap.put(columnAlias, new SchemaColumn(columnName, columnDesc, columnAlias, primary, type));

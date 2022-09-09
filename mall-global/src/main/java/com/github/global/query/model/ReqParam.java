@@ -10,15 +10,10 @@ import java.util.*;
 /**
  * <pre>
  * FROM order
-// *   LEFT JOIN orderAddress ON ...
-// *   LEFT JOIN orderItem ON ...
-// *   RIGHT JOIN userInfo ON ...
-// *   RIGHT JOIN user ON ...
  * WHERE ...
  * ORDER BY create_time DESC, id ASC
  * LIMIT 20
  * {
-// *   "relation": { "left": [ "orderAddress", "orderItem" ], "right": [ "userInfo", "user" ] },
  *   "query": ...
  *   "sort": { "createTime": "desc", "id", "asc" },
  *   "page": [ 1, 20 ],
@@ -29,9 +24,6 @@ import java.util.*;
 @Data
 @NoArgsConstructor
 public class ReqParam {
-
-//    /** 结构关联方式 */
-//    private Map<ReqParamJoinType, List<String>> relation;
 
     /** 查询信息 */
     private ReqParamOperate query;
@@ -44,19 +36,6 @@ public class ReqParam {
 
 
     public void checkParam(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
-//        if (relation != null && !relation.isEmpty()) {
-//            List<String> relationList = new ArrayList<>();
-//            for (List<String> list : relation.values()) {
-//                for (String str : list) {
-//                    if (schemaColumnInfo.findSchema(str) == null) {
-//                        relationList.add(str);
-//                    }
-//                }
-//            }
-//            if (!relationList.isEmpty()) {
-//                throw new RuntimeException("param relation schema" + relationList + " no defined");
-//            }
-//        }
         if (query == null) {
             throw new RuntimeException("param no query");
         }

@@ -52,7 +52,7 @@ import java.util.*;
  * SELECT
  *   name,
  *   COUNT(*) AS `_cnt`,
- *   COUNT(name) AS _cnt_name,   -- 别名是自动拼装的
+ *   COUNT(distinct name) AS _cnt_name,   -- 别名是自动拼装的
  *   SUM(price) AS _sum_price,
  *   MIN(id) AS _min_id,
  *   MAX(id) AS _max_id,
@@ -65,7 +65,7 @@ import java.util.*;
  *   "columns": [
  *     "name",
  *     [ "count", "*", "x" ],
- *     [ "count", "name", "xx" ],
+ *     [ "cnt_dis", "name", "xx" ],
  *     [ "sum", "price", "xxx", "gt", 100.5, "lt", 120.5 ],
  *     [ "min", "id", "y" ],
  *     [ "max", "id", "yy" ],
@@ -161,15 +161,19 @@ public class ReqResult {
             }
             for (Map.Entry<String, ReqResult> entry : inner.entrySet()) {
                 String column = entry.getKey();
-                if (columnCheckRepeatedSet.contains(column)) {
-                    throw new RuntimeException("res relation column(" + column + ") has repeated");
-                }
                 ReqResult innerResult = entry.getValue();
                 if (innerResult == null) {
                     throw new RuntimeException("res relation column(" + column + ") error");
                 }
+                if (columnCheckRepeatedSet.contains(column)) {
+                    throw new RuntimeException("res relation column(" + column + ") has repeated");
+                }
                 columnCheckRepeatedSet.add(column);
-                innerResult.checkResult(currentSchema, schemaColumnInfo);
+                String innerSchema = innerResult.getSchema();
+                if (innerSchema == null || innerSchema.isEmpty()) {
+                    throw new RuntimeException("res inner need schema");
+                }
+                innerResult.checkResult(innerSchema, schemaColumnInfo);
             }
         }
     }
@@ -210,11 +214,6 @@ public class ReqResult {
             }
         }
         return sj.toString();
-    }
-
-    public String generateInnerSelectSql() {
-        // todo
-        return "";
     }
 
     public String generateSelectFunctionSql() {
