@@ -267,16 +267,16 @@ public class QueryUtil {
     }
 
     public static SchemaColumn checkColumnName(String column, String mainSchema,
-                                               SchemaColumnInfo columnInfo, String type) {
+                                               SchemaColumnInfo schemaColumnInfo, String type) {
         String schemaName = getSchemaName(column, mainSchema);
         String columnName = getColumnName(column);
-        return checkSchemaAndColumnName(schemaName, columnName, columnInfo, type);
+        return checkSchemaAndColumnName(schemaName, columnName, schemaColumnInfo, type);
     }
 
     public static SchemaColumn checkSchemaAndColumnName(String schemaName, String columnName,
-                                                        SchemaColumnInfo columnInfo, String type) {
-        Map<String, String> aliasMap = columnInfo.getAliasMap();
-        Schema schema = querySchema(type, schemaName, aliasMap, columnInfo.getSchemaMap());
+                                                        SchemaColumnInfo schemaColumnInfo, String type) {
+        Map<String, String> aliasMap = schemaColumnInfo.getAliasMap();
+        Schema schema = querySchema(type, schemaName, aliasMap, schemaColumnInfo.getSchemaMap());
         return queryColumn(type, schemaName, columnName, aliasMap, schema.getColumnMap());
     }
 

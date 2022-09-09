@@ -104,7 +104,7 @@ public class ReqParamOperate {
     private List<Object> conditions;
 
 
-    public void checkCondition(String mainSchema, SchemaColumnInfo columnInfo) {
+    public void checkCondition(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
         if (conditions == null || conditions.isEmpty()) {
             return;
         }
@@ -140,7 +140,7 @@ public class ReqParamOperate {
 
                             // 用传入的列名获取其结构上定义的类型
                             SchemaColumn schemaColumn = QueryUtil.checkColumnName(column, currentSchema,
-                                    columnInfo, "query condition");
+                                    schemaColumnInfo, "query condition");
                             // 检查列类型和传入的值是否对应
                             type.checkTypeAndValue(schemaColumn.getColumnType(), column, value);
                         }
@@ -150,7 +150,7 @@ public class ReqParamOperate {
                     if (compose == null) {
                         throw new RuntimeException("compose condition(" + condition + ") error");
                     }
-                    compose.checkCondition(currentSchema, columnInfo);
+                    compose.checkCondition(currentSchema, schemaColumnInfo);
                 }
             }
         }

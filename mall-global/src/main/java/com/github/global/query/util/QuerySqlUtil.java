@@ -12,47 +12,47 @@ public class QuerySqlUtil {
         return MysqlKeyWordUtil.hasKeyWord(field) ? ("`" + field + "`") : field;
     }
 
-    public static String toFromWhereSql(SchemaColumnInfo columnInfo, String mainSchema,
+    public static String toFromWhereSql(SchemaColumnInfo schemaColumnInfo, String mainSchema,
                                         ReqParam param, List<Object> params) {
         StringBuilder sbd = new StringBuilder();
         // todo
         return sbd.toString();
     }
 
-    public static String toCountSql(SchemaColumnInfo columnInfo, String fromAndWhere,
+    public static String toCountSql(SchemaColumnInfo schemaColumnInfo, String fromAndWhere,
                                     String mainSchema, ReqResult result) {
         String group = result.generateGroupSql() + result.generateHavingSql();
         if (group.isEmpty()) {
             return "SELECT COUNT(*) " + fromAndWhere;
         } else {
-            return "SELECT COUNT(*) FROM ( " + toSelectSql(columnInfo, fromAndWhere, mainSchema, result) + " ) TMP";
+            return "SELECT COUNT(*) FROM ( " + toSelectSql(schemaColumnInfo, fromAndWhere, mainSchema, result) + " ) TMP";
         }
     }
 
-    private static String toSelectSql(SchemaColumnInfo columnInfo, String fromAndWhere,
+    private static String toSelectSql(SchemaColumnInfo schemaColumnInfo, String fromAndWhere,
                                      String mainSchema, ReqResult result) {
         return "SELECT"
-                + result.generateSelectSql(mainSchema, columnInfo)
+                + result.generateSelectSql(mainSchema, schemaColumnInfo)
                 + fromAndWhere
                 + result.generateGroupSql()
                 + result.generateHavingSql();
     }
 
-    public static String toListSql(SchemaColumnInfo columnInfo, String fromAndWhere,
+    public static String toListSql(SchemaColumnInfo schemaColumnInfo, String fromAndWhere,
                                    String mainSchema, ReqParam param, ReqResult result) {
-        String select = toSelectSql(columnInfo, fromAndWhere, mainSchema, result);
+        String select = toSelectSql(schemaColumnInfo, fromAndWhere, mainSchema, result);
         return select + param.generateOrderSql();
     }
 
-    public static String toPageSql(SchemaColumnInfo columnInfo, String fromAndWhere, String mainSchema,
+    public static String toPageSql(SchemaColumnInfo schemaColumnInfo, String fromAndWhere, String mainSchema,
                                    ReqParam param, ReqResult result, List<Object> params) {
-        String list = toListSql(columnInfo, fromAndWhere, mainSchema, param, result);
+        String list = toListSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result);
         return list + param.generatePageSql(params);
     }
 
-    public static String toObjSql(SchemaColumnInfo columnInfo, String fromAndWhere, String mainSchema,
+    public static String toObjSql(SchemaColumnInfo schemaColumnInfo, String fromAndWhere, String mainSchema,
                                   ReqParam param, ReqResult result, List<Object> params) {
-        String list = toListSql(columnInfo, fromAndWhere, mainSchema, param, result);
+        String list = toListSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result);
         return list + param.generateArrToObjSql(params);
     }
 }

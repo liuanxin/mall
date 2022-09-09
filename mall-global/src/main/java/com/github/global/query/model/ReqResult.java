@@ -79,12 +79,12 @@ public class ReqResult {
     private List<Object> columns;
 
 
-    public void checkResult(String mainSchema, SchemaColumnInfo columnInfo) {
+    public void checkResult(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
         String currentSchema = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
         if (currentSchema == null || currentSchema.isEmpty()) {
             throw new RuntimeException("res need schema");
         }
-        Map<String, Schema> schemaMap = columnInfo.getSchemaMap();
+        Map<String, Schema> schemaMap = schemaColumnInfo.getSchemaMap();
         if (!schemaMap.containsKey(currentSchema)) {
             throw new RuntimeException("no res schema(" + currentSchema + ") defined");
         }
@@ -98,7 +98,7 @@ public class ReqResult {
             if (obj != null) {
                 if (obj instanceof String column) {
                     if (!column.isEmpty()) {
-                        QueryUtil.checkSchemaAndColumnName(currentSchema, column, columnInfo, "result select");
+                        QueryUtil.checkSchemaAndColumnName(currentSchema, column, schemaColumnInfo, "result select");
                         if (columnCheckRepeatedSet.contains(column)) {
                             throw new RuntimeException("res column(" + column + ") has repeated");
                         }
@@ -115,10 +115,10 @@ public class ReqResult {
                         String checkType = "result function(" + group.name().toLowerCase() + ")";
                         if (group == ReqResultGroup.COUNT) {
                             if (!Set.of("*", "1", "0").contains(column)) {
-                                QueryUtil.checkColumnName(column, currentSchema, columnInfo, checkType);
+                                QueryUtil.checkColumnName(column, currentSchema, schemaColumnInfo, checkType);
                             }
                         } else {
-                            QueryUtil.checkColumnName(column, currentSchema, columnInfo, checkType);
+                            QueryUtil.checkColumnName(column, currentSchema, schemaColumnInfo, checkType);
                         }
                     }
                 } else {
@@ -142,7 +142,7 @@ public class ReqResult {
                     throw new RuntimeException("res relation column(" + column + ") error");
                 }
                 columnCheckRepeatedSet.add(column);
-                innerResult.checkResult(currentSchema, columnInfo);
+                innerResult.checkResult(currentSchema, schemaColumnInfo);
             }
         }
     }
@@ -173,7 +173,7 @@ public class ReqResult {
         return set;
     }
 
-    public String generateSelectSql(String mainSchema, SchemaColumnInfo columnInfo) {
+    public String generateSelectSql(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
         if (columns == null || columns.isEmpty()) {
             return "";
         }
@@ -182,7 +182,7 @@ public class ReqResult {
         for (Object obj : columns) {
             if (obj instanceof String column) {
                 if (!column.isEmpty()) {
-                    sj.add(QueryUtil.checkSchemaAndColumnName(mainSchema, column, columnInfo, "result select").getName());
+                    sj.add(QueryUtil.checkSchemaAndColumnName(mainSchema, column, schemaColumnInfo, "result select").getName());
                 }
 //                } else {
             }

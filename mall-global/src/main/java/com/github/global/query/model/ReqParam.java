@@ -43,12 +43,12 @@ public class ReqParam {
     private Boolean notCount;
 
 
-    public void checkParam(String mainSchema, SchemaColumnInfo columnInfo) {
+    public void checkParam(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
 //        if (relation != null && !relation.isEmpty()) {
 //            List<String> relationList = new ArrayList<>();
 //            for (List<String> list : relation.values()) {
 //                for (String str : list) {
-//                    if (columnInfo.findSchema(str) == null) {
+//                    if (schemaColumnInfo.findSchema(str) == null) {
 //                        relationList.add(str);
 //                    }
 //                }
@@ -60,12 +60,12 @@ public class ReqParam {
         if (query == null) {
             throw new RuntimeException("param no query");
         }
-        query.checkCondition(mainSchema, columnInfo);
+        query.checkCondition(mainSchema, schemaColumnInfo);
 
         if (sort != null && !sort.isEmpty()) {
             Set<String> useSchemaSet = allParamSchema(mainSchema);
             for (String column : sort.keySet()) {
-                QueryUtil.checkColumnName(column, mainSchema, columnInfo, "query order");
+                QueryUtil.checkColumnName(column, mainSchema, schemaColumnInfo, "query order");
 
                 if (!column.contains(".")) {
                     String orderSchemaName = QueryUtil.getSchemaName(column, mainSchema);

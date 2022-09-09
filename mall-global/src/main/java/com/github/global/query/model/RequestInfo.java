@@ -19,11 +19,11 @@ public class RequestInfo {
     private ReqResult result;
 
 
-    public void check(SchemaColumnInfo columnInfo) {
+    public void check(SchemaColumnInfo schemaColumnInfo) {
         if (schema == null || schema.isEmpty()) {
             throw new RuntimeException("no schema");
         }
-        if (columnInfo.findSchema(schema) == null) {
+        if (schemaColumnInfo.findSchema(schema) == null) {
             throw new RuntimeException("no schema(" + schema + ") defined");
         }
         if (param == null) {
@@ -33,18 +33,18 @@ public class RequestInfo {
             throw new RuntimeException("request need result");
         }
 
-        param.checkParam(schema, columnInfo);
+        param.checkParam(schema, schemaColumnInfo);
         Set<String> paramSchema = param.allParamSchema(schema);
         paramSchema.remove(schema);
         if (paramSchema.size() > 1) {
-            columnInfo.checkSchemaRelation(schema, paramSchema, "param");
+            schemaColumnInfo.checkSchemaRelation(schema, paramSchema, "param");
         }
 
-        result.checkResult(schema, columnInfo);
+        result.checkResult(schema, schemaColumnInfo);
         Set<String> resultSchema = result.allResultSchema(schema);
         resultSchema.remove(schema);
         if (resultSchema.size() > 1) {
-            columnInfo.checkSchemaRelation(schema, resultSchema, "result");
+            schemaColumnInfo.checkSchemaRelation(schema, resultSchema, "result");
         }
     }
 }
