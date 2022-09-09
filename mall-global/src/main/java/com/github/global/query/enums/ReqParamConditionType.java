@@ -3,6 +3,7 @@ package com.github.global.query.enums;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.global.query.constant.QueryConst;
+import com.github.global.query.util.QuerySqlUtil;
 import com.github.global.query.util.QueryUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -46,13 +47,13 @@ public enum ReqParamConditionType {
     INU("IS NULL", "为空") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return String.format(" %s %s", column, getValue());
+            return String.format(" %s %s", QuerySqlUtil.toSqlField(column), getValue());
         }
     },
     INN("IS NOT NULL", "不为空") {
         @Override
         public String generateSql(String column, Object value, List<Object> params) {
-            return String.format(" %s %s", column, getValue());
+            return String.format(" %s %s", QuerySqlUtil.toSqlField(column), getValue());
         }
     },
 
@@ -217,17 +218,18 @@ public enum ReqParamConditionType {
         }
 
         params.add(value);
-        return String.format(" %s %s ?", column, getValue());
+        return String.format(" %s %s ?", QuerySqlUtil.toSqlField(column), getValue());
     }
     protected String generateMulti(String column, Object value, List<Object> params) {
         if (value == null || !QueryConst.MULTI_TYPE.contains(this)) {
             return "";
         }
-
         Collection<?> c = (Collection<?>) value;
         if (c.isEmpty()) {
             return "";
         }
+
+        String useColumn = QuerySqlUtil.toSqlField(column);
         String symbol = getValue();
         if ("BETWEEN".equals(symbol)) {
             Object[] arr = c.toArray();
@@ -238,15 +240,15 @@ public enum ReqParamConditionType {
             if (start != null && end != null) {
                 params.add(start);
                 params.add(end);
-                sbd.append(" ").append(column).append(" BETWEEN ? AND ?");
+                sbd.append(" ").append(useColumn).append(" BETWEEN ? AND ?");
             } else {
                 if (start != null) {
                     params.add(start);
-                    sbd.append(" ").append(column).append(" >= ?");
+                    sbd.append(" ").append(useColumn).append(" >= ?");
                 }
                 if (end != null) {
                     params.add(end);
-                    sbd.append(" ").append(column).append(" <= ?");
+                    sbd.append(" ").append(useColumn).append(" <= ?");
                 }
             }
             return sbd.toString();
@@ -262,7 +264,7 @@ public enum ReqParamConditionType {
                     params.add(obj);
                 }
             }
-            return hasChange ? String.format(" %s %s (%s)", column, symbol, sj) : "";
+            return hasChange ? String.format(" %s %s (%s)", useColumn, symbol, sj) : "";
         }
     }
 }

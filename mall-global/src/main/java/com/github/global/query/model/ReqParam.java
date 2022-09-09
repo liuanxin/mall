@@ -121,6 +121,9 @@ public class ReqParam {
         return QueryConst.LIMIT_SET.contains(limitParam) ? limitParam : QueryConst.MIN_LIMIT;
     }
     public boolean needQueryCurrentPage(long count) {
+        if (count <= 0) {
+            return false;
+        }
         int index = page.get(0);
         int limit = calcLimit();
         // 比如总条数有 100 条, index 是 11, limit 是 10, 这时候是没必要发起 limit 查询的, 只有 index 在 1 ~ 10 才需要

@@ -246,6 +246,26 @@ public class QueryUtil {
         }
     }
 
+    public static boolean isNumber(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj instanceof Number) {
+            return true;
+        }
+        try {
+            Double.parseDouble(obj.toString().trim());
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    /** 不是数字则返回 true */
+    public static boolean isNotNumber(Object obj) {
+        return !isNumber(obj);
+    }
+
     public static String defaultIfBlank(String str1, String defaultStr) {
         return (str1 == null || str1.isEmpty()) ? defaultStr : str1;
     }

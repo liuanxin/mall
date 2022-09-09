@@ -2,6 +2,7 @@ package com.github.global.query.model;
 
 import com.github.common.json.JsonUtil;
 import com.github.global.query.constant.QueryConst;
+import com.github.global.query.enums.ReqParamConditionType;
 import com.github.global.query.enums.ReqResultGroup;
 import com.github.global.query.enums.ReqResultType;
 import com.github.global.query.util.QuerySqlUtil;
@@ -14,7 +15,14 @@ import java.util.*;
 
 /**
  * <pre>
- * SELECT id, orderNo FROM t_order ...
+ * 1. FROM & JOINs: determine & filter rows
+ * 2. WHERE: more filters on the rows
+ * 3. GROUP BY: combines those rows into groups
+ * 4. HAVING: filters groups
+ * 5. ORDER BY: arranges the remaining rows/groups
+ * 6. LIMIT: filters on the remaining rows/groups
+ *
+ * SELECT id, order_no FROM t_order ...
  * SELECT id, address, phone FROM t_order_address ...
  * SELECT id, name, price FROM t_order_item ...
  * {
@@ -43,27 +51,30 @@ import java.util.*;
  *
  * SELECT
  *   name,
- *   COUNT(*) AS cnt,
- *   COUNT(name) AS cnt_name,   -- 别名是自动拼装的
- *   SUM(price) AS sum_price,
- *   MIN(id) AS min_id,
- *   MAX(id) AS max_id,
- *   AVG(price) AS avg_price,
- *   GROUP_CONCAT(name) AS gct_name
- * from ...
+ *   COUNT(*) AS `_cnt`,
+ *   COUNT(name) AS _cnt_name,   -- 别名是自动拼装的
+ *   SUM(price) AS _sum_price,
+ *   MIN(id) AS _min_id,
+ *   MAX(id) AS _max_id,
+ *   AVG(price) AS _avg_price,
+ *   GROUP_CONCAT(name) AS _gct_name
+ * FROM ...
  * GROUP BY name
+ * HAVING _sum_price > 100.5 AND _sum_price < 120.5
  * {
  *   "columns": [
  *     "name",
- *     [ "count", "*", "x" ],    -- 第三个参数表示接口响应回去时的属性
+ *     [ "count", "*", "x" ],
  *     [ "count", "name", "xx" ],
- *     [ "sum", "price", "xxx" ],
+ *     [ "sum", "price", "xxx", "gt", 100.5, "lt", 120.5 ],
  *     [ "min", "id", "y" ],
  *     [ "max", "id", "yy" ],
  *     [ "avg", "price", "yyy" ],
  *     [ "gct", "name", "z" ]
  *   ]
  * }
+ * 第三个参数表示接口响应回去时的属性, 每四个和第五个参数表示 HAVING 过滤时的条件
+ * 只支持基于 HAVING 进行 AND 条件(a > 1 AND a < 10)的过滤
  * </pre>
  */
 @Data
@@ -120,6 +131,22 @@ public class ReqResult {
                         } else {
                             QueryUtil.checkColumnName(column, currentSchema, schemaColumnInfo, checkType);
                         }
+                        if (size > 4) {
+                            // 先右移 1 位除以 2, 再左移 1 位乘以 2, 变成偶数
+                            int evenSize = size >> 1 << 1;
+                            for (int i = 3; i < evenSize; i += 2) {
+                                ReqParamConditionType conditionType = ReqParamConditionType.deserializer(groups.get(i));
+                                if (conditionType == null) {
+                                    throw new RuntimeException("res function(" + groups + ") having condition error");
+                                }
+
+                                Object value = groups.get(i + 1);
+                                if (group.checkHavingValue(value)) {
+                                    throw new RuntimeException("res function(%s"
+                                            + groups + ") having condition value(" + value + ") type error");
+                                }
+                            }
+                        }
                     }
                 } else {
                     innerList.add(obj);
@@ -150,21 +177,20 @@ public class ReqResult {
     public Set<String> allResultSchema(String mainSchema) {
         Set<String> set = new LinkedHashSet<>();
         String currentSchema = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
-        if (columns != null && !columns.isEmpty()) {
-            for (Object obj : columns) {
-                if (obj != null) {
-                    if (obj instanceof String column) {
-                        set.add(QueryUtil.getSchemaName(column, mainSchema));
-                    } else if (obj instanceof List<?> groups) {
-                        if (!groups.isEmpty()) {
-                            set.add(QueryUtil.getSchemaName(QueryUtil.toStr(groups.get(1)), mainSchema));
-                        }
-                    } else {
-                        Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
-                        if (inner != null) {
-                            for (ReqResult innerResult : inner.values()) {
-                                set.addAll(innerResult.allResultSchema(currentSchema));
-                            }
+
+        for (Object obj : columns) {
+            if (obj != null) {
+                if (obj instanceof String column) {
+                    set.add(QueryUtil.getSchemaName(column, mainSchema));
+                } else if (obj instanceof List<?> groups) {
+                    if (!groups.isEmpty()) {
+                        set.add(QueryUtil.getSchemaName(QueryUtil.toStr(groups.get(1)), mainSchema));
+                    }
+                } else {
+                    Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
+                    if (inner != null) {
+                        for (ReqResult innerResult : inner.values()) {
+                            set.addAll(innerResult.allResultSchema(currentSchema));
                         }
                     }
                 }
@@ -173,54 +199,42 @@ public class ReqResult {
         return set;
     }
 
-    public String generateSelectSql(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
-        if (columns == null || columns.isEmpty()) {
-            return "";
-        }
-
+    public String generateSelectSql(String mainSchema, Set<String> paramSchema, SchemaColumnInfo schemaColumnInfo) {
+        // todo
         StringJoiner sj = new StringJoiner(", ");
         for (Object obj : columns) {
             if (obj instanceof String column) {
                 if (!column.isEmpty()) {
                     sj.add(QueryUtil.checkSchemaAndColumnName(mainSchema, column, schemaColumnInfo, "result select").getName());
                 }
-//                } else {
             }
         }
         return sj.toString();
     }
 
-//    public String generateFunctionSql(String mainSchema, TableColumnInfo columnInfo) {
-//        if (functions != null && !functions.isEmpty()) {
-//            StringJoiner sj = new StringJoiner(", ");
-//            for (List<String> groups : functions) {
-//                if (groups != null && !groups.isEmpty()) {
-//                    int size = groups.size();
-//                    if (size < 2) {
-//                        throw new RuntimeException("function(" + groups + ") error");
-//                    }
-//                    ReqResultGroup group = ReqResultGroup.deserializer(groups.get(0).trim());
-//                    String column = groups.get(1).trim();
-//
-//                    String checkType = "function(" + group.name().toLowerCase() + ")";
-//                    if (group == ReqResultGroup.COUNT) {
-//                        if (!Set.of("*", "1", "0").contains(column)) {
-//                            QueryUtil.checkColumnName(column, mainSchema, columnInfo, checkType);
-//                        }
-//                    } else {
-//                        QueryUtil.checkColumnName(column, mainSchema, columnInfo, checkType);
-//                    }
-//                    if (size > 2) {
-//                        sj.add(String.format(group.getValue(), column) + " AS " + groups.get(2).trim());
-//                    } else {
-//                        sj.add(String.format(group.getValue(), column));
-//                    }
-//                }
-//            }
-//            return sj.toString();
-//        }
-//        return "";
-//    }
+    public String generateInnerSelectSql() {
+        // todo
+        return "";
+    }
+
+    public String generateSelectFunctionSql() {
+        StringJoiner groupSj = new StringJoiner(", ");
+        for (Object obj : columns) {
+            if (obj instanceof List<?> groups) {
+                if (!groups.isEmpty()) {
+                    int size = groups.size();
+                    if (size > 2) {
+                        ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
+                        String selectFunction = group.generateSelectFunction(groups);
+                        if (!selectFunction.isEmpty()) {
+                            groupSj.add(selectFunction);
+                        }
+                    }
+                }
+            }
+        }
+        return groupSj.toString();
+    }
 
     public String generateGroupSql() {
         StringJoiner groupSj = new StringJoiner(", ");
@@ -241,7 +255,27 @@ public class ReqResult {
         return groupBy.isEmpty() ? "" : (" GROUP BY " + groupBy);
     }
 
-    public String generateHavingSql() {
-        return "";
+    public String generateHavingSql(List<Object> params) {
+        StringJoiner groupSj = new StringJoiner(" AND ");
+        for (Object obj : columns) {
+            if (obj instanceof List<?> groups) {
+                if (!groups.isEmpty()) {
+                    int size = groups.size();
+                    if (size > 4) {
+                        String havingField = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0))).havingField(groups);
+                        // 先右移 1 位除以 2, 再左移 1 位乘以 2, 变成偶数
+                        int evenSize = size >> 1 << 1;
+                        for (int i = 3; i < evenSize; i += 2) {
+                            ReqParamConditionType conditionType = ReqParamConditionType.deserializer(groups.get(i));
+                            Object value = groups.get(i + 1);
+
+                            groupSj.add(conditionType.generateSql(havingField, value, params));
+                        }
+                    }
+                }
+            }
+        }
+        String groupBy = groupSj.toString();
+        return groupBy.isEmpty() ? "" : (" HAVING " + groupBy);
     }
 }

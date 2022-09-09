@@ -13,17 +13,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public enum ReqResultGroup {
 
-    COUNT("COUNT(%s) AS `cnt%s`", "总条数"),
-    SUM("SUM(%s) AS sum%s", "总和"),
-    MIN("MIN(%s) AS min%s", "最小"),
-    MAX("MAX(%s) AS max%s", "最大"),
-    AVG("AVG(%s) AS avg%s", "平均"),
-    GCT("GROUP_CONCAT(%s) AS gct%s", "组拼接");
+    COUNT("COUNT(%s)", "`_cnt%s`", "总条数"),
+    SUM("SUM(%s)", "`_sum%s`", "总和"),
+    MIN("MIN(%s)", "`_min%s`", "最小"),
+    MAX("MAX(%s)", "`_max%s`", "最大"),
+    AVG("AVG(%s)", "`_avg%s`", "平均"),
+    GCT("GROUP_CONCAT(%s)", "`_gct%s`", "组拼接");
 
+    private final String value;
+    private final String alias;
+    private final String msg;
 
     @JsonValue
-    private final String value;
-    private final String msg;
+    public String value() {
+        return name().toLowerCase();
+    }
 
     @JsonCreator
     public static ReqResultGroup deserializer(Object obj) {
@@ -38,7 +42,7 @@ public enum ReqResultGroup {
         return null;
     }
 
-    public String generateSql(List<?> groups) {
+    public String generateSelectFunction(List<?> groups) {
         if (groups == null) {
             return "";
         }
@@ -52,6 +56,23 @@ public enum ReqResultGroup {
             return "";
         }
 
-        return String.format(value, QuerySqlUtil.toSqlField(column), ("*".equals(column) ? "" : ("_" + column)));
+        String funcValue = String.format(value, QuerySqlUtil.toSqlField(column));
+        String funcAlias = String.format(alias, ("*".equals(column) ? "" : ("_" + column)));
+        return funcValue + " AS " + funcAlias;
+    }
+
+    public boolean checkHavingValue(Object value) {
+        return (this == GCT) ? (value instanceof String) : QueryUtil.isNumber(value);
+    }
+
+    public String havingField(List<?> groups) {
+        if (groups == null) {
+            return "";
+        }
+        String column = QueryUtil.toStr(groups.get(1));
+        if (column.isEmpty()) {
+            return "";
+        }
+        return String.format(alias, ("*".equals(column) ? "" : ("_" + column)));
     }
 }

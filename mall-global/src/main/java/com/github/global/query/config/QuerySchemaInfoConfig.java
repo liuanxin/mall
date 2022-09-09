@@ -141,16 +141,29 @@ public class QuerySchemaInfoConfig {
         ReqResult result = req.getResult();
 
         List<Object> params = new ArrayList<>();
-        String fromAndWhere = QuerySqlUtil.toFromWhereSql(schemaColumnInfo, mainSchema, param, params);
+        String fromAndWhere = QuerySqlUtil.toFromWhereSql(schemaColumnInfo, mainSchema, param, result, params);
 
         if (param.needQueryPage()) {
             if (param.needQueryCount()) {
-                long count = queryCount(fromAndWhere, mainSchema, result, params);
+                long count;
                 List<Map<String, Object>> pageList;
-                if (count > 0 && param.needQueryCurrentPage(count)) {
-                    pageList = pageList(fromAndWhere, mainSchema, param, result, params);
+                if (result.generateGroupSql().isEmpty()) {
+                    count = queryCount(QuerySqlUtil.toCountSql(fromAndWhere), params);
+                    if (param.needQueryCurrentPage(count)) {
+                        String pageSql = QuerySqlUtil.toPageSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+                        pageList = querySqlList(pageSql, params);
+                    } else {
+                        pageList = Collections.emptyList();
+                    }
                 } else {
-                    pageList = Collections.emptyList();
+                    String selectSql = QuerySqlUtil.toSelectSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+                    count = queryCount(QuerySqlUtil.toCountGroupSql(selectSql), params);
+                    if (param.needQueryCurrentPage(count)) {
+                        String pageSql = selectSql + param.generatePageSql(params);
+                        pageList = querySqlList(pageSql, params);
+                    } else {
+                        pageList = Collections.emptyList();
+                    }
                 }
                 Map<String, Object> pageInfo = new LinkedHashMap<>();
                 pageInfo.put("count", count);
@@ -169,10 +182,8 @@ public class QuerySchemaInfoConfig {
         }
     }
 
-    private long queryCount(String fromAndWhere, String mainSchema, ReqResult result, List<Object> params) {
-        String sql = QuerySqlUtil.toCountSql(schemaColumnInfo, fromAndWhere, mainSchema, result);
-        Long number = jdbcTemplate.queryForObject(sql, Long.class, params.toArray());
-        return QueryUtil.toLong(number, 0);
+    private long queryCount(String countSql, List<Object> params) {
+        return QueryUtil.toLong(jdbcTemplate.queryForObject(countSql, Long.class, params.toArray()), 0);
     }
 
     private List<Map<String, Object>> pageList(String fromAndWhere, String mainSchema, ReqParam param,
@@ -185,7 +196,11 @@ public class QuerySchemaInfoConfig {
 
     private List<Map<String, Object>> queryList(String fromAndWhere, String mainSchema, ReqParam param,
                                                 ReqResult result, List<Object> params) {
-        String listSql = QuerySqlUtil.toListSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result);
+        String listSql = QuerySqlUtil.toListSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+        return querySqlList(listSql, params);
+    }
+
+    private List<Map<String, Object>> querySqlList(String listSql, List<Object> params) {
         List<Map<String, Object>> list = jdbcTemplate.queryForList(listSql, params.toArray());
         assemblyResult(list);
         return list;
@@ -200,7 +215,7 @@ public class QuerySchemaInfoConfig {
     }
 
     private void assemblyResult(List<Map<String, Object>> list) {
-        if (!list.isEmpty()) {
+        if (list != null && !list.isEmpty()) {
             // todo
             for (Map<String, Object> data : list) {
             }
