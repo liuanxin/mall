@@ -52,7 +52,7 @@ import java.util.*;
  * SELECT
  *   name,
  *   COUNT(*) AS `_cnt`,
- *   COUNT(distinct name) AS _cnt_name,   -- 别名是自动拼装的
+ *   COUNT(distinct name, name2) AS _cnt_name,   -- 别名是自动拼装的
  *   SUM(price) AS _sum_price,
  *   MIN(id) AS _min_id,
  *   MAX(id) AS _max_id,
@@ -65,12 +65,12 @@ import java.util.*;
  *   "columns": [
  *     "name",
  *     [ "count", "*", "x" ],
- *     [ "cnt_dis", "name", "xx" ],
+ *     [ "count_distinct", "name, name2", "xx" ],
  *     [ "sum", "price", "xxx", "gt", 100.5, "lt", 120.5 ],
  *     [ "min", "id", "y" ],
  *     [ "max", "id", "yy" ],
  *     [ "avg", "price", "yyy" ],
- *     [ "gct", "name", "z" ]
+ *     [ "group_concat", "name", "z" ]
  *   ]
  * }
  * 第三个参数表示接口响应回去时的属性, 每四个和第五个参数表示 HAVING 过滤时的条件
@@ -92,11 +92,7 @@ public class ReqResult {
 
     public void checkResult(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
         String currentSchema = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
-        if (currentSchema == null || currentSchema.isEmpty()) {
-            throw new RuntimeException("res need schema");
-        }
-        Map<String, Schema> schemaMap = schemaColumnInfo.getSchemaMap();
-        if (!schemaMap.containsKey(currentSchema)) {
+        if (!schemaColumnInfo.getSchemaMap().containsKey(currentSchema)) {
             throw new RuntimeException("no res schema(" + currentSchema + ") defined");
         }
         if (columns == null || columns.isEmpty()) {
@@ -123,13 +119,28 @@ public class ReqResult {
                         }
                         ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
                         String column = QueryUtil.toStr(groups.get(1));
+                        if (column.isEmpty()) {
+                            throw new RuntimeException("res function(" + groups + ") column error");
+                        }
                         String checkType = "result function(" + group.name().toLowerCase() + ")";
-                        if (group == ReqResultGroup.COUNT) {
-                            if (!Set.of("*", "1", "0").contains(column)) {
-                                QueryUtil.checkColumnName(column, currentSchema, schemaColumnInfo, checkType);
+                        //noinspection EnhancedSwitchMigration
+                        switch (group) {
+                            case COUNT: {
+                                if (!Set.of("*", "1", "0").contains(column)) {
+                                    QueryUtil.checkColumnName(column, currentSchema, schemaColumnInfo, checkType);
+                                }
+                                break;
                             }
-                        } else {
-                            QueryUtil.checkColumnName(column, currentSchema, schemaColumnInfo, checkType);
+                            case COUNT_DISTINCT: {
+                                for (String col : column.split(",")) {
+                                    QueryUtil.checkColumnName(col.trim(), currentSchema, schemaColumnInfo, checkType);
+                                }
+                                break;
+                            }
+                            default: {
+                                QueryUtil.checkColumnName(column, currentSchema, schemaColumnInfo, checkType);
+                                break;
+                            }
                         }
                         if (size > 4) {
                             // 先右移 1 位除以 2, 再左移 1 位乘以 2, 变成偶数
@@ -176,31 +187,38 @@ public class ReqResult {
                 innerResult.checkResult(innerSchema, schemaColumnInfo);
             }
         }
+
+        checkSchema(mainSchema, schemaColumnInfo);
     }
 
-    public Set<String> allResultSchema(String mainSchema) {
-        Set<String> set = new LinkedHashSet<>();
+    private void checkSchema(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
         String currentSchema = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
 
+        List<ReqResult> resultList = new ArrayList<>();
         for (Object obj : columns) {
             if (obj != null) {
                 if (obj instanceof String column) {
-                    set.add(QueryUtil.getSchemaName(column, mainSchema));
+                    QueryUtil.getSchemaName(column, mainSchema);
                 } else if (obj instanceof List<?> groups) {
                     if (!groups.isEmpty()) {
-                        set.add(QueryUtil.getSchemaName(QueryUtil.toStr(groups.get(1)), mainSchema));
+                        QueryUtil.getSchemaName(QueryUtil.toStr(groups.get(1)), mainSchema);
                     }
                 } else {
                     Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
                     if (inner != null) {
-                        for (ReqResult innerResult : inner.values()) {
-                            set.addAll(innerResult.allResultSchema(currentSchema));
-                        }
+                        resultList.addAll(inner.values());
                     }
                 }
             }
         }
-        return set;
+        if (!resultList.isEmpty()) {
+            Set<String> schemaNames = new LinkedHashSet<>();
+            for (ReqResult innerResult : resultList) {
+                innerResult.checkSchema(currentSchema, schemaColumnInfo);
+                schemaNames.add(innerResult.getSchema());
+            }
+            schemaColumnInfo.checkSchemaRelation(schema, schemaNames, "result");
+        }
     }
 
     public String generateSelectSql(String mainSchema, Set<String> paramSchema, SchemaColumnInfo schemaColumnInfo) {

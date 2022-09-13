@@ -15,7 +15,6 @@ public class SchemaColumnInfo {
     private Map<String, String> aliasMap;
     private Map<String, Schema> schemaMap;
 
-    private Map<String, Map<String, Set<SchemaColumnRelation>>> masterRelationMap;
     private Map<String, Map<String, SchemaColumnRelation>> childRelationMap;
     private Map<String, Map<String, SchemaColumnRelation>> masterChildSchemaMap;
 
@@ -25,33 +24,23 @@ public class SchemaColumnInfo {
         fillRelation(relationList);
     }
     private void fillRelation(List<SchemaColumnRelation> relationList) {
-        Map<String, Map<String, Set<SchemaColumnRelation>>> masterMap = new HashMap<>();
         Map<String, Map<String, SchemaColumnRelation>> childMap = new HashMap<>();
         Map<String, Map<String, SchemaColumnRelation>> schemaMasterChildMap = new HashMap<>();
         if (relationList != null && !relationList.isEmpty()) {
             for (SchemaColumnRelation relation : relationList) {
                 String masterSchema = relation.getOneSchema();
-                String masterColumn = relation.getOneColumn();
                 String childSchema = relation.getOneOrManySchema();
                 String childColumn = relation.getOneOrManyColumn();
-
-                Map<String, Set<SchemaColumnRelation>> masterRelation = masterMap.getOrDefault(masterSchema, new HashMap<>());
-                Set<SchemaColumnRelation> masterColumnSet = masterRelation.getOrDefault(masterColumn, new HashSet<>());
-                masterColumnSet.add(relation);
-                masterRelation.put(masterColumn, masterColumnSet);
-                masterMap.put(masterSchema, masterRelation);
 
                 Map<String, SchemaColumnRelation> childRelation = childMap.getOrDefault(childSchema, new HashMap<>());
                 childRelation.put(childColumn, relation);
                 childMap.put(childColumn, childRelation);
-
 
                 Map<String, SchemaColumnRelation> masterChildRelation = schemaMasterChildMap.getOrDefault(masterSchema, new HashMap<>());
                 masterChildRelation.put(childSchema, relation);
                 schemaMasterChildMap.put(masterSchema, masterChildRelation);
             }
         }
-        masterRelationMap = masterMap;
         childRelationMap = childMap;
         masterChildSchemaMap = schemaMasterChildMap;
     }
@@ -120,25 +109,21 @@ public class SchemaColumnInfo {
     }
 
     public void checkSchemaRelation(String mainSchema, Set<String> schemaNames, String type) {
-        Map<String, Set<SchemaColumnRelation>> masterRelationMap = this.masterRelationMap.get(mainSchema);
-        if (masterRelationMap == null || masterRelationMap.isEmpty()) {
-            throw new RuntimeException(mainSchema + " no relation defined");
-        }
-
-        Set<String> relationSchema = new HashSet<>();
-        for (Set<SchemaColumnRelation> relations : masterRelationMap.values()) {
-            for (SchemaColumnRelation relation : relations) {
-                relationSchema.add(relation.getOneOrManySchema());
-            }
-        }
         List<String> errorSchemaList = new ArrayList<>();
+        List<String> errorRelationSchemaList = new ArrayList<>();
         for (String schemaName : schemaNames) {
-            if (!relationSchema.contains(schemaName)) {
+            if (findSchema(schemaName) == null) {
                 errorSchemaList.add(schemaName);
+            }
+            if (findRelationByMasterChild(mainSchema, schemaName) == null) {
+                errorRelationSchemaList.add(schemaName);
             }
         }
         if (!errorSchemaList.isEmpty()) {
-            throw new RuntimeException(mainSchema + " is not related to " + errorSchemaList + " with " + type);
+            throw new RuntimeException("no relation " + errorSchemaList + " defined with " + type);
+        }
+        if (!errorRelationSchemaList.isEmpty()) {
+            throw new RuntimeException(mainSchema + " is not related to " + errorRelationSchemaList + " with " + type);
         }
     }
 }

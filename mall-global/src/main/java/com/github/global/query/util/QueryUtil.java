@@ -133,11 +133,11 @@ public class QueryUtil {
                 }
                 columnAliasSet.add(columnAlias);
 
-                aliasMap.put(QueryConst.COLUMN_PREFIX + columnName, columnAlias);
-                columnMap.put(columnAlias, new SchemaColumn(columnName, columnDesc, columnAlias, primary, type));
+                aliasMap.put(QueryConst.COLUMN_PREFIX + columnAlias, columnName);
+                columnMap.put(columnName, new SchemaColumn(columnName, columnDesc, columnAlias, primary, type));
             }
-            aliasMap.put(QueryConst.SCHEMA_PREFIX + schemaName, schemaAlias);
-            schemaMap.put(schemaAlias, new Schema(schemaName, schemaDesc, schemaAlias, columnMap));
+            aliasMap.put(QueryConst.SCHEMA_PREFIX + schemaAlias, schemaName);
+            schemaMap.put(schemaName, new Schema(schemaName, schemaDesc, schemaAlias, columnMap));
         }
 
         for (Map.Entry<String, ColumnInfo> entry : columnInfoMap.entrySet()) {
@@ -148,18 +148,22 @@ public class QueryUtil {
                 String oneColumn = columnInfo.relationColumn();
                 if (!oneSchema.isEmpty() && !oneColumn.isEmpty()) {
                     String schemaAndColumn = entry.getKey();
-                    String realSchemaName = aliasMap.get(QueryConst.SCHEMA_PREFIX + oneSchema);
-                    Schema schema = schemaMap.get(defaultIfBlank(realSchemaName, oneSchema));
+                    Schema schema = schemaMap.get(aliasMap.get(QueryConst.SCHEMA_PREFIX + oneSchema));
                     if (schema == null) {
-                        throw new RuntimeException(schemaAndColumn + "'s relation no schema(" + oneSchema + ")");
+                        schema = schemaMap.get(oneSchema);
+                        if (schema == null) {
+                            throw new RuntimeException(schemaAndColumn + "'s relation no schema(" + oneSchema + ")");
+                        }
                     }
 
                     Map<String, SchemaColumn> columnMap = schema.getColumnMap();
-                    String realColumnName = aliasMap.get(QueryConst.COLUMN_PREFIX + oneColumn);
-                    SchemaColumn column = columnMap.get(defaultIfBlank(realColumnName, oneColumn));
+                    SchemaColumn column = columnMap.get(aliasMap.get(QueryConst.COLUMN_PREFIX + oneColumn));
                     if (column == null) {
-                        throw new RuntimeException(schemaAndColumn + "'s relation no schema-column("
-                                + oneSchema + "." + oneColumn + ")");
+                        column = columnMap.get(oneColumn);
+                        if (column == null) {
+                            throw new RuntimeException(schemaAndColumn + "'s relation no schema-column("
+                                    + oneSchema + "." + oneColumn + ")");
+                        }
                     }
                     Class<?> sourceClass = columnClassMap.get(schemaAndColumn);
                     Class<?> targetClass = column.getColumnType();
@@ -336,8 +340,8 @@ public class QueryUtil {
 
     public static SchemaColumn queryColumn(String type, String schemaName, String columnName,
                                            Map<String, String> aliasMap, Map<String, SchemaColumn> columnMap) {
-        if (columnName.isEmpty()) {
-            throw new RuntimeException("schema(" + columnName + ") column cant' be blank with: " + type);
+        if (columnName == null || columnName.isEmpty()) {
+            throw new RuntimeException("schema(" + schemaName + ") column cant' be blank with: " + type);
         }
 
         String realColumnName = aliasMap.get(QueryConst.COLUMN_PREFIX + columnName);

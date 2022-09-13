@@ -14,12 +14,12 @@ import java.util.List;
 public enum ReqResultGroup {
 
     COUNT("COUNT(*)", "`_cnt`", "总条数"),
-    CNT_DIS("COUNT(DISTINCT %s)", "`_cnt%s`", "总条数(去重)"),
+    COUNT_DISTINCT("COUNT(DISTINCT %s)", "`_cnt%s`", "总条数(去重)"),
     SUM("SUM(%s)", "`_sum%s`", "总和"),
     MIN("MIN(%s)", "`_min%s`", "最小"),
     MAX("MAX(%s)", "`_max%s`", "最大"),
     AVG("AVG(%s)", "`_avg%s`", "平均"),
-    GCT("GROUP_CONCAT(%s)", "`_gct%s`", "组拼接");
+    GROUP_CONCAT("GROUP_CONCAT(%s)", "`_gct%s`", "组拼接");
 
     private final String value;
     private final String alias;
@@ -44,30 +44,26 @@ public enum ReqResultGroup {
     }
 
     public String generateSelectFunction(List<?> groups) {
-        if (groups == null) {
+        if (groups == null || groups.size() < 2) {
             return "";
         }
-        int size = groups.size();
-        if (size < 2) {
-            return "";
-        }
-
         String column = QueryUtil.toStr(groups.get(1));
         if (column.isEmpty()) {
             return "";
         }
+        return String.format(value, QuerySqlUtil.toSqlField(column)) + " AS " + generateAlias(column);
+    }
 
-        String funcValue = String.format(value, QuerySqlUtil.toSqlField(column));
-        String funcAlias = String.format(alias, ("*".equals(column) ? "" : ("_" + column)));
-        return funcValue + " AS " + funcAlias;
+    public String generateAlias(String column) {
+        return String.format(alias, ("*".equals(column) ? "" : ("_" + column.replace(",", "").replace(" ", "_"))));
     }
 
     public boolean checkHavingValue(Object value) {
-        return (this == GCT) ? (value instanceof String) : QueryUtil.isNumber(value);
+        return (this == GROUP_CONCAT) ? (value instanceof String) : QueryUtil.isNumber(value);
     }
 
     public String havingField(List<?> groups) {
-        if (groups == null) {
+        if (groups == null || groups.size() < 2) {
             return "";
         }
         String column = QueryUtil.toStr(groups.get(1));

@@ -110,10 +110,6 @@ public class ReqParamOperate {
         }
 
         String currentSchema = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
-        if (currentSchema == null || currentSchema.isEmpty()) {
-            throw new RuntimeException("param need schema");
-        }
-
         for (Object condition : conditions) {
             if (condition != null) {
                 if (condition instanceof List<?> list) {

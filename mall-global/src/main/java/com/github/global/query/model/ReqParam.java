@@ -41,8 +41,8 @@ public class ReqParam {
         }
         query.checkCondition(mainSchema, schemaColumnInfo);
 
+        Set<String> useSchemaSet = allParamSchema(mainSchema);
         if (sort != null && !sort.isEmpty()) {
-            Set<String> useSchemaSet = allParamSchema(mainSchema);
             for (String column : sort.keySet()) {
                 QueryUtil.checkColumnName(column, mainSchema, schemaColumnInfo, "query order");
 
@@ -60,6 +60,11 @@ public class ReqParam {
             if (indexParam == null || indexParam <= 0) {
                 throw new RuntimeException("param page error");
             }
+        }
+
+        useSchemaSet.remove(mainSchema);
+        if (useSchemaSet.size() > 1) {
+            schemaColumnInfo.checkSchemaRelation(mainSchema, useSchemaSet, "param");
         }
     }
 
