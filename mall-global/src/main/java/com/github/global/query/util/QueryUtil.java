@@ -167,6 +167,7 @@ public class QueryUtil {
                         throw new RuntimeException(schemaAndColumn + "'s data type has " + sourceClass.getSimpleName()
                                 + ", but relation " + oneSchema + "'s data type has" + targetClass.getSimpleName());
                     }
+                    // 用列名, 不是别名
                     String[] arr = schemaAndColumn.split("\\.");
                     String relationSchema = arr[0];
                     String relationColumn = arr[1];

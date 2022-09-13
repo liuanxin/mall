@@ -29,8 +29,7 @@ public class SchemaColumnInfo {
         Map<String, Map<String, SchemaColumnRelation>> childMap = new HashMap<>();
         Map<String, Map<String, SchemaColumnRelation>> schemaMasterChildMap = new HashMap<>();
         if (relationList != null && !relationList.isEmpty()) {
-            for (SchemaColumnRelation relation : relationList)
-            {
+            for (SchemaColumnRelation relation : relationList) {
                 String masterSchema = relation.getOneSchema();
                 String masterColumn = relation.getOneColumn();
                 String childSchema = relation.getOneOrManySchema();

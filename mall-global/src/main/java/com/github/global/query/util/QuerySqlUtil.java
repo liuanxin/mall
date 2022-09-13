@@ -1,9 +1,11 @@
 package com.github.global.query.util;
 
+import com.github.global.query.enums.SchemaRelationType;
 import com.github.global.query.model.*;
 
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 
 public class QuerySqlUtil {
 
@@ -43,7 +45,25 @@ public class QuerySqlUtil {
         return sbd.toString();
     }
 
-    public static String toCountSql(String fromAndWhere) {
+    public static String toCountSql(SchemaColumnInfo schemaColumnInfo, String mainSchema, ReqParam param, String fromAndWhere) {
+        Set<String> paramSchema = param.allParamSchema(mainSchema);
+        paramSchema.remove(mainSchema);
+        if (!paramSchema.isEmpty()) {
+            boolean hasRelationMany = false;
+            for (String childSchemaName : paramSchema) {
+                SchemaColumnRelation relation = schemaColumnInfo.findRelationByMasterChild(mainSchema, childSchemaName);
+                if (relation.getType() == SchemaRelationType.ONE_TO_MANY) {
+                    hasRelationMany = true;
+                    break;
+                }
+            }
+            // SELECT COUNT(DISTINCT id) FROM ...
+            if (hasRelationMany) {
+                StringJoiner sj = new StringJoiner(", ");
+                schemaColumnInfo.getSchemaMap().get(mainSchema).getIdKey().forEach(s -> sj.add(mainSchema + "." + s));
+                return String.format("SELECT COUNT(DISTINCT %s) ", sj) + fromAndWhere;
+            }
+        }
         return "SELECT COUNT(*) " + fromAndWhere;
     }
 

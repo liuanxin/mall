@@ -36,5 +36,8 @@ public class QueryInfo {
 
         /** 表列对应的实体的类型 */
         private String type;
+
+        /** 关联关系 */
+        private String relation;
     }
 }

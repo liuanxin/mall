@@ -1,15 +1,11 @@
 package com.github.global.query.model;
 
 import com.github.global.query.enums.SchemaRelationType;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.Objects;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class SchemaColumnRelation {
 
     private String oneSchema;
@@ -17,6 +13,14 @@ public class SchemaColumnRelation {
     private SchemaRelationType type;
     private String oneOrManySchema;
     private String oneOrManyColumn;
+
+    public SchemaColumnRelation(String oneSchema, String oneColumn, SchemaRelationType type, String oneOrManySchema, String oneOrManyColumn) {
+        this.oneSchema = oneSchema;
+        this.oneColumn = oneColumn;
+        this.type = type;
+        this.oneOrManySchema = oneOrManySchema;
+        this.oneOrManyColumn = oneOrManyColumn;
+    }
 
     @Override
     public boolean equals(Object o) {

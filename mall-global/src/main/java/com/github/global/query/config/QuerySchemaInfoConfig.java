@@ -137,11 +137,16 @@ public class QuerySchemaInfoConfig {
 
     public List<QueryInfo> queryInfo() {
         List<QueryInfo> queryList = new ArrayList<>();
-        for (Schema schema : schemaColumnInfo().getSchemaMap().values()) {
+        SchemaColumnInfo schemaColumnInfo = schemaColumnInfo();
+        for (Schema schema : schemaColumnInfo.getSchemaMap().values()) {
             List<QueryInfo.QueryColumn> columnList = new ArrayList<>();
             for (SchemaColumn column : schema.getColumnMap().values()) {
                 String type = column.getColumnType().getSimpleName();
-                columnList.add(new QueryInfo.QueryColumn(column.getAlias(), column.getDesc(), type));
+                String schemaAndColumn = schema.getName() + "." + column.getName();
+                SchemaColumnRelation columnRelation = schemaColumnInfo.findRelationByChild(schemaAndColumn);
+                String relation = (columnRelation != null) ?
+                        (columnRelation.getOneSchema() + "." + columnRelation.getOneColumn()) : null;
+                columnList.add(new QueryInfo.QueryColumn(column.getAlias(), column.getDesc(), type, relation));
             }
             queryList.add(new QueryInfo(schema.getAlias(), schema.getDesc(), columnList));
         }
@@ -149,30 +154,31 @@ public class QuerySchemaInfoConfig {
     }
 
     public Object query(RequestInfo req) {
-        req.check(schemaColumnInfo());
+        SchemaColumnInfo schemaColumnInfo = schemaColumnInfo();
+        req.check(schemaColumnInfo);
 
         String mainSchema = req.getSchema();
         ReqParam param = req.getParam();
         ReqResult result = req.getResult();
 
         List<Object> params = new ArrayList<>();
-        String fromAndWhere = QuerySqlUtil.toFromWhereSql(schemaColumnInfo(), mainSchema, param, result, params);
+        String fromAndWhere = QuerySqlUtil.toFromWhereSql(schemaColumnInfo, mainSchema, param, result, params);
 
         if (param.needQueryPage()) {
             if (param.needQueryCount()) {
                 long count;
                 List<Map<String, Object>> pageList;
                 if (result.generateGroupSql().isEmpty()) {
-                    count = queryCount(QuerySqlUtil.toCountSql(fromAndWhere), params);
+                    count = queryCount(QuerySqlUtil.toCountSql(schemaColumnInfo, mainSchema, param, fromAndWhere), params);
                     if (param.needQueryCurrentPage(count)) {
-                        String pageSql = QuerySqlUtil.toPageSql(schemaColumnInfo(),
+                        String pageSql = QuerySqlUtil.toPageSql(schemaColumnInfo,
                                 fromAndWhere, mainSchema, param, result, params);
                         pageList = querySqlList(pageSql, params);
                     } else {
                         pageList = Collections.emptyList();
                     }
                 } else {
-                    String selectSql = QuerySqlUtil.toSelectSql(schemaColumnInfo(),
+                    String selectSql = QuerySqlUtil.toSelectSql(schemaColumnInfo,
                             fromAndWhere, mainSchema, param, result, params);
                     count = queryCount(QuerySqlUtil.toCountGroupSql(selectSql), params);
                     if (param.needQueryCurrentPage(count)) {

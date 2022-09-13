@@ -1,6 +1,5 @@
 package com.github.global.query.model;
 
-import com.github.global.query.util.QueryUtil;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -33,14 +32,14 @@ public class Schema {
         this.alias = alias;
         this.columnMap = columnMap;
 
+        List<String> idKey = new ArrayList<>();
         if (!columnMap.isEmpty()) {
-            List<String> idKey = new ArrayList<>();
             for (SchemaColumn schemaColumn : columnMap.values()) {
                 if (schemaColumn.isPrimary()) {
-                    idKey.add(QueryUtil.defaultIfBlank(schemaColumn.getAlias(), schemaColumn.getName()));
+                    idKey.add(schemaColumn.getName());
                 }
             }
-            this.idKey = idKey;
         }
+        this.idKey = idKey;
     }
 }
