@@ -217,7 +217,7 @@ public class ReqResult {
                 innerResult.checkSchema(currentSchema, schemaColumnInfo);
                 schemaNames.add(innerResult.getSchema());
             }
-            schemaColumnInfo.checkSchemaRelation(schema, schemaNames, "result");
+            schemaColumnInfo.checkSchemaRelation(currentSchema, schemaNames, "result");
         }
     }
 
