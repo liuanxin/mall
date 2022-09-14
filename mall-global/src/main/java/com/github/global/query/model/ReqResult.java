@@ -184,6 +184,9 @@ public class ReqResult {
                 if (innerSchema == null || innerSchema.isEmpty()) {
                     throw new RuntimeException("res inner need schema");
                 }
+                if (schemaColumnInfo.findRelationByMasterChild(currentSchema, innerSchema) == null) {
+                    throw new RuntimeException("res " + currentSchema + " - " + innerSchema + " has no relation");
+                }
                 innerResult.checkResult(innerSchema, schemaColumnInfo);
             }
         }

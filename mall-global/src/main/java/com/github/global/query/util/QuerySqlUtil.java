@@ -64,7 +64,7 @@ public class QuerySqlUtil {
         paramSchema.remove(mainSchema);
         for (String childSchemaName : paramSchema) {
             SchemaColumnRelation relation = schemaColumnInfo.findRelationByMasterChild(mainSchema, childSchemaName);
-            if (relation.getType() == SchemaRelationType.ONE_TO_MANY) {
+            if (relation != null && relation.getType() == SchemaRelationType.ONE_TO_MANY) {
                 return true;
             }
         }
