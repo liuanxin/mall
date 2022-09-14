@@ -42,7 +42,7 @@ public class QuerySqlUtil {
                 sbd.append(" = ").append(childAlias).append(relation.getOneOrManyColumn());
             }
         }
-        return sbd.toString();
+        return sbd.append(param.generateWhereSql(params)).toString();
     }
 
     public static String toCountSql(SchemaColumnInfo schemaColumnInfo, String mainSchema, ReqParam param, String fromAndWhere) {

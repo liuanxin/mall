@@ -36,10 +36,9 @@ public class ReqParam {
 
 
     public void checkParam(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
-        if (query == null) {
-            throw new RuntimeException("param no query");
+        if (query != null) {
+            query.checkCondition(mainSchema, schemaColumnInfo);
         }
-        query.checkCondition(mainSchema, schemaColumnInfo);
 
         Set<String> useSchemaSet = allParamSchema(mainSchema);
         if (sort != null && !sort.isEmpty()) {
@@ -70,7 +69,9 @@ public class ReqParam {
 
     public Set<String> allParamSchema(String mainSchema) {
         Set<String> set = new LinkedHashSet<>();
-        query.allSchema(mainSchema, set);
+        if (query != null) {
+            query.allSchema(mainSchema, set);
+        }
 
         if (sort != null && !sort.isEmpty()) {
             for (String column : sort.keySet()) {
@@ -78,6 +79,15 @@ public class ReqParam {
             }
         }
         return set;
+    }
+
+    public String generateWhereSql(List<Object> params) {
+        if (query == null) {
+            return "";
+        }
+
+        String where = query.generateSql(params);
+        return where.isEmpty() ? "" : (" WHERE " + where);
     }
 
     public String generateOrderSql() {
@@ -100,10 +110,6 @@ public class ReqParam {
     public boolean needQueryCount() {
         return notCount == null || !notCount;
     }
-    private int calcLimit() {
-        Integer limitParam = page.size() > 1 ? page.get(1) : 0;
-        return QueryConst.LIMIT_SET.contains(limitParam) ? limitParam : QueryConst.MIN_LIMIT;
-    }
     public boolean needQueryCurrentPage(long count) {
         if (count <= 0) {
             return false;
@@ -113,7 +119,10 @@ public class ReqParam {
         // 比如总条数有 100 条, index 是 11, limit 是 10, 这时候是没必要发起 limit 查询的, 只有 index 在 1 ~ 10 才需要
         return ((long) index * limit) <= count;
     }
-
+    private int calcLimit() {
+        Integer limitParam = page.size() > 1 ? page.get(1) : 0;
+        return QueryConst.LIMIT_SET.contains(limitParam) ? limitParam : QueryConst.MIN_LIMIT;
+    }
     public String generatePageSql(List<Object> params) {
         if (needQueryPage()) {
             int index = page.get(0);

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 
 /**
  * <pre>
@@ -121,6 +122,7 @@ public class ReqParamOperate {
 
                         String column = QueryUtil.toStr(list.get(0));
                         if (!column.isEmpty()) {
+                            // noinspection DuplicatedCode
                             ReqParamConditionType type;
                             Object value;
                             if (size == 2) {
@@ -164,6 +166,7 @@ public class ReqParamOperate {
             if (condition != null) {
                 if (condition instanceof List<?> list) {
                     if (!list.isEmpty()) {
+
                         set.add(QueryUtil.getSchemaName(QueryUtil.toStr(list.get(0)), currentSchema));
                     }
                 } else {
@@ -174,5 +177,45 @@ public class ReqParamOperate {
                 }
             }
         }
+    }
+
+    public String generateSql(List<Object> params) {
+        if (conditions == null || conditions.isEmpty()) {
+            return "";
+        }
+
+        StringJoiner sj = new StringJoiner(" " + operate.name().toUpperCase() + " ");
+        for (Object condition : conditions) {
+            if (condition != null) {
+                if (condition instanceof List<?> list) {
+                    if (!list.isEmpty()) {
+                        int size = list.size();
+                        String column = QueryUtil.toStr(list.get(0));
+                        if (!column.isEmpty()) {
+                            // noinspection DuplicatedCode
+                            ReqParamConditionType type;
+                            Object value;
+                            if (size == 2) {
+                                type = ReqParamConditionType.EQ;
+                                value = list.get(1);
+                            } else {
+                                type = ReqParamConditionType.deserializer(list.get(1));
+                                value = list.get(2);
+                            }
+                            sj.add(type.generateSql(column, value, params));
+                        }
+                    }
+                } else {
+                    ReqParamOperate compose = JsonUtil.convert(condition, ReqParamOperate.class);
+                    if (compose != null) {
+                        String innerWhereSql = compose.generateSql(params);
+                        if (!innerWhereSql.isEmpty()) {
+                            sj.add("( " + innerWhereSql + " )");
+                        }
+                    }
+                }
+            }
+        }
+        return sj.toString().trim();
     }
 }
