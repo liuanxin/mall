@@ -184,8 +184,7 @@ public class QuerySchemaInfoConfig {
                     String selectSql = QuerySqlUtil.toSelectSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
                     count = queryCount(QuerySqlUtil.toCountGroupSql(selectSql), params);
                     if (param.needQueryCurrentPage(count)) {
-                        String pageSql = selectSql + param.generatePageSql(params);
-                        pageList = querySqlList(pageSql, params);
+                        pageList = querySqlList(QuerySqlUtil.toPageGroupSql(selectSql, param, params), params);
                     } else {
                         pageList = Collections.emptyList();
                     }

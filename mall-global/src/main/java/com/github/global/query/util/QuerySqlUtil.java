@@ -75,6 +75,16 @@ public class QuerySqlUtil {
         return "SELECT COUNT(*) FROM ( " + selectSql + " ) TMP";
     }
 
+    public static String toPageSql(SchemaColumnInfo schemaColumnInfo, String fromAndWhere, String mainSchema,
+                                   ReqParam param, ReqResult result, List<Object> params) {
+        String listSql = toListSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+        return listSql + param.generatePageSql(params);
+    }
+
+    public static String toPageGroupSql(String selectSql, ReqParam param, List<Object> params) {
+        return selectSql + param.generatePageSql(params);
+    }
+
     public static String toSelectSql(SchemaColumnInfo schemaColumnInfo, String fromAndWhere, String mainSchema,
                                      ReqParam param, ReqResult result, List<Object> params) {
         String selectField = result.generateSelectSql(mainSchema, param.allParamSchema(mainSchema), schemaColumnInfo);
@@ -89,7 +99,6 @@ public class QuerySqlUtil {
         if (!emptySelect) {
             sbd.append(selectField);
         }
-
         if (!emptyFunction) {
             if (!emptySelect) {
                 sbd.append(", ");
@@ -100,12 +109,6 @@ public class QuerySqlUtil {
         sbd.append(result.generateGroupSql());
         sbd.append(result.generateHavingSql(params));
         return sbd.toString();
-    }
-
-    public static String toPageSql(SchemaColumnInfo schemaColumnInfo, String fromAndWhere, String mainSchema,
-                                   ReqParam param, ReqResult result, List<Object> params) {
-        String listSql = toListSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
-        return listSql + param.generatePageSql(params);
     }
 
     public static String toListSql(SchemaColumnInfo schemaColumnInfo, String fromAndWhere, String mainSchema,
