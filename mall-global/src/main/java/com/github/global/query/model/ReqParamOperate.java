@@ -3,6 +3,7 @@ package com.github.global.query.model;
 import com.github.common.json.JsonUtil;
 import com.github.global.query.enums.ReqParamConditionType;
 import com.github.global.query.enums.ReqParamOperateType;
+import com.github.global.query.util.QuerySqlUtil;
 import com.github.global.query.util.QueryUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -166,7 +167,6 @@ public class ReqParamOperate {
             if (condition != null) {
                 if (condition instanceof List<?> list) {
                     if (!list.isEmpty()) {
-
                         set.add(QueryUtil.getSchemaName(QueryUtil.toStr(list.get(0)), currentSchema));
                     }
                 } else {
@@ -179,12 +179,13 @@ public class ReqParamOperate {
         }
     }
 
-    public String generateSql(List<Object> params) {
+    public String generateSql(String mainSchema, SchemaColumnInfo schemaColumnInfo, List<Object> params, boolean needAlias) {
         if (conditions == null || conditions.isEmpty()) {
             return "";
         }
 
         StringJoiner sj = new StringJoiner(" " + operate.name().toUpperCase() + " ");
+        String currentSchema = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
         for (Object condition : conditions) {
             if (condition != null) {
                 if (condition instanceof List<?> list) {
@@ -202,13 +203,28 @@ public class ReqParamOperate {
                                 type = ReqParamConditionType.deserializer(list.get(1));
                                 value = list.get(2);
                             }
-                            sj.add(type.generateSql(column, value, params));
+                            String schemaName = QueryUtil.getSchemaName(column, currentSchema);
+                            String columnName = QueryUtil.getColumnName(column);
+                            Schema schema = schemaColumnInfo.findSchema(schemaName);
+                            SchemaColumn schemaColumn = schemaColumnInfo.findSchemaColumn(schema, columnName);
+                            String useColumnName = QuerySqlUtil.toSqlField(schemaColumn.getName());
+                            String realColumn;
+                            if (needAlias) {
+                                realColumn = QuerySqlUtil.toSqlField(schema.getAlias()) + "." + useColumnName;
+                            } else {
+                                realColumn = useColumnName;
+                            }
+
+                            String sql = type.generateSql(realColumn, value, params);
+                            if (!sql.isEmpty()) {
+                                sj.add(sql);
+                            }
                         }
                     }
                 } else {
                     ReqParamOperate compose = JsonUtil.convert(condition, ReqParamOperate.class);
                     if (compose != null) {
-                        String innerWhereSql = compose.generateSql(params);
+                        String innerWhereSql = compose.generateSql(currentSchema, schemaColumnInfo, params, needAlias);
                         if (!innerWhereSql.isEmpty()) {
                             sj.add("( " + innerWhereSql + " )");
                         }

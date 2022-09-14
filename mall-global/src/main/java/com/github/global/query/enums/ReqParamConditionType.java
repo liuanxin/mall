@@ -218,7 +218,7 @@ public enum ReqParamConditionType {
         }
 
         params.add(value);
-        return String.format(" %s %s ?", QuerySqlUtil.toSqlField(column), getValue());
+        return String.format(" %s %s ?", column, getValue());
     }
     protected String generateMulti(String column, Object value, List<Object> params) {
         if (value == null || !QueryConst.MULTI_TYPE.contains(this)) {
@@ -229,9 +229,7 @@ public enum ReqParamConditionType {
             return "";
         }
 
-        String useColumn = QuerySqlUtil.toSqlField(column);
-        String symbol = getValue();
-        if ("BETWEEN".equals(symbol)) {
+        if (this == BET) {
             Object[] arr = c.toArray();
             Object start = arr[0];
             Object end = arr.length > 1 ? arr[1] : null;
@@ -240,15 +238,15 @@ public enum ReqParamConditionType {
             if (start != null && end != null) {
                 params.add(start);
                 params.add(end);
-                sbd.append(" ").append(useColumn).append(" BETWEEN ? AND ?");
+                sbd.append(" ").append(column).append(" BETWEEN ? AND ?");
             } else {
                 if (start != null) {
                     params.add(start);
-                    sbd.append(" ").append(useColumn).append(" >= ?");
+                    sbd.append(" ").append(column).append(" >= ?");
                 }
                 if (end != null) {
                     params.add(end);
-                    sbd.append(" ").append(useColumn).append(" <= ?");
+                    sbd.append(" ").append(column).append(" <= ?");
                 }
             }
             return sbd.toString();
@@ -264,7 +262,7 @@ public enum ReqParamConditionType {
                     params.add(obj);
                 }
             }
-            return hasChange ? String.format(" %s %s (%s)", useColumn, symbol, sj) : "";
+            return hasChange ? String.format(" %s %s (%s)", column, getValue(), sj) : "";
         }
     }
 }

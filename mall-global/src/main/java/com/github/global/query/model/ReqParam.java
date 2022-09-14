@@ -81,12 +81,12 @@ public class ReqParam {
         return set;
     }
 
-    public String generateWhereSql(List<Object> params) {
+    public String generateWhereSql(String mainSchema, SchemaColumnInfo schemaColumnInfo, List<Object> params, boolean needAlias) {
         if (query == null) {
             return "";
         }
 
-        String where = query.generateSql(params);
+        String where = query.generateSql(mainSchema, schemaColumnInfo, params, needAlias);
         return where.isEmpty() ? "" : (" WHERE " + where);
     }
 

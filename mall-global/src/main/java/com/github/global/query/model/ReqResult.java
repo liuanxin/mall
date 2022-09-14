@@ -234,7 +234,7 @@ public class ReqResult {
         return sj.toString();
     }
 
-    public String generateSelectFunctionSql() {
+    public String generateSelectFunctionSql(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
         StringJoiner groupSj = new StringJoiner(", ");
         for (Object obj : columns) {
             if (obj instanceof List<?> groups) {

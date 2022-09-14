@@ -161,8 +161,12 @@ public class QuerySchemaInfoConfig {
         ReqParam param = req.getParam();
         ReqResult result = req.getResult();
 
+        Set<String> paramSchema = param.allParamSchema(mainSchema);
+        paramSchema.remove(mainSchema);
+        boolean needAlias = !paramSchema.isEmpty();
+
         List<Object> params = new ArrayList<>();
-        String fromAndWhere = QuerySqlUtil.toFromWhereSql(schemaColumnInfo, mainSchema, param, result, params);
+        String fromAndWhere = QuerySqlUtil.toFromWhereSql(schemaColumnInfo, mainSchema, param, needAlias, params);
 
         if (param.needQueryPage()) {
             if (param.needQueryCount()) {
@@ -171,15 +175,13 @@ public class QuerySchemaInfoConfig {
                 if (result.generateGroupSql().isEmpty()) {
                     count = queryCount(QuerySqlUtil.toCountSql(schemaColumnInfo, mainSchema, param, fromAndWhere), params);
                     if (param.needQueryCurrentPage(count)) {
-                        String pageSql = QuerySqlUtil.toPageSql(schemaColumnInfo,
-                                fromAndWhere, mainSchema, param, result, params);
+                        String pageSql = QuerySqlUtil.toPageSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
                         pageList = querySqlList(pageSql, params);
                     } else {
                         pageList = Collections.emptyList();
                     }
                 } else {
-                    String selectSql = QuerySqlUtil.toSelectSql(schemaColumnInfo,
-                            fromAndWhere, mainSchema, param, result, params);
+                    String selectSql = QuerySqlUtil.toSelectSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
                     count = queryCount(QuerySqlUtil.toCountGroupSql(selectSql), params);
                     if (param.needQueryCurrentPage(count)) {
                         String pageSql = selectSql + param.generatePageSql(params);

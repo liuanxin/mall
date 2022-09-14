@@ -296,7 +296,7 @@ public class QueryUtil {
     public static boolean isNullString(Object value) {
         if (value instanceof String) {
             String str = ((String) value).trim();
-            return str.isEmpty() || "null".equalsIgnoreCase(str) || "undefined".equalsIgnoreCase(str);
+            return "null".equalsIgnoreCase(str) || "undefined".equalsIgnoreCase(str);
         }
         return false;
     }

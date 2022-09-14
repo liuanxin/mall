@@ -14,18 +14,18 @@ public class QuerySqlUtil {
     }
 
     public static String toFromWhereSql(SchemaColumnInfo schemaColumnInfo, String mainSchema,
-                                        ReqParam param, ReqResult result, List<Object> params) {
+                                        ReqParam param, boolean needAlias, List<Object> params) {
         StringBuilder sbd = new StringBuilder();
         sbd.append("FROM ");
 
         Schema schema = schemaColumnInfo.findSchema(mainSchema);
-        sbd.append(schema.getName());
+        sbd.append(QuerySqlUtil.toSqlField(schema.getName()));
 
-        Set<String> paramSchema = param.allParamSchema(mainSchema);
-        paramSchema.remove(mainSchema);
-        if (!paramSchema.isEmpty()) {
+        if (needAlias) {
             String mainSchemaAlias = schema.getAlias();
-            sbd.append(" AS ").append(mainSchemaAlias);
+            sbd.append(" AS ").append(QuerySqlUtil.toSqlField(mainSchemaAlias));
+            Set<String> paramSchema = param.allParamSchema(mainSchema);
+            paramSchema.remove(mainSchema);
             for (String childSchemaName : paramSchema) {
                 SchemaColumnRelation relation = schemaColumnInfo.findRelationByMasterChild(mainSchema, childSchemaName);
                 if (relation == null) {
@@ -36,35 +36,39 @@ public class QuerySqlUtil {
                 SchemaColumn childSchemaColumn = schemaColumnInfo.findSchemaColumn(childSchemaName, childColumn);
                 String childAlias = childSchemaColumn.getAlias();
 
-                sbd.append(" INNER JOIN ").append(childSchemaColumn.getName());
-                sbd.append(" AS ").append(childAlias);
-                sbd.append(" ON ").append(mainSchemaAlias).append(".").append(relation.getOneColumn());
-                sbd.append(" = ").append(childAlias).append(relation.getOneOrManyColumn());
+                sbd.append(" INNER JOIN ").append(QuerySqlUtil.toSqlField(childSchemaColumn.getName()));
+                sbd.append(" AS ").append(QuerySqlUtil.toSqlField(childAlias));
+                sbd.append(" ON ").append(QuerySqlUtil.toSqlField(mainSchemaAlias)).append(".");
+                sbd.append(QuerySqlUtil.toSqlField(relation.getOneColumn()));
+                sbd.append(" = ").append(QuerySqlUtil.toSqlField(childAlias)).append(".");
+                sbd.append(QuerySqlUtil.toSqlField(relation.getOneOrManyColumn()));
             }
         }
-        return sbd.append(param.generateWhereSql(params)).toString();
+        return sbd.append(param.generateWhereSql(mainSchema, schemaColumnInfo, params, needAlias)).toString();
     }
 
-    public static String toCountSql(SchemaColumnInfo schemaColumnInfo, String mainSchema, ReqParam param, String fromAndWhere) {
-        Set<String> paramSchema = param.allParamSchema(mainSchema);
-        paramSchema.remove(mainSchema);
-        if (!paramSchema.isEmpty()) {
-            boolean hasRelationMany = false;
-            for (String childSchemaName : paramSchema) {
-                SchemaColumnRelation relation = schemaColumnInfo.findRelationByMasterChild(mainSchema, childSchemaName);
-                if (relation.getType() == SchemaRelationType.ONE_TO_MANY) {
-                    hasRelationMany = true;
-                    break;
-                }
+    public static String toCountSql(SchemaColumnInfo schemaColumnInfo, String mainSchema,
+                                    ReqParam param, String fromAndWhere) {
+        // SELECT COUNT(DISTINCT xx.id) FROM ...
+        if (hasRelationMany(schemaColumnInfo, mainSchema, param)) {
+            StringJoiner sj = new StringJoiner(", ");
+            for (String id : schemaColumnInfo.getSchemaMap().get(mainSchema).getIdKey()) {
+                sj.add(QuerySqlUtil.toSqlField(mainSchema) + "." + QuerySqlUtil.toSqlField(id));
             }
-            // SELECT COUNT(DISTINCT id) FROM ...
-            if (hasRelationMany) {
-                StringJoiner sj = new StringJoiner(", ");
-                schemaColumnInfo.getSchemaMap().get(mainSchema).getIdKey().forEach(s -> sj.add(mainSchema + "." + s));
-                return String.format("SELECT COUNT(DISTINCT %s) ", sj) + fromAndWhere;
-            }
+            return String.format("SELECT COUNT(DISTINCT %s) ", sj) + fromAndWhere;
         }
         return "SELECT COUNT(*) " + fromAndWhere;
+    }
+    private static boolean hasRelationMany(SchemaColumnInfo schemaColumnInfo, String mainSchema, ReqParam param) {
+        Set<String> paramSchema = param.allParamSchema(mainSchema);
+        paramSchema.remove(mainSchema);
+        for (String childSchemaName : paramSchema) {
+            SchemaColumnRelation relation = schemaColumnInfo.findRelationByMasterChild(mainSchema, childSchemaName);
+            if (relation.getType() == SchemaRelationType.ONE_TO_MANY) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static String toCountGroupSql(String selectSql) {
@@ -74,7 +78,7 @@ public class QuerySqlUtil {
     public static String toSelectSql(SchemaColumnInfo schemaColumnInfo, String fromAndWhere, String mainSchema,
                                      ReqParam param, ReqResult result, List<Object> params) {
         String selectField = result.generateSelectSql(mainSchema, param.allParamSchema(mainSchema), schemaColumnInfo);
-        String functionSql = result.generateSelectFunctionSql();
+        String functionSql = result.generateSelectFunctionSql(mainSchema, schemaColumnInfo);
         boolean emptySelect = selectField.isEmpty();
         boolean emptyFunction = functionSql.isEmpty();
         if (emptySelect && emptyFunction) {

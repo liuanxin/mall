@@ -51,16 +51,16 @@ public class SchemaColumnInfo {
         return schema == null ? schemaMap.get(schemaName) : schema;
     }
 
-    public SchemaColumn findSchemaColumn(String schemaName, String columnName) {
-        Schema schema = findSchema(schemaName);
-        if (schema == null) {
-            return null;
-        }
-
+    public SchemaColumn findSchemaColumn(Schema schema, String columnName) {
         Map<String, SchemaColumn> columnMap = schema.getColumnMap();
         String columnAlias = aliasMap.get(QueryConst.COLUMN_PREFIX + columnName);
         SchemaColumn schemaColumn = columnMap.get(columnAlias);
         return schemaColumn == null ? columnMap.get(columnName) : schemaColumn;
+    }
+
+    public SchemaColumn findSchemaColumn(String schemaName, String columnName) {
+        Schema schema = findSchema(schemaName);
+        return (schema == null) ? null : findSchemaColumn(schema, columnName);
     }
 
     public SchemaColumnRelation findRelationByMasterChild(String masterSchema, String childSchema) {
