@@ -215,7 +215,7 @@ public class QuerySchemaInfoConfig {
     private List<Map<String, Object>> queryPageList(String fromAndWhere, String mainSchema, ReqParam param,
                                                     ReqResult result, List<Object> params) {
         List<Map<String, Object>> list;
-        // 很深的查询(深分页)时, 先只用条件排序分页查 id, 再用 id 查具体的数据列
+        // 很深的查询(深分页)时, 先用「条件 + 排序 + 分页」只查 id, 再用 id 查具体的数据列
         if (param.hasDeepPage(QueryConst.MAX_PAGE_SIZE)) {
             String idPageSql = QuerySqlUtil.toIdPageSql(schemaColumnInfo, fromAndWhere, mainSchema, param, params);
             List<Map<String, Object>> idList = jdbcTemplate.queryForList(idPageSql, params.toArray());

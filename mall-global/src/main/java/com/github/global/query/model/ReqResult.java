@@ -249,7 +249,7 @@ public class ReqResult {
     }
 
     public String generateSelectSql(String mainSchema, boolean needAlias, SchemaColumnInfo schemaColumnInfo) {
-        // todo
+        // todo 9-15 处理到这里
         StringJoiner sj = new StringJoiner(", ");
         for (Object obj : columns) {
             if (obj instanceof String column) {

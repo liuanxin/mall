@@ -50,7 +50,8 @@ public class QuerySqlUtil {
                                         ReqParam param, List<Object> params) {
         boolean needAlias = param.needAlias(mainSchema);
         String fromSql = toFromSql(schemaColumnInfo, mainSchema, param);
-        return fromSql + param.generateWhereSql(mainSchema, schemaColumnInfo, params, needAlias);
+        String whereSql = param.generateWhereSql(mainSchema, schemaColumnInfo, params, needAlias);
+        return fromSql + whereSql;
     }
 
     public static String toCountSql(SchemaColumnInfo schemaColumnInfo, String mainSchema,
