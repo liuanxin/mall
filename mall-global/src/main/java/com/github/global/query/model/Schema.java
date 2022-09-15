@@ -1,11 +1,13 @@
 package com.github.global.query.model;
 
+import com.github.global.query.util.QuerySqlUtil;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 @Data
 @NoArgsConstructor
@@ -41,5 +43,25 @@ public class Schema {
             }
         }
         this.idKey = idKey;
+    }
+
+    public String idKeyColumn(boolean needAlias, String alias) {
+        if (idKey.size() == 1) {
+            if (needAlias) {
+                return QuerySqlUtil.toSqlField(alias) + "." + QuerySqlUtil.toSqlField(idKey.get(0));
+            } else {
+                return QuerySqlUtil.toSqlField(idKey.get(0));
+            }
+        } else {
+            StringJoiner sj = new StringJoiner(", ", "(", ")");
+            for (String id : idKey) {
+                if (needAlias) {
+                    sj.add(QuerySqlUtil.toSqlField(alias) + "." + QuerySqlUtil.toSqlField(id));
+                } else {
+                    sj.add(QuerySqlUtil.toSqlField(id));
+                }
+            }
+            return sj.toString();
+        }
     }
 }

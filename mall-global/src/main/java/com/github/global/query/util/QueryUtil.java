@@ -250,6 +250,22 @@ public class QueryUtil {
         return sbd.toString();
     }
 
+    public static String toSplitString(Collection<?> list, String split) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+
+        StringJoiner sj = new StringJoiner(split);
+        for (Object obj : list) {
+            if (obj != null) {
+                String str = obj.toString();
+                if (!str.isEmpty() && !"null".equalsIgnoreCase(str) && !"undefined".equalsIgnoreCase(str)) {
+                    sj.add(str.trim());
+                }
+            }
+        }
+        return sj.toString();
+    }
 
     public static String toStr(Object obj) {
         return obj == null ? "" : obj.toString().trim();
@@ -318,20 +334,16 @@ public class QueryUtil {
 
     public static SchemaColumn checkSchemaAndColumnName(String schemaName, String columnName,
                                                         SchemaColumnInfo schemaColumnInfo, String type) {
-        Map<String, String> aliasMap = schemaColumnInfo.getAliasMap();
-        Schema schema = querySchema(type, schemaName, aliasMap, schemaColumnInfo.getSchemaMap());
-        return queryColumn(type, schemaName, columnName, aliasMap, schema.getColumnMap());
+        Schema schema = querySchema(type, schemaName, schemaColumnInfo);
+        return queryColumn(type, schemaName, columnName, schemaColumnInfo, schema);
     }
 
-    public static Schema querySchema(String type, String schemaName, Map<String, String> aliasMap,
-                                     Map<String, Schema> schemaMap) {
+    public static Schema querySchema(String type, String schemaName, SchemaColumnInfo schemaColumnInfo) {
         if (schemaName == null || schemaName.isEmpty()) {
             throw new RuntimeException("schema can't be blank with: " + type);
         }
 
-        String realSchemaName = aliasMap.get(QueryConst.SCHEMA_PREFIX + schemaName);
-        Schema schema = (realSchemaName == null || realSchemaName.isEmpty())
-                ? schemaMap.get(schemaName) : schemaMap.get(realSchemaName);
+        Schema schema = schemaColumnInfo.findSchema(schemaName);
         if (schema == null) {
             throw new RuntimeException("no schema(" + schemaName + ") defined with: " + type);
         }
@@ -339,14 +351,12 @@ public class QueryUtil {
     }
 
     public static SchemaColumn queryColumn(String type, String schemaName, String columnName,
-                                           Map<String, String> aliasMap, Map<String, SchemaColumn> columnMap) {
+                                           SchemaColumnInfo schemaColumnInfo, Schema schema) {
         if (columnName == null || columnName.isEmpty()) {
             throw new RuntimeException("schema(" + schemaName + ") column cant' be blank with: " + type);
         }
 
-        String realColumnName = aliasMap.get(QueryConst.COLUMN_PREFIX + columnName);
-        SchemaColumn schemaColumn = (realColumnName == null || realColumnName.isEmpty())
-                ? columnMap.get(columnName) : columnMap.get(realColumnName);
+        SchemaColumn schemaColumn = schemaColumnInfo.findSchemaColumn(schema, columnName);
         if (schemaColumn == null) {
             throw new RuntimeException("schema(" + schemaName + ") no column(" + columnName + ") defined with: " + type);
         }

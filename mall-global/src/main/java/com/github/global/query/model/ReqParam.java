@@ -35,7 +35,7 @@ public class ReqParam {
     private Boolean notCount;
 
 
-    public void checkParam(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
+    public Set<String> checkParam(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
         if (query != null) {
             query.checkCondition(mainSchema, schemaColumnInfo);
         }
@@ -65,6 +65,7 @@ public class ReqParam {
         if (useSchemaSet.size() > 1) {
             schemaColumnInfo.checkSchemaRelation(mainSchema, useSchemaSet, "param");
         }
+        return useSchemaSet;
     }
 
     public Set<String> allParamSchema(String mainSchema) {
@@ -79,6 +80,12 @@ public class ReqParam {
             }
         }
         return set;
+    }
+
+    public boolean needAlias(String mainSchema) {
+        Set<String> paramSchema = allParamSchema(mainSchema);
+        paramSchema.remove(mainSchema);
+        return !paramSchema.isEmpty();
     }
 
     public String generateWhereSql(String mainSchema, SchemaColumnInfo schemaColumnInfo, List<Object> params, boolean needAlias) {
@@ -142,5 +149,9 @@ public class ReqParam {
     public String generateArrToObjSql(List<Object> params) {
         params.add(1);
         return " LIMIT ?";
+    }
+
+    public boolean hasDeepPage(int maxSize) {
+        return needQueryPage() && (((page.get(0) - 1) * calcLimit()) > maxSize);
     }
 }

@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,7 +33,8 @@ public class RequestInfo {
             throw new RuntimeException("request need result");
         }
 
-        param.checkParam(schema, schemaColumnInfo);
+        Set<String> paramSchemaSet = param.checkParam(schema, schemaColumnInfo);
         result.checkResult(schema, schemaColumnInfo);
+        result.checkParamSchema(schema, paramSchemaSet, schemaColumnInfo);
     }
 }

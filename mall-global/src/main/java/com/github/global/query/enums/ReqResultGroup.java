@@ -13,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public enum ReqResultGroup {
 
-    COUNT("COUNT(*)", "`_cnt`", "总条数"),
+    COUNT("COUNT(%s)", "`_cnt`", "总条数"),
     COUNT_DISTINCT("COUNT(DISTINCT %s)", "`_cnt%s`", "总条数(去重)"),
     SUM("SUM(%s)", "`_sum%s`", "总和"),
     MIN("MIN(%s)", "`_min%s`", "最小"),
