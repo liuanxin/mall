@@ -12,13 +12,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public enum ReqResultGroup {
 
-    COUNT("COUNT(%s)", "`_cnt`", "总条数"),
-    COUNT_DISTINCT("COUNT(DISTINCT %s)", "`_cnt%s`", "总条数(去重)"),
-    SUM("SUM(%s)", "`_sum%s`", "总和"),
-    MIN("MIN(%s)", "`_min%s`", "最小"),
-    MAX("MAX(%s)", "`_max%s`", "最大"),
-    AVG("AVG(%s)", "`_avg%s`", "平均"),
-    GROUP_CONCAT("GROUP_CONCAT(%s)", "`_gct%s`", "组拼接");
+    COUNT("COUNT(%s)", "cnt", "总条数"),
+    COUNT_DISTINCT("COUNT(DISTINCT %s)", "cnt%s", "总条数(去重)"),
+    SUM("SUM(%s)", "sum%s", "总和"),
+    MIN("MIN(%s)", "min%s", "最小"),
+    MAX("MAX(%s)", "max%s", "最大"),
+    AVG("AVG(%s)", "avg%s", "平均"),
+    GROUP_CONCAT("GROUP_CONCAT(%s)", "gct%s", "组拼接");
 
     private final String value;
     private final String alias;

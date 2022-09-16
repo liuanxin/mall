@@ -47,13 +47,13 @@ import java.util.*;
  *
  * SELECT
  *   name,
- *   COUNT(*) AS `_cnt`,
- *   COUNT(distinct name, name2) AS _cnt_name,   -- 别名是自动拼装的
- *   SUM(price) AS _sum_price,
- *   MIN(id) AS _min_id,
- *   MAX(id) AS _max_id,
- *   AVG(price) AS _avg_price,
- *   GROUP_CONCAT(name) AS _gct_name
+ *   COUNT(*) AS cnt,
+ *   COUNT(distinct name, name2) AS cnt_name,   -- 别名是自动拼装的
+ *   SUM(price) AS sum_price,
+ *   MIN(id) AS min_id,
+ *   MAX(id) AS max_id,
+ *   AVG(price) AS avg_price,
+ *   GROUP_CONCAT(name) AS gct_name
  * FROM ...
  * GROUP BY name
  * HAVING _sum_price > 100.5 AND _sum_price < 120.5
@@ -268,8 +268,9 @@ public class ReqResult {
                     if (!column.isEmpty()) {
                         ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
                         String useName = QueryUtil.getRealColumn(needAlias, column, mainSchema, schemaColumnInfo);
-                        sj.add(group.generateColumn(useName) + " AS " + group.generateAlias(column));
-                        functionAliasMap.put(group.generateAlias(column), QueryUtil.toStr(groups.get(2)));
+                        String alias = group.generateAlias(column);
+                        sj.add(group.generateColumn(useName) + " AS " + alias);
+                        functionAliasMap.put(alias, QueryUtil.toStr(groups.get(2)));
                     }
                 }
             }
