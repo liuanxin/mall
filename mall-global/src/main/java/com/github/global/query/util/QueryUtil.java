@@ -305,6 +305,10 @@ public class QueryUtil {
         return !isNumber(obj);
     }
 
+    public static <T> T defaultIfNull(T obj, T defaultObj) {
+        return (obj == null) ? defaultObj : obj;
+    }
+
     public static String defaultIfBlank(String str1, String defaultStr) {
         return (str1 == null || str1.isEmpty()) ? defaultStr : str1;
     }
@@ -320,6 +324,11 @@ public class QueryUtil {
     public static boolean isNotNullString(Object value) {
         return !isNullString(value);
     }
+
+    public static <T> T first(Collection<T> list) {
+        return (list == null || list.isEmpty()) ? null : list.iterator().next();
+    }
+
 
     public static String getSchemaName(String column, String mainSchema) {
         return column.contains(".") ? column.split("\\.")[0].trim() : mainSchema;
@@ -351,5 +360,14 @@ public class QueryUtil {
             throw new RuntimeException("schema(" + schemaName + ") no column(" + columnName + ") defined with: " + type);
         }
         return schemaColumn;
+    }
+
+    public static String getRealColumn(boolean needAlias, String column, String mainSchema, SchemaColumnInfo schemaColumnInfo) {
+        String schemaName = getSchemaName(column, mainSchema);
+        String columnName = getColumnName(column);
+        Schema schema = schemaColumnInfo.findSchema(schemaName);
+        SchemaColumn schemaColumn = schemaColumnInfo.findSchemaColumn(schema, columnName);
+        String useColumnName = QuerySqlUtil.toSqlField(schemaColumn.getName());
+        return needAlias ? QuerySqlUtil.toSqlField(schema.getAlias()) + "." + useColumnName : useColumnName;
     }
 }

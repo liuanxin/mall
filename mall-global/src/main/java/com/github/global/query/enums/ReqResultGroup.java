@@ -2,7 +2,6 @@ package com.github.global.query.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.github.global.query.util.QuerySqlUtil;
 import com.github.global.query.util.QueryUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -43,19 +42,12 @@ public enum ReqResultGroup {
         return null;
     }
 
-    public String generateSelectFunction(List<?> groups) {
-        if (groups == null || groups.size() < 2) {
-            return "";
-        }
-        String column = QueryUtil.toStr(groups.get(1));
-        if (column.isEmpty()) {
-            return "";
-        }
-        return String.format(value, QuerySqlUtil.toSqlField(column)) + " AS " + generateAlias(column);
+    public String generateColumn(String column) {
+        return String.format(value, column);
     }
 
     public String generateAlias(String column) {
-        return String.format(alias, ("*".equals(column) ? "" : ("_" + column.replace(",", "").replace(" ", "_"))));
+        return String.format(alias, "_" + column.replace(" ", "").replace(",", "__").replace(".", "_"));
     }
 
     public boolean checkHavingValue(Object value) {
@@ -70,6 +62,6 @@ public enum ReqResultGroup {
         if (column.isEmpty()) {
             return "";
         }
-        return String.format(alias, ("*".equals(column) ? "" : ("_" + column)));
+        return generateAlias(column);
     }
 }

@@ -3,7 +3,6 @@ package com.github.global.query.model;
 import com.github.common.json.JsonUtil;
 import com.github.global.query.enums.ReqParamConditionType;
 import com.github.global.query.enums.ReqParamOperateType;
-import com.github.global.query.util.QuerySqlUtil;
 import com.github.global.query.util.QueryUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -203,18 +202,7 @@ public class ReqParamOperate {
                                 type = ReqParamConditionType.deserializer(list.get(1));
                                 value = list.get(2);
                             }
-                            String schemaName = QueryUtil.getSchemaName(column, currentSchema);
-                            String columnName = QueryUtil.getColumnName(column);
-                            Schema schema = schemaColumnInfo.findSchema(schemaName);
-                            SchemaColumn schemaColumn = schemaColumnInfo.findSchemaColumn(schema, columnName);
-                            String useColumnName = QuerySqlUtil.toSqlField(schemaColumn.getName());
-                            String realColumn;
-                            if (needAlias) {
-                                realColumn = QuerySqlUtil.toSqlField(schema.getAlias()) + "." + useColumnName;
-                            } else {
-                                realColumn = useColumnName;
-                            }
-
+                            String realColumn = QueryUtil.getRealColumn(needAlias, column, currentSchema, schemaColumnInfo);
                             String sql = type.generateSql(realColumn, value, params);
                             if (!sql.isEmpty()) {
                                 sj.add(sql);

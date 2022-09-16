@@ -96,9 +96,11 @@ public class QuerySqlUtil {
                 sj.add(toSqlField(id));
             }
         }
+        // SELECT id FROM ... WHERE ... ORDER BY ... LIMIT ...
         String orderSql = param.generateOrderSql(mainSchema, needAlias, schemaColumnInfo);
         return "SELECT " + sj + fromAndWhere + orderSql + param.generatePageSql(params);
     }
+
     public static String toSelectSqlWithId(SchemaColumnInfo schemaColumnInfo, String mainSchema, ReqParam param,
                                            ReqResult result, List<Map<String, Object>> idList, List<Object> idFromParams) {
         Schema schema = schemaColumnInfo.findSchema(mainSchema);
@@ -114,11 +116,12 @@ public class QuerySqlUtil {
                 }
                 sj.add(innerJoiner.toString());
             } else {
-                // ... WHERE id IN (1, 2, 3)
+                // ... WHERE id IN (x, y, z)
                 sj.add("?");
                 idFromParams.add(idMap.get(idKey.get(0)));
             }
         }
+        // SELECT ... FROM ... WHERE id IN (x, y, z)
         boolean needAlias = param.needAlias(mainSchema);
         Set<String> paramSchemaSet = param.allParamSchema(mainSchema);
         String selectColumn = result.generateSelectSql(mainSchema, needAlias, paramSchemaSet, schemaColumnInfo);
@@ -128,8 +131,9 @@ public class QuerySqlUtil {
     }
 
     public static String toPageSql(SchemaColumnInfo schemaColumnInfo, String fromAndWhere, String mainSchema,
-                                   ReqParam param, ReqResult result, List<Object> params) {
-        String listSql = toListSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+                                   ReqParam param, ReqResult result, List<Object> params,
+                                   Map<String, String> functionAliasMap) {
+        String listSql = toListSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params, functionAliasMap);
         return listSql + param.generatePageSql(params);
     }
 
@@ -138,7 +142,8 @@ public class QuerySqlUtil {
     }
 
     public static String toSelectSql(SchemaColumnInfo schemaColumnInfo, String fromAndWhere, String mainSchema,
-                                     ReqParam param, ReqResult result, List<Object> params) {
+                                     ReqParam param, ReqResult result, List<Object> params,
+                                     Map<String, String> functionAliasMap) {
         boolean needAlias = param.needAlias(mainSchema);
         Set<String> paramSchemaSet = param.allParamSchema(mainSchema);
         String selectField = result.generateSelectSql(mainSchema, needAlias, paramSchemaSet, schemaColumnInfo);
@@ -149,7 +154,7 @@ public class QuerySqlUtil {
         if (!emptySelect) {
             sbd.append(selectField);
         }
-        String functionSql = result.generateSelectFunctionSql(mainSchema, schemaColumnInfo);
+        String functionSql = result.generateFunctionSql(mainSchema, needAlias, schemaColumnInfo, functionAliasMap);
         if (!functionSql.isEmpty()) {
             if (!emptySelect) {
                 sbd.append(", ");
@@ -157,21 +162,23 @@ public class QuerySqlUtil {
             sbd.append(functionSql);
         }
         sbd.append(fromAndWhere);
-        sbd.append(result.generateGroupSql());
+        sbd.append(result.generateGroupSql(mainSchema, needAlias, schemaColumnInfo));
         sbd.append(result.generateHavingSql(params));
         return sbd.toString();
     }
 
     public static String toListSql(SchemaColumnInfo schemaColumnInfo, String fromAndWhere, String mainSchema,
-                                   ReqParam param, ReqResult result, List<Object> params) {
-        String selectSql = toSelectSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+                                   ReqParam param, ReqResult result, List<Object> params,
+                                   Map<String, String> functionAliasMap) {
+        String selectSql = toSelectSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params, functionAliasMap);
         String orderSql = param.generateOrderSql(mainSchema, param.needAlias(mainSchema), schemaColumnInfo);
         return selectSql + orderSql;
     }
 
     public static String toObjSql(SchemaColumnInfo schemaColumnInfo, String fromAndWhere, String mainSchema,
-                                  ReqParam param, ReqResult result, List<Object> params) {
-        String listSql = toListSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+                                  ReqParam param, ReqResult result, List<Object> params,
+                                  Map<String, String> functionAliasMap) {
+        String listSql = toListSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params, functionAliasMap);
         return listSql + param.generateArrToObjSql(params);
     }
 }

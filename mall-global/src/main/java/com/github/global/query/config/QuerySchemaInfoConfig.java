@@ -149,35 +149,38 @@ public class QuerySchemaInfoConfig {
         List<Object> params = new ArrayList<>();
         String fromAndWhere = QuerySqlUtil.toFromWhereSql(schemaColumnInfo, mainSchema, param, params);
 
+        Map<String, String> functionAliasMap = new HashMap<>();
         if (param.needQueryPage()) {
             if (param.needQueryCount()) {
-                return pageReturn(fromAndWhere, mainSchema, param, result, params);
+                return pageReturn(fromAndWhere, mainSchema, param, result, params, functionAliasMap);
             } else {
                 // 「移动端-瀑布流」时不需要「SELECT COUNT(*)」
-                return pageList(fromAndWhere, mainSchema, param, result, params);
+                return pageList(fromAndWhere, mainSchema, param, result, params, functionAliasMap);
             }
         } else {
-            if (result.getType() == ReqResultType.OBJ) {
-                return queryObj(fromAndWhere, mainSchema, param, result, params);
+            if (req.getType() == ReqResultType.OBJ) {
+                return queryObj(fromAndWhere, mainSchema, param, result, params, functionAliasMap);
             } else {
-                return queryList(fromAndWhere, mainSchema, param, result, params);
+                return queryList(fromAndWhere, mainSchema, param, result, params, functionAliasMap);
             }
         }
     }
 
     private Map<String, Object> pageReturn(String fromAndWhere, String mainSchema, ReqParam param,
-                                           ReqResult result, List<Object> params) {
+                                           ReqResult result, List<Object> params,
+                                           Map<String, String> functionAliasMap) {
         long count;
         List<Map<String, Object>> pageList;
-        if (result.generateGroupSql().isEmpty()) {
+        if (result.generateGroupSql(mainSchema, param.needAlias(mainSchema), schemaColumnInfo).isEmpty()) {
             count = queryCount(QuerySqlUtil.toCountSql(schemaColumnInfo, mainSchema, param, fromAndWhere), params);
             if (param.needQueryCurrentPage(count)) {
-                pageList = queryPageList(fromAndWhere, mainSchema, param, result, params);
+                pageList = queryPageList(fromAndWhere, mainSchema, param, result, params, functionAliasMap);
             } else {
                 pageList = Collections.emptyList();
             }
         } else {
-            String selectSql = QuerySqlUtil.toSelectSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+            String selectSql = QuerySqlUtil.toSelectSql(schemaColumnInfo, fromAndWhere, mainSchema, param,
+                    result, params, functionAliasMap);
             count = queryCount(QuerySqlUtil.toCountGroupSql(selectSql), params);
             if (param.needQueryCurrentPage(count)) {
                 pageList = querySqlList(QuerySqlUtil.toPageGroupSql(selectSql, param, params), param, result, params);
@@ -196,7 +199,8 @@ public class QuerySchemaInfoConfig {
     }
 
     private List<Map<String, Object>> queryPageList(String fromAndWhere, String mainSchema, ReqParam param,
-                                                    ReqResult result, List<Object> params) {
+                                                    ReqResult result, List<Object> params,
+                                                    Map<String, String> functionAliasMap) {
         List<Map<String, Object>> list;
         // 很深的查询(深分页)时, 先用「条件 + 排序 + 分页」只查 id, 再用 id 查具体的数据列
         if (param.hasDeepPage(deepMaxPageSize)) {
@@ -206,51 +210,55 @@ public class QuerySchemaInfoConfig {
 
             // SELECT ... FROM ... WHERE id IN (x, y, z)
             List<Object> idFromParams = new ArrayList<>();
-            String idFromSql = QuerySqlUtil.toSelectSqlWithId(schemaColumnInfo, mainSchema, param, result, idList, idFromParams);
+            String idFromSql = QuerySqlUtil.toSelectSqlWithId(schemaColumnInfo, mainSchema, param,
+                    result, idList, idFromParams);
             list = jdbcTemplate.queryForList(idFromSql, idFromParams.toArray());
         } else {
-            String pageSql = QuerySqlUtil.toPageSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+            String pageSql = QuerySqlUtil.toPageSql(schemaColumnInfo, fromAndWhere, mainSchema, param,
+                    result, params, functionAliasMap);
             list = jdbcTemplate.queryForList(pageSql, params.toArray());
         }
-        assemblyResult(list, param, result);
-        return list;
+        return assemblyResult(list, param, result);
     }
 
     private List<Map<String, Object>> querySqlList(String listSql, ReqParam param, ReqResult result, List<Object> params) {
         List<Map<String, Object>> list = jdbcTemplate.queryForList(listSql, params.toArray());
-        assemblyResult(list, param, result);
-        return list;
+        return assemblyResult(list, param, result);
     }
 
     private List<Map<String, Object>> pageList(String fromAndWhere, String mainSchema, ReqParam param,
-                                               ReqResult result, List<Object> params) {
-        String pageSql = QuerySqlUtil.toPageSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+                                               ReqResult result, List<Object> params,
+                                               Map<String, String> functionAliasMap) {
+        String pageSql = QuerySqlUtil.toPageSql(schemaColumnInfo, fromAndWhere, mainSchema, param,
+                result, params, functionAliasMap);
         List<Map<String, Object>> list = jdbcTemplate.queryForList(pageSql, params.toArray());
-        assemblyResult(list, param, result);
-        return list;
+        return assemblyResult(list, param, result);
     }
 
     private List<Map<String, Object>> queryList(String fromAndWhere, String mainSchema, ReqParam param,
-                                                ReqResult result, List<Object> params) {
-        String listSql = QuerySqlUtil.toListSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+                                                ReqResult result, List<Object> params,
+                                                Map<String, String> functionAliasMap) {
+        String listSql = QuerySqlUtil.toListSql(schemaColumnInfo, fromAndWhere, mainSchema, param,
+                result, params, functionAliasMap);
         List<Map<String, Object>> list = jdbcTemplate.queryForList(listSql, params.toArray());
-        assemblyResult(list, param, result);
-        return list;
+        return assemblyResult(list, param, result);
     }
 
     private Map<String, Object> queryObj(String fromAndWhere, String mainSchema, ReqParam param,
-                                         ReqResult result, List<Object> params) {
-        String objSql = QuerySqlUtil.toObjSql(schemaColumnInfo, fromAndWhere, mainSchema, param, result, params);
+                                         ReqResult result, List<Object> params,
+                                         Map<String, String> functionAliasMap) {
+        String objSql = QuerySqlUtil.toObjSql(schemaColumnInfo, fromAndWhere, mainSchema, param,
+                result, params, functionAliasMap);
         List<Map<String, Object>> list = jdbcTemplate.queryForList(objSql, params.toArray());
-        assemblyResult(list, param, result);
-        return list.isEmpty() ? Collections.emptyMap() : list.get(0);
+        return QueryUtil.defaultIfNull(QueryUtil.first(assemblyResult(list, param, result)), Collections.emptyMap());
     }
 
-    private void assemblyResult(List<Map<String, Object>> list, ReqParam param, ReqResult result) {
+    private List<Map<String, Object>> assemblyResult(List<Map<String, Object>> list, ReqParam param, ReqResult result) {
+        List<Map<String, Object>> returnList = new ArrayList<>();
         if (list != null && !list.isEmpty()) {
-            // todo
             for (Map<String, Object> data : list) {
             }
         }
+        return returnList;
     }
 }
