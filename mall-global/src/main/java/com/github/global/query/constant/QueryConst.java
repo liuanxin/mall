@@ -9,8 +9,6 @@ import java.util.*;
 
 public final class QueryConst {
 
-    public static final int MAX_PAGE_SIZE = 10000;
-
     public static final String DB_SQL = "SELECT DATABASE()";
     public static final String SCHEMA_SQL = "SELECT `TABLE_NAME` tn, `TABLE_COMMENT` tc" +
             " FROM information_schema.`TABLES` WHERE `TABLE_SCHEMA` = ?";

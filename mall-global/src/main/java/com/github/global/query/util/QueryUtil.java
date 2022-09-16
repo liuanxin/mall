@@ -81,7 +81,7 @@ public class QueryUtil {
 
                 schemaName = schemaInfo.value();
                 schemaDesc = schemaInfo.desc();
-                schemaAlias = QueryUtil.defaultIfBlank(schemaInfo.alias(), schemaName);
+                schemaAlias = defaultIfBlank(schemaInfo.alias(), schemaName);
             } else {
                 schemaDesc = "";
                 schemaAlias = clazz.getSimpleName();
@@ -110,7 +110,7 @@ public class QueryUtil {
 
                     columnName = columnInfo.value();
                     columnDesc = columnInfo.desc();
-                    columnAlias = QueryUtil.defaultIfBlank(columnInfo.alias(), columnName);
+                    columnAlias = defaultIfBlank(columnInfo.alias(), columnName);
                     primary = columnInfo.primary();
 
                     // 用类名 + 列名
@@ -317,6 +317,10 @@ public class QueryUtil {
         return false;
     }
 
+    public static boolean isNotNullString(Object value) {
+        return !isNullString(value);
+    }
+
     public static String getSchemaName(String column, String mainSchema) {
         return column.contains(".") ? column.split("\\.")[0].trim() : mainSchema;
     }
@@ -328,17 +332,6 @@ public class QueryUtil {
     public static SchemaColumn checkColumnName(String column, String mainSchema,
                                                SchemaColumnInfo schemaColumnInfo, String type) {
         String schemaName = getSchemaName(column, mainSchema);
-        String columnName = getColumnName(column);
-        return checkSchemaAndColumnName(schemaName, columnName, schemaColumnInfo, type);
-    }
-
-    public static SchemaColumn checkSchemaAndColumnName(String schemaName, String columnName,
-                                                        SchemaColumnInfo schemaColumnInfo, String type) {
-        Schema schema = querySchema(type, schemaName, schemaColumnInfo);
-        return queryColumn(type, schemaName, columnName, schemaColumnInfo, schema);
-    }
-
-    public static Schema querySchema(String type, String schemaName, SchemaColumnInfo schemaColumnInfo) {
         if (schemaName == null || schemaName.isEmpty()) {
             throw new RuntimeException("schema can't be blank with: " + type);
         }
@@ -347,12 +340,9 @@ public class QueryUtil {
         if (schema == null) {
             throw new RuntimeException("no schema(" + schemaName + ") defined with: " + type);
         }
-        return schema;
-    }
 
-    public static SchemaColumn queryColumn(String type, String schemaName, String columnName,
-                                           SchemaColumnInfo schemaColumnInfo, Schema schema) {
-        if (columnName == null || columnName.isEmpty()) {
+        String columnName = getColumnName(column);
+        if (columnName.isEmpty()) {
             throw new RuntimeException("schema(" + schemaName + ") column cant' be blank with: " + type);
         }
 

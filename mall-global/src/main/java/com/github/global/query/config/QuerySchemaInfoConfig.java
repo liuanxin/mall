@@ -13,21 +13,23 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 @Component
 public class QuerySchemaInfoConfig {
 
-    private static final Lock LOCK = new ReentrantLock();
-
     @Value("${query.scan-packages:}")
     private String scanPackages;
-    private volatile SchemaColumnInfo schemaColumnInfo;
+
+    @Value("${query.deep-max-page-size:10000}")
+    private int deepMaxPageSize;
 
     private final JdbcTemplate jdbcTemplate;
+    private final SchemaColumnInfo schemaColumnInfo;
+
     public QuerySchemaInfoConfig(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        this.schemaColumnInfo = (scanPackages == null || scanPackages.isEmpty())
+                ? initWithDb() : QueryUtil.scanSchema(scanPackages);
     }
     private SchemaColumnInfo initWithDb() {
         Map<String, String> aliasMap = new HashMap<>();
@@ -119,27 +121,9 @@ public class QuerySchemaInfoConfig {
         throw new RuntimeException("unknown db type" + dbType);
     }
 
-    public void init() {
-        if (schemaColumnInfo == null) {
-            LOCK.lock();
-            try {
-                if (schemaColumnInfo == null) {
-                    if (scanPackages == null || scanPackages.isEmpty()) {
-                        schemaColumnInfo = initWithDb();
-                    } else {
-                        schemaColumnInfo = QueryUtil.scanSchema(scanPackages);
-                    }
-                }
-            } finally {
-                LOCK.unlock();
-            }
-        }
-    }
-
 
     public List<QueryInfo> queryInfo() {
         List<QueryInfo> queryList = new ArrayList<>();
-        init();
         for (Schema schema : schemaColumnInfo.allSchema()) {
             List<QueryInfo.QueryColumn> columnList = new ArrayList<>();
             for (SchemaColumn column : schema.getColumnMap().values()) {
@@ -156,7 +140,6 @@ public class QuerySchemaInfoConfig {
     }
 
     public Object query(RequestInfo req) {
-        init();
         req.check(schemaColumnInfo);
 
         String mainSchema = req.getSchema();
@@ -216,10 +199,12 @@ public class QuerySchemaInfoConfig {
                                                     ReqResult result, List<Object> params) {
         List<Map<String, Object>> list;
         // 很深的查询(深分页)时, 先用「条件 + 排序 + 分页」只查 id, 再用 id 查具体的数据列
-        if (param.hasDeepPage(QueryConst.MAX_PAGE_SIZE)) {
+        if (param.hasDeepPage(deepMaxPageSize)) {
+            // SELECT id FROM ... WHERE ... ORDER BY ... LIMIT ...
             String idPageSql = QuerySqlUtil.toIdPageSql(schemaColumnInfo, fromAndWhere, mainSchema, param, params);
             List<Map<String, Object>> idList = jdbcTemplate.queryForList(idPageSql, params.toArray());
 
+            // SELECT ... FROM ... WHERE id IN (x, y, z)
             List<Object> idFromParams = new ArrayList<>();
             String idFromSql = QuerySqlUtil.toSelectSqlWithId(schemaColumnInfo, mainSchema, param, result, idList, idFromParams);
             list = jdbcTemplate.queryForList(idFromSql, idFromParams.toArray());

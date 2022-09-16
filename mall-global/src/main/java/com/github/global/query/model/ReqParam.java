@@ -1,6 +1,7 @@
 package com.github.global.query.model;
 
 import com.github.global.query.constant.QueryConst;
+import com.github.global.query.util.QuerySqlUtil;
 import com.github.global.query.util.QueryUtil;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -97,11 +98,22 @@ public class ReqParam {
         return where.isEmpty() ? "" : (" WHERE " + where);
     }
 
-    public String generateOrderSql() {
+    public String generateOrderSql(String mainSchema, boolean needAlias, SchemaColumnInfo schemaColumnInfo) {
         if (sort != null && !sort.isEmpty()) {
             StringJoiner orderSj = new StringJoiner(", ");
             for (Map.Entry<String, String> entry : sort.entrySet()) {
-                orderSj.add(entry.getKey() + ("asc".equalsIgnoreCase(entry.getValue()) ? " ASC" : " DESC"));
+                String desc = ("asc".equalsIgnoreCase(entry.getValue()) ? " ASC" : " DESC");
+                String key = entry.getKey();
+                String columnName = QueryUtil.getColumnName(key);
+                Schema schema = schemaColumnInfo.findSchema(QueryUtil.getSchemaName(mainSchema, key));
+                SchemaColumn schemaColumn = schemaColumnInfo.findSchemaColumn(schema, columnName);
+                String column;
+                if (needAlias) {
+                    column = QuerySqlUtil.toSqlField(schema.getAlias()) + "." + QuerySqlUtil.toSqlField(schemaColumn.getName());
+                } else {
+                    column = QuerySqlUtil.toSqlField(schemaColumn.getName());
+                }
+                orderSj.add(column + desc);
             }
             String orderBy = orderSj.toString();
             if (!orderBy.isEmpty()) {

@@ -92,7 +92,8 @@ public class ReqResult {
 
     public void checkResult(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
         String currentSchema = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
-        if (schemaColumnInfo.findSchema(currentSchema) == null) {
+        Schema schemaInfo = schemaColumnInfo.findSchema(currentSchema);
+        if (schemaInfo == null) {
             throw new RuntimeException("no res schema(" + currentSchema + ") defined");
         }
         if (columns == null || columns.isEmpty()) {
@@ -106,9 +107,12 @@ public class ReqResult {
             if (obj != null) {
                 if (obj instanceof String column) {
                     if (!column.isEmpty()) {
-                        QueryUtil.checkSchemaAndColumnName(currentSchema, column, schemaColumnInfo, "result select");
+                        QueryUtil.checkColumnName(column, currentSchema, schemaColumnInfo, "result select");
+//                        if (schemaColumnInfo.findSchemaColumn(schemaInfo, column) == null) {
+//                            throw new RuntimeException("res schema() has no column(" + column + ")");
+//                        }
                         if (columnCheckRepeatedSet.contains(column)) {
-                            throw new RuntimeException("res schema(" + schema + ") column(" + column + ") has repeated");
+                            throw new RuntimeException("res schema(" + this.schema + ") column(" + column + ") has repeated");
                         }
                         columnCheckRepeatedSet.add(column);
                         hasColumnOrFunction = true;
@@ -117,14 +121,14 @@ public class ReqResult {
                     if (!groups.isEmpty()) {
                         int size = groups.size();
                         if (size < 3) {
-                            throw new RuntimeException("res schema(" + schema + ") function(" + groups + ") error");
+                            throw new RuntimeException("res schema(" + this.schema + ") function(" + groups + ") error");
                         }
                         ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
                         String column = QueryUtil.toStr(groups.get(1));
                         if (column.isEmpty()) {
-                            throw new RuntimeException("res schema(" + schema + ") function(" + groups + ") column error");
+                            throw new RuntimeException("res schema(" + this.schema + ") function(" + groups + ") column error");
                         }
-                        String checkType = "result schema(" + schema + ") function(" + group.name().toLowerCase() + ")";
+                        String checkType = "result schema(" + this.schema + ") function(" + group.name().toLowerCase() + ")";
                         // noinspection EnhancedSwitchMigration
                         switch (group) {
                             case COUNT: {
@@ -150,13 +154,13 @@ public class ReqResult {
                             for (int i = 3; i < evenSize; i += 2) {
                                 ReqParamConditionType conditionType = ReqParamConditionType.deserializer(groups.get(i));
                                 if (conditionType == null) {
-                                    throw new RuntimeException("res schema(" + schema + ") function("
+                                    throw new RuntimeException("res schema(" + this.schema + ") function("
                                             + groups + ") having condition error");
                                 }
 
                                 Object value = groups.get(i + 1);
                                 if (group.checkHavingValue(value)) {
-                                    throw new RuntimeException("res schema(" + schema + ") function("
+                                    throw new RuntimeException("res schema(" + this.schema + ") function("
                                             + groups + ") having condition value(" + value + ") type error");
                                 }
                             }
@@ -169,30 +173,30 @@ public class ReqResult {
             }
         }
         if (!hasColumnOrFunction) {
-            throw new RuntimeException("res schema(" + schema + ") no columns");
+            throw new RuntimeException("res schema(" + this.schema + ") no columns");
         }
 
         for (Object obj : innerList) {
             Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
             if (inner == null) {
-                throw new RuntimeException("res schema(" + schema + ") relation(" + obj + ") error");
+                throw new RuntimeException("res schema(" + this.schema + ") relation(" + obj + ") error");
             }
             for (Map.Entry<String, ReqResult> entry : inner.entrySet()) {
                 String column = entry.getKey();
                 ReqResult innerResult = entry.getValue();
                 if (innerResult == null) {
-                    throw new RuntimeException("res schema(" + schema + ") relation column(" + column + ") error");
+                    throw new RuntimeException("res schema(" + this.schema + ") relation column(" + column + ") error");
                 }
                 if (columnCheckRepeatedSet.contains(column)) {
-                    throw new RuntimeException("res schema(" + schema + ") relation column(" + column + ") has repeated");
+                    throw new RuntimeException("res schema(" + this.schema + ") relation column(" + column + ") has repeated");
                 }
                 columnCheckRepeatedSet.add(column);
                 String innerSchema = innerResult.getSchema();
                 if (innerSchema == null || innerSchema.isEmpty()) {
-                    throw new RuntimeException("res schema(" + schema + ") inner need schema");
+                    throw new RuntimeException("res schema(" + this.schema + ") inner(" + column + ") need schema");
                 }
                 if (schemaColumnInfo.findRelationByMasterChild(currentSchema, innerSchema) == null) {
-                    throw new RuntimeException("res " + currentSchema + " - " + innerSchema + " has no relation");
+                    throw new RuntimeException("res " + currentSchema + " - " + column + " -" + innerSchema + " has no relation");
                 }
                 innerResult.checkResult(innerSchema, schemaColumnInfo);
             }
@@ -200,61 +204,98 @@ public class ReqResult {
     }
 
     public void checkParamSchema(String mainSchema, Set<String> paramSchemaSet, SchemaColumnInfo schemaColumnInfo) {
-        Set<String> paramSchemaAliasSet = new HashSet<>();
-        for (String paramSchema : paramSchemaSet) {
-            paramSchemaAliasSet.add(schemaColumnInfo.findSchema(paramSchema).getAlias());
-        }
-
-        Set<String> resultSchemaAliasSet = new LinkedHashSet<>();
-        for (Object obj : columns) {
-            if (obj instanceof String column) {
-                if (!column.isEmpty()) {
-                    String schemaName = QueryUtil.getSchemaName(column, mainSchema);
-                    resultSchemaAliasSet.add(schemaColumnInfo.findSchema(schemaName).getAlias());
-                }
-            } else if (obj instanceof List<?> groups) {
-                if (!groups.isEmpty()) {
-                    ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
-                    String column = QueryUtil.toStr(groups.get(1));
-                    // noinspection EnhancedSwitchMigration
-                    switch (group) {
-                        case COUNT: {
-                            if (!Set.of("*", "1", "0").contains(column)) {
-                                String schemaName = QueryUtil.getSchemaName(column, mainSchema);
-                                resultSchemaAliasSet.add(schemaColumnInfo.findSchema(schemaName).getAlias());
-                            }
-                            break;
-                        }
-                        case COUNT_DISTINCT: {
-                            for (String col : column.split(",")) {
-                                String schemaName = QueryUtil.getSchemaName(col.trim(), mainSchema);
-                                resultSchemaAliasSet.add(schemaColumnInfo.findSchema(schemaName).getAlias());
-                            }
-                            break;
-                        }
-                        default: {
-                            String schemaName = QueryUtil.getSchemaName(column, mainSchema);
-                            resultSchemaAliasSet.add(schemaColumnInfo.findSchema(schemaName).getAlias());
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        for (String alias : resultSchemaAliasSet) {
-            if (!paramSchemaAliasSet.contains(alias)) {
-                throw new RuntimeException("res schema(" + alias + ") not in param");
-            }
-        }
+//        Set<String> paramSchemaAliasSet = new HashSet<>();
+//        for (String paramSchema : paramSchemaSet) {
+//            paramSchemaAliasSet.add(schemaColumnInfo.findSchema(paramSchema).getAlias());
+//        }
+//
+//        Set<String> resultSchemaAliasSet = new LinkedHashSet<>();
+//        for (Object obj : columns) {
+//            if (obj instanceof String column) {
+//                if (!column.isEmpty()) {
+//                    String schemaName = QueryUtil.getSchemaName(column, mainSchema);
+//                    resultSchemaAliasSet.add(schemaColumnInfo.findSchema(schemaName).getAlias());
+//                }
+//            } else if (obj instanceof List<?> groups) {
+//                if (!groups.isEmpty()) {
+//                    ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
+//                    String column = QueryUtil.toStr(groups.get(1));
+//                    // noinspection EnhancedSwitchMigration
+//                    switch (group) {
+//                        case COUNT: {
+//                            if (!Set.of("*", "1", "0").contains(column)) {
+//                                String schemaName = QueryUtil.getSchemaName(column, mainSchema);
+//                                resultSchemaAliasSet.add(schemaColumnInfo.findSchema(schemaName).getAlias());
+//                            }
+//                            break;
+//                        }
+//                        case COUNT_DISTINCT: {
+//                            for (String col : column.split(",")) {
+//                                String schemaName = QueryUtil.getSchemaName(col.trim(), mainSchema);
+//                                resultSchemaAliasSet.add(schemaColumnInfo.findSchema(schemaName).getAlias());
+//                            }
+//                            break;
+//                        }
+//                        default: {
+//                            String schemaName = QueryUtil.getSchemaName(column, mainSchema);
+//                            resultSchemaAliasSet.add(schemaColumnInfo.findSchema(schemaName).getAlias());
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        for (String alias : resultSchemaAliasSet) {
+//            if (!paramSchemaAliasSet.contains(alias)) {
+//                throw new RuntimeException("res schema(" + alias + ") not in param");
+//            }
+//        }
     }
 
-    public String generateSelectSql(String mainSchema, boolean needAlias, SchemaColumnInfo schemaColumnInfo) {
-        // todo 9-15 处理到这里
+    public String generateSelectSql(String mainSchema, boolean needAlias, Set<String> paramSchemaSet,
+                                    SchemaColumnInfo schemaColumnInfo) {
+        String currentSchemaName = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
+        Schema schema = schemaColumnInfo.findSchema(currentSchemaName);
         StringJoiner sj = new StringJoiner(", ");
+        Set<String> columnNameSet = new HashSet<>();
+
+        List<Object> innerList = new ArrayList<>();
         for (Object obj : columns) {
             if (obj instanceof String column) {
                 if (!column.isEmpty()) {
-                    sj.add(QueryUtil.checkSchemaAndColumnName(mainSchema, column, schemaColumnInfo, "result select").getName());
+                    String schemaName = QueryUtil.getSchemaName(column, currentSchemaName);
+                    if (schemaName.equals(currentSchemaName) || paramSchemaSet.contains(schemaName)) {
+                        Schema currentSchema = schemaColumnInfo.findSchema(schemaName);
+                        String columnName = QueryUtil.getColumnName(column);
+                        SchemaColumn schemaColumn = schemaColumnInfo.findSchemaColumn(currentSchema, columnName);
+
+                        String addKey = currentSchema.getName() + "." + schemaColumn.getName();
+                        if (!columnNameSet.contains(addKey)) {
+                            String schemaColumnName = QuerySqlUtil.toSqlField(schemaColumn.getName());
+                            if (needAlias) {
+                                sj.add(QuerySqlUtil.toSqlField(currentSchema.getAlias()) + "." + schemaColumnName);
+                            } else {
+                                sj.add(schemaColumnName);
+                            }
+                        }
+                        columnNameSet.add(addKey);
+                    }
+                }
+            } else if (!(obj instanceof List<?>)) {
+                Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
+                for (ReqResult innerResult : inner.values()) {
+                    String innerSchema = innerResult.getSchema();
+                    SchemaColumnRelation relation = schemaColumnInfo.findRelationByMasterChild(currentSchemaName, innerSchema);
+                    String addKey = relation.getOneSchema() + "." + relation.getOneColumn();
+                    if (!columnNameSet.contains(addKey)) {
+                        String schemaColumnName = QuerySqlUtil.toSqlField(relation.getOneColumn());
+                        if (needAlias) {
+                            sj.add(QuerySqlUtil.toSqlField(schema.getAlias()) + "." + schemaColumnName);
+                        } else {
+                            sj.add(schemaColumnName);
+                        }
+                    }
+                    columnNameSet.add(addKey);
                 }
             }
         }
