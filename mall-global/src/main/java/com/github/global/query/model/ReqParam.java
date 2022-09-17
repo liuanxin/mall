@@ -45,7 +45,7 @@ public class ReqParam {
 
         if (sort != null && !sort.isEmpty()) {
             for (String column : sort.keySet()) {
-                QueryUtil.checkColumnName(column, mainSchema, schemaColumnInfo, "query order");
+                QueryUtil.checkColumnName(column, mainSchema, schemaColumnInfo, "param order");
 
                 if (!column.contains(".")) {
                     String orderSchemaName = QueryUtil.getSchemaName(column, mainSchema);
