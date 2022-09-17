@@ -6,6 +6,7 @@ import com.github.global.query.model.ReqResult;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public final class QueryConst {
 
@@ -67,6 +68,8 @@ public final class QueryConst {
             ReqParamConditionType.LKE,
             ReqParamConditionType.NL
     ));
+    public static final String STRING_TYPE_INFO = STRING_TYPE_SET.stream().map(ReqParamConditionType::info).collect(Collectors.joining(", "));
+
     /** number 类型: 只 等于(eq)、大于(gt)、大于等于(ge)、小于(lt)、小于等于(le)、区间(bet) 条件 */
     public static final Set<ReqParamConditionType> NUMBER_TYPE_SET = new LinkedHashSet<>(Arrays.asList(
             ReqParamConditionType.EQ,
@@ -76,6 +79,8 @@ public final class QueryConst {
             ReqParamConditionType.LE,
             ReqParamConditionType.BET
     ));
+    public static final String NUMBER_TYPE_INFO = NUMBER_TYPE_SET.stream().map(ReqParamConditionType::info).collect(Collectors.joining(", "));
+
     /** date 类型: 只 大于(gt)、大于等于(ge)、小于(lt)、小于等于(le)、区间(bet) 条件 */
     public static final Set<ReqParamConditionType> DATE_TYPE_SET = new LinkedHashSet<>(Arrays.asList(
             ReqParamConditionType.GT,
@@ -84,11 +89,14 @@ public final class QueryConst {
             ReqParamConditionType.LE,
             ReqParamConditionType.BET
     ));
+    public static final String DATE_TYPE_INFO = DATE_TYPE_SET.stream().map(ReqParamConditionType::info).collect(Collectors.joining(", "));
+
     /**  非 string/number/date 类型: 只 等于(eq)、不等于(ne) 条件 */
     public static final Set<ReqParamConditionType> OTHER_TYPE_SET = Set.of(
             ReqParamConditionType.EQ,
             ReqParamConditionType.NE
     );
+    public static final String OTHER_TYPE_INFO = OTHER_TYPE_SET.stream().map(ReqParamConditionType::info).collect(Collectors.joining(", "));
 
     public static final Set<ReqParamConditionType> MULTI_TYPE = Set.of(
             ReqParamConditionType.IN,

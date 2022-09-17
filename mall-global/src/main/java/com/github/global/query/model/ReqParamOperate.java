@@ -128,7 +128,7 @@ public class ReqParamOperate {
                     boolean standardSize = (size == 2);
                     ReqParamConditionType type = standardSize ? ReqParamConditionType.EQ : ReqParamConditionType.deserializer(list.get(1));
                     if (type == null) {
-                        throw new RuntimeException(String.format("condition column(%s) need type", column));
+                        throw new RuntimeException(String.format("param condition column(%s) need type", column));
                     }
                     //检查结构名和列名
                     SchemaColumn schemaColumn = QueryUtil.checkColumnName(column, currentSchema, schemaColumnInfo, "param condition");
@@ -187,8 +187,8 @@ public class ReqParamOperate {
                         ReqParamConditionType type = standardSize ? ReqParamConditionType.EQ : ReqParamConditionType.deserializer(list.get(1));
                         Object value = list.get(standardSize ? 1 : 2);
 
-                        String realColumn = QueryUtil.getRealColumn(needAlias, column, currentSchema, schemaColumnInfo);
-                        String sql = type.generateSql(realColumn, value, params);
+                        String useColumn = QueryUtil.getUseColumn(needAlias, column, currentSchema, schemaColumnInfo);
+                        String sql = type.generateSql(useColumn, value, params);
                         if (!sql.isEmpty()) {
                             sj.add(sql);
                         }

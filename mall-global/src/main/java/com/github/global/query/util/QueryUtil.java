@@ -373,10 +373,6 @@ public class QueryUtil {
         return !isDate(obj);
     }
 
-    public static <T> T defaultIfNull(T obj, T defaultObj) {
-        return (obj == null) ? defaultObj : obj;
-    }
-
     public static String defaultIfBlank(String str1, String defaultStr) {
         return (str1 == null || str1.isEmpty()) ? defaultStr : str1;
     }
@@ -430,7 +426,7 @@ public class QueryUtil {
         return schemaColumn;
     }
 
-    public static String getRealColumn(boolean needAlias, String column, String mainSchema, SchemaColumnInfo schemaColumnInfo) {
+    public static String getUseColumn(boolean needAlias, String column, String mainSchema, SchemaColumnInfo schemaColumnInfo) {
         String schemaName = getSchemaName(column, mainSchema);
         String columnName = getColumnName(column);
         Schema schema = schemaColumnInfo.findSchema(schemaName);

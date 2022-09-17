@@ -44,7 +44,7 @@ public enum ReqResultGroup {
     }
 
     public boolean checkHavingValue(Object value) {
-        // 数量只能用数字进行比较
+        // 组拼接需要是字符串, 数量需要用数字进行 having 运算
         return (this == GROUP_CONCAT) ? (value instanceof String) : QueryUtil.isDouble(value);
     }
 }

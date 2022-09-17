@@ -8,7 +8,10 @@ import com.github.global.query.util.QueryUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.StringJoiner;
 
 /**
  * <pre>
@@ -160,6 +163,10 @@ public enum ReqParamConditionType {
 
     public abstract String generateSql(String column, Object value, List<Object> params);
 
+    public String info() {
+        return value + "(" + msg + ")";
+    }
+
 
     public void checkTypeAndValue(Class<?> type, String column, Object value, int strLen) {
         checkParamType(type);
@@ -168,22 +175,25 @@ public enum ReqParamConditionType {
 
     private void checkParamType(Class<?> type) {
         if (Number.class.isAssignableFrom(type)) {
-            checkParamTypeInfo("Number", QueryConst.NUMBER_TYPE_SET);
-        } else if (Date.class.isAssignableFrom(type)) {
-            checkParamTypeInfo("Date", QueryConst.DATE_TYPE_SET);
-        } else if (String.class.isAssignableFrom(type)) {
-            checkParamTypeInfo("String", QueryConst.STRING_TYPE_SET);
-        } else {
-            checkParamTypeInfo("Non(string, number, datetime)", QueryConst.OTHER_TYPE_SET);
-        }
-    }
-    private void checkParamTypeInfo(String typeInfo, Set<ReqParamConditionType> types) {
-        if (!types.contains(this)) {
-            StringJoiner sj = new StringJoiner(", ");
-            for (ReqParamConditionType conditionType : types) {
-                sj.add(String.format("%s(%s)", conditionType.msg, conditionType.value));
+            if (!QueryConst.NUMBER_TYPE_SET.contains(this)) {
+                throw new RuntimeException(String.format("Number type can only be used in 「%s」 conditions",
+                        QueryConst.NUMBER_TYPE_INFO));
             }
-            throw new RuntimeException(String.format("%s type can only be used in 「%s」 conditions", typeInfo, sj));
+        } else if (Date.class.isAssignableFrom(type)) {
+            if (!QueryConst.DATE_TYPE_SET.contains(this)) {
+                throw new RuntimeException(String.format("Date type can only be used in 「%s」 conditions",
+                        QueryConst.DATE_TYPE_INFO));
+            }
+        } else if (String.class.isAssignableFrom(type)) {
+            if (!QueryConst.STRING_TYPE_SET.contains(this)) {
+                throw new RuntimeException(String.format("String type can only be used in 「%s」 conditions",
+                        QueryConst.STRING_TYPE_INFO));
+            }
+        } else {
+            if (!QueryConst.OTHER_TYPE_SET.contains(this)) {
+                throw new RuntimeException(String.format("Non(string, number, datetime) type can only be used in 「%s」 conditions",
+                        QueryConst.OTHER_TYPE_INFO));
+            }
         }
     }
 
@@ -222,7 +232,7 @@ public enum ReqParamConditionType {
                 throw new RuntimeException(String.format("column(%s) data(%s) has not number type", column, value));
             }
         } else if (Date.class.isAssignableFrom(type)) {
-            if (QueryUtil.isNotDouble(value)) {
+            if (QueryUtil.isNotDate(value)) {
                 throw new RuntimeException(String.format("column(%s) data(%s) has not date type", column, value));
             }
         } else if (String.class.isAssignableFrom(type)) {

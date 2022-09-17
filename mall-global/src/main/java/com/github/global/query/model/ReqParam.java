@@ -93,7 +93,7 @@ public class ReqParam {
             for (Map.Entry<String, String> entry : sort.entrySet()) {
                 String value = entry.getValue().toLowerCase();
                 String desc = ("asc".equals(value) || "a".equals(value)) ? "" : " DESC";
-                orderSj.add(QueryUtil.getRealColumn(needAlias, entry.getKey(), mainSchema, schemaColumnInfo) + desc);
+                orderSj.add(QueryUtil.getUseColumn(needAlias, entry.getKey(), mainSchema, schemaColumnInfo) + desc);
             }
             String orderBy = orderSj.toString();
             if (!orderBy.isEmpty()) {

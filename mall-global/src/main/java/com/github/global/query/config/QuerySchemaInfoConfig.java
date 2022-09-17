@@ -238,8 +238,8 @@ public class QuerySchemaInfoConfig {
                 paramSchema, result, params);
         String orderSql = param.generateOrderSql(mainSchema, !paramSchema.isEmpty(), schemaColumnInfo);
         String sql = selectGroupSql + orderSql + param.generateArrToObjSql(params);
-        List<Map<String, Object>> list = assemblyResult(sql, param, result, params);
-        return QueryUtil.defaultIfNull(QueryUtil.first(list), Collections.emptyMap());
+        Map<String, Object> obj = QueryUtil.first(assemblyResult(sql, param, result, params));
+        return (obj == null) ? Collections.emptyMap() : obj;
     }
 
     private List<Map<String, Object>> assemblyResult(String Sql, ReqParam param, ReqResult result, List<Object> params) {
