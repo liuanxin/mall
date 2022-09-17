@@ -30,11 +30,11 @@ import java.util.*;
  *   between (bet)
  *
  * string:
- *   like     (rl 开头、ll 结尾、lk 包含), 只有「开头」会走索引(LIKE 'x%'), 结尾是 LIKE '%xx', 包含是 LIKE '%xxx%'
+ *   like     (lks 开头、lke 结尾、lk 包含), 只有「开头」会走索引(LIKE 'x%'), 结尾是 LIKE '%xx', 包含是 LIKE '%xxx%'
  *   not like (nl)
  *
  *
- * string 类型: 只 等于(eq)、不等于(ne)、批量(in)、包含(lk)、开头(rl)、结尾(ll)、不包含(nl) 条件
+ * string 类型: 只 等于(eq)、不等于(ne)、批量(in)、包含(lk)、开头(lks)、结尾(lke)、不包含(nl) 条件
  * number 类型: 只 等于(eq)、大于(gt)、大于等于(ge)、小于(lt)、小于等于(le)、区间(bet) 条件
  * date 类型: 只 大于(gt)、大于等于(ge)、小于(lt)、小于等于(le)、区间(bet) 条件
  * 非 string/number/date 类型: 只 等于(eq)、不等于(ne) 条件
