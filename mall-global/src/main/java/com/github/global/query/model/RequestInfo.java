@@ -37,7 +37,10 @@ public class RequestInfo {
         }
 
         Set<String> paramSchemaSet = param.checkParam(schema, schemaColumnInfo);
-        result.checkResult(schema, schemaColumnInfo, paramSchemaSet);
+        paramSchemaSet.remove(schema);
+        Set<String> functionSchemaSet = result.checkResult(schema, schemaColumnInfo, paramSchemaSet);
+        functionSchemaSet.remove(schema);
+        result.checkSchema(schema, paramSchemaSet, functionSchemaSet, schemaColumnInfo);
         return paramSchemaSet;
     }
 }

@@ -3,10 +3,7 @@ package com.github.global.query.util;
 import com.github.global.query.enums.SchemaRelationType;
 import com.github.global.query.model.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 
 public class QuerySqlUtil {
 
@@ -22,11 +19,21 @@ public class QuerySqlUtil {
         if (!paramSchema.isEmpty()) {
             String mainSchemaAlias = schema.getAlias();
             sbd.append(" AS ").append(toSqlField(mainSchemaAlias));
-            paramSchema.remove(mainSchema);
             for (String childSchemaName : paramSchema) {
                 SchemaColumnRelation relation = schemaColumnInfo.findRelationByMasterChild(mainSchema, childSchemaName);
                 if (relation == null) {
-                    throw new RuntimeException(mainSchema + " - " + childSchemaName + " has no relation");
+                    Set<String> tempSchemaSet = new LinkedHashSet<>(paramSchema);
+                    tempSchemaSet.remove(childSchemaName);
+                    for (String tempSchema : tempSchemaSet) {
+                        relation = schemaColumnInfo.findRelationByMasterChild(tempSchema, childSchemaName);
+                        if (relation != null) {
+                            break;
+                        }
+                    }
+
+                    if (relation == null) {
+                        throw new RuntimeException(childSchemaName + " has no relation with other schemas");
+                    }
                 }
                 String childColumn = relation.getOneOrManyColumn();
 
