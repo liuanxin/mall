@@ -21,6 +21,9 @@ public class SchemaColumn {
     /** true 表示是主键字段 */
     private boolean primary;
 
+    /** 字符串长度 */
+    private int strLen;
+
     /** 表列对应的实体的类型 */
     private Class<?> columnType;
 }

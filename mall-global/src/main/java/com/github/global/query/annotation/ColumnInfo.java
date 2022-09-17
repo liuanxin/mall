@@ -25,6 +25,9 @@ public @interface ColumnInfo {
     /** true 表示是主键字段 */
     boolean primary() default false;
 
+    /** 字符串长度 */
+    int varcharLength() default 0;
+
     /** 关联类型, 设置了 relationSchema 和 relationColumn 才有效, 只在「从表」对应的类上标, 主表上无需标注 */
     SchemaRelationType relationType() default SchemaRelationType.NULL;
 

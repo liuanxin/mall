@@ -18,6 +18,8 @@ import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class QueryUtil {
@@ -103,6 +105,7 @@ public class QueryUtil {
                 Class<?> type = field.getType();
                 String columnName, columnDesc, columnAlias;
                 boolean primary;
+                int strLen;
                 if (columnInfo != null) {
                     if (columnInfo.ignore()) {
                         continue;
@@ -112,6 +115,7 @@ public class QueryUtil {
                     columnDesc = columnInfo.desc();
                     columnAlias = defaultIfBlank(columnInfo.alias(), columnName);
                     primary = columnInfo.primary();
+                    strLen = columnInfo.varcharLength();
 
                     // 用类名 + 列名
                     String schemaAndColumn = schemaName + "." + columnName;
@@ -122,6 +126,7 @@ public class QueryUtil {
                     columnAlias = field.getName();
                     columnName = aliasToColumnName(columnAlias);
                     primary = "id".equalsIgnoreCase(columnAlias);
+                    strLen = 0;
                 }
 
                 if (columnNameSet.contains(columnName)) {
@@ -134,7 +139,7 @@ public class QueryUtil {
                 columnAliasSet.add(columnAlias);
 
                 aliasMap.put(QueryConst.COLUMN_PREFIX + columnAlias, columnName);
-                columnMap.put(columnName, new SchemaColumn(columnName, columnDesc, columnAlias, primary, type));
+                columnMap.put(columnName, new SchemaColumn(columnName, columnDesc, columnAlias, primary, strLen, type));
             }
             aliasMap.put(QueryConst.SCHEMA_PREFIX + schemaAlias, schemaName);
             schemaMap.put(schemaName, new Schema(schemaName, schemaDesc, schemaAlias, columnMap));
@@ -264,6 +269,17 @@ public class QueryUtil {
         return obj == null ? "" : obj.toString().trim();
     }
 
+    public static Integer toInt(Object obj) {
+        if (obj == null) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(obj.toString().trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
     public static long toLong(Object obj, long defaultLong) {
         if (obj == null) {
             return defaultLong;
@@ -278,7 +294,49 @@ public class QueryUtil {
         }
     }
 
-    public static boolean isNumber(Object obj) {
+    public static boolean isBoolean(Object obj) {
+        return obj != null && new HashSet<>(Arrays.asList(
+                "true", "1", "on", "yes",
+                "false", "0", "off", "no"
+        )).contains(obj.toString().toLowerCase());
+    }
+    public static boolean isNotBoolean(Object obj) {
+        return obj != null && !isBoolean(obj);
+    }
+
+    public static boolean isInt(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        try {
+            Integer.parseInt(obj.toString().trim());
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+    public static boolean isNotInt(Object obj) {
+        return !isInt(obj);
+    }
+
+    public static boolean isLong(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        try {
+            Long.parseLong(obj.toString().trim());
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+    public static boolean isNotLong(Object obj) {
+        return !isLong(obj);
+    }
+
+    public static boolean isDouble(Object obj) {
         if (obj == null) {
             return false;
         }
@@ -292,10 +350,27 @@ public class QueryUtil {
             return false;
         }
     }
+    public static boolean isNotDouble(Object obj) {
+        return !isDouble(obj);
+    }
 
-    /** 不是数字则返回 true */
-    public static boolean isNotNumber(Object obj) {
-        return !isNumber(obj);
+    public static boolean isDate(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        for (String format : QueryConst.DATE_FORMAT_LIST) {
+            try {
+                Date date = new SimpleDateFormat(format).parse(obj.toString().trim());
+                if (date != null) {
+                    return true;
+                }
+            } catch (ParseException ignore) {
+            }
+        }
+        return false;
+    }
+    public static boolean isNotDate(Object obj) {
+        return !isDate(obj);
     }
 
     public static <T> T defaultIfNull(T obj, T defaultObj) {

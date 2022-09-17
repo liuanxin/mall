@@ -161,22 +161,23 @@ public enum ReqParamConditionType {
     public abstract String generateSql(String column, Object value, List<Object> params);
 
 
-    public void checkTypeAndValue(Class<?> type, String column, Object value) {
-        checkType(type);
-        checkValue(type, column, value);
+    public void checkTypeAndValue(Class<?> type, String column, Object value, int strLen) {
+        checkParamType(type);
+        checkValue(type, column, value, strLen);
     }
 
-    private void checkType(Class<?> type) {
-        for (Map.Entry<Class<?>, Set<ReqParamConditionType>> entry : QueryConst.CONDITION_TYPE_MAP.entrySet()) {
-            Class<?> clazz = entry.getKey();
-            if (clazz.isAssignableFrom(type)) {
-                checkTypes(QueryConst.TYPE_INFO_MAP.get(clazz), entry.getValue());
-            }
+    private void checkParamType(Class<?> type) {
+        if (Number.class.isAssignableFrom(type)) {
+            checkParamTypeInfo("Number", QueryConst.NUMBER_TYPE_SET);
+        } else if (Date.class.isAssignableFrom(type)) {
+            checkParamTypeInfo("Date", QueryConst.DATE_TYPE_SET);
+        } else if (String.class.isAssignableFrom(type)) {
+            checkParamTypeInfo("String", QueryConst.STRING_TYPE_SET);
+        } else {
+            checkParamTypeInfo("Non(string, number, datetime)", QueryConst.OTHER_TYPE_SET);
         }
-
-        checkTypes(QueryConst.OTHER_TYPE_INFO, QueryConst.OTHER_CONDITION_TYPE);
     }
-    private void checkTypes(String typeInfo, Set<ReqParamConditionType> types) {
+    private void checkParamTypeInfo(String typeInfo, Set<ReqParamConditionType> types) {
         if (!types.contains(this)) {
             StringJoiner sj = new StringJoiner(", ");
             for (ReqParamConditionType conditionType : types) {
@@ -186,28 +187,50 @@ public enum ReqParamConditionType {
         }
     }
 
-    private void checkValue(Class<?> type, String column, Object value) {
+    private void checkValue(Class<?> type, String column, Object value, int strLen) {
         if (value != null) {
             if (QueryConst.MULTI_TYPE.contains(this)) {
                 if (value instanceof Collection<?> c) {
-                    StringJoiner errorSj = new StringJoiner(", ");
                     for (Object obj : c) {
-                        if (obj != null && !type.isAssignableFrom(obj.getClass())) {
-                            errorSj.add(obj.toString());
+                        if (obj != null) {
+                            checkValueType(type, column, obj, strLen);
                         }
-                    }
-                    String error = errorSj.toString();
-                    if (!error.isEmpty()) {
-                        throw new RuntimeException(String.format("column(%s) data(%s) error", column, error));
                     }
                 } else {
                     throw new RuntimeException(String.format("column(%s) data need been Collection", column));
                 }
             } else {
-                if (!type.isAssignableFrom(value.getClass())) {
-                    throw new RuntimeException(String.format("column(%s) data(%s) error", column, value));
-                }
+                checkValueType(type, column, value, strLen);
             }
+        }
+    }
+    private void checkValueType(Class<?> type, String column, Object value, int strLen) {
+        if (QueryConst.BOOLEAN_TYPE_SET.contains(type)) {
+            if (QueryUtil.isNotBoolean(value)) {
+                throw new RuntimeException(String.format("column(%s) data(%s) has not boolean type", column, value));
+            }
+        } else if (QueryConst.INT_TYPE_SET.contains(type)) {
+            if (QueryUtil.isNotInt(value)) {
+                throw new RuntimeException(String.format("column(%s) data(%s) has not int type", column, value));
+            }
+        } else if (QueryConst.LONG_TYPE_SET.contains(type)) {
+            if (QueryUtil.isNotLong(value)) {
+                throw new RuntimeException(String.format("column(%s) data(%s) has not long type", column, value));
+            }
+        } else if (Number.class.isAssignableFrom(type)) {
+            if (QueryUtil.isNotDouble(value)) {
+                throw new RuntimeException(String.format("column(%s) data(%s) has not number type", column, value));
+            }
+        } else if (Date.class.isAssignableFrom(type)) {
+            if (QueryUtil.isNotDouble(value)) {
+                throw new RuntimeException(String.format("column(%s) data(%s) has not date type", column, value));
+            }
+        } else if (String.class.isAssignableFrom(type)) {
+            if (strLen > 0 && value.toString().length() > strLen) {
+                throw new RuntimeException(String.format("column(%s) data(%s) length can only be <= %s", column, value, strLen));
+            }
+        } else {
+            throw new RuntimeException(String.format("column(%s) data(%s) type error", column, value));
         }
     }
 

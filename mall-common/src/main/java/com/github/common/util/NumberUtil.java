@@ -20,7 +20,7 @@ public class NumberUtil {
             yuan = yuan.replace(",", "");
         }
 
-        U.assertException(U.isNotNumber(yuan), String.format("金额(%s)必须是数字", yuan));
+        U.assertException(U.isNotDouble(yuan), String.format("金额(%s)必须是数字", yuan));
         return new BigDecimal(yuan).movePointRight(scale).longValue();
     }
     /** 分转换为元 */

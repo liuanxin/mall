@@ -64,37 +64,16 @@ public class SchemaColumnInfo {
     }
 
     public SchemaColumnRelation findRelationByMasterChild(String masterSchema, String childSchema) {
-        if (masterChildSchemaMap == null || masterChildSchemaMap.isEmpty()
-                || masterSchema == null || masterSchema.isEmpty()
-                || childSchema == null || childSchema.isEmpty()) {
-            return null;
-        }
-
-        // noinspection DuplicatedCode
-        String schemaAlias = aliasMap.get(QueryConst.SCHEMA_PREFIX + masterSchema);
-        Map<String, SchemaColumnRelation> relationMap = masterChildSchemaMap.get(schemaAlias);
-        Map<String, SchemaColumnRelation> useRelationMap = (relationMap == null || relationMap.isEmpty())
-                ? masterChildSchemaMap.get(masterSchema) : relationMap;
-        if (useRelationMap == null || useRelationMap.isEmpty()) {
-            return null;
-        }
-
-        String childSchemaAlias = aliasMap.get(QueryConst.SCHEMA_PREFIX + childSchema);
-        SchemaColumnRelation relation = useRelationMap.get(childSchemaAlias);
-        return (relation == null) ? useRelationMap.get(childSchema) : relation;
+        return findRelation(masterChildSchemaMap, masterSchema, childSchema);
     }
 
-    public SchemaColumnRelation findRelationByChild(String childSchemaAndColumn) {
-        if (childRelationMap == null || childRelationMap.isEmpty()
-                || childSchemaAndColumn == null || !childSchemaAndColumn.contains(".")) {
+    private SchemaColumnRelation findRelation(Map<String, Map<String, SchemaColumnRelation>> schemaMap,
+                                              String schema, String childSchemaOrColumn) {
+        if (schemaMap == null || schemaMap.isEmpty() || schema == null || schema.isEmpty()
+                || childSchemaOrColumn == null || childSchemaOrColumn.isEmpty()) {
             return null;
         }
 
-        String[] arr = childSchemaAndColumn.split("\\.");
-        String schema = arr[0].trim();
-        String column = arr[1].trim();
-
-        // noinspection DuplicatedCode
         String schemaAlias = aliasMap.get(QueryConst.SCHEMA_PREFIX + schema);
         Map<String, SchemaColumnRelation> relationMap = childRelationMap.get(schemaAlias);
         Map<String, SchemaColumnRelation> useRelationMap =
@@ -103,8 +82,12 @@ public class SchemaColumnInfo {
             return null;
         }
 
-        String columnAlias = aliasMap.get(QueryConst.COLUMN_PREFIX + column);
+        String columnAlias = aliasMap.get(QueryConst.COLUMN_PREFIX + childSchemaOrColumn);
         SchemaColumnRelation relation = useRelationMap.get(columnAlias);
-        return (relation == null) ? useRelationMap.get(column) : relation;
+        return (relation == null) ? useRelationMap.get(childSchemaOrColumn) : relation;
+    }
+
+    public SchemaColumnRelation findRelationByChild(String childSchema, String childColumn) {
+        return findRelation(childRelationMap, childSchema, childColumn);
     }
 }

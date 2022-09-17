@@ -189,7 +189,7 @@ public class ExportExcel {
                                 cell = row.createCell(cellIndex);
 
                                 cellData = U.getFieldMethod(data, titleMapEntry.getKey());
-                                if (U.isNumber(cellData)) {
+                                if (U.isDouble(cellData)) {
                                     if (!hasBigData) {
                                         cell.setCellStyle(numberStyle);
                                     }

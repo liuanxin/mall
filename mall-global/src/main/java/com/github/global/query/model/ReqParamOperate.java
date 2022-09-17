@@ -114,35 +114,26 @@ public class ReqParamOperate {
         for (Object condition : conditions) {
             if (condition != null) {
                 if (condition instanceof List<?> list) {
-                    if (!list.isEmpty()) {
-                        int size = list.size();
-                        if (size < 2) {
-                            throw new RuntimeException("condition(" + condition + ") error");
-                        }
-
-                        String column = QueryUtil.toStr(list.get(0));
-                        if (!column.isEmpty()) {
-                            // noinspection DuplicatedCode
-                            ReqParamConditionType type;
-                            Object value;
-                            if (size == 2) {
-                                type = ReqParamConditionType.EQ;
-                                value = list.get(1);
-                            } else {
-                                type = ReqParamConditionType.deserializer(list.get(1));
-                                value = list.get(2);
-                            }
-                            if (type == null) {
-                                throw new RuntimeException(String.format("condition column(%s) need type", column));
-                            }
-
-                            // 用传入的列名获取其结构上定义的类型
-                            SchemaColumn schemaColumn = QueryUtil.checkColumnName(column, currentSchema,
-                                    schemaColumnInfo, "query condition");
-                            // 检查列类型和传入的值是否对应
-                            type.checkTypeAndValue(schemaColumn.getColumnType(), column, value);
-                        }
+                    if (list.isEmpty()) {
+                        throw new RuntimeException("param condition(" + condition + ") can't be blank");
                     }
+                    int size = list.size();
+                    if (size < 2) {
+                        throw new RuntimeException("param condition(" + condition + ") error");
+                    }
+                    String column = QueryUtil.toStr(list.get(0));
+                    if (column.isEmpty()) {
+                        throw new RuntimeException("param condition(" + condition + ") column can't be blank");
+                    }
+                    boolean standardSize = (size == 2);
+                    ReqParamConditionType type = standardSize ? ReqParamConditionType.EQ : ReqParamConditionType.deserializer(list.get(1));
+                    if (type == null) {
+                        throw new RuntimeException(String.format("condition column(%s) need type", column));
+                    }
+                    //检查结构名和列名
+                    SchemaColumn schemaColumn = QueryUtil.checkColumnName(column, currentSchema, schemaColumnInfo, "param condition");
+                    // 检查列类型和传入的值是否对应
+                    type.checkTypeAndValue(schemaColumn.getColumnType(), column, list.get(standardSize ? 1 : 2), schemaColumn.getStrLen());
                 } else {
                     ReqParamOperate compose = JsonUtil.convert(condition, ReqParamOperate.class);
                     if (compose == null) {
@@ -191,22 +182,15 @@ public class ReqParamOperate {
                     if (!list.isEmpty()) {
                         int size = list.size();
                         String column = QueryUtil.toStr(list.get(0));
-                        if (!column.isEmpty()) {
-                            // noinspection DuplicatedCode
-                            ReqParamConditionType type;
-                            Object value;
-                            if (size == 2) {
-                                type = ReqParamConditionType.EQ;
-                                value = list.get(1);
-                            } else {
-                                type = ReqParamConditionType.deserializer(list.get(1));
-                                value = list.get(2);
-                            }
-                            String realColumn = QueryUtil.getRealColumn(needAlias, column, currentSchema, schemaColumnInfo);
-                            String sql = type.generateSql(realColumn, value, params);
-                            if (!sql.isEmpty()) {
-                                sj.add(sql);
-                            }
+
+                        boolean standardSize = (size == 2);
+                        ReqParamConditionType type = standardSize ? ReqParamConditionType.EQ : ReqParamConditionType.deserializer(list.get(1));
+                        Object value = list.get(standardSize ? 1 : 2);
+
+                        String realColumn = QueryUtil.getRealColumn(needAlias, column, currentSchema, schemaColumnInfo);
+                        String sql = type.generateSql(realColumn, value, params);
+                        if (!sql.isEmpty()) {
+                            sj.add(sql);
                         }
                     }
                 } else {

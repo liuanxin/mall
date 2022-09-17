@@ -34,8 +34,11 @@ public class QueryInfo {
         /** 表列说明 */
         private String desc;
 
-        /** 表列对应的实体的类型 */
+        /** 表列对应的类型 */
         private String type;
+
+        /** 表列类型是字符串时的长度 */
+        private Integer strLen;
 
         /** 关联关系 */
         private String relation;

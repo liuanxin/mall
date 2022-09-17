@@ -69,8 +69,6 @@ public final class U {
 
     private static final String TMP = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    private static final String ENUM_CODE = "code";
-    private static final String ENUM_VALUE = "value";
     private static final Pattern THOUSANDS_REGEX = Pattern.compile("(\\d)(?=(?:\\d{3})+$)");
 
     public static final Set<String> TRUES = new HashSet<>(4, 1);
@@ -300,32 +298,37 @@ public final class U {
         }
     }
 
-    /** 是整数则返回 true, 最大整数位 19 位 */
     public static boolean isInt(Object obj) {
         if (isNull(obj)) {
             return false;
         }
-        if (obj instanceof Number n) {
-            double num = n.doubleValue();
-            // java 的 Double 类中的 MIN_VALUE 表示的是一个非 0 的值, 它比 0 是要大的
-            return Math.abs(num - Math.round(num)) < Double.MIN_VALUE;
-        }
         try {
-            double num = Double.parseDouble(obj.toString().trim());
-            // int in = (int) num;
-            // return num == in;
-            return Math.abs(num - Math.round(num)) < Double.MIN_VALUE;
+            Integer.parseInt(obj.toString().trim());
+            return true;
         } catch (NumberFormatException e) {
             return false;
         }
     }
-    /** 不是整数则返回 true, 最大整数位 19 位 */
     public static boolean isNotInt(Object obj) {
         return !isInt(obj);
     }
 
-    /** 是数字则返回 true */
-    public static boolean isNumber(Object obj) {
+    public static boolean isLong(Object obj) {
+        if (isNull(obj)) {
+            return false;
+        }
+        try {
+            Long.parseLong(obj.toString().trim());
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+    public static boolean isNotLong(Object obj) {
+        return !isInt(obj);
+    }
+
+    public static boolean isDouble(Object obj) {
         if (isNull(obj)) {
             return false;
         }
@@ -339,10 +342,8 @@ public final class U {
             return false;
         }
     }
-
-    /** 不是数字则返回 true */
-    public static boolean isNotNumber(Object obj) {
-        return !isNumber(obj);
+    public static boolean isNotDouble(Object obj) {
+        return !isDouble(obj);
     }
 
     /** 返回当前时间戳(到秒), 相当于 mysql 中的 SELECT UNIX_TIMESTAMP() 语句 */

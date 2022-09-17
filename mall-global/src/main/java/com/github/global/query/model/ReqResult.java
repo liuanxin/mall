@@ -93,85 +93,82 @@ public class ReqResult {
             throw new RuntimeException("result schema(" + currentSchema + ") need columns");
         }
 
+        Set<String> allSchemaSet = new HashSet<>();
         Set<String> columnCheckRepeatedSet = new HashSet<>();
         List<Object> innerList = new ArrayList<>();
         boolean hasColumnOrFunction = false;
         for (Object obj : columns) {
             if (obj != null) {
                 if (obj instanceof String column) {
-                    if (!column.isEmpty()) {
-                        QueryUtil.checkColumnName(column, currentSchema, schemaColumnInfo, "result select");
-                        if (columnCheckRepeatedSet.contains(column)) {
-                            throw new RuntimeException("result schema(" + currentSchema + ") column(" + column + ") has repeated");
-                        }
-                        columnCheckRepeatedSet.add(column);
-                        hasColumnOrFunction = true;
+                    if (column.trim().isEmpty()) {
+                        throw new RuntimeException("result schema(" + currentSchema + ") column can't be blank");
                     }
-                } else if (obj instanceof List<?> groups) {
-                    if (!groups.isEmpty()) {
-                        int size = groups.size();
-                        if (size < 3) {
-                            throw new RuntimeException("result schema(" + currentSchema + ") function(" + groups + ") error");
-                        }
-                        String column = QueryUtil.toStr(groups.get(1));
-                        if (column.isEmpty()) {
-                            throw new RuntimeException("result schema(" + currentSchema + ") function(" + groups + ") column error");
-                        }
-                        ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
-                        String checkType = "result schema(" + currentSchema + ") function(" + group.name().toLowerCase() + ")";
-                        // noinspection EnhancedSwitchMigration
-                        switch (group) {
-                            case COUNT: {
-                                if (!Set.of("*", "1").contains(column)) {
-                                    String schemaName = QueryUtil.getSchemaName(column, currentSchema);
-                                    if (!currentSchema.equals(schemaName) && !paramSchemaSet.contains(schemaName)) {
-                                        throw new RuntimeException("result schema(" + currentSchema + ") function("
-                                                + groups + ") no column in param");
-                                    }
-                                    QueryUtil.checkColumnName(column, currentSchema, schemaColumnInfo, checkType);
-                                }
-                                break;
-                            }
-                            case COUNT_DISTINCT: {
-                                for (String col : column.split(",")) {
-                                    String schemaName = QueryUtil.getSchemaName(col.trim(), currentSchema);
-                                    if (!currentSchema.equals(schemaName) && !paramSchemaSet.contains(schemaName)) {
-                                        throw new RuntimeException("result schema(" + currentSchema + ") function("
-                                                + groups + ") no column in param");
-                                    }
-                                    QueryUtil.checkColumnName(col.trim(), currentSchema, schemaColumnInfo, checkType);
-                                }
-                                break;
-                            }
-                            default: {
-                                String schemaName = QueryUtil.getSchemaName(column, currentSchema);
-                                if (!currentSchema.equals(schemaName) && !paramSchemaSet.contains(schemaName)) {
-                                    throw new RuntimeException("result schema(" + currentSchema + ") function("
-                                            + groups + ") no column in param");
-                                }
-                                QueryUtil.checkColumnName(column, currentSchema, schemaColumnInfo, checkType);
-                                break;
-                            }
-                        }
-                        if (size > 4) {
-                            // 先右移 1 位除以 2, 再左移 1 位乘以 2, 变成偶数
-                            int evenSize = size >> 1 << 1;
-                            for (int i = 3; i < evenSize; i += 2) {
-                                ReqParamConditionType conditionType = ReqParamConditionType.deserializer(groups.get(i));
-                                if (conditionType == null) {
-                                    throw new RuntimeException("result schema(" + currentSchema + ") function("
-                                            + groups + ") having condition error");
-                                }
 
-                                Object value = groups.get(i + 1);
-                                if (group.checkHavingValue(value)) {
-                                    throw new RuntimeException("result schema(" + currentSchema + ") function("
-                                            + groups + ") having condition value(" + value + ") type error");
-                                }
+                    String col = column.trim();
+                    QueryUtil.checkColumnName(col, currentSchema, schemaColumnInfo, "result select");
+                    if (columnCheckRepeatedSet.contains(col)) {
+                        throw new RuntimeException("result schema(" + currentSchema + ") column(" + col + ") has repeated");
+                    }
+                    allSchemaSet.add(QueryUtil.getSchemaName(col, currentSchema));
+                    columnCheckRepeatedSet.add(col);
+                    hasColumnOrFunction = true;
+                } else if (obj instanceof List<?> groups) {
+                    if (groups.isEmpty()) {
+                        throw new RuntimeException("result schema(" + currentSchema + ") function(" + groups + ") error");
+                    }
+                    int size = groups.size();
+                    if (size < 3) {
+                        throw new RuntimeException("result schema(" + currentSchema + ") function(" + groups + ") error");
+                    }
+                    String column = QueryUtil.toStr(groups.get(1));
+                    if (column.isEmpty()) {
+                        throw new RuntimeException("result schema(" + currentSchema + ") function(" + groups + ") column error");
+                    }
+
+                    ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
+                    if (group == null) {
+                        throw new RuntimeException("result schema(" + currentSchema + ") function(" + groups + ") type error");
+                    }
+                    String checkType = "result schema(" + currentSchema + ") function(" + group.name().toLowerCase() + ")";
+                    if (group == ReqResultGroup.COUNT_DISTINCT) {
+                        for (String col : column.split(",")) {
+                            String schemaName = QueryUtil.getSchemaName(col.trim(), currentSchema);
+                            if (!currentSchema.equals(schemaName) && !paramSchemaSet.contains(schemaName)) {
+                                throw new RuntimeException("result schema(" + currentSchema + ") function("
+                                        + groups + ") no column in param");
+                            }
+                            QueryUtil.checkColumnName(col.trim(), currentSchema, schemaColumnInfo, checkType);
+                            allSchemaSet.add(QueryUtil.getSchemaName(column, currentSchema));
+                        }
+                    } else {
+                        if (!(group == ReqResultGroup.COUNT && Set.of("*", "1").contains(column))) {
+                            String schemaName = QueryUtil.getSchemaName(column, currentSchema);
+                            if (!currentSchema.equals(schemaName) && !paramSchemaSet.contains(schemaName)) {
+                                throw new RuntimeException("result schema(" + currentSchema + ") function("
+                                        + groups + ") no column in param");
+                            }
+                            QueryUtil.checkColumnName(column, currentSchema, schemaColumnInfo, checkType);
+                            allSchemaSet.add(QueryUtil.getSchemaName(column, currentSchema));
+                        }
+                    }
+                    if (size > 4) {
+                        // 先右移 1 位除以 2, 再左移 1 位乘以 2, 变成偶数
+                        int evenSize = size >> 1 << 1;
+                        for (int i = 3; i < evenSize; i += 2) {
+                            ReqParamConditionType conditionType = ReqParamConditionType.deserializer(groups.get(i));
+                            if (conditionType == null) {
+                                throw new RuntimeException("result schema(" + currentSchema + ") function("
+                                        + groups + ") having condition error");
+                            }
+
+                            Object value = groups.get(i + 1);
+                            if (group.checkHavingValue(value)) {
+                                throw new RuntimeException("result schema(" + currentSchema + ") function("
+                                        + groups + ") having condition value(" + value + ") type error");
                             }
                         }
-                        hasColumnOrFunction = true;
                     }
+                    hasColumnOrFunction = true;
                 } else {
                     innerList.add(obj);
                 }
