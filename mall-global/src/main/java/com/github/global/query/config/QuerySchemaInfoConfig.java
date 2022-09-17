@@ -174,8 +174,8 @@ public class QuerySchemaInfoConfig {
                     paramSchema, result, params, functionAliasMap);
             count = queryCount(QuerySqlUtil.toGroupCountSql(selectSql), params);
             if (param.needQueryCurrentPage(count)) {
-                pageList = querySqlList(QuerySqlUtil.toGroupListSql(selectSql, param, params), param,
-                        result, params, functionAliasMap);
+                pageList = queryPageListWithGroup(QuerySqlUtil.toGroupListSql(selectSql, param, params),
+                        param, result, params, functionAliasMap);
             } else {
                 pageList = Collections.emptyList();
             }
@@ -212,8 +212,8 @@ public class QuerySchemaInfoConfig {
         return assemblyResult(list, param, result, null);
     }
 
-    private List<Map<String, Object>> querySqlList(String listSql, ReqParam param, ReqResult result,
-                                                   List<Object> params, Map<String, String> functionAliasMap) {
+    private List<Map<String, Object>> queryPageListWithGroup(String listSql, ReqParam param, ReqResult result,
+                                                    List<Object> params, Map<String, String> functionAliasMap) {
         List<Map<String, Object>> list = jdbcTemplate.queryForList(listSql, params.toArray());
         return assemblyResult(list, param, result, functionAliasMap);
     }
