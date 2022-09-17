@@ -250,21 +250,14 @@ public class QueryUtil {
         return sbd.toString();
     }
 
-    public static String toSplitString(Collection<?> list, String split) {
-        if (list == null || list.isEmpty()) {
-            return "";
-        }
-
-        StringJoiner sj = new StringJoiner(split);
-        for (Object obj : list) {
-            if (obj != null) {
-                String str = obj.toString();
-                if (!str.isEmpty() && !"null".equalsIgnoreCase(str) && !"undefined".equalsIgnoreCase(str)) {
-                    sj.add(str.trim());
-                }
+    public static Class<?> mappingClass(String dbType) {
+        String type = (dbType.contains("(") ? dbType.substring(0, dbType.indexOf("(")) : dbType).toLowerCase();
+        for (Map.Entry<String, Class<?>> entry : QueryConst.DB_TYPE_MAP.entrySet()) {
+            if (type.contains(entry.getKey().toLowerCase())) {
+                return entry.getValue();
             }
         }
-        return sj.toString();
+        throw new RuntimeException("unknown db type" + dbType);
     }
 
     public static String toStr(Object obj) {
@@ -368,6 +361,6 @@ public class QueryUtil {
         Schema schema = schemaColumnInfo.findSchema(schemaName);
         SchemaColumn schemaColumn = schemaColumnInfo.findSchemaColumn(schema, columnName);
         String useColumnName = QuerySqlUtil.toSqlField(schemaColumn.getName());
-        return needAlias ? QuerySqlUtil.toSqlField(schema.getAlias()) + "." + useColumnName : useColumnName;
+        return needAlias ? (QuerySqlUtil.toSqlField(schema.getAlias()) + "." + useColumnName) : useColumnName;
     }
 }

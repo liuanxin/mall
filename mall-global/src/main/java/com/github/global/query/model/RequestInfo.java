@@ -22,7 +22,7 @@ public class RequestInfo {
     private ReqResult result;
 
 
-    public void check(SchemaColumnInfo schemaColumnInfo) {
+    public Set<String> check(SchemaColumnInfo schemaColumnInfo) {
         if (schema == null || schema.isEmpty()) {
             throw new RuntimeException("no schema");
         }
@@ -38,5 +38,6 @@ public class RequestInfo {
 
         Set<String> paramSchemaSet = param.checkParam(schema, schemaColumnInfo);
         result.checkResult(schema, schemaColumnInfo, paramSchemaSet);
+        return paramSchemaSet;
     }
 }

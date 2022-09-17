@@ -37,20 +37,23 @@ public class ReqParam {
 
 
     public Set<String> checkParam(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
+        Set<String> paramSchemaSet = new LinkedHashSet<>();
+        paramSchemaSet.add(mainSchema);
         if (query != null) {
             query.checkCondition(mainSchema, schemaColumnInfo);
+            query.allSchema(mainSchema, paramSchemaSet);
         }
 
-        Set<String> useSchemaSet = allParamSchema(mainSchema);
         if (sort != null && !sort.isEmpty()) {
             for (String column : sort.keySet()) {
                 QueryUtil.checkColumnName(column, mainSchema, schemaColumnInfo, "query order");
 
                 if (!column.contains(".")) {
                     String orderSchemaName = QueryUtil.getSchemaName(column, mainSchema);
-                    if (!useSchemaSet.contains(orderSchemaName)) {
+                    if (!paramSchemaSet.contains(orderSchemaName)) {
                         throw new RuntimeException("no order schema(" + orderSchemaName + ") in query condition");
                     }
+                    paramSchemaSet.add(orderSchemaName);
                 }
             }
         }
@@ -62,31 +65,18 @@ public class ReqParam {
             }
         }
 
-        useSchemaSet.remove(mainSchema);
-        if (useSchemaSet.size() > 1) {
-            schemaColumnInfo.checkSchemaRelation(mainSchema, useSchemaSet, "param");
-        }
-        return useSchemaSet;
-    }
-
-    public Set<String> allParamSchema(String mainSchema) {
-        Set<String> set = new LinkedHashSet<>();
-        if (query != null) {
-            query.allSchema(mainSchema, set);
-        }
-
-        if (sort != null && !sort.isEmpty()) {
-            for (String column : sort.keySet()) {
-                set.add(QueryUtil.getSchemaName(column, mainSchema));
+        paramSchemaSet.remove(mainSchema);
+        if (paramSchemaSet.size() > 1) {
+            for (String schemaName : paramSchemaSet) {
+                if (schemaColumnInfo.findSchema(schemaName) == null) {
+                    throw new RuntimeException("param no relation " + schemaName + " defined");
+                }
+                if (schemaColumnInfo.findRelationByMasterChild(mainSchema, schemaName) == null) {
+                    throw new RuntimeException("param " + mainSchema + " is not related to " + schemaName);
+                }
             }
         }
-        return set;
-    }
-
-    public boolean needAlias(String mainSchema) {
-        Set<String> paramSchema = allParamSchema(mainSchema);
-        paramSchema.remove(mainSchema);
-        return !paramSchema.isEmpty();
+        return paramSchemaSet;
     }
 
     public String generateWhereSql(String mainSchema, SchemaColumnInfo schemaColumnInfo, List<Object> params, boolean needAlias) {

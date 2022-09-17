@@ -2,7 +2,10 @@ package com.github.global.query.model;
 
 import com.github.global.query.constant.QueryConst;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class SchemaColumnInfo {
 
@@ -103,24 +106,5 @@ public class SchemaColumnInfo {
         String columnAlias = aliasMap.get(QueryConst.COLUMN_PREFIX + column);
         SchemaColumnRelation relation = useRelationMap.get(columnAlias);
         return (relation == null) ? useRelationMap.get(column) : relation;
-    }
-
-    public void checkSchemaRelation(String mainSchema, Set<String> schemaNames, String type) {
-        List<String> errorSchemaList = new ArrayList<>();
-        List<String> errorRelationSchemaList = new ArrayList<>();
-        for (String schemaName : schemaNames) {
-            if (findSchema(schemaName) == null) {
-                errorSchemaList.add(schemaName);
-            }
-            if (findRelationByMasterChild(mainSchema, schemaName) == null) {
-                errorRelationSchemaList.add(schemaName);
-            }
-        }
-        if (!errorSchemaList.isEmpty()) {
-            throw new RuntimeException("no relation " + errorSchemaList + " defined with " + type);
-        }
-        if (!errorRelationSchemaList.isEmpty()) {
-            throw new RuntimeException(mainSchema + " is not related to " + errorRelationSchemaList + " with " + type);
-        }
     }
 }

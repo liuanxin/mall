@@ -209,18 +209,18 @@ public class ReqResult {
         }
     }
 
-    public String generateSelectSql(String mainSchema, boolean needAlias, Set<String> paramSchemaSet,
-                                    SchemaColumnInfo schemaColumnInfo) {
+    public String generateSelectSql(String mainSchema, Set<String> paramSchema, SchemaColumnInfo schemaColumnInfo) {
         String currentSchemaName = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
         Schema schema = schemaColumnInfo.findSchema(currentSchemaName);
         StringJoiner sj = new StringJoiner(", ");
         Set<String> columnNameSet = new HashSet<>();
 
+        boolean needAlias = !paramSchema.isEmpty();
         for (Object obj : columns) {
             if (obj instanceof String column) {
                 if (!column.isEmpty()) {
                     String schemaName = QueryUtil.getSchemaName(column, currentSchemaName);
-                    if (schemaName.equals(currentSchemaName) || paramSchemaSet.contains(schemaName)) {
+                    if (schemaName.equals(currentSchemaName) || paramSchema.contains(schemaName)) {
                         Schema currentSchema = schemaColumnInfo.findSchema(schemaName);
                         String columnName = QueryUtil.getColumnName(column);
                         SchemaColumn schemaColumn = schemaColumnInfo.findSchemaColumn(currentSchema, columnName);
