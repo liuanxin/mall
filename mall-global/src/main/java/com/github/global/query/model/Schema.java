@@ -45,23 +45,28 @@ public class Schema {
         this.idKey = idKey;
     }
 
-    public String idKeyColumn(boolean needAlias, String alias) {
+    public String idWhere(boolean needAlias) {
         if (idKey.size() == 1) {
+            String column = QuerySqlUtil.toSqlField(idKey.get(0));
             if (needAlias) {
-                return QuerySqlUtil.toSqlField(alias) + "." + QuerySqlUtil.toSqlField(idKey.get(0));
+                return QuerySqlUtil.toSqlField(alias) + "." + column;
             } else {
-                return QuerySqlUtil.toSqlField(idKey.get(0));
+                return column;
             }
         } else {
-            StringJoiner sj = new StringJoiner(", ", "(", ")");
-            for (String id : idKey) {
-                if (needAlias) {
-                    sj.add(QuerySqlUtil.toSqlField(alias) + "." + QuerySqlUtil.toSqlField(id));
-                } else {
-                    sj.add(QuerySqlUtil.toSqlField(id));
-                }
-            }
-            return sj.toString();
+            return "(" + idSelect(needAlias) + ")";
         }
+    }
+    public String idSelect(boolean needAlias) {
+        StringJoiner sj = new StringJoiner(", ");
+        for (String id : idKey) {
+            String column = QuerySqlUtil.toSqlField(id);
+            if (needAlias) {
+                sj.add(QuerySqlUtil.toSqlField(alias) + "." + column);
+            } else {
+                sj.add(column);
+            }
+        }
+        return sj.toString();
     }
 }

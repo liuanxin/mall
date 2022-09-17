@@ -1,7 +1,6 @@
 package com.github.global.query.model;
 
 import com.github.global.query.constant.QueryConst;
-import com.github.global.query.util.QuerySqlUtil;
 import com.github.global.query.util.QueryUtil;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -92,18 +91,9 @@ public class ReqParam {
         if (sort != null && !sort.isEmpty()) {
             StringJoiner orderSj = new StringJoiner(", ");
             for (Map.Entry<String, String> entry : sort.entrySet()) {
-                String desc = ("asc".equalsIgnoreCase(entry.getValue()) ? " ASC" : " DESC");
-                String key = entry.getKey();
-                String columnName = QueryUtil.getColumnName(key);
-                Schema schema = schemaColumnInfo.findSchema(QueryUtil.getSchemaName(mainSchema, key));
-                SchemaColumn schemaColumn = schemaColumnInfo.findSchemaColumn(schema, columnName);
-                String column;
-                if (needAlias) {
-                    column = QuerySqlUtil.toSqlField(schema.getAlias()) + "." + QuerySqlUtil.toSqlField(schemaColumn.getName());
-                } else {
-                    column = QuerySqlUtil.toSqlField(schemaColumn.getName());
-                }
-                orderSj.add(column + desc);
+                String value = entry.getValue().toLowerCase();
+                String desc = ("asc".equals(value) || "a".equals(value)) ? "" : " DESC";
+                orderSj.add(QueryUtil.getRealColumn(needAlias, entry.getKey(), mainSchema, schemaColumnInfo) + desc);
             }
             String orderBy = orderSj.toString();
             if (!orderBy.isEmpty()) {

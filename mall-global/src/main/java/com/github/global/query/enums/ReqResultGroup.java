@@ -6,22 +6,19 @@ import com.github.global.query.util.QueryUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
-
 @Getter
 @RequiredArgsConstructor
 public enum ReqResultGroup {
 
-    COUNT("COUNT(%s)", "cnt", "总条数"),
-    COUNT_DISTINCT("COUNT(DISTINCT %s)", "cnt%s", "总条数(去重)"),
-    SUM("SUM(%s)", "sum%s", "总和"),
-    MIN("MIN(%s)", "min%s", "最小"),
-    MAX("MAX(%s)", "max%s", "最大"),
-    AVG("AVG(%s)", "avg%s", "平均"),
-    GROUP_CONCAT("GROUP_CONCAT(%s)", "gct%s", "组拼接");
+    COUNT("COUNT(%s)", "总条数"),
+    COUNT_DISTINCT("COUNT(DISTINCT %s)", "总条数(去重)"),
+    SUM("SUM(%s)", "总和"),
+    MIN("MIN(%s)", "最小"),
+    MAX("MAX(%s)", "最大"),
+    AVG("AVG(%s)", "平均"),
+    GROUP_CONCAT("GROUP_CONCAT(%s)", "组拼接");
 
     private final String value;
-    private final String alias;
     private final String msg;
 
     @JsonValue
@@ -46,22 +43,7 @@ public enum ReqResultGroup {
         return String.format(value, column);
     }
 
-    public String generateAlias(String column) {
-        return String.format(alias, "_" + column.replace(" ", "").replace(",", "__").replace(".", "_"));
-    }
-
     public boolean checkHavingValue(Object value) {
         return (this == GROUP_CONCAT) ? (value instanceof String) : QueryUtil.isNumber(value);
-    }
-
-    public String havingField(List<?> groups) {
-        if (groups == null || groups.size() < 2) {
-            return "";
-        }
-        String column = QueryUtil.toStr(groups.get(1));
-        if (column.isEmpty()) {
-            return "";
-        }
-        return generateAlias(column);
     }
 }

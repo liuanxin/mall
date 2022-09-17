@@ -4,7 +4,6 @@ import com.github.common.json.JsonUtil;
 import com.github.global.query.constant.QueryConst;
 import com.github.global.query.enums.ReqParamConditionType;
 import com.github.global.query.enums.ReqResultGroup;
-import com.github.global.query.util.QuerySqlUtil;
 import com.github.global.query.util.QueryUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -47,16 +46,16 @@ import java.util.*;
  *
  * SELECT
  *   name,
- *   COUNT(*) AS cnt,
- *   COUNT(distinct name, name2) AS cnt_name,   -- 别名是自动拼装的
- *   SUM(price) AS sum_price,
- *   MIN(id) AS min_id,
- *   MAX(id) AS max_id,
- *   AVG(price) AS avg_price,
- *   GROUP_CONCAT(name) AS gct_name
+ *   COUNT(*),
+ *   COUNT(distinct name, name2),
+ *   SUM(price),
+ *   MIN(id),
+ *   MAX(id),
+ *   AVG(price),
+ *   GROUP_CONCAT(name)
  * FROM ...
  * GROUP BY name
- * HAVING _sum_price > 100.5 AND _sum_price < 120.5
+ * HAVING SUM(price) > 100.5 AND SUM(price) < 120.5
  * {
  *   "columns": [
  *     "name",
@@ -221,18 +220,9 @@ public class ReqResult {
                 if (!column.isEmpty()) {
                     String schemaName = QueryUtil.getSchemaName(column, currentSchemaName);
                     if (schemaName.equals(currentSchemaName) || paramSchema.contains(schemaName)) {
-                        Schema currentSchema = schemaColumnInfo.findSchema(schemaName);
-                        String columnName = QueryUtil.getColumnName(column);
-                        SchemaColumn schemaColumn = schemaColumnInfo.findSchemaColumn(currentSchema, columnName);
-
-                        String addKey = currentSchema.getName() + "." + schemaColumn.getName();
+                        String addKey = schemaName + "." + QueryUtil.getColumnName(column);
                         if (!columnNameSet.contains(addKey)) {
-                            String schemaColumnName = QuerySqlUtil.toSqlField(schemaColumn.getName());
-                            if (needAlias) {
-                                sj.add(QuerySqlUtil.toSqlField(currentSchema.getAlias()) + "." + schemaColumnName);
-                            } else {
-                                sj.add(schemaColumnName);
-                            }
+                            sj.add(QueryUtil.getRealColumn(needAlias, column, mainSchema, schemaColumnInfo));
                         }
                         columnNameSet.add(addKey);
                     }
@@ -244,12 +234,7 @@ public class ReqResult {
                     SchemaColumnRelation relation = schemaColumnInfo.findRelationByMasterChild(currentSchemaName, innerSchema);
                     String addKey = relation.getOneSchema() + "." + relation.getOneColumn();
                     if (!columnNameSet.contains(addKey)) {
-                        String schemaColumnName = QuerySqlUtil.toSqlField(relation.getOneColumn());
-                        if (needAlias) {
-                            sj.add(QuerySqlUtil.toSqlField(schema.getAlias()) + "." + schemaColumnName);
-                        } else {
-                            sj.add(schemaColumnName);
-                        }
+                        sj.add(QueryUtil.getRealColumn(needAlias, relation.getOneColumn(), currentSchemaName, schemaColumnInfo));
                     }
                     columnNameSet.add(addKey);
                 }
@@ -258,8 +243,7 @@ public class ReqResult {
         return sj.toString();
     }
 
-    public String generateFunctionSql(String mainSchema, boolean needAlias, SchemaColumnInfo schemaColumnInfo,
-                                      Map<String, String> functionAliasMap) {
+    public String generateFunctionSql(String mainSchema, boolean needAlias, SchemaColumnInfo schemaColumnInfo) {
         StringJoiner sj = new StringJoiner(", ");
         for (Object obj : columns) {
             if (obj instanceof List<?> groups) {
@@ -267,10 +251,16 @@ public class ReqResult {
                     String column = QueryUtil.toStr(groups.get(1));
                     if (!column.isEmpty()) {
                         ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
-                        String useName = QueryUtil.getRealColumn(needAlias, column, mainSchema, schemaColumnInfo);
-                        String alias = group.generateAlias(column);
-                        sj.add(group.generateColumn(useName) + " AS " + alias);
-                        functionAliasMap.put(alias, QueryUtil.toStr(groups.get(2)));
+                        if (group == ReqResultGroup.COUNT_DISTINCT) {
+                            StringJoiner funSj = new StringJoiner(", ");
+                            for (String col : column.split(",")) {
+                                funSj.add(QueryUtil.getRealColumn(needAlias, col.trim(), mainSchema, schemaColumnInfo));
+                            }
+                            sj.add(group.generateColumn(funSj.toString()));
+                        } else {
+                            String realColumn = QueryUtil.getRealColumn(needAlias, column, mainSchema, schemaColumnInfo);
+                            sj.add(group.generateColumn(realColumn));
+                        }
                     }
                 }
             }
@@ -278,6 +268,22 @@ public class ReqResult {
         return sj.toString();
     }
 
+    public boolean notNeedGroup() {
+        boolean hasColumn = false;
+        boolean hasGroup = false;
+        for (Object obj : columns) {
+            if (obj instanceof String column) {
+                if (!column.isEmpty()) {
+                    hasColumn = true;
+                }
+            } else if (obj instanceof List<?> groups) {
+                if (!groups.isEmpty()) {
+                    hasGroup = true;
+                }
+            }
+        }
+        return !(hasColumn && hasGroup);
+    }
     public String generateGroupSql(String mainSchema, boolean needAlias, SchemaColumnInfo schemaColumnInfo) {
         StringJoiner sj = new StringJoiner(", ");
         boolean hasGroup = false;
@@ -292,28 +298,32 @@ public class ReqResult {
                 }
             }
         }
-        if (!hasGroup) {
-            return "";
-        }
-        String groupBy = sj.toString();
-        return groupBy.isEmpty() ? "" : (" GROUP BY " + groupBy);
+        return (hasGroup && sj.length() > 0) ? (" GROUP BY " + sj) : "";
     }
 
-    public String generateHavingSql(List<Object> params) {
+    public String generateHavingSql(String mainSchema, boolean needAlias, SchemaColumnInfo schemaColumnInfo, List<Object> params) {
         StringJoiner groupSj = new StringJoiner(" AND ");
         for (Object obj : columns) {
             if (obj instanceof List<?> groups) {
                 if (!groups.isEmpty()) {
                     int size = groups.size();
                     if (size > 4) {
-                        String havingField = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0))).havingField(groups);
-                        // 先右移 1 位除以 2, 再左移 1 位乘以 2, 变成偶数
-                        int evenSize = size >> 1 << 1;
-                        for (int i = 3; i < evenSize; i += 2) {
-                            ReqParamConditionType conditionType = ReqParamConditionType.deserializer(groups.get(i));
-                            Object value = groups.get(i + 1);
+                        String column = QueryUtil.toStr(groups.get(1));
+                        if (!column.isEmpty()) {
+                            ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
+                            String realColumn = QueryUtil.getRealColumn(needAlias, column, mainSchema, schemaColumnInfo);
+                            String having = group.generateColumn(realColumn);
+                            // 先右移 1 位除以 2, 再左移 1 位乘以 2, 变成偶数
+                            int evenSize = size >> 1 << 1;
+                            for (int i = 3; i < evenSize; i += 2) {
+                                ReqParamConditionType conditionType = ReqParamConditionType.deserializer(groups.get(i));
+                                Object value = groups.get(i + 1);
 
-                            groupSj.add(conditionType.generateSql(havingField, value, params));
+                                String sql = conditionType.generateSql(having, value, params);
+                                if (!sql.isEmpty()) {
+                                    groupSj.add(sql);
+                                }
+                            }
                         }
                     }
                 }
