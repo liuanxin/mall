@@ -273,6 +273,9 @@ public class QueryUtil {
         if (obj == null) {
             return 0;
         }
+        if (obj instanceof Number n) {
+            return n.intValue();
+        }
         try {
             return Integer.parseInt(obj.toString().trim());
         } catch (NumberFormatException e) {
@@ -280,9 +283,9 @@ public class QueryUtil {
         }
     }
 
-    public static long toLong(Object obj, long defaultLong) {
+    public static long toLong(Object obj) {
         if (obj == null) {
-            return defaultLong;
+            return 0L;
         }
         if (obj instanceof Number n) {
             return n.longValue();
@@ -290,7 +293,7 @@ public class QueryUtil {
         try {
             return Long.parseLong(obj.toString().trim());
         } catch (NumberFormatException e) {
-            return defaultLong;
+            return 0L;
         }
     }
 
@@ -375,18 +378,6 @@ public class QueryUtil {
 
     public static String defaultIfBlank(String str1, String defaultStr) {
         return (str1 == null || str1.isEmpty()) ? defaultStr : str1;
-    }
-
-    public static boolean isNullString(Object value) {
-        if (value instanceof String) {
-            String str = ((String) value).trim();
-            return "null".equalsIgnoreCase(str) || "undefined".equalsIgnoreCase(str);
-        }
-        return false;
-    }
-
-    public static boolean isNotNullString(Object value) {
-        return !isNullString(value);
     }
 
     public static <T> T first(Collection<T> list) {

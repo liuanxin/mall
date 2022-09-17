@@ -246,7 +246,7 @@ public enum ReqParamConditionType {
 
 
     protected String generateCondition(String column, Object value, List<Object> params) {
-        if (value == null || QueryUtil.isNullString(value)) {
+        if (value == null) {
             return "";
         }
 

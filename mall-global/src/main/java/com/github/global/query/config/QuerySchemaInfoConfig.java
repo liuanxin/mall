@@ -185,7 +185,7 @@ public class QuerySchemaInfoConfig {
     }
 
     private long queryCount(String countSql, List<Object> params) {
-        return QueryUtil.toLong(jdbcTemplate.queryForObject(countSql, Long.class, params.toArray()), 0);
+        return QueryUtil.toLong(jdbcTemplate.queryForObject(countSql, Long.class, params.toArray()));
     }
 
     private List<Map<String, Object>> queryPageListWithoutGroup(String fromAndWhere, String mainSchema,
