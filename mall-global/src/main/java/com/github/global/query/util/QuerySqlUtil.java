@@ -21,34 +21,37 @@ public class QuerySqlUtil {
             sbd.append(" AS ").append(toSqlField(mainSchemaAlias));
             for (String childSchemaName : paramSchema) {
                 SchemaColumnRelation relation = schemaColumnInfo.findRelationByMasterChild(mainSchema, childSchemaName);
-                if (relation == null) {
-                    Set<String> tempSchemaSet = new LinkedHashSet<>(paramSchema);
-                    tempSchemaSet.remove(childSchemaName);
-                    for (String tempSchema : tempSchemaSet) {
-                        relation = schemaColumnInfo.findRelationByMasterChild(tempSchema, childSchemaName);
-                        if (relation != null) {
-                            break;
-                        }
-                    }
-
-                    if (relation == null) {
-                        throw new RuntimeException(childSchemaName + " has no relation with other schemas");
-                    }
+                SchemaColumnRelation useRelation = (relation == null) ?
+                        findRelation(schemaColumnInfo, childSchemaName, paramSchema) : relation;
+                if (useRelation == null) {
+                    throw new RuntimeException(childSchemaName + " has no relation with other schemas");
                 }
-                String childColumn = relation.getOneOrManyColumn();
 
+                String childColumn = useRelation.getOneOrManyColumn();
                 SchemaColumn childSchemaColumn = schemaColumnInfo.findSchemaColumn(childSchemaName, childColumn);
                 String childAlias = childSchemaColumn.getAlias();
 
                 sbd.append(" INNER JOIN ").append(toSqlField(childSchemaColumn.getName()));
                 sbd.append(" AS ").append(toSqlField(childAlias));
                 sbd.append(" ON ").append(toSqlField(mainSchemaAlias)).append(".");
-                sbd.append(toSqlField(relation.getOneColumn()));
+                sbd.append(toSqlField(useRelation.getOneColumn()));
                 sbd.append(" = ").append(toSqlField(childAlias)).append(".");
-                sbd.append(toSqlField(relation.getOneOrManyColumn()));
+                sbd.append(toSqlField(useRelation.getOneOrManyColumn()));
             }
         }
         return sbd.toString();
+    }
+    private static SchemaColumnRelation findRelation(SchemaColumnInfo schemaColumnInfo,
+                                                     String childSchemaName, Set<String> paramSchema) {
+        Set<String> tempSchemaSet = new LinkedHashSet<>(paramSchema);
+        tempSchemaSet.remove(childSchemaName);
+        for (String tempSchema : tempSchemaSet) {
+            SchemaColumnRelation relation = schemaColumnInfo.findRelationByMasterChild(tempSchema, childSchemaName);
+            if (relation != null) {
+                return relation;
+            }
+        }
+        return null;
     }
 
     public static String toFromWhereSql(SchemaColumnInfo schemaColumnInfo, String mainSchema,

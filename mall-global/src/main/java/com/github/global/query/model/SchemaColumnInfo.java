@@ -2,10 +2,7 @@ package com.github.global.query.model;
 
 import com.github.global.query.constant.QueryConst;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SchemaColumnInfo {
 
@@ -29,7 +26,7 @@ public class SchemaColumnInfo {
 
                 Map<String, SchemaColumnRelation> childRelation = childRelationMap.getOrDefault(childSchema, new HashMap<>());
                 childRelation.put(childColumn, relation);
-                childRelationMap.put(childColumn, childRelation);
+                childRelationMap.put(childSchema, childRelation);
 
                 Map<String, SchemaColumnRelation> masterChildRelation = masterChildSchemaMap.getOrDefault(masterSchema, new HashMap<>());
                 masterChildRelation.put(childSchema, relation);
@@ -63,21 +60,31 @@ public class SchemaColumnInfo {
         return (schema == null) ? null : findSchemaColumn(schema, columnName);
     }
 
+    public Map<String, SchemaColumnRelation> findRelationByMaster(String masterSchema) {
+        if (masterSchema == null || masterSchema.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String schemaAlias = aliasMap.get(QueryConst.SCHEMA_PREFIX + masterSchema);
+        Map<String, SchemaColumnRelation> relationMap = masterChildSchemaMap.get(schemaAlias);
+        return (relationMap == null || relationMap.isEmpty()) ? masterChildSchemaMap.get(masterSchema) : relationMap;
+    }
+
     public SchemaColumnRelation findRelationByMasterChild(String masterSchema, String childSchema) {
         return findRelation(masterChildSchemaMap, masterSchema, childSchema);
     }
 
-    private SchemaColumnRelation findRelation(Map<String, Map<String, SchemaColumnRelation>> schemaMap,
+    private SchemaColumnRelation findRelation(Map<String, Map<String, SchemaColumnRelation>> schemaRelationMap,
                                               String schema, String childSchemaOrColumn) {
-        if (schemaMap == null || schemaMap.isEmpty() || schema == null || schema.isEmpty()
+        if (schemaRelationMap == null || schemaRelationMap.isEmpty() || schema == null || schema.isEmpty()
                 || childSchemaOrColumn == null || childSchemaOrColumn.isEmpty()) {
             return null;
         }
 
         String schemaAlias = aliasMap.get(QueryConst.SCHEMA_PREFIX + schema);
-        Map<String, SchemaColumnRelation> relationMap = childRelationMap.get(schemaAlias);
+        Map<String, SchemaColumnRelation> relationMap = schemaRelationMap.get(schemaAlias);
         Map<String, SchemaColumnRelation> useRelationMap =
-                (relationMap == null || relationMap.isEmpty()) ? childRelationMap.get(schema) : relationMap;
+                (relationMap == null || relationMap.isEmpty()) ? schemaRelationMap.get(schema) : relationMap;
         if (useRelationMap == null || useRelationMap.isEmpty()) {
             return null;
         }

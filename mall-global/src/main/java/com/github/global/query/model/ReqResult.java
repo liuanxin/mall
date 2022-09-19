@@ -93,6 +93,7 @@ public class ReqResult {
             throw new RuntimeException("result schema(" + currentSchema + ") need columns");
         }
 
+        Set<String> columnSchemaSet = new HashSet<>();
         Set<String> functionSchemaSet = new HashSet<>();
         Set<String> columnCheckRepeatedSet = new HashSet<>();
         List<Object> innerList = new ArrayList<>();
@@ -110,6 +111,7 @@ public class ReqResult {
                         throw new RuntimeException("result schema(" + currentSchema + ") column(" + col + ") has repeated");
                     }
                     columnCheckRepeatedSet.add(col);
+                    columnSchemaSet.add(QueryUtil.getSchemaName(column, currentSchema));
                     hasColumnOrFunction = true;
                 } else if (obj instanceof List<?> groups) {
                     if (groups.isEmpty()) {
@@ -176,7 +178,13 @@ public class ReqResult {
         if (!hasColumnOrFunction) {
             throw new RuntimeException("result schema(" + currentSchema + ") no columns");
         }
+        checkInnerResult(currentSchema, paramSchemaSet, columnCheckRepeatedSet, schemaColumnInfo, innerList);
 
+        return checkSchema(mainSchema, paramSchemaSet, columnSchemaSet, functionSchemaSet, schemaColumnInfo);
+    }
+
+    private void checkInnerResult(String currentSchema, Set<String> paramSchemaSet, Set<String> columnCheckRepeatedSet,
+                                  SchemaColumnInfo schemaColumnInfo, List<Object> innerList) {
         for (Object obj : innerList) {
             Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
             if (inner == null) {
@@ -202,11 +210,29 @@ public class ReqResult {
                 innerResult.checkResult(innerSchema, schemaColumnInfo, paramSchemaSet);
             }
         }
-        return functionSchemaSet;
     }
 
-    public void checkSchema(String mainSchema, Set<String> paramSchemaSet, Set<String> functionSchemaSet,
-                            SchemaColumnInfo schemaColumnInfo) {
+    private Set<String> checkSchema(String mainSchema, Set<String> paramSchemaSet, Set<String> columnSchemaSet,
+                                    Set<String> functionSchemaSet, SchemaColumnInfo schemaColumnInfo) {
+        Set<String> resultSchema = new HashSet<>();
+        if (!columnSchemaSet.isEmpty()) {
+            columnSchemaSet.remove(mainSchema);
+            for (String columnSchema : columnSchemaSet) {
+                if (!paramSchemaSet.contains(columnSchema)) {
+                    boolean hasRelation = false;
+                    for (String paramSchema : paramSchemaSet) {
+                        if (schemaColumnInfo.findRelationByMasterChild(paramSchema, columnSchema) != null) {
+                            hasRelation = true;
+                            break;
+                        }
+                    }
+                    if (!hasRelation) {
+                        throw new RuntimeException("result schema(" + columnSchema + ") has no relation with param schema");
+                    }
+                    resultSchema.add(columnSchema);
+                }
+            }
+        }
         if (!functionSchemaSet.isEmpty()) {
             functionSchemaSet.remove(mainSchema);
             for (String functionSchema : functionSchemaSet) {
@@ -221,15 +247,15 @@ public class ReqResult {
                     if (!hasRelation) {
                         throw new RuntimeException("result function schema(" + functionSchema + ") has no relation with param schema");
                     }
-                    paramSchemaSet.add(functionSchema);
+                    resultSchema.add(functionSchema);
                 }
             }
         }
+        return resultSchema;
     }
 
     public String generateSelectSql(String mainSchema, Set<String> paramSchema, SchemaColumnInfo schemaColumnInfo) {
         String currentSchemaName = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
-        Schema schema = schemaColumnInfo.findSchema(currentSchemaName);
         StringJoiner sj = new StringJoiner(", ");
         Set<String> columnNameSet = new HashSet<>();
 
