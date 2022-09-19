@@ -2,6 +2,7 @@ package com.github.global.query.config;
 
 import com.github.common.collection.MapMultiUtil;
 import com.github.common.collection.MapMultiValue;
+import com.github.common.json.JsonUtil;
 import com.github.global.query.constant.QueryConst;
 import com.github.global.query.enums.ReqResultType;
 import com.github.global.query.enums.SchemaRelationType;
@@ -180,7 +181,7 @@ public class QuerySchemaInfoConfig {
                     paramSchemaSet, result, params);
             count = queryCount(QuerySqlUtil.toCountGroupSql(selectGroupSql), params);
             if (param.needQueryCurrentPage(count)) {
-                pageList = queryPageListWithGroup(selectGroupSql, param, result, params);
+                pageList = queryPageListWithGroup(selectGroupSql, param, paramSchemaSet, result, params);
             } else {
                 pageList = Collections.emptyList();
             }
@@ -196,7 +197,7 @@ public class QuerySchemaInfoConfig {
     }
 
     private List<Map<String, Object>> queryPageListWithoutGroup(String fromAndWhere, String mainSchema,
-                                                                Set<String> paramSchema, ReqParam param,
+                                                                Set<String> paramSchemaSet, ReqParam param,
                                                                 ReqResult result,
                                                                 Map<String, Set<SchemaJoinRelation>> joinRelationMap,
                                                                 List<Object> params) {
@@ -205,63 +206,86 @@ public class QuerySchemaInfoConfig {
         if (param.hasDeepPage(deepMaxPageSize)) {
             // SELECT id FROM ... WHERE ... ORDER BY ... LIMIT ...
             String idPageSql = QuerySqlUtil.toIdPageSql(schemaColumnInfo,
-                    fromAndWhere, mainSchema, !paramSchema.isEmpty(), param, params);
+                    fromAndWhere, mainSchema, !paramSchemaSet.isEmpty(), param, params);
             List<Map<String, Object>> idList = jdbcTemplate.queryForList(idPageSql, params.toArray());
 
             // SELECT ... FROM ... WHERE id IN (x, y, z)
             params.clear();
-            sql = QuerySqlUtil.toSelectWithIdSql(schemaColumnInfo, mainSchema, paramSchema,
+            sql = QuerySqlUtil.toSelectWithIdSql(schemaColumnInfo, mainSchema, paramSchemaSet,
                     result, idList, joinRelationMap, params);
         } else {
             sql = QuerySqlUtil.toPageWithoutGroupSql(schemaColumnInfo, fromAndWhere, mainSchema,
-                    paramSchema, param, result, params);
+                    paramSchemaSet, param, result, params);
         }
-        return assemblyResult(sql, param, result, params);
+        return assemblyResult(sql, params, paramSchemaSet, param, result);
     }
 
     private List<Map<String, Object>> queryPageListWithGroup(String selectGroupSql, ReqParam param,
+                                                             Set<String> paramSchemaSet,
                                                              ReqResult result, List<Object> params) {
         String sql = selectGroupSql + param.generatePageSql(params);
-        return assemblyResult(sql, param, result, params);
+        return assemblyResult(sql, params, paramSchemaSet, param, result);
     }
 
-    private List<Map<String, Object>> queryListLimit(String fromAndWhere, String mainSchema, Set<String> paramSchema,
+    private List<Map<String, Object>> queryListLimit(String fromAndWhere, String mainSchema, Set<String> paramSchemaSet,
                                                      ReqParam param, ReqResult result, List<Object> params) {
         String selectGroupSql = QuerySqlUtil.toSelectGroupSql(schemaColumnInfo, fromAndWhere, mainSchema,
-                paramSchema, result, params);
-        String orderSql = param.generateOrderSql(mainSchema, !paramSchema.isEmpty(), schemaColumnInfo);
+                paramSchemaSet, result, params);
+        String orderSql = param.generateOrderSql(mainSchema, !paramSchemaSet.isEmpty(), schemaColumnInfo);
         String sql = selectGroupSql + orderSql + param.generatePageSql(params);
-        return assemblyResult(sql, param, result, params);
+        return assemblyResult(sql, params, paramSchemaSet, param, result);
     }
 
-    private List<Map<String, Object>> queryListNoLimit(String fromAndWhere, String mainSchema, Set<String> paramSchema,
+    private List<Map<String, Object>> queryListNoLimit(String fromAndWhere, String mainSchema, Set<String> paramSchemaSet,
                                                        ReqParam param, ReqResult result, List<Object> params) {
         String selectGroupSql = QuerySqlUtil.toSelectGroupSql(schemaColumnInfo, fromAndWhere, mainSchema,
-                paramSchema, result, params);
-        String orderSql = param.generateOrderSql(mainSchema, !paramSchema.isEmpty(), schemaColumnInfo);
+                paramSchemaSet, result, params);
+        String orderSql = param.generateOrderSql(mainSchema, !paramSchemaSet.isEmpty(), schemaColumnInfo);
         String sql = selectGroupSql + orderSql;
-        return assemblyResult(sql, param, result, params);
+        return assemblyResult(sql, params, paramSchemaSet, param, result);
     }
 
-    private Map<String, Object> queryObj(String fromAndWhere, String mainSchema, Set<String> paramSchema,
+    private Map<String, Object> queryObj(String fromAndWhere, String mainSchema, Set<String> paramSchemaSet,
                                          ReqParam param, ReqResult result, List<Object> params) {
         String selectGroupSql = QuerySqlUtil.toSelectGroupSql(schemaColumnInfo, fromAndWhere, mainSchema,
-                paramSchema, result, params);
-        String orderSql = param.generateOrderSql(mainSchema, !paramSchema.isEmpty(), schemaColumnInfo);
+                paramSchemaSet, result, params);
+        String orderSql = param.generateOrderSql(mainSchema, !paramSchemaSet.isEmpty(), schemaColumnInfo);
         String sql = selectGroupSql + orderSql + param.generateArrToObjSql(params);
-        Map<String, Object> obj = QueryUtil.first(assemblyResult(sql, param, result, params));
+        Map<String, Object> obj = QueryUtil.first(assemblyResult(sql, params, paramSchemaSet, param, result));
         return (obj == null) ? Collections.emptyMap() : obj;
     }
 
-    private List<Map<String, Object>> assemblyResult(String Sql, ReqParam param, ReqResult result, List<Object> params) {
+    private List<Map<String, Object>> assemblyResult(String Sql, List<Object> params, Set<String> paramSchemaSet,
+                                                     ReqParam param, ReqResult result) {
         List<Map<String, Object>> mapList = jdbcTemplate.queryForList(Sql, params.toArray());
 
         List<Map<String, Object>> returnList = new ArrayList<>();
         if (!mapList.isEmpty()) {
+            List<String> innerList = new ArrayList<>();
+            Map<String, List<Map<String, Object>>> innerMap = new HashMap<>();
+            for (Object obj : result.getColumns()) {
+                if (obj != null) {
+                    if (!(obj instanceof String) && !(obj instanceof List<?>)) {
+                        Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
+                        for (Map.Entry<String, ReqResult> entry : inner.entrySet()) {
+                            String innerName = entry.getKey();
+                            innerList.add(innerName);
+                            // todo
+                            innerMap.put(innerName + "-id", queryInnerData(entry.getValue()));
+                        }
+                    }
+                }
+            }
             for (Map<String, Object> data : mapList) {
-                // todo
+                for (String innerName : innerList) {
+                    // todo
+                    data.put(innerName, innerMap.get(innerName + data.get("id")));
+                }
             }
         }
         return returnList;
+    }
+    private List<Map<String, Object>> queryInnerData(ReqResult result) {
+        return null;
     }
 }
