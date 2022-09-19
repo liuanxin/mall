@@ -14,11 +14,12 @@ public class QuerySqlUtil {
                                     Map<String, Set<SchemaJoinRelation>> joinRelationMap) {
         StringBuilder sbd = new StringBuilder("FROM ");
         Schema schema = schemaColumnInfo.findSchema(mainSchema);
-        sbd.append(toSqlField(schema.getName()));
+        String mainSchemaName = schema.getName();
+        sbd.append(toSqlField(mainSchemaName));
 
         Map<String, Set<SchemaJoinRelation>> tempMap = new LinkedHashMap<>(joinRelationMap);
         if (!tempMap.isEmpty()) {
-            Set<SchemaJoinRelation> masterRelation = tempMap.remove(schema.getName());
+            Set<SchemaJoinRelation> masterRelation = tempMap.remove(mainSchemaName);
             if (!masterRelation.isEmpty()) {
                 for (SchemaJoinRelation joinRelation : masterRelation) {
                     sbd.append(joinRelation.generateJoin(schemaColumnInfo));
