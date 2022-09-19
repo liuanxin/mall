@@ -10,7 +10,7 @@ public class QuerySqlUtil {
         return MysqlKeyWordUtil.hasKeyWord(field) ? ("`" + field + "`") : field;
     }
 
-    private static String toFromSql(SchemaColumnInfo schemaColumnInfo, String mainSchema,
+    private static String toFromSql(SchemaColumnInfo schemaColumnInfo, String mainSchema, Set<String> paramSchemaSet,
                                     Map<String, Set<SchemaJoinRelation>> joinRelationMap) {
         StringBuilder sbd = new StringBuilder("FROM ");
         Schema schema = schemaColumnInfo.findSchema(mainSchema);
@@ -22,12 +22,17 @@ public class QuerySqlUtil {
             Set<SchemaJoinRelation> masterRelation = tempMap.remove(mainSchemaName);
             if (!masterRelation.isEmpty()) {
                 for (SchemaJoinRelation joinRelation : masterRelation) {
-                    sbd.append(joinRelation.generateJoin(schemaColumnInfo));
+                    if (paramSchemaSet.contains(joinRelation.getChildSchema().getName())) {
+                        sbd.append(joinRelation.generateJoin(schemaColumnInfo));
+                    }
                 }
 
                 for (Set<SchemaJoinRelation> relations : tempMap.values()) {
                     for (SchemaJoinRelation joinRelation : relations) {
-                        sbd.append(joinRelation.generateJoin(schemaColumnInfo));
+                        if (paramSchemaSet.contains(joinRelation.getMasterSchema().getName())
+                                && paramSchemaSet.contains(joinRelation.getChildSchema().getName())) {
+                            sbd.append(joinRelation.generateJoin(schemaColumnInfo));
+                        }
                     }
                 }
             }
@@ -35,11 +40,11 @@ public class QuerySqlUtil {
         return sbd.toString();
     }
 
-    public static String toFromWhereSql(SchemaColumnInfo schemaColumnInfo, String mainSchema, boolean needAlias,
+    public static String toFromWhereSql(SchemaColumnInfo schemaColumnInfo, String mainSchema, Set<String> paramSchemaSet,
                                         ReqParam param, Map<String, Set<SchemaJoinRelation>> joinRelationMap,
                                         List<Object> params) {
-        String fromSql = toFromSql(schemaColumnInfo, mainSchema, joinRelationMap);
-        String whereSql = param.generateWhereSql(mainSchema, schemaColumnInfo, params, needAlias);
+        String fromSql = toFromSql(schemaColumnInfo, mainSchema, paramSchemaSet, joinRelationMap);
+        String whereSql = param.generateWhereSql(mainSchema, schemaColumnInfo, !paramSchemaSet.isEmpty(), params);
         return fromSql + whereSql;
     }
 
@@ -104,7 +109,7 @@ public class QuerySqlUtil {
                                            List<Object> params) {
         // SELECT ... FROM ... WHERE id IN (x, y, z)
         String selectColumn = result.generateSelectSql(mainSchema, paramSchemaSet, schemaColumnInfo);
-        String fromSql = toFromSql(schemaColumnInfo, mainSchema, joinRelationMap);
+        String fromSql = toFromSql(schemaColumnInfo, mainSchema, paramSchemaSet, joinRelationMap);
 
         Schema schema = schemaColumnInfo.findSchema(mainSchema);
         String idWhere = schema.idWhere(!paramSchemaSet.isEmpty());

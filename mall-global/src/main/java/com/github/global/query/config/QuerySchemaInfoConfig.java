@@ -142,7 +142,7 @@ public class QuerySchemaInfoConfig {
 
         List<Object> params = new ArrayList<>();
         String fromAndWhere = QuerySqlUtil.toFromWhereSql(schemaColumnInfo, mainSchema,
-                !paramSchemaSet.isEmpty(), param, joinRelationMap, params);
+                paramSchemaSet, param, joinRelationMap, params);
 
         if (param.needQueryPage()) {
             if (param.needQueryCount()) {

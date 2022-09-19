@@ -142,7 +142,7 @@ public class ReqParam {
         return false;
     }
 
-    public String generateWhereSql(String mainSchema, SchemaColumnInfo schemaColumnInfo, List<Object> params, boolean needAlias) {
+    public String generateWhereSql(String mainSchema, SchemaColumnInfo schemaColumnInfo, boolean needAlias, List<Object> params) {
         if (query == null) {
             return "";
         }
