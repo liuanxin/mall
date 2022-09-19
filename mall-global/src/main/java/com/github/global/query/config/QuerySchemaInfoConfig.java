@@ -131,46 +131,53 @@ public class QuerySchemaInfoConfig {
     }
 
     public Object query(RequestInfo req) {
-        Set<String> paramSchema = req.check(schemaColumnInfo);
+        req.check(schemaColumnInfo);
 
         String mainSchema = req.getSchema();
         ReqParam param = req.getParam();
-
         ReqResult result = req.getResult();
 
+        Set<String> paramSchemaSet = param.allParamSchema(schemaColumnInfo);
+        Map<String, Set<SchemaJoinRelation>> joinRelationMap = param.joinRelationMap(schemaColumnInfo);
+
         List<Object> params = new ArrayList<>();
-        String fromAndWhere = QuerySqlUtil.toFromWhereSql(schemaColumnInfo, mainSchema, paramSchema, param, params);
+        String fromAndWhere = QuerySqlUtil.toFromWhereSql(schemaColumnInfo, mainSchema,
+                !paramSchemaSet.isEmpty(), param, joinRelationMap, params);
 
         if (param.needQueryPage()) {
             if (param.needQueryCount()) {
-                return queryCountPage(fromAndWhere, mainSchema, paramSchema, param, result, params);
+                return queryCountPage(fromAndWhere, mainSchema, paramSchemaSet, param, result, joinRelationMap, params);
             } else {
                 // 「移动端-瀑布流」时不需要「SELECT COUNT(*)」
-                return queryListLimit(fromAndWhere, mainSchema, paramSchema, param, result, params);
+                return queryListLimit(fromAndWhere, mainSchema, paramSchemaSet, param, result, params);
             }
         } else {
             if (req.getType() == ReqResultType.OBJ) {
-                return queryObj(fromAndWhere, mainSchema, paramSchema, param, result, params);
+                return queryObj(fromAndWhere, mainSchema, paramSchemaSet, param, result, params);
             } else {
-                return queryListNoLimit(fromAndWhere, mainSchema, paramSchema, param, result, params);
+                return queryListNoLimit(fromAndWhere, mainSchema, paramSchemaSet, param, result, params);
             }
         }
     }
 
-    private Map<String, Object> queryCountPage(String fromAndWhere, String mainSchema, Set<String> paramSchema,
-                                               ReqParam param, ReqResult result, List<Object> params) {
+    private Map<String, Object> queryCountPage(String fromAndWhere, String mainSchema, Set<String> paramSchemaSet,
+                                               ReqParam param, ReqResult result,
+                                               Map<String, Set<SchemaJoinRelation>> joinRelationMap, List<Object> params) {
         long count;
         List<Map<String, Object>> pageList;
         if (result.notNeedGroup()) {
-            count = queryCount(QuerySqlUtil.toCountWithoutGroupSql(schemaColumnInfo, mainSchema, paramSchema, fromAndWhere), params);
+            String countSql = QuerySqlUtil.toCountWithoutGroupSql(schemaColumnInfo, mainSchema,
+                    !paramSchemaSet.isEmpty(), param, fromAndWhere);
+            count = queryCount(countSql, params);
             if (param.needQueryCurrentPage(count)) {
-                pageList = queryPageListWithoutGroup(fromAndWhere, mainSchema, paramSchema, param, result, params);
+                pageList = queryPageListWithoutGroup(fromAndWhere, mainSchema, paramSchemaSet, param,
+                        result, joinRelationMap, params);
             } else {
                 pageList = Collections.emptyList();
             }
         } else {
             String selectGroupSql = QuerySqlUtil.toSelectGroupSql(schemaColumnInfo, fromAndWhere, mainSchema,
-                    paramSchema, result, params);
+                    paramSchemaSet, result, params);
             count = queryCount(QuerySqlUtil.toCountGroupSql(selectGroupSql), params);
             if (param.needQueryCurrentPage(count)) {
                 pageList = queryPageListWithGroup(selectGroupSql, param, result, params);
@@ -190,17 +197,21 @@ public class QuerySchemaInfoConfig {
 
     private List<Map<String, Object>> queryPageListWithoutGroup(String fromAndWhere, String mainSchema,
                                                                 Set<String> paramSchema, ReqParam param,
-                                                                ReqResult result, List<Object> params) {
+                                                                ReqResult result,
+                                                                Map<String, Set<SchemaJoinRelation>> joinRelationMap,
+                                                                List<Object> params) {
         // 很深的查询(深分页)时, 先用「条件 + 排序 + 分页」只查 id, 再用 id 查具体的数据列
         String sql;
         if (param.hasDeepPage(deepMaxPageSize)) {
             // SELECT id FROM ... WHERE ... ORDER BY ... LIMIT ...
-            String idPageSql = QuerySqlUtil.toIdPageSql(schemaColumnInfo, fromAndWhere, mainSchema, !paramSchema.isEmpty(), param, params);
+            String idPageSql = QuerySqlUtil.toIdPageSql(schemaColumnInfo,
+                    fromAndWhere, mainSchema, !paramSchema.isEmpty(), param, params);
             List<Map<String, Object>> idList = jdbcTemplate.queryForList(idPageSql, params.toArray());
 
             // SELECT ... FROM ... WHERE id IN (x, y, z)
             params.clear();
-            sql = QuerySqlUtil.toSelectWithIdSql(schemaColumnInfo, mainSchema, paramSchema, result, idList, params);
+            sql = QuerySqlUtil.toSelectWithIdSql(schemaColumnInfo, mainSchema, paramSchema,
+                    result, idList, joinRelationMap, params);
         } else {
             sql = QuerySqlUtil.toPageWithoutGroupSql(schemaColumnInfo, fromAndWhere, mainSchema,
                     paramSchema, param, result, params);

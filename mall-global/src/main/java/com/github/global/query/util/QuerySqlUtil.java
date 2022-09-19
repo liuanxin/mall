@@ -1,6 +1,5 @@
 package com.github.global.query.util;
 
-import com.github.global.query.enums.SchemaRelationType;
 import com.github.global.query.model.*;
 
 import java.util.*;
@@ -11,53 +10,35 @@ public class QuerySqlUtil {
         return MysqlKeyWordUtil.hasKeyWord(field) ? ("`" + field + "`") : field;
     }
 
-    private static String toFromSql(SchemaColumnInfo schemaColumnInfo, String mainSchema, Set<String> paramSchema) {
+    private static String toFromSql(SchemaColumnInfo schemaColumnInfo, String mainSchema,
+                                    Map<String, Set<SchemaJoinRelation>> joinRelationMap) {
         StringBuilder sbd = new StringBuilder("FROM ");
         Schema schema = schemaColumnInfo.findSchema(mainSchema);
         sbd.append(toSqlField(schema.getName()));
 
-        if (!paramSchema.isEmpty()) {
-            String mainSchemaAlias = schema.getAlias();
-            sbd.append(" AS ").append(toSqlField(mainSchemaAlias));
-            for (String childSchemaName : paramSchema) {
-                SchemaColumnRelation relation = schemaColumnInfo.findRelationByMasterChild(mainSchema, childSchemaName);
-                SchemaColumnRelation useRelation = (relation == null) ?
-                        findRelation(schemaColumnInfo, childSchemaName, paramSchema) : relation;
-                if (useRelation == null) {
-                    throw new RuntimeException(childSchemaName + " has no relation with other schemas");
+        Map<String, Set<SchemaJoinRelation>> tempMap = new LinkedHashMap<>(joinRelationMap);
+        if (!tempMap.isEmpty()) {
+            Set<SchemaJoinRelation> masterRelation = tempMap.remove(schema.getName());
+            if (!masterRelation.isEmpty()) {
+                for (SchemaJoinRelation joinRelation : masterRelation) {
+                    sbd.append(joinRelation.generateJoin(schemaColumnInfo));
                 }
 
-                String childColumn = useRelation.getOneOrManyColumn();
-                SchemaColumn childSchemaColumn = schemaColumnInfo.findSchemaColumn(childSchemaName, childColumn);
-                String childAlias = childSchemaColumn.getAlias();
-
-                sbd.append(" INNER JOIN ").append(toSqlField(childSchemaColumn.getName()));
-                sbd.append(" AS ").append(toSqlField(childAlias));
-                sbd.append(" ON ").append(toSqlField(mainSchemaAlias)).append(".");
-                sbd.append(toSqlField(useRelation.getOneColumn()));
-                sbd.append(" = ").append(toSqlField(childAlias)).append(".");
-                sbd.append(toSqlField(useRelation.getOneOrManyColumn()));
+                for (Set<SchemaJoinRelation> relations : tempMap.values()) {
+                    for (SchemaJoinRelation joinRelation : relations) {
+                        sbd.append(joinRelation.generateJoin(schemaColumnInfo));
+                    }
+                }
             }
         }
         return sbd.toString();
     }
-    private static SchemaColumnRelation findRelation(SchemaColumnInfo schemaColumnInfo,
-                                                     String childSchemaName, Set<String> paramSchema) {
-        Set<String> tempSchemaSet = new LinkedHashSet<>(paramSchema);
-        tempSchemaSet.remove(childSchemaName);
-        for (String tempSchema : tempSchemaSet) {
-            SchemaColumnRelation relation = schemaColumnInfo.findRelationByMasterChild(tempSchema, childSchemaName);
-            if (relation != null) {
-                return relation;
-            }
-        }
-        return null;
-    }
 
-    public static String toFromWhereSql(SchemaColumnInfo schemaColumnInfo, String mainSchema,
-                                        Set<String> paramSchema, ReqParam param, List<Object> params) {
-        String fromSql = toFromSql(schemaColumnInfo, mainSchema, paramSchema);
-        String whereSql = param.generateWhereSql(mainSchema, schemaColumnInfo, params, !paramSchema.isEmpty());
+    public static String toFromWhereSql(SchemaColumnInfo schemaColumnInfo, String mainSchema, boolean needAlias,
+                                        ReqParam param, Map<String, Set<SchemaJoinRelation>> joinRelationMap,
+                                        List<Object> params) {
+        String fromSql = toFromSql(schemaColumnInfo, mainSchema, joinRelationMap);
+        String whereSql = param.generateWhereSql(mainSchema, schemaColumnInfo, params, needAlias);
         return fromSql + whereSql;
     }
 
@@ -66,8 +47,8 @@ public class QuerySqlUtil {
     }
 
     public static String toSelectGroupSql(SchemaColumnInfo schemaColumnInfo, String fromAndWhere, String mainSchema,
-                                          Set<String> paramSchema, ReqResult result, List<Object> params) {
-        String selectField = result.generateSelectSql(mainSchema, paramSchema, schemaColumnInfo);
+                                          Set<String> paramSchemaSet, ReqResult result, List<Object> params) {
+        String selectField = result.generateSelectSql(mainSchema, paramSchemaSet, schemaColumnInfo);
         boolean emptySelect = selectField.isEmpty();
 
         // SELECT ... FROM ... WHERE ... GROUP BY ... HAVING ...
@@ -75,7 +56,7 @@ public class QuerySqlUtil {
         if (!emptySelect) {
             sbd.append(selectField);
         }
-        boolean needAlias = !paramSchema.isEmpty();
+        boolean needAlias = !paramSchemaSet.isEmpty();
         String functionSql = result.generateFunctionSql(mainSchema, needAlias, schemaColumnInfo);
         if (!functionSql.isEmpty()) {
             if (!emptySelect) {
@@ -89,20 +70,11 @@ public class QuerySqlUtil {
         return sbd.toString();
     }
 
-    private static boolean hasRelationMany(SchemaColumnInfo schemaColumnInfo, String mainSchema, Set<String> paramSchema) {
-        for (String childSchemaName : paramSchema) {
-            SchemaColumnRelation relation = schemaColumnInfo.findRelationByMasterChild(mainSchema, childSchemaName);
-            if (relation != null && relation.getType() == SchemaRelationType.ONE_TO_MANY) {
-                return true;
-            }
-        }
-        return false;
-    }
     public static String toCountWithoutGroupSql(SchemaColumnInfo schemaColumnInfo, String mainSchema,
-                                                Set<String> paramSchema, String fromAndWhere) {
-        if (hasRelationMany(schemaColumnInfo, mainSchema, paramSchema)) {
+                                                boolean needAlias, ReqParam param, String fromAndWhere) {
+        if (param.hasManyRelation(schemaColumnInfo)) {
             // SELECT COUNT(DISTINCT xx.id) FROM ...
-            String idSelect = schemaColumnInfo.findSchema(mainSchema).idSelect(!paramSchema.isEmpty());
+            String idSelect = schemaColumnInfo.findSchema(mainSchema).idSelect(needAlias);
             return String.format("SELECT COUNT(DISTINCT %s) %s", idSelect, fromAndWhere);
         } else {
             return "SELECT COUNT(*) " + fromAndWhere;
@@ -125,14 +97,16 @@ public class QuerySqlUtil {
         return "SELECT " + idSelect + fromAndWhere + orderSql + param.generatePageSql(params);
     }
     public static String toSelectWithIdSql(SchemaColumnInfo schemaColumnInfo, String mainSchema,
-                                           Set<String> paramSchema, ReqResult result,
-                                           List<Map<String, Object>> idList, List<Object> params) {
+                                           Set<String> paramSchemaSet, ReqResult result,
+                                           List<Map<String, Object>> idList,
+                                           Map<String, Set<SchemaJoinRelation>> joinRelationMap,
+                                           List<Object> params) {
         // SELECT ... FROM ... WHERE id IN (x, y, z)
-        String selectColumn = result.generateSelectSql(mainSchema, paramSchema, schemaColumnInfo);
-        String fromSql = toFromSql(schemaColumnInfo, mainSchema, paramSchema);
+        String selectColumn = result.generateSelectSql(mainSchema, paramSchemaSet, schemaColumnInfo);
+        String fromSql = toFromSql(schemaColumnInfo, mainSchema, joinRelationMap);
 
         Schema schema = schemaColumnInfo.findSchema(mainSchema);
-        String idWhere = schema.idWhere(!paramSchema.isEmpty());
+        String idWhere = schema.idWhere(!paramSchemaSet.isEmpty());
         List<String> idKey = schema.getIdKey();
         StringJoiner sj = new StringJoiner(", ", "( ", " )");
         for (Map<String, Object> idMap : idList) {

@@ -1,6 +1,8 @@
 package com.github.global.query.model;
 
 import com.github.global.query.constant.QueryConst;
+import com.github.global.query.enums.ReqJoinType;
+import com.github.global.query.enums.SchemaRelationType;
 import com.github.global.query.util.QueryUtil;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,6 +27,8 @@ import java.util.*;
 @NoArgsConstructor
 public class ReqParam {
 
+    /** { [ "order", "left", "orderItem" ] , [ "order", "right", "orderPrice" ] ] */
+    private List<List<String>> relation;
     /** 查询信息 */
     private ReqParamOperate query;
     /** 排序信息 */
@@ -35,25 +39,14 @@ public class ReqParam {
     private Boolean notCount;
 
 
-    public Set<String> checkParam(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
-        Set<String> paramSchemaSet = new LinkedHashSet<>();
-        paramSchemaSet.add(mainSchema);
+    public void checkParam(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
         if (query != null) {
             query.checkCondition(mainSchema, schemaColumnInfo);
-            query.allSchema(mainSchema, paramSchemaSet);
         }
 
         if (sort != null && !sort.isEmpty()) {
             for (String column : sort.keySet()) {
                 QueryUtil.checkColumnName(column, mainSchema, schemaColumnInfo, "param order");
-
-                if (!column.contains(".")) {
-                    String orderSchemaName = QueryUtil.getSchemaName(column, mainSchema);
-                    if (!paramSchemaSet.contains(orderSchemaName)) {
-                        throw new RuntimeException("no order schema(" + orderSchemaName + ") in query condition");
-                    }
-                    paramSchemaSet.add(orderSchemaName);
-                }
             }
         }
 
@@ -64,18 +57,89 @@ public class ReqParam {
             }
         }
 
-        paramSchemaSet.remove(mainSchema);
-        if (paramSchemaSet.size() > 1) {
-            for (String schemaName : paramSchemaSet) {
-                if (schemaColumnInfo.findSchema(schemaName) == null) {
-                    throw new RuntimeException("param no relation " + schemaName + " defined");
-                }
-                if (schemaColumnInfo.findRelationByMasterChild(mainSchema, schemaName) == null) {
-                    throw new RuntimeException("param " + mainSchema + " is not related to " + schemaName);
+        if (relation != null && !relation.isEmpty()) {
+            Set<String> schemaRelation = new HashSet<>();
+            for (List<String> values : relation) {
+                if (values.size() >= 3) {
+                    ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
+                    if (joinType != null) {
+                        String masterSchema = values.get(0);
+                        String childSchema = values.get(2);
+                        if (schemaColumnInfo.findRelationByMasterChild(masterSchema, childSchema) == null) {
+                            throw new RuntimeException(masterSchema + " and " + childSchema + " has no relation");
+                        }
+
+                        String key = masterSchema + "." + childSchema;
+                        if (schemaRelation.contains(key)) {
+                            throw new RuntimeException(masterSchema + " and " + childSchema + " can only has one relation");
+                        }
+                        schemaRelation.add(key);
+                    }
                 }
             }
         }
-        return paramSchemaSet;
+    }
+
+    public Map<String, Set<SchemaJoinRelation>> joinRelationMap(SchemaColumnInfo schemaColumnInfo) {
+        if (relation.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, Set<SchemaJoinRelation>> relationMap = new HashMap<>();
+        for (List<String> values : relation) {
+            if (values.size() >= 3) {
+                ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
+                if (joinType != null) {
+                    Schema masterSchema = schemaColumnInfo.findSchema(values.get(0));
+                    Schema childSchema = schemaColumnInfo.findSchema(values.get(2));
+
+                    String masterSchemaName = masterSchema.getName();
+                    Set<SchemaJoinRelation> relationSet = relationMap.getOrDefault(masterSchemaName, new LinkedHashSet<>());
+                    relationSet.add(new SchemaJoinRelation(masterSchema, joinType, childSchema));
+                    relationMap.put(masterSchemaName, relationSet);
+                }
+            }
+        }
+        return relationMap;
+    }
+
+    public Set<String> allParamSchema(SchemaColumnInfo schemaColumnInfo) {
+        if (relation.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        Set<String> schemaSet = new LinkedHashSet<>();
+        for (List<String> values : relation) {
+            if (values.size() >= 3) {
+                ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
+                if (joinType != null) {
+                    Schema masterSchema = schemaColumnInfo.findSchema(values.get(0));
+                    Schema childSchema = schemaColumnInfo.findSchema(values.get(2));
+                    schemaSet.add(masterSchema.getName());
+                    schemaSet.add(childSchema.getName());
+                }
+            }
+        }
+        return schemaSet;
+    }
+
+    public boolean hasManyRelation(SchemaColumnInfo schemaColumnInfo) {
+        if (relation.isEmpty()) {
+            return false;
+        }
+
+        for (List<String> values : relation) {
+            ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
+            if (joinType != null) {
+                String masterSchemaName = values.get(0);
+                String childSchemaName = values.get(2);
+                SchemaColumnRelation relation = schemaColumnInfo.findRelationByMasterChild(masterSchemaName, childSchemaName);
+                if (relation != null && relation.getType() == SchemaRelationType.ONE_TO_MANY) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public String generateWhereSql(String mainSchema, SchemaColumnInfo schemaColumnInfo, List<Object> params, boolean needAlias) {

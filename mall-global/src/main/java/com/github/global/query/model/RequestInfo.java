@@ -5,14 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class RequestInfo {
 
-    /** 主结构, 如果入参和出参是相同的, 只需要在这里定义一次就可以了 */
+    /** 主结构 */
     private String schema;
     /** 入参 */
     private ReqParam param;
@@ -22,7 +20,7 @@ public class RequestInfo {
     private ReqResult result;
 
 
-    public Set<String> check(SchemaColumnInfo schemaColumnInfo) {
+    public void check(SchemaColumnInfo schemaColumnInfo) {
         if (schema == null || schema.isEmpty()) {
             throw new RuntimeException("no schema");
         }
@@ -36,10 +34,7 @@ public class RequestInfo {
             throw new RuntimeException("request need result");
         }
 
-        Set<String> paramSchemaSet = param.checkParam(schema, schemaColumnInfo);
-        paramSchemaSet.remove(schema);
-        Set<String> resultSchema = result.checkResult(schema, schemaColumnInfo, paramSchemaSet);
-        paramSchemaSet.addAll(resultSchema);
-        return paramSchemaSet;
+        param.checkParam(schema, schemaColumnInfo);
+        result.checkResult(schema, schemaColumnInfo);
     }
 }
