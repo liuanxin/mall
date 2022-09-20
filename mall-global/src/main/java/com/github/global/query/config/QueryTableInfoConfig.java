@@ -268,33 +268,41 @@ public class QueryTableInfoConfig {
                                                      boolean needAlias, ReqParam param, ReqResult result) {
         List<Map<String, Object>> mapList = jdbcTemplate.queryForList(Sql, params.toArray());
         if (!mapList.isEmpty()) {
+            // todo
             List<String> idKeyList = tableColumnInfo.findTable(mainTable).getIdKey();
-            List<String> innerList = new ArrayList<>();
-            Map<String, List<Map<String, Object>>> innerMap = new HashMap<>();
-            for (Object obj : result.getColumns()) {
-                if (obj != null) {
-                    if (!(obj instanceof String) && !(obj instanceof List<?>)) {
-                        Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
-                        for (Map.Entry<String, ReqResult> entry : inner.entrySet()) {
-                            String innerName = entry.getKey();
-                            innerList.add(innerName);
-                            // todo
-                            innerMap.put(innerName + "-id", queryInnerData(entry.getValue()));
-                        }
-                    }
-                }
-            }
-            for (Map<String, Object> data : mapList) {
-                for (String innerName : innerList) {
-                    // todo
-                    data.put(innerName, innerMap.get(innerName + data.get("id")));
-                }
-            }
+            Map<String, List<Map<String, Object>>> otherColumnMap = queryOtherData(mainTable, result);
+            Map<String, List<Map<String, Object>>> innerColumnMap = queryInnerData(mainTable, result);
         }
         return mapList;
     }
-    private List<Map<String, Object>> queryOtherData(String mainTable, ReqResult result) {
+    private Map<String, List<Map<String, Object>>> queryOtherData(String mainTable, ReqResult result) {
+        String otherSelectSql = result.generateOtherSelectSql();
+        if (otherSelectSql == null || otherSelectSql.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        String otherFromSql = result.generateOtherFromSql();
+        if (otherFromSql == null || otherFromSql.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String otherSql = otherSelectSql + otherFromSql;
+        List<Map<String, Object>> mapList = jdbcTemplate.queryForList(otherSql);
         return null;
+    }
+    private Map<String, List<Map<String, Object>>> queryInnerData(String mainTable, ReqResult result) {
+        Map<String, List<Map<String, Object>>> innerMap = new HashMap<>();
+        for (Object obj : result.getColumns()) {
+            if (obj != null) {
+                if (!(obj instanceof String) && !(obj instanceof List<?>)) {
+                    Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
+                    for (Map.Entry<String, ReqResult> entry : inner.entrySet()) {
+                        String innerName = entry.getKey();
+                        innerMap.put(innerName + "-id", queryInnerData(entry.getValue()));
+                    }
+                }
+            }
+        }
+        return innerMap;
     }
     private List<Map<String, Object>> queryInnerData(ReqResult result) {
         return null;

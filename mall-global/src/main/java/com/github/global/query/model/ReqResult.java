@@ -254,6 +254,14 @@ public class ReqResult {
         return sj.toString();
     }
 
+    public String generateOtherSelectSql() {
+        // todo
+        return null;
+    }
+    public String generateOtherFromSql() {
+        return null;
+    }
+
     public String generateFunctionSql(String mainTable, boolean needAlias, TableColumnInfo tableColumnInfo) {
         StringJoiner sj = new StringJoiner(", ");
         for (Object obj : columns) {
