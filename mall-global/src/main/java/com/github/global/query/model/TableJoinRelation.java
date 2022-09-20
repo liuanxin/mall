@@ -14,22 +14,17 @@ public class TableJoinRelation {
     private Table childTable;
 
     public String generateJoin(TableColumnInfo tableColumnInfo) {
-        StringBuilder sbd = new StringBuilder();
         String masterTableName = masterTable.getName();
         String childTableName = childTable.getName();
         TableColumnRelation relation = tableColumnInfo.findRelationByMasterChild(masterTableName, childTableName);
-        if (relation != null) {
-            String masterAlias = masterTable.getAlias();
-            String childAlias = childTable.getAlias();
-
-            sbd.append(" ").append(joinType.name());
-            sbd.append(" JOIN ").append(QuerySqlUtil.toSqlField(childTableName));
-            sbd.append(" AS ").append(QuerySqlUtil.toSqlField(childAlias));
-            sbd.append(" ON ").append(QuerySqlUtil.toSqlField(masterTableName));
-            sbd.append(".").append(QuerySqlUtil.toSqlField(masterAlias));
-            sbd.append(" = ").append(QuerySqlUtil.toSqlField(childAlias));
-            sbd.append(".").append(QuerySqlUtil.toSqlField(relation.getOneOrManyColumn()));
-        }
-        return sbd.toString();
+        String masterAlias = masterTable.getAlias();
+        String childAlias = childTable.getAlias();
+        return " " + joinType.name() +
+                " JOIN " + QuerySqlUtil.toSqlField(childTableName) +
+                " AS " + QuerySqlUtil.toSqlField(childAlias) +
+                " ON " + QuerySqlUtil.toSqlField(childAlias) +
+                "." + QuerySqlUtil.toSqlField(relation.getOneOrManyColumn()) +
+                " = " + QuerySqlUtil.toSqlField(masterAlias) +
+                "." + QuerySqlUtil.toSqlField(relation.getOneColumn());
     }
 }

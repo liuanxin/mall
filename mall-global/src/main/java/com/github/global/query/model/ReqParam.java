@@ -60,63 +60,53 @@ public class ReqParam {
         if (relation != null && !relation.isEmpty()) {
             Set<String> tableRelation = new HashSet<>();
             for (List<String> values : relation) {
-                if (values.size() >= 3) {
-                    ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
-                    if (joinType != null) {
-                        String masterTable = values.get(0);
-                        String childTable = values.get(2);
-                        if (tableColumnInfo.findRelationByMasterChild(masterTable, childTable) == null) {
-                            throw new RuntimeException(masterTable + " and " + childTable + " has no relation");
-                        }
-
-                        String key = masterTable + "." + childTable;
-                        if (tableRelation.contains(key)) {
-                            throw new RuntimeException(masterTable + " and " + childTable + " can only has one relation");
-                        }
-                        tableRelation.add(key);
-                    }
+                if (values.size() < 3) {
+                    throw new RuntimeException("param relation error");
                 }
+                ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
+                if (joinType == null) {
+                    throw new RuntimeException("param relation join type error");
+                }
+                String masterTable = values.get(0);
+                String childTable = values.get(2);
+                if (tableColumnInfo.findRelationByMasterChild(masterTable, childTable) == null) {
+                    throw new RuntimeException(masterTable + " and " + childTable + " has no relation");
+                }
+
+                String key = masterTable + "." + childTable;
+                if (tableRelation.contains(key)) {
+                    throw new RuntimeException(masterTable + " and " + childTable + " can only has one relation");
+                }
+                tableRelation.add(key);
             }
         }
     }
 
-    public Map<String, Set<TableJoinRelation>> joinRelationMap(TableColumnInfo tableColumnInfo) {
-        if (relation.isEmpty()) {
-            return Collections.emptyMap();
-        }
-
-        Map<String, Set<TableJoinRelation>> relationMap = new HashMap<>();
-        for (List<String> values : relation) {
-            if (values.size() >= 3) {
+    public List<TableJoinRelation> joinRelationList(TableColumnInfo tableColumnInfo) {
+        List<TableJoinRelation> relationList = new ArrayList<>();
+        if (relation != null && !relation.isEmpty()) {
+            for (List<String> values : relation) {
                 ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
-                if (joinType != null) {
-                    Table masterTable = tableColumnInfo.findTable(values.get(0));
-                    Table childTable = tableColumnInfo.findTable(values.get(2));
-
-                    String masterTableName = masterTable.getName();
-                    Set<TableJoinRelation> relationSet = relationMap.getOrDefault(masterTableName, new LinkedHashSet<>());
-                    relationSet.add(new TableJoinRelation(masterTable, joinType, childTable));
-                    relationMap.put(masterTableName, relationSet);
-                }
+                Table masterTable = tableColumnInfo.findTable(values.get(0));
+                Table childTable = tableColumnInfo.findTable(values.get(2));
+                relationList.add(new TableJoinRelation(masterTable, joinType, childTable));
             }
         }
-        return relationMap;
+        return relationList;
     }
 
     public Set<String> allParamTable(TableColumnInfo tableColumnInfo) {
-        if (relation.isEmpty()) {
-            return Collections.emptySet();
-        }
-
         Set<String> tableSet = new LinkedHashSet<>();
-        for (List<String> values : relation) {
-            if (values.size() >= 3) {
-                ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
-                if (joinType != null) {
-                    Table masterTable = tableColumnInfo.findTable(values.get(0));
-                    Table childTable = tableColumnInfo.findTable(values.get(2));
-                    tableSet.add(masterTable.getName());
-                    tableSet.add(childTable.getName());
+        if (relation != null && !relation.isEmpty()) {
+            for (List<String> values : relation) {
+                if (values.size() >= 3) {
+                    ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
+                    if (joinType != null) {
+                        Table masterTable = tableColumnInfo.findTable(values.get(0));
+                        Table childTable = tableColumnInfo.findTable(values.get(2));
+                        tableSet.add(masterTable.getName());
+                        tableSet.add(childTable.getName());
+                    }
                 }
             }
         }

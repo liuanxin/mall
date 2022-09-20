@@ -191,17 +191,16 @@ public class ReqResult {
         }
     }
 
-    public String generateSelectSql(String mainTable, Set<String> paramTableSet, TableColumnInfo tableColumnInfo) {
+    public String generateSelectSql(String mainTable, boolean needAlias, TableColumnInfo tableColumnInfo) {
         String currentTableName = (table == null || table.trim().isEmpty()) ? mainTable : table.trim();
         StringJoiner sj = new StringJoiner(", ");
         Set<String> columnNameSet = new HashSet<>();
 
-        boolean needAlias = !paramTableSet.isEmpty();
         for (Object obj : columns) {
             if (obj instanceof String column) {
                 if (!column.isEmpty()) {
                     String tableName = QueryUtil.getTableName(column, currentTableName);
-                    if (tableName.equals(currentTableName) || paramTableSet.contains(tableName)) {
+                    if (tableName.equals(currentTableName)) {
                         String addKey = tableName + "." + QueryUtil.getColumnName(column);
                         if (!columnNameSet.contains(addKey)) {
                             sj.add(QueryUtil.getUseColumn(needAlias, column, mainTable, tableColumnInfo));
