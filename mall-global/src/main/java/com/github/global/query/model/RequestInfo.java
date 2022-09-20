@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,7 +22,7 @@ public class RequestInfo {
     private ReqResult result;
 
 
-    public void check(TableColumnInfo tableColumnInfo) {
+    public Set<String> checkParam(TableColumnInfo tableColumnInfo) {
         if (table == null || table.isEmpty()) {
             throw new RuntimeException("no table");
         }
@@ -30,11 +32,13 @@ public class RequestInfo {
         if (param == null) {
             throw new RuntimeException("request need param");
         }
+        return param.checkParam(table, tableColumnInfo);
+    }
+
+    public Set<String> checkResult(TableColumnInfo tableColumnInfo) {
         if (result == null) {
             throw new RuntimeException("request need result");
         }
-
-        param.checkParam(table, tableColumnInfo);
-        result.checkResult(table, tableColumnInfo);
+        return result.checkResult(table, tableColumnInfo);
     }
 }

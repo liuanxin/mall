@@ -39,14 +39,23 @@ public class ReqParam {
     private Boolean notCount;
 
 
-    public void checkParam(String mainTable, TableColumnInfo tableColumnInfo) {
+    public Set<String> checkParam(String mainTable, TableColumnInfo tableColumnInfo) {
+        Set<String> paramTableSet = new LinkedHashSet<>();
         if (query != null) {
-            query.checkCondition(mainTable, tableColumnInfo);
+            paramTableSet.addAll(query.checkCondition(mainTable, tableColumnInfo));
         }
 
         if (sort != null && !sort.isEmpty()) {
             for (String column : sort.keySet()) {
-                QueryUtil.checkColumnName(column, mainTable, tableColumnInfo, "param order");
+                String tableName = QueryUtil.getTableName(column, mainTable);
+                Table table = tableColumnInfo.findTable(tableName);
+                if (table == null) {
+                    throw new RuntimeException("param sort(" + column + ") no table defined");
+                }
+                if (tableColumnInfo.findTableColumn(table, QueryUtil.getColumnName(column)) == null) {
+                    throw new RuntimeException("param sort(" + column + ") no column defined");
+                }
+                paramTableSet.add(table.getName());
             }
         }
 
@@ -80,37 +89,25 @@ public class ReqParam {
                 tableRelation.add(key);
             }
         }
+        return paramTableSet;
     }
 
-    public List<TableJoinRelation> joinRelationList(TableColumnInfo tableColumnInfo) {
+    public List<TableJoinRelation> joinRelationList(TableColumnInfo tableColumnInfo, Set<String> paramTableSet,
+                                                    Set<String> resultFunctionTableSet) {
         List<TableJoinRelation> relationList = new ArrayList<>();
         if (relation != null && !relation.isEmpty()) {
             for (List<String> values : relation) {
-                ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
                 Table masterTable = tableColumnInfo.findTable(values.get(0));
                 Table childTable = tableColumnInfo.findTable(values.get(2));
-                relationList.add(new TableJoinRelation(masterTable, joinType, childTable));
-            }
-        }
-        return relationList;
-    }
-
-    public Set<String> allParamTable(TableColumnInfo tableColumnInfo) {
-        Set<String> tableSet = new LinkedHashSet<>();
-        if (relation != null && !relation.isEmpty()) {
-            for (List<String> values : relation) {
-                if (values.size() >= 3) {
-                    ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
-                    if (joinType != null) {
-                        Table masterTable = tableColumnInfo.findTable(values.get(0));
-                        Table childTable = tableColumnInfo.findTable(values.get(2));
-                        tableSet.add(masterTable.getName());
-                        tableSet.add(childTable.getName());
-                    }
+                String mn = masterTable.getName();
+                String cn = childTable.getName();
+                if ((paramTableSet.contains(mn) && paramTableSet.contains(cn))
+                        || (resultFunctionTableSet.contains(mn) && resultFunctionTableSet.contains(cn))) {
+                    relationList.add(new TableJoinRelation(masterTable, ReqJoinType.deserializer(values.get(1)), childTable));
                 }
             }
         }
-        return tableSet;
+        return relationList;
     }
 
     public boolean hasManyRelation(TableColumnInfo tableColumnInfo) {

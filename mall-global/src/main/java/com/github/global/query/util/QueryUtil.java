@@ -18,6 +18,7 @@ import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -269,7 +270,21 @@ public class QueryUtil {
         return obj == null ? "" : obj.toString().trim();
     }
 
-    public static Integer toInt(Object obj) {
+    public static Integer toInteger(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof Number n) {
+            return n.intValue();
+        }
+        try {
+            return Integer.parseInt(obj.toString().trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public static int toInt(Object obj) {
         if (obj == null) {
             return 0;
         }
@@ -283,7 +298,21 @@ public class QueryUtil {
         }
     }
 
-    public static long toLong(Object obj) {
+    public static Long toLonger(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof Number n) {
+            return n.longValue();
+        }
+        try {
+            return Long.parseLong(obj.toString().trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public static Long toLong(Object obj) {
         if (obj == null) {
             return 0L;
         }
@@ -295,6 +324,27 @@ public class QueryUtil {
         } catch (NumberFormatException e) {
             return 0L;
         }
+    }
+
+    public static BigDecimal toDecimal(Object obj) {
+        try {
+            return new BigDecimal(obj.toString().trim());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static Date toDate(Object obj) {
+        for (String format : QueryConst.DATE_FORMAT_LIST) {
+            try {
+                Date date = new SimpleDateFormat(format).parse(obj.toString().trim());
+                if (date != null) {
+                    return date;
+                }
+            } catch (ParseException ignore) {
+            }
+        }
+        return null;
     }
 
     public static boolean isBoolean(Object obj) {
@@ -391,30 +441,6 @@ public class QueryUtil {
 
     public static String getColumnName(String column) {
         return column.contains(".") ? column.split("\\.")[1].trim() : column.trim();
-    }
-
-    public static TableColumn checkColumnName(String column, String mainTable,
-                                               TableColumnInfo tableColumnInfo, String type) {
-        String tableName = getTableName(column, mainTable);
-        if (tableName == null || tableName.isEmpty()) {
-            throw new RuntimeException("table can't be blank with: " + type);
-        }
-
-        Table table = tableColumnInfo.findTable(tableName);
-        if (table == null) {
-            throw new RuntimeException("no table(" + tableName + ") defined with: " + type);
-        }
-
-        String columnName = getColumnName(column);
-        if (columnName.isEmpty()) {
-            throw new RuntimeException("table(" + tableName + ") column cant' be blank with: " + type);
-        }
-
-        TableColumn tableColumn = tableColumnInfo.findTableColumn(table, columnName);
-        if (tableColumn == null) {
-            throw new RuntimeException("table(" + tableName + ") no column(" + columnName + ") defined with: " + type);
-        }
-        return tableColumn;
     }
 
     public static String getUseColumn(boolean needAlias, String column, String mainTable, TableColumnInfo tableColumnInfo) {

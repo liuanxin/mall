@@ -83,7 +83,7 @@ public class ReqResult {
     private List<Object> columns;
 
 
-    public void checkResult(String mainTable, TableColumnInfo tableColumnInfo) {
+    public Set<String> checkResult(String mainTable, TableColumnInfo tableColumnInfo) {
         String currentTable = (table == null || table.trim().isEmpty()) ? mainTable : table.trim();
         Table tableInfo = tableColumnInfo.findTable(currentTable);
         if (tableInfo == null) {
@@ -93,6 +93,7 @@ public class ReqResult {
             throw new RuntimeException("result table(" + currentTable + ") need columns");
         }
 
+        Set<String> resultFunctionTableSet = new LinkedHashSet<>();
         Set<String> columnCheckRepeatedSet = new HashSet<>();
         List<Object> innerList = new ArrayList<>();
         boolean hasColumnOrFunction = false;
@@ -104,7 +105,14 @@ public class ReqResult {
                     }
 
                     String col = column.trim();
-                    QueryUtil.checkColumnName(col, currentTable, tableColumnInfo, "result select");
+                    Table te = tableColumnInfo.findTable(QueryUtil.getTableName(col, currentTable));
+                    if (te == null) {
+                        throw new RuntimeException("result table(" + currentTable + ") column(" + col + ") has no defined table");
+                    }
+                    if (tableColumnInfo.findTableColumn(te, QueryUtil.getColumnName(col)) == null) {
+                        throw new RuntimeException("result table(" + currentTable + ") column(" + col + ") has no defined column");
+                    }
+
                     if (columnCheckRepeatedSet.contains(col)) {
                         throw new RuntimeException("result table(" + currentTable + ") column(" + col + ") has repeated");
                     }
@@ -116,7 +124,7 @@ public class ReqResult {
                     }
                     int size = groups.size();
                     if (size < 3) {
-                        throw new RuntimeException("result table(" + currentTable + ") function(" + groups + ") error");
+                        throw new RuntimeException("result table(" + currentTable + ") function(" + groups + ") data error");
                     }
                     String column = QueryUtil.toStr(groups.get(1));
                     if (column.isEmpty()) {
@@ -127,16 +135,36 @@ public class ReqResult {
                     if (group == null) {
                         throw new RuntimeException("result table(" + currentTable + ") function(" + groups + ") type error");
                     }
-                    String checkType = "result table(" + currentTable + ") function(" + group.name().toLowerCase() + ")";
                     if (group == ReqResultGroup.COUNT_DISTINCT) {
                         for (String col : column.split(",")) {
-                            QueryUtil.checkColumnName(col.trim(), currentTable, tableColumnInfo, checkType);
+                            Table te = tableColumnInfo.findTable(QueryUtil.getTableName(col.trim(), currentTable));
+                            if (te == null) {
+                                throw new RuntimeException("result table(" + currentTable + ") function(" + groups + ") has no defined table");
+                            }
+                            if (tableColumnInfo.findTableColumn(te, QueryUtil.getColumnName(col.trim())) == null) {
+                                throw new RuntimeException("result table(" + currentTable + ") function(" + groups + ") has no defined column");
+                            }
+                            resultFunctionTableSet.add(te.getName());
                         }
                     } else {
                         if (!(group == ReqResultGroup.COUNT && Set.of("*", "1").contains(column))) {
-                            QueryUtil.checkColumnName(column, currentTable, tableColumnInfo, checkType);
+                            Table te = tableColumnInfo.findTable(QueryUtil.getTableName(column, currentTable));
+                            if (te == null) {
+                                throw new RuntimeException("result table(" + currentTable + ") function(" + groups + ") has no defined table");
+                            }
+                            if (tableColumnInfo.findTableColumn(te, QueryUtil.getColumnName(column)) == null) {
+                                throw new RuntimeException("result table(" + currentTable + ") function(" + groups + ") has no defined column");
+                            }
+                            resultFunctionTableSet.add(te.getName());
                         }
                     }
+
+                    String functionColumn = group.generateColumn(column);
+                    if (columnCheckRepeatedSet.contains(functionColumn)) {
+                        throw new RuntimeException("result table(" + currentTable + ") function(" + groups + ") has repeated");
+                    }
+                    columnCheckRepeatedSet.add(functionColumn);
+
                     if (size > 4) {
                         // 先右移 1 位除以 2, 再左移 1 位乘以 2, 变成偶数
                         int evenSize = size >> 1 << 1;
@@ -189,9 +217,11 @@ public class ReqResult {
                 innerResult.checkResult(innerTable, tableColumnInfo);
             }
         }
+        return resultFunctionTableSet;
     }
 
-    public String generateSelectSql(String mainTable, boolean needAlias, TableColumnInfo tableColumnInfo) {
+    public String generateSelectSql(String mainTable, boolean needAlias, TableColumnInfo tableColumnInfo,
+                                    Set<String> firstQueryTableSet) {
         String currentTableName = (table == null || table.trim().isEmpty()) ? mainTable : table.trim();
         StringJoiner sj = new StringJoiner(", ");
         Set<String> columnNameSet = new HashSet<>();
@@ -200,7 +230,7 @@ public class ReqResult {
             if (obj instanceof String column) {
                 if (!column.isEmpty()) {
                     String tableName = QueryUtil.getTableName(column, currentTableName);
-                    if (tableName.equals(currentTableName)) {
+                    if (tableName.equals(currentTableName) || firstQueryTableSet.contains(tableName)) {
                         String addKey = tableName + "." + QueryUtil.getColumnName(column);
                         if (!columnNameSet.contains(addKey)) {
                             sj.add(QueryUtil.getUseColumn(needAlias, column, mainTable, tableColumnInfo));
@@ -239,8 +269,7 @@ public class ReqResult {
                             }
                             sj.add(group.generateColumn(funSj.toString()));
                         } else {
-                            String useColumn = QueryUtil.getUseColumn(needAlias, column, mainTable, tableColumnInfo);
-                            sj.add(group.generateColumn(useColumn));
+                            sj.add(group.generateColumn(QueryUtil.getUseColumn(needAlias, column, mainTable, tableColumnInfo)));
                         }
                     }
                 }
@@ -294,13 +323,17 @@ public class ReqResult {
                             ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
                             String useColumn = QueryUtil.getUseColumn(needAlias, column, mainTable, tableColumnInfo);
                             String havingColumn = group.generateColumn(useColumn);
+
+                            String tableName = QueryUtil.getTableName(column, mainTable);
+                            String columnName = QueryUtil.getColumnName(column);
+                            Class<?> columnType = tableColumnInfo.findTableColumn(tableName, columnName).getColumnType();
                             // 先右移 1 位除以 2, 再左移 1 位乘以 2, 变成偶数
                             int evenSize = size >> 1 << 1;
                             for (int i = 3; i < evenSize; i += 2) {
                                 ReqParamConditionType conditionType = ReqParamConditionType.deserializer(groups.get(i));
                                 Object value = groups.get(i + 1);
 
-                                String sql = conditionType.generateSql(havingColumn, value, params);
+                                String sql = conditionType.generateSql(havingColumn, columnType, value, params);
                                 if (!sql.isEmpty()) {
                                     groupSj.add(sql);
                                 }

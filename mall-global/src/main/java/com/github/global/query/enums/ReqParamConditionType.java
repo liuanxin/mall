@@ -49,96 +49,96 @@ public enum ReqParamConditionType {
 
     INU("IS NULL", "为空") {
         @Override
-        public String generateSql(String column, Object value, List<Object> params) {
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
             return String.format(" %s %s", QuerySqlUtil.toSqlField(column), getValue());
         }
     },
     INN("IS NOT NULL", "不为空") {
         @Override
-        public String generateSql(String column, Object value, List<Object> params) {
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
             return String.format(" %s %s", QuerySqlUtil.toSqlField(column), getValue());
         }
     },
 
     EQ("=", "等于") {
         @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, value, params);
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
+            return generateCondition(column, type, value, params);
         }
     },
     NE("<>", "不等于") {
         @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, value, params);
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
+            return generateCondition(column, type, value, params);
         }
     },
 
     IN("IN", "批量") {
         @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateMulti(column, value, params);
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
+            return generateMulti(column, type, value, params);
         }
     },
     NI("NOT IN", "不在") {
         @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateMulti(column, value, params);
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
+            return generateMulti(column, type, value, params);
         }
     },
 
     BET("BETWEEN", "区间") {
         @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateMulti(column, value, params);
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
+            return generateMulti(column, type, value, params);
         }
     },
     GT(">", "大于") {
         @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, value, params);
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
+            return generateCondition(column, type, value, params);
         }
     },
     GE(">=", "大于等于") {
         @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, value, params);
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
+            return generateCondition(column, type, value, params);
         }
     },
     LT("<", "小于") {
         @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, value, params);
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
+            return generateCondition(column, type, value, params);
         }
     },
     LE("<=", "小于等于") {
         @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, value, params);
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
+            return generateCondition(column, type, value, params);
         }
     },
 
     LK("LIKE", "包含") {
         @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, ("%" + value + "%"), params);
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
+            return generateCondition(column, type, ("%" + value + "%"), params);
         }
     },
     LKS("LIKE", "开头") {
         @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, (value + "%"), params);
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
+            return generateCondition(column, type, (value + "%"), params);
         }
     },
     LKE("LIKE", "结尾") {
         @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, ("%" + value), params);
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
+            return generateCondition(column, type, ("%" + value), params);
         }
     },
     NL("NOT LIKE", "不包含") {
         @Override
-        public String generateSql(String column, Object value, List<Object> params) {
-            return generateCondition(column, ("%" + value + "%"), params);
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
+            return generateCondition(column, type, ("%" + value + "%"), params);
         }
     };
 
@@ -161,7 +161,7 @@ public enum ReqParamConditionType {
     }
 
 
-    public abstract String generateSql(String column, Object value, List<Object> params);
+    public abstract String generateSql(String column, Class<?> type, Object value, List<Object> params);
 
     public String info() {
         return value + "(" + msg + ")";
@@ -196,7 +196,6 @@ public enum ReqParamConditionType {
             }
         }
     }
-
     private void checkValue(Class<?> type, String column, Object value, int strLen) {
         if (value != null) {
             if (QueryConst.MULTI_TYPE.contains(this)) {
@@ -215,45 +214,41 @@ public enum ReqParamConditionType {
         }
     }
     private void checkValueType(Class<?> type, String column, Object value, int strLen) {
+        Object obj = toValue(type, value);
+        if (obj == null) {
+            throw new RuntimeException(String.format("column(%s) data(%s) has null or not %s type",
+                    column, value, type.getSimpleName().toLowerCase()));
+        }
+        if (strLen > 0 && obj.toString().length() > strLen) {
+            throw new RuntimeException(String.format("column(%s) data(%s) length can only be <= %s", column, value, strLen));
+        }
+    }
+    private Object toValue(Class<?> type, Object value) {
         if (QueryConst.BOOLEAN_TYPE_SET.contains(type)) {
-            if (QueryUtil.isNotBoolean(value)) {
-                throw new RuntimeException(String.format("column(%s) data(%s) has not boolean type", column, value));
-            }
+            return QueryUtil.isBoolean(value);
         } else if (QueryConst.INT_TYPE_SET.contains(type)) {
-            if (QueryUtil.isNotInt(value)) {
-                throw new RuntimeException(String.format("column(%s) data(%s) has not int type", column, value));
-            }
+            return QueryUtil.toInteger(value);
         } else if (QueryConst.LONG_TYPE_SET.contains(type)) {
-            if (QueryUtil.isNotLong(value)) {
-                throw new RuntimeException(String.format("column(%s) data(%s) has not long type", column, value));
-            }
+            return QueryUtil.toLonger(value);
         } else if (Number.class.isAssignableFrom(type)) {
-            if (QueryUtil.isNotDouble(value)) {
-                throw new RuntimeException(String.format("column(%s) data(%s) has not number type", column, value));
-            }
+            return QueryUtil.toDecimal(value);
         } else if (Date.class.isAssignableFrom(type)) {
-            if (QueryUtil.isNotDate(value)) {
-                throw new RuntimeException(String.format("column(%s) data(%s) has not date type", column, value));
-            }
-        } else if (String.class.isAssignableFrom(type)) {
-            if (strLen > 0 && value.toString().length() > strLen) {
-                throw new RuntimeException(String.format("column(%s) data(%s) length can only be <= %s", column, value, strLen));
-            }
+            return QueryUtil.toDate(value);
         } else {
-            throw new RuntimeException(String.format("column(%s) data(%s) type error", column, value));
+            return value;
         }
     }
 
 
-    protected String generateCondition(String column, Object value, List<Object> params) {
+    protected String generateCondition(String column, Class<?> type, Object value, List<Object> params) {
         if (value == null) {
             return "";
         }
 
-        params.add(value);
+        params.add(toValue(type, value));
         return String.format(" %s %s ?", column, getValue());
     }
-    protected String generateMulti(String column, Object value, List<Object> params) {
+    protected String generateMulti(String column, Class<?> type, Object value, List<Object> params) {
         if (value == null || !QueryConst.MULTI_TYPE.contains(this)) {
             return "";
         }
@@ -269,16 +264,16 @@ public enum ReqParamConditionType {
 
             StringBuilder sbd = new StringBuilder();
             if (start != null && end != null) {
-                params.add(start);
-                params.add(end);
+                params.add(toValue(type, start));
+                params.add(toValue(type, end));
                 sbd.append(" ").append(column).append(" BETWEEN ? AND ?");
             } else {
                 if (start != null) {
-                    params.add(start);
+                    params.add(toValue(type, start));
                     sbd.append(" ").append(column).append(" >= ?");
                 }
                 if (end != null) {
-                    params.add(end);
+                    params.add(toValue(type, end));
                     sbd.append(" ").append(column).append(" <= ?");
                 }
             }
@@ -292,7 +287,7 @@ public enum ReqParamConditionType {
                         hasChange = true;
                     }
                     sj.add("?");
-                    params.add(obj);
+                    params.add(toValue(type, obj));
                 }
             }
             return hasChange ? String.format(" %s %s (%s)", column, getValue(), sj) : "";

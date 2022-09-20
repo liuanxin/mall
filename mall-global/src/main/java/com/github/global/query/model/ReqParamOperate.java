@@ -8,9 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 
 /**
  * <pre>
@@ -105,11 +103,12 @@ public class ReqParamOperate {
     private List<Object> conditions;
 
 
-    public void checkCondition(String mainTable, TableColumnInfo tableColumnInfo) {
+    public Set<String> checkCondition(String mainTable, TableColumnInfo tableColumnInfo) {
         if (conditions == null || conditions.isEmpty()) {
-            return;
+            return Collections.emptySet();
         }
 
+        Set<String> queryTableSet = new LinkedHashSet<>();
         String currentTable = (table == null || table.trim().isEmpty()) ? mainTable : table.trim();
         for (Object condition : conditions) {
             if (condition != null) {
@@ -125,14 +124,23 @@ public class ReqParamOperate {
                     if (column.isEmpty()) {
                         throw new RuntimeException("param condition(" + condition + ") column can't be blank");
                     }
+
+                    Table te = tableColumnInfo.findTable(QueryUtil.getTableName(column, currentTable));
+                    if (te == null) {
+                        throw new RuntimeException("param condition(" + condition + ") column has no table info");
+                    }
+                    queryTableSet.add(te.getName());
+
                     boolean standardSize = (size == 2);
                     ReqParamConditionType type = standardSize ? ReqParamConditionType.EQ : ReqParamConditionType.deserializer(list.get(1));
                     if (type == null) {
                         throw new RuntimeException(String.format("param condition column(%s) need type", column));
                     }
-                    //检查结构名和列名
-                    TableColumn tableColumn = QueryUtil.checkColumnName(column, currentTable, tableColumnInfo, "param condition");
-                    // 检查列类型和传入的值是否对应
+
+                    TableColumn tableColumn = tableColumnInfo.findTableColumn(te, QueryUtil.getColumnName(column));
+                    if (tableColumn == null) {
+                        throw new RuntimeException(String.format("param condition column(%s) has no column info", column));
+                    }
                     type.checkTypeAndValue(tableColumn.getColumnType(), column, list.get(standardSize ? 1 : 2), tableColumn.getStrLen());
                 } else {
                     ReqParamOperate compose = JsonUtil.convert(condition, ReqParamOperate.class);
@@ -143,30 +151,7 @@ public class ReqParamOperate {
                 }
             }
         }
-    }
-
-    public void allTable(String mainTable, Set<String> set) {
-        if (conditions == null || conditions.isEmpty()) {
-            return;
-        }
-
-        String currentTable = (table == null || table.trim().isEmpty()) ? mainTable : table.trim();
-        set.add(currentTable);
-
-        for (Object condition : conditions) {
-            if (condition != null) {
-                if (condition instanceof List<?> list) {
-                    if (!list.isEmpty()) {
-                        set.add(QueryUtil.getTableName(QueryUtil.toStr(list.get(0)), currentTable));
-                    }
-                } else {
-                    ReqParamOperate compose = JsonUtil.convert(condition, ReqParamOperate.class);
-                    if (compose != null) {
-                        compose.allTable(currentTable, set);
-                    }
-                }
-            }
-        }
+        return queryTableSet;
     }
 
     public String generateSql(String mainTable, TableColumnInfo tableColumnInfo, List<Object> params, boolean needAlias) {
@@ -188,7 +173,11 @@ public class ReqParamOperate {
                         Object value = list.get(standardSize ? 1 : 2);
 
                         String useColumn = QueryUtil.getUseColumn(needAlias, column, currentTable, tableColumnInfo);
-                        String sql = type.generateSql(useColumn, value, params);
+
+                        String tableName = QueryUtil.getTableName(column, currentTable);
+                        String columnName = QueryUtil.getColumnName(column);
+                        Class<?> columnType = tableColumnInfo.findTableColumn(tableName, columnName).getColumnType();
+                        String sql = type.generateSql(useColumn, columnType, value, params);
                         if (!sql.isEmpty()) {
                             sj.add(sql);
                         }

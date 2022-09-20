@@ -4,6 +4,7 @@ import com.github.global.query.model.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
 
 public class QuerySqlUtil {
@@ -12,8 +13,8 @@ public class QuerySqlUtil {
         return MysqlKeyWordUtil.hasKeyWord(field) ? ("`" + field + "`") : field;
     }
 
-    private static String toFromSql(TableColumnInfo tableColumnInfo, String mainTable,
-                                    List<TableJoinRelation> joinRelationList) {
+    public static String toFromSql(TableColumnInfo tableColumnInfo, String mainTable,
+                                   List<TableJoinRelation> joinRelationList) {
         StringBuilder sbd = new StringBuilder("FROM ");
         Table table = tableColumnInfo.findTable(mainTable);
         String mainTableName = table.getName();
@@ -27,12 +28,9 @@ public class QuerySqlUtil {
         return sbd.toString();
     }
 
-    public static String toFromWhereSql(TableColumnInfo tableColumnInfo, String mainTable, boolean needAlias,
-                                        ReqParam param, List<TableJoinRelation> joinRelationList,
-                                        List<Object> params) {
-        String fromSql = toFromSql(tableColumnInfo, mainTable, joinRelationList);
-        String whereSql = param.generateWhereSql(mainTable, tableColumnInfo, needAlias, params);
-        return fromSql + whereSql;
+    public static String toWhereSql(TableColumnInfo tableColumnInfo, String mainTable,
+                                    boolean needAlias, ReqParam param, List<Object> params) {
+        return param.generateWhereSql(mainTable, tableColumnInfo, needAlias, params);
     }
 
     public static String toCountGroupSql(String selectSql) {
@@ -40,8 +38,9 @@ public class QuerySqlUtil {
     }
 
     public static String toSelectGroupSql(TableColumnInfo tableColumnInfo, String fromAndWhere, String mainTable,
-                                          boolean needAlias, ReqResult result, List<Object> params) {
-        String selectField = result.generateSelectSql(mainTable, needAlias, tableColumnInfo);
+                                          boolean needAlias, ReqResult result,
+                                          Set<String> firstQueryTableSet, List<Object> params) {
+        String selectField = result.generateSelectSql(mainTable, needAlias, tableColumnInfo, firstQueryTableSet);
         boolean emptySelect = selectField.isEmpty();
 
         // SELECT ... FROM ... WHERE ... GROUP BY ... HAVING ...
@@ -73,10 +72,10 @@ public class QuerySqlUtil {
         }
     }
 
-    public static String toPageWithoutGroupSql(TableColumnInfo tableColumnInfo, String fromAndWhere,
-                                               String mainTable, boolean needAlias,
-                                               ReqParam param, ReqResult result, List<Object> params) {
-        String selectField = result.generateSelectSql(mainTable, needAlias, tableColumnInfo);
+    public static String toPageWithoutGroupSql(TableColumnInfo tableColumnInfo, String fromAndWhere, String mainTable,
+                                               boolean needAlias, ReqParam param, ReqResult result,
+                                               Set<String> firstQueryTableSet, List<Object> params) {
+        String selectField = result.generateSelectSql(mainTable, needAlias, tableColumnInfo, firstQueryTableSet);
         // SELECT ... FROM ... WHERE ... ORDER BY ..
         return "SELECT " + selectField + fromAndWhere + param.generatePageSql(params);
     }
@@ -88,14 +87,11 @@ public class QuerySqlUtil {
         String orderSql = param.generateOrderSql(mainTable, needAlias, tableColumnInfo);
         return "SELECT " + idSelect + fromAndWhere + orderSql + param.generatePageSql(params);
     }
-    public static String toSelectWithIdSql(TableColumnInfo tableColumnInfo, String mainTable,
-                                           boolean needAlias, ReqResult result,
-                                           List<Map<String, Object>> idList,
-                                           List<TableJoinRelation> joinRelationList,
-                                           List<Object> params) {
+    public static String toSelectWithIdSql(TableColumnInfo tableColumnInfo, String mainTable, String fromSql,
+                                           boolean needAlias, ReqResult result, List<Map<String, Object>> idList,
+                                           Set<String> firstQueryTableSet, List<Object> params) {
         // SELECT ... FROM ... WHERE id IN (x, y, z)
-        String selectColumn = result.generateSelectSql(mainTable, needAlias, tableColumnInfo);
-        String fromSql = toFromSql(tableColumnInfo, mainTable, joinRelationList);
+        String selectColumn = result.generateSelectSql(mainTable, needAlias, tableColumnInfo, firstQueryTableSet);
 
         Table table = tableColumnInfo.findTable(mainTable);
         String idWhere = table.idWhere(needAlias);
