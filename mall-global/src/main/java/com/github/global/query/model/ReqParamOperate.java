@@ -16,7 +16,7 @@ import java.util.*;
  * and province in ( 'x', 'y', 'z' )   and city like '%xx%'   and time >= now()
  * {
  *   -- "table": "order",   -- 不设置则从 requestInfo 中获取
- *   -- "operate": "and",    -- 并且(and) 和 或者(or) 两种, 不设置则默认是 并且
+ *   -- "operate": "and",    -- 并且(and) 和 或者(or) 两种, 不设置则默认是 and
  *   "conditions": [
  *     [ "name", "rl", "abc" ],
  *     [ "gender", -- "eq", --  1 ],  -- eq 可以省略

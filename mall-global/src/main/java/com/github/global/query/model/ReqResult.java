@@ -45,31 +45,25 @@ import java.util.*;
  * 见: https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count
  *
  * SELECT
- *   name,
- *   COUNT(*),
- *   COUNT(distinct name, name2),
- *   SUM(price),
- *   MIN(id),
- *   MAX(id),
- *   AVG(price),
- *   GROUP_CONCAT(name)
- * FROM ...
+ *   name, COUNT(*), COUNT(DISTINCT name, name2), SUM(price),
+ *   MIN(id), MAX(id), AVG(price), GROUP_CONCAT(name)
+ * ...
  * GROUP BY name
- * HAVING SUM(price) > 100.5 AND SUM(price) < 120.5
+ * HAVING  SUM(price) > 100.5  AND  SUM(price) < 120.5  AND  GROUP_CONCAT(name) LIKE 'aaa%'
  * {
  *   "columns": [
  *     "name",
- *     [ "count", "*", "x" ],
- *     [ "count_distinct", "name, name2", "xx" ],
- *     [ "sum", "price", "xxx", "gt", 100.5, "lt", 120.5 ],
- *     [ "min", "id", "y" ],
- *     [ "max", "id", "yy" ],
- *     [ "avg", "price", "yyy" ],
- *     [ "group_concat", "name", "z" ]
+ *     [ "abc", "count", "*" ],
+ *     [ "def", "count_distinct", "name, name2" ],
+ *     [ "ghi", "sum", "price", "gt", 100.5, "lt", 120.5 ],
+ *     [ "jkl", "min", "id" ],
+ *     [ "mno", "max", "id" ],
+ *     [ "pqr", "avg", "price" ],
+ *     [ "stu", "group_concat", "name", "lks", "aaa" ]
  *   ]
  * }
  * 第三个参数表示接口响应回去时的属性, 每四个和第五个参数表示 HAVING 过滤时的条件
- * 只支持基于 HAVING 进行 AND 条件(a > 1 AND a < 10)的过滤
+ * 只支持基于 HAVING 进行 AND 条件过滤, 复杂的嵌套暂时没有好的抽象方式
  * </pre>
  */
 @Data
@@ -77,9 +71,9 @@ import java.util.*;
 @AllArgsConstructor
 public class ReqResult {
 
-    /** 结构 */
+    /** 表 */
     private String table;
-    /** 结构里的列 */
+    /** 表里的列 */
     private List<Object> columns;
 
 
@@ -126,15 +120,15 @@ public class ReqResult {
                     if (size < 3) {
                         throw new RuntimeException("result table(" + currentTable + ") function(" + groups + ") data error");
                     }
-                    String column = QueryUtil.toStr(groups.get(1));
+                    ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(1)));
+                    if (group == null) {
+                        throw new RuntimeException("result table(" + currentTable + ") function(" + groups + ") type error");
+                    }
+                    String column = QueryUtil.toStr(groups.get(2));
                     if (column.isEmpty()) {
                         throw new RuntimeException("result table(" + currentTable + ") function(" + groups + ") column error");
                     }
 
-                    ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
-                    if (group == null) {
-                        throw new RuntimeException("result table(" + currentTable + ") function(" + groups + ") type error");
-                    }
                     if (group == ReqResultGroup.COUNT_DISTINCT) {
                         for (String col : column.split(",")) {
                             Table te = tableColumnInfo.findTable(QueryUtil.getTableName(col.trim(), currentTable));
@@ -228,15 +222,14 @@ public class ReqResult {
 
         for (Object obj : columns) {
             if (obj instanceof String column) {
-                if (!column.isEmpty()) {
-                    String tableName = QueryUtil.getTableName(column, currentTableName);
-                    if (tableName.equals(currentTableName) || firstQueryTableSet.contains(tableName)) {
-                        String addKey = tableName + "." + QueryUtil.getColumnName(column);
-                        if (!columnNameSet.contains(addKey)) {
-                            sj.add(QueryUtil.getUseColumn(needAlias, column, mainTable, tableColumnInfo));
-                        }
-                        columnNameSet.add(addKey);
+                String col = column.trim();
+                String tableName = QueryUtil.getTableName(col, currentTableName);
+                if (tableName.equals(currentTableName) || firstQueryTableSet.contains(tableName)) {
+                    String addKey = tableName + "." + QueryUtil.getColumnName(col);
+                    if (!columnNameSet.contains(addKey)) {
+                        sj.add(QueryUtil.getUseColumn(needAlias, col, mainTable, tableColumnInfo));
                     }
+                    columnNameSet.add(addKey);
                 }
             } else if (!(obj instanceof List<?>)) {
                 Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
@@ -266,20 +259,16 @@ public class ReqResult {
         StringJoiner sj = new StringJoiner(", ");
         for (Object obj : columns) {
             if (obj instanceof List<?> groups) {
-                if (!groups.isEmpty()) {
-                    String column = QueryUtil.toStr(groups.get(1));
-                    if (!column.isEmpty()) {
-                        ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
-                        if (group == ReqResultGroup.COUNT_DISTINCT) {
-                            StringJoiner funSj = new StringJoiner(", ");
-                            for (String col : column.split(",")) {
-                                funSj.add(QueryUtil.getUseColumn(needAlias, col.trim(), mainTable, tableColumnInfo));
-                            }
-                            sj.add(group.generateColumn(funSj.toString()));
-                        } else {
-                            sj.add(group.generateColumn(QueryUtil.getUseColumn(needAlias, column, mainTable, tableColumnInfo)));
-                        }
+                String column = QueryUtil.toStr(groups.get(2));
+                ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(1)));
+                if (group == ReqResultGroup.COUNT_DISTINCT) {
+                    StringJoiner funSj = new StringJoiner(", ");
+                    for (String col : column.split(",")) {
+                        funSj.add(QueryUtil.getUseColumn(needAlias, col.trim(), mainTable, tableColumnInfo));
                     }
+                    sj.add(group.generateColumn(funSj.toString()));
+                } else {
+                    sj.add(group.generateColumn(QueryUtil.getUseColumn(needAlias, column, mainTable, tableColumnInfo)));
                 }
             }
         }
@@ -323,29 +312,25 @@ public class ReqResult {
         StringJoiner groupSj = new StringJoiner(" AND ");
         for (Object obj : columns) {
             if (obj instanceof List<?> groups) {
-                if (!groups.isEmpty()) {
-                    int size = groups.size();
-                    if (size > 4) {
-                        String column = QueryUtil.toStr(groups.get(1));
-                        if (!column.isEmpty()) {
-                            ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(0)));
-                            String useColumn = QueryUtil.getUseColumn(needAlias, column, mainTable, tableColumnInfo);
-                            String havingColumn = group.generateColumn(useColumn);
+                int size = groups.size();
+                if (size > 4) {
+                    String column = QueryUtil.toStr(groups.get(2));
+                    ReqResultGroup group = ReqResultGroup.deserializer(QueryUtil.toStr(groups.get(1)));
+                    String useColumn = QueryUtil.getUseColumn(needAlias, column, mainTable, tableColumnInfo);
+                    String havingColumn = group.generateColumn(useColumn);
 
-                            String tableName = QueryUtil.getTableName(column, mainTable);
-                            String columnName = QueryUtil.getColumnName(column);
-                            Class<?> columnType = tableColumnInfo.findTableColumn(tableName, columnName).getColumnType();
-                            // 先右移 1 位除以 2, 再左移 1 位乘以 2, 变成偶数
-                            int evenSize = size >> 1 << 1;
-                            for (int i = 3; i < evenSize; i += 2) {
-                                ReqParamConditionType conditionType = ReqParamConditionType.deserializer(groups.get(i));
-                                Object value = groups.get(i + 1);
+                    String tableName = QueryUtil.getTableName(column, mainTable);
+                    String columnName = QueryUtil.getColumnName(column);
+                    Class<?> columnType = tableColumnInfo.findTableColumn(tableName, columnName).getColumnType();
+                    // 先右移 1 位除以 2, 再左移 1 位乘以 2, 变成偶数
+                    int evenSize = size >> 1 << 1;
+                    for (int i = 3; i < evenSize; i += 2) {
+                        ReqParamConditionType conditionType = ReqParamConditionType.deserializer(groups.get(i));
+                        Object value = groups.get(i + 1);
 
-                                String sql = conditionType.generateSql(havingColumn, columnType, value, params);
-                                if (!sql.isEmpty()) {
-                                    groupSj.add(sql);
-                                }
-                            }
+                        String sql = conditionType.generateSql(havingColumn, columnType, value, params);
+                        if (!sql.isEmpty()) {
+                            groupSj.add(sql);
                         }
                     }
                 }

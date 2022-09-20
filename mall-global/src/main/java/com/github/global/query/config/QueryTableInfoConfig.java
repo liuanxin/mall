@@ -157,7 +157,6 @@ public class QueryTableInfoConfig {
             if (param.needQueryCount()) {
                 return queryCountPage(fromSql, whereSql, mainTable, needAlias, param, result, firstQueryTableSet, params);
             } else {
-                // 「移动端-瀑布流」时不需要「SELECT COUNT(*)」
                 return queryListLimit(fromSql + whereSql, mainTable, needAlias, param, result, firstQueryTableSet, params);
             }
         } else {
@@ -209,7 +208,7 @@ public class QueryTableInfoConfig {
                                                                 boolean needAlias, ReqParam param, ReqResult result,
                                                                 Set<String> firstQueryTableSet, List<Object> params) {
         String fromAndWhere = fromSql + whereSql;
-        // 很深的查询(深分页)时, 先用「条件 + 排序 + 分页」只查 id, 再用 id 查具体的数据列
+        // 深分页(需要偏移大量结果集)时, 先只用「条件 + 排序 + 分页」查 id, 再用 id 查具体的数据列
         String sql;
         if (param.hasDeepPage(deepMaxPageSize)) {
             // SELECT id FROM ... WHERE ... ORDER BY ... LIMIT ...

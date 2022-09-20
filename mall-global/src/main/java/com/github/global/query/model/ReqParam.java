@@ -19,7 +19,7 @@ import java.util.*;
  *   "query": ...
  *   "sort": { "createTime": "desc", "id", "asc" },
  *   "page": [ 1, 20 ],
- *   "notCount": true  -- true 表示不发起 count 查询叫条数, 不设置则默认是 false
+ *   "notCount": true  -- true 表示不发起 SELECT COUNT(*) 查询(移动端瀑布流时有用), 不设置则默认是 false
  * }
  * </pre>
  */
@@ -35,7 +35,7 @@ public class ReqParam {
     private Map<String, String> sort;
     /** 分页信息 */
     private List<Integer> page;
-    /** 当上面的分页数据有值, 当前值是 true 时表示不发起 count 查询总条数, 在「移动端-瀑布流」时是「无需查询总条数」的 */
+    /** 当上面的分页信息有值且当前值是 true 时表示不发起 SELECT COUNT(*) 查询 */
     private Boolean notCount;
 
 

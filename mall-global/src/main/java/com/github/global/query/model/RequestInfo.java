@@ -12,11 +12,11 @@ import java.util.Set;
 @AllArgsConstructor
 public class RequestInfo {
 
-    /** 主结构 */
+    /** 主表 */
     private String table;
     /** 入参 */
     private ReqParam param;
-    /** 出参的结构类型, 对象(obj)还是数组(arr), 不设置则默认是数组 */
+    /** 出参类型, 对象(obj)还是数组(arr), 不设置则是数组 */
     private ReqResultType type;
     /** 出参 */
     private ReqResult result;
