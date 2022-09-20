@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class RequestInfo {
 
     /** 主结构 */
-    private String schema;
+    private String table;
     /** 入参 */
     private ReqParam param;
     /** 出参的结构类型, 对象(obj)还是数组(arr), 不设置则默认是数组 */
@@ -20,12 +20,12 @@ public class RequestInfo {
     private ReqResult result;
 
 
-    public void check(SchemaColumnInfo schemaColumnInfo) {
-        if (schema == null || schema.isEmpty()) {
-            throw new RuntimeException("no schema");
+    public void check(TableColumnInfo tableColumnInfo) {
+        if (table == null || table.isEmpty()) {
+            throw new RuntimeException("no table");
         }
-        if (schemaColumnInfo.findSchema(schema) == null) {
-            throw new RuntimeException("no schema(" + schema + ") defined");
+        if (tableColumnInfo.findTable(table) == null) {
+            throw new RuntimeException("no table(" + table + ") defined");
         }
         if (param == null) {
             throw new RuntimeException("request need param");
@@ -34,7 +34,7 @@ public class RequestInfo {
             throw new RuntimeException("request need result");
         }
 
-        param.checkParam(schema, schemaColumnInfo);
-        result.checkResult(schema, schemaColumnInfo);
+        param.checkParam(table, tableColumnInfo);
+        result.checkResult(table, tableColumnInfo);
     }
 }

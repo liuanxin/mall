@@ -17,7 +17,7 @@ import java.util.StringJoiner;
  * name like 'abc%'   and gender = 1   and age between 18 and 40
  * and province in ( 'x', 'y', 'z' )   and city like '%xx%'   and time >= now()
  * {
- *   -- "schema": "order",   -- 不设置则从 requestInfo 中获取
+ *   -- "table": "order",   -- 不设置则从 requestInfo 中获取
  *   -- "operate": "and",    -- 并且(and) 和 或者(or) 两种, 不设置则默认是 并且
  *   "conditions": [
  *     [ "name", "rl", "abc" ],
@@ -98,19 +98,19 @@ import java.util.StringJoiner;
 @AllArgsConstructor
 public class ReqParamOperate {
 
-    private String schema;
+    private String table;
     /** 条件拼接类型: and 还是 or */
     private ReqParamOperateType operate;
     /** 条件 */
     private List<Object> conditions;
 
 
-    public void checkCondition(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
+    public void checkCondition(String mainTable, TableColumnInfo tableColumnInfo) {
         if (conditions == null || conditions.isEmpty()) {
             return;
         }
 
-        String currentSchema = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
+        String currentTable = (table == null || table.trim().isEmpty()) ? mainTable : table.trim();
         for (Object condition : conditions) {
             if (condition != null) {
                 if (condition instanceof List<?> list) {
@@ -131,51 +131,51 @@ public class ReqParamOperate {
                         throw new RuntimeException(String.format("param condition column(%s) need type", column));
                     }
                     //检查结构名和列名
-                    SchemaColumn schemaColumn = QueryUtil.checkColumnName(column, currentSchema, schemaColumnInfo, "param condition");
+                    TableColumn tableColumn = QueryUtil.checkColumnName(column, currentTable, tableColumnInfo, "param condition");
                     // 检查列类型和传入的值是否对应
-                    type.checkTypeAndValue(schemaColumn.getColumnType(), column, list.get(standardSize ? 1 : 2), schemaColumn.getStrLen());
+                    type.checkTypeAndValue(tableColumn.getColumnType(), column, list.get(standardSize ? 1 : 2), tableColumn.getStrLen());
                 } else {
                     ReqParamOperate compose = JsonUtil.convert(condition, ReqParamOperate.class);
                     if (compose == null) {
                         throw new RuntimeException("compose condition(" + condition + ") error");
                     }
-                    compose.checkCondition(currentSchema, schemaColumnInfo);
+                    compose.checkCondition(currentTable, tableColumnInfo);
                 }
             }
         }
     }
 
-    public void allSchema(String mainSchema, Set<String> set) {
+    public void allTable(String mainTable, Set<String> set) {
         if (conditions == null || conditions.isEmpty()) {
             return;
         }
 
-        String currentSchema = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
-        set.add(currentSchema);
+        String currentTable = (table == null || table.trim().isEmpty()) ? mainTable : table.trim();
+        set.add(currentTable);
 
         for (Object condition : conditions) {
             if (condition != null) {
                 if (condition instanceof List<?> list) {
                     if (!list.isEmpty()) {
-                        set.add(QueryUtil.getSchemaName(QueryUtil.toStr(list.get(0)), currentSchema));
+                        set.add(QueryUtil.getTableName(QueryUtil.toStr(list.get(0)), currentTable));
                     }
                 } else {
                     ReqParamOperate compose = JsonUtil.convert(condition, ReqParamOperate.class);
                     if (compose != null) {
-                        compose.allSchema(currentSchema, set);
+                        compose.allTable(currentTable, set);
                     }
                 }
             }
         }
     }
 
-    public String generateSql(String mainSchema, SchemaColumnInfo schemaColumnInfo, List<Object> params, boolean needAlias) {
+    public String generateSql(String mainTable, TableColumnInfo tableColumnInfo, List<Object> params, boolean needAlias) {
         if (conditions == null || conditions.isEmpty()) {
             return "";
         }
 
         StringJoiner sj = new StringJoiner(" " + operate.name().toUpperCase() + " ");
-        String currentSchema = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
+        String currentTable = (table == null || table.trim().isEmpty()) ? mainTable : table.trim();
         for (Object condition : conditions) {
             if (condition != null) {
                 if (condition instanceof List<?> list) {
@@ -187,7 +187,7 @@ public class ReqParamOperate {
                         ReqParamConditionType type = standardSize ? ReqParamConditionType.EQ : ReqParamConditionType.deserializer(list.get(1));
                         Object value = list.get(standardSize ? 1 : 2);
 
-                        String useColumn = QueryUtil.getUseColumn(needAlias, column, currentSchema, schemaColumnInfo);
+                        String useColumn = QueryUtil.getUseColumn(needAlias, column, currentTable, tableColumnInfo);
                         String sql = type.generateSql(useColumn, value, params);
                         if (!sql.isEmpty()) {
                             sj.add(sql);
@@ -196,7 +196,7 @@ public class ReqParamOperate {
                 } else {
                     ReqParamOperate compose = JsonUtil.convert(condition, ReqParamOperate.class);
                     if (compose != null) {
-                        String innerWhereSql = compose.generateSql(currentSchema, schemaColumnInfo, params, needAlias);
+                        String innerWhereSql = compose.generateSql(currentTable, tableColumnInfo, params, needAlias);
                         if (!innerWhereSql.isEmpty()) {
                             sj.add("( " + innerWhereSql + " )");
                         }

@@ -2,7 +2,7 @@ package com.github.global.query.model;
 
 import com.github.global.query.constant.QueryConst;
 import com.github.global.query.enums.ReqJoinType;
-import com.github.global.query.enums.SchemaRelationType;
+import com.github.global.query.enums.TableRelationType;
 import com.github.global.query.util.QueryUtil;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -39,14 +39,14 @@ public class ReqParam {
     private Boolean notCount;
 
 
-    public void checkParam(String mainSchema, SchemaColumnInfo schemaColumnInfo) {
+    public void checkParam(String mainTable, TableColumnInfo tableColumnInfo) {
         if (query != null) {
-            query.checkCondition(mainSchema, schemaColumnInfo);
+            query.checkCondition(mainTable, tableColumnInfo);
         }
 
         if (sort != null && !sort.isEmpty()) {
             for (String column : sort.keySet()) {
-                QueryUtil.checkColumnName(column, mainSchema, schemaColumnInfo, "param order");
+                QueryUtil.checkColumnName(column, mainTable, tableColumnInfo, "param order");
             }
         }
 
@@ -58,72 +58,72 @@ public class ReqParam {
         }
 
         if (relation != null && !relation.isEmpty()) {
-            Set<String> schemaRelation = new HashSet<>();
+            Set<String> tableRelation = new HashSet<>();
             for (List<String> values : relation) {
                 if (values.size() >= 3) {
                     ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
                     if (joinType != null) {
-                        String masterSchema = values.get(0);
-                        String childSchema = values.get(2);
-                        if (schemaColumnInfo.findRelationByMasterChild(masterSchema, childSchema) == null) {
-                            throw new RuntimeException(masterSchema + " and " + childSchema + " has no relation");
+                        String masterTable = values.get(0);
+                        String childTable = values.get(2);
+                        if (tableColumnInfo.findRelationByMasterChild(masterTable, childTable) == null) {
+                            throw new RuntimeException(masterTable + " and " + childTable + " has no relation");
                         }
 
-                        String key = masterSchema + "." + childSchema;
-                        if (schemaRelation.contains(key)) {
-                            throw new RuntimeException(masterSchema + " and " + childSchema + " can only has one relation");
+                        String key = masterTable + "." + childTable;
+                        if (tableRelation.contains(key)) {
+                            throw new RuntimeException(masterTable + " and " + childTable + " can only has one relation");
                         }
-                        schemaRelation.add(key);
+                        tableRelation.add(key);
                     }
                 }
             }
         }
     }
 
-    public Map<String, Set<SchemaJoinRelation>> joinRelationMap(SchemaColumnInfo schemaColumnInfo) {
+    public Map<String, Set<TableJoinRelation>> joinRelationMap(TableColumnInfo tableColumnInfo) {
         if (relation.isEmpty()) {
             return Collections.emptyMap();
         }
 
-        Map<String, Set<SchemaJoinRelation>> relationMap = new HashMap<>();
+        Map<String, Set<TableJoinRelation>> relationMap = new HashMap<>();
         for (List<String> values : relation) {
             if (values.size() >= 3) {
                 ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
                 if (joinType != null) {
-                    Schema masterSchema = schemaColumnInfo.findSchema(values.get(0));
-                    Schema childSchema = schemaColumnInfo.findSchema(values.get(2));
+                    Table masterTable = tableColumnInfo.findTable(values.get(0));
+                    Table childTable = tableColumnInfo.findTable(values.get(2));
 
-                    String masterSchemaName = masterSchema.getName();
-                    Set<SchemaJoinRelation> relationSet = relationMap.getOrDefault(masterSchemaName, new LinkedHashSet<>());
-                    relationSet.add(new SchemaJoinRelation(masterSchema, joinType, childSchema));
-                    relationMap.put(masterSchemaName, relationSet);
+                    String masterTableName = masterTable.getName();
+                    Set<TableJoinRelation> relationSet = relationMap.getOrDefault(masterTableName, new LinkedHashSet<>());
+                    relationSet.add(new TableJoinRelation(masterTable, joinType, childTable));
+                    relationMap.put(masterTableName, relationSet);
                 }
             }
         }
         return relationMap;
     }
 
-    public Set<String> allParamSchema(SchemaColumnInfo schemaColumnInfo) {
+    public Set<String> allParamTable(TableColumnInfo tableColumnInfo) {
         if (relation.isEmpty()) {
             return Collections.emptySet();
         }
 
-        Set<String> schemaSet = new LinkedHashSet<>();
+        Set<String> tableSet = new LinkedHashSet<>();
         for (List<String> values : relation) {
             if (values.size() >= 3) {
                 ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
                 if (joinType != null) {
-                    Schema masterSchema = schemaColumnInfo.findSchema(values.get(0));
-                    Schema childSchema = schemaColumnInfo.findSchema(values.get(2));
-                    schemaSet.add(masterSchema.getName());
-                    schemaSet.add(childSchema.getName());
+                    Table masterTable = tableColumnInfo.findTable(values.get(0));
+                    Table childTable = tableColumnInfo.findTable(values.get(2));
+                    tableSet.add(masterTable.getName());
+                    tableSet.add(childTable.getName());
                 }
             }
         }
-        return schemaSet;
+        return tableSet;
     }
 
-    public boolean hasManyRelation(SchemaColumnInfo schemaColumnInfo) {
+    public boolean hasManyRelation(TableColumnInfo tableColumnInfo) {
         if (relation.isEmpty()) {
             return false;
         }
@@ -131,10 +131,10 @@ public class ReqParam {
         for (List<String> values : relation) {
             ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
             if (joinType != null) {
-                String masterSchemaName = values.get(0);
-                String childSchemaName = values.get(2);
-                SchemaColumnRelation relation = schemaColumnInfo.findRelationByMasterChild(masterSchemaName, childSchemaName);
-                if (relation != null && relation.getType() == SchemaRelationType.ONE_TO_MANY) {
+                String masterTableName = values.get(0);
+                String childTableName = values.get(2);
+                TableColumnRelation relation = tableColumnInfo.findRelationByMasterChild(masterTableName, childTableName);
+                if (relation != null && relation.getType() == TableRelationType.ONE_TO_MANY) {
                     return true;
                 }
             }
@@ -142,22 +142,22 @@ public class ReqParam {
         return false;
     }
 
-    public String generateWhereSql(String mainSchema, SchemaColumnInfo schemaColumnInfo, boolean needAlias, List<Object> params) {
+    public String generateWhereSql(String mainTable, TableColumnInfo tableColumnInfo, boolean needAlias, List<Object> params) {
         if (query == null) {
             return "";
         }
 
-        String where = query.generateSql(mainSchema, schemaColumnInfo, params, needAlias);
+        String where = query.generateSql(mainTable, tableColumnInfo, params, needAlias);
         return where.isEmpty() ? "" : (" WHERE " + where);
     }
 
-    public String generateOrderSql(String mainSchema, boolean needAlias, SchemaColumnInfo schemaColumnInfo) {
+    public String generateOrderSql(String mainTable, boolean needAlias, TableColumnInfo tableColumnInfo) {
         if (sort != null && !sort.isEmpty()) {
             StringJoiner orderSj = new StringJoiner(", ");
             for (Map.Entry<String, String> entry : sort.entrySet()) {
                 String value = entry.getValue().toLowerCase();
                 String desc = ("asc".equals(value) || "a".equals(value)) ? "" : " DESC";
-                orderSj.add(QueryUtil.getUseColumn(needAlias, entry.getKey(), mainSchema, schemaColumnInfo) + desc);
+                orderSj.add(QueryUtil.getUseColumn(needAlias, entry.getKey(), mainTable, tableColumnInfo) + desc);
             }
             String orderBy = orderSj.toString();
             if (!orderBy.isEmpty()) {

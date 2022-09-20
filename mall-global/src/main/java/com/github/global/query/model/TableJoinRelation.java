@@ -7,25 +7,25 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class SchemaJoinRelation {
+public class TableJoinRelation {
 
-    private Schema masterSchema;
+    private Table masterTable;
     private ReqJoinType joinType;
-    private Schema childSchema;
+    private Table childTable;
 
-    public String generateJoin(SchemaColumnInfo schemaColumnInfo) {
+    public String generateJoin(TableColumnInfo tableColumnInfo) {
         StringBuilder sbd = new StringBuilder();
-        String masterSchemaName = masterSchema.getName();
-        String childSchemaName = childSchema.getName();
-        SchemaColumnRelation relation = schemaColumnInfo.findRelationByMasterChild(masterSchemaName, childSchemaName);
+        String masterTableName = masterTable.getName();
+        String childTableName = childTable.getName();
+        TableColumnRelation relation = tableColumnInfo.findRelationByMasterChild(masterTableName, childTableName);
         if (relation != null) {
-            String masterAlias = masterSchema.getAlias();
-            String childAlias = childSchema.getAlias();
+            String masterAlias = masterTable.getAlias();
+            String childAlias = childTable.getAlias();
 
             sbd.append(" ").append(joinType.name());
-            sbd.append(" JOIN ").append(QuerySqlUtil.toSqlField(childSchemaName));
+            sbd.append(" JOIN ").append(QuerySqlUtil.toSqlField(childTableName));
             sbd.append(" AS ").append(QuerySqlUtil.toSqlField(childAlias));
-            sbd.append(" ON ").append(QuerySqlUtil.toSqlField(masterSchemaName));
+            sbd.append(" ON ").append(QuerySqlUtil.toSqlField(masterTableName));
             sbd.append(".").append(QuerySqlUtil.toSqlField(masterAlias));
             sbd.append(" = ").append(QuerySqlUtil.toSqlField(childAlias));
             sbd.append(".").append(QuerySqlUtil.toSqlField(relation.getOneOrManyColumn()));

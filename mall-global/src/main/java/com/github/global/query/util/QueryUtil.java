@@ -2,13 +2,13 @@ package com.github.global.query.util;
 
 import com.github.common.util.U;
 import com.github.global.query.annotation.ColumnInfo;
-import com.github.global.query.annotation.SchemaInfo;
+import com.github.global.query.annotation.TableInfo;
 import com.github.global.query.constant.QueryConst;
-import com.github.global.query.enums.SchemaRelationType;
-import com.github.global.query.model.Schema;
-import com.github.global.query.model.SchemaColumn;
-import com.github.global.query.model.SchemaColumnInfo;
-import com.github.global.query.model.SchemaColumnRelation;
+import com.github.global.query.enums.TableRelationType;
+import com.github.global.query.model.Table;
+import com.github.global.query.model.TableColumn;
+import com.github.global.query.model.TableColumnInfo;
+import com.github.global.query.model.TableColumnRelation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -32,7 +32,7 @@ public class QueryUtil {
     private static final MetadataReaderFactory READER = new CachingMetadataReaderFactory(RESOLVER);
 
 
-    public static SchemaColumnInfo scanSchema(String classPackages) {
+    public static TableColumnInfo scanTable(String classPackages) {
         return handleTable(scanPackage(classPackages));
     }
     private static Set<Class<?>> scanPackage(String classPackages) {
@@ -62,44 +62,44 @@ public class QueryUtil {
         }
         return set;
     }
-    private static SchemaColumnInfo handleTable(Set<Class<?>> classes) {
+    private static TableColumnInfo handleTable(Set<Class<?>> classes) {
         Map<String, String> aliasMap = new HashMap<>();
-        Map<String, Schema> schemaMap = new LinkedHashMap<>();
-        List<SchemaColumnRelation> relationList = new ArrayList<>();
+        Map<String, Table> tableMap = new LinkedHashMap<>();
+        List<TableColumnRelation> relationList = new ArrayList<>();
 
         Map<String, ColumnInfo> columnInfoMap = new LinkedHashMap<>();
         Map<String, Class<?>> columnClassMap = new HashMap<>();
-        Set<String> schemaNameSet = new HashSet<>();
-        Set<String> schemaAliasSet = new HashSet<>();
+        Set<String> tableNameSet = new HashSet<>();
+        Set<String> tableAliasSet = new HashSet<>();
         Set<String> columnNameSet = new HashSet<>();
         Set<String> columnAliasSet = new HashSet<>();
         for (Class<?> clazz : classes) {
-            SchemaInfo schemaInfo = clazz.getAnnotation(SchemaInfo.class);
-            String schemaName, schemaDesc, schemaAlias;
-            if (schemaInfo != null) {
-                if (schemaInfo.ignore()) {
+            TableInfo tableInfo = clazz.getAnnotation(TableInfo.class);
+            String tableName, tableDesc, tableAlias;
+            if (tableInfo != null) {
+                if (tableInfo.ignore()) {
                     continue;
                 }
 
-                schemaName = schemaInfo.value();
-                schemaDesc = schemaInfo.desc();
-                schemaAlias = defaultIfBlank(schemaInfo.alias(), schemaName);
+                tableName = tableInfo.value();
+                tableDesc = tableInfo.desc();
+                tableAlias = defaultIfBlank(tableInfo.alias(), tableName);
             } else {
-                schemaDesc = "";
-                schemaAlias = clazz.getSimpleName();
-                schemaName = aliasToSchemaName(schemaAlias);
+                tableDesc = "";
+                tableAlias = clazz.getSimpleName();
+                tableName = aliasToTableName(tableAlias);
             }
 
-            if (schemaNameSet.contains(schemaName)) {
-                throw new RuntimeException("schema(" + schemaName + ") has renamed");
+            if (tableNameSet.contains(tableName)) {
+                throw new RuntimeException("table(" + tableName + ") has renamed");
             }
-            schemaNameSet.add(schemaName);
-            if (schemaAliasSet.contains(schemaAlias)) {
-                throw new RuntimeException("schema alias(" + schemaName + ") has renamed");
+            tableNameSet.add(tableName);
+            if (tableAliasSet.contains(tableAlias)) {
+                throw new RuntimeException("table alias(" + tableName + ") has renamed");
             }
-            schemaAliasSet.add(schemaAlias);
+            tableAliasSet.add(tableAlias);
 
-            Map<String, SchemaColumn> columnMap = new LinkedHashMap<>();
+            Map<String, TableColumn> columnMap = new LinkedHashMap<>();
             for (Field field : U.getFields(clazz)) {
                 ColumnInfo columnInfo = field.getAnnotation(ColumnInfo.class);
                 Class<?> type = field.getType();
@@ -118,9 +118,9 @@ public class QueryUtil {
                     strLen = columnInfo.varcharLength();
 
                     // 用类名 + 列名
-                    String schemaAndColumn = schemaName + "." + columnName;
-                    columnInfoMap.put(schemaAndColumn, columnInfo);
-                    columnClassMap.put(schemaAndColumn, type);
+                    String tableAndColumn = tableName + "." + columnName;
+                    columnInfoMap.put(tableAndColumn, columnInfo);
+                    columnClassMap.put(tableAndColumn, type);
                 } else {
                     columnDesc = "";
                     columnAlias = field.getName();
@@ -130,65 +130,65 @@ public class QueryUtil {
                 }
 
                 if (columnNameSet.contains(columnName)) {
-                    throw new RuntimeException("schema(" + schemaAlias + ") has same column(" + columnName + ")");
+                    throw new RuntimeException("table(" + tableAlias + ") has same column(" + columnName + ")");
                 }
                 columnNameSet.add(columnName);
                 if (columnAliasSet.contains(columnAlias)) {
-                    throw new RuntimeException("schema(" + schemaAlias + ") has same column(" + columnAlias + ")");
+                    throw new RuntimeException("table(" + tableAlias + ") has same column(" + columnAlias + ")");
                 }
                 columnAliasSet.add(columnAlias);
 
                 aliasMap.put(QueryConst.COLUMN_PREFIX + columnAlias, columnName);
-                columnMap.put(columnName, new SchemaColumn(columnName, columnDesc, columnAlias, primary, strLen, type));
+                columnMap.put(columnName, new TableColumn(columnName, columnDesc, columnAlias, primary, strLen, type));
             }
-            aliasMap.put(QueryConst.SCHEMA_PREFIX + schemaAlias, schemaName);
-            schemaMap.put(schemaName, new Schema(schemaName, schemaDesc, schemaAlias, columnMap));
+            aliasMap.put(QueryConst.SCHEMA_PREFIX + tableAlias, tableName);
+            tableMap.put(tableName, new Table(tableName, tableDesc, tableAlias, columnMap));
         }
 
         for (Map.Entry<String, ColumnInfo> entry : columnInfoMap.entrySet()) {
             ColumnInfo columnInfo = entry.getValue();
-            SchemaRelationType relationType = columnInfo.relationType();
-            if (relationType != SchemaRelationType.NULL) {
-                String oneSchema = columnInfo.relationSchema();
+            TableRelationType relationType = columnInfo.relationType();
+            if (relationType != TableRelationType.NULL) {
+                String oneTable = columnInfo.relationTable();
                 String oneColumn = columnInfo.relationColumn();
-                if (!oneSchema.isEmpty() && !oneColumn.isEmpty()) {
-                    String schemaAndColumn = entry.getKey();
-                    Schema schema = schemaMap.get(aliasMap.get(QueryConst.SCHEMA_PREFIX + oneSchema));
-                    if (schema == null) {
-                        schema = schemaMap.get(oneSchema);
-                        if (schema == null) {
-                            throw new RuntimeException(schemaAndColumn + "'s relation no schema(" + oneSchema + ")");
+                if (!oneTable.isEmpty() && !oneColumn.isEmpty()) {
+                    String tableAndColumn = entry.getKey();
+                    Table table = tableMap.get(aliasMap.get(QueryConst.SCHEMA_PREFIX + oneTable));
+                    if (table == null) {
+                        table = tableMap.get(oneTable);
+                        if (table == null) {
+                            throw new RuntimeException(tableAndColumn + "'s relation no table(" + oneTable + ")");
                         }
                     }
 
-                    Map<String, SchemaColumn> columnMap = schema.getColumnMap();
-                    SchemaColumn column = columnMap.get(aliasMap.get(QueryConst.COLUMN_PREFIX + oneColumn));
+                    Map<String, TableColumn> columnMap = table.getColumnMap();
+                    TableColumn column = columnMap.get(aliasMap.get(QueryConst.COLUMN_PREFIX + oneColumn));
                     if (column == null) {
                         column = columnMap.get(oneColumn);
                         if (column == null) {
-                            throw new RuntimeException(schemaAndColumn + "'s relation no schema-column("
-                                    + oneSchema + "." + oneColumn + ")");
+                            throw new RuntimeException(tableAndColumn + "'s relation no table-column("
+                                    + oneTable + "." + oneColumn + ")");
                         }
                     }
-                    Class<?> sourceClass = columnClassMap.get(schemaAndColumn);
+                    Class<?> sourceClass = columnClassMap.get(tableAndColumn);
                     Class<?> targetClass = column.getColumnType();
                     if (sourceClass != targetClass) {
-                        throw new RuntimeException(schemaAndColumn + "'s data type has " + sourceClass.getSimpleName()
-                                + ", but relation " + oneSchema + "'s data type has" + targetClass.getSimpleName());
+                        throw new RuntimeException(tableAndColumn + "'s data type has " + sourceClass.getSimpleName()
+                                + ", but relation " + oneTable + "'s data type has" + targetClass.getSimpleName());
                     }
                     // 用列名, 不是别名
-                    String[] arr = schemaAndColumn.split("\\.");
-                    String relationSchema = arr[0];
+                    String[] arr = tableAndColumn.split("\\.");
+                    String relationTable = arr[0];
                     String relationColumn = arr[1];
-                    relationList.add(new SchemaColumnRelation(schema.getName(), column.getName(),
-                            relationType, relationSchema, relationColumn));
+                    relationList.add(new TableColumnRelation(table.getName(), column.getName(),
+                            relationType, relationTable, relationColumn));
                 }
             }
         }
-        return new SchemaColumnInfo(aliasMap, schemaMap, relationList);
+        return new TableColumnInfo(aliasMap, tableMap, relationList);
     }
     /** UserInfo --> user_info */
-    private static String aliasToSchemaName(String className) {
+    private static String aliasToTableName(String className) {
         StringBuilder sbd = new StringBuilder();
         char[] chars = className.toCharArray();
         int len = chars.length;
@@ -219,12 +219,12 @@ public class QueryUtil {
     }
 
     /** user_info | USER_INFO --> UserInfo */
-    public static String schemaNameToAlias(String schemaName) {
-        if (schemaName.toLowerCase().startsWith("t_")) {
-            schemaName = schemaName.substring(2);
+    public static String tableNameToAlias(String tableName) {
+        if (tableName.toLowerCase().startsWith("t_")) {
+            tableName = tableName.substring(2);
         }
         StringBuilder sbd = new StringBuilder();
-        char[] chars = schemaName.toCharArray();
+        char[] chars = tableName.toCharArray();
         sbd.append(Character.toUpperCase(chars[0]));
         int len = chars.length;
         for (int i = 1; i < len; i++) {
@@ -385,44 +385,44 @@ public class QueryUtil {
     }
 
 
-    public static String getSchemaName(String column, String mainSchema) {
-        return column.contains(".") ? column.split("\\.")[0].trim() : mainSchema;
+    public static String getTableName(String column, String mainTable) {
+        return column.contains(".") ? column.split("\\.")[0].trim() : mainTable;
     }
 
     public static String getColumnName(String column) {
         return column.contains(".") ? column.split("\\.")[1].trim() : column.trim();
     }
 
-    public static SchemaColumn checkColumnName(String column, String mainSchema,
-                                               SchemaColumnInfo schemaColumnInfo, String type) {
-        String schemaName = getSchemaName(column, mainSchema);
-        if (schemaName == null || schemaName.isEmpty()) {
-            throw new RuntimeException("schema can't be blank with: " + type);
+    public static TableColumn checkColumnName(String column, String mainTable,
+                                               TableColumnInfo tableColumnInfo, String type) {
+        String tableName = getTableName(column, mainTable);
+        if (tableName == null || tableName.isEmpty()) {
+            throw new RuntimeException("table can't be blank with: " + type);
         }
 
-        Schema schema = schemaColumnInfo.findSchema(schemaName);
-        if (schema == null) {
-            throw new RuntimeException("no schema(" + schemaName + ") defined with: " + type);
+        Table table = tableColumnInfo.findTable(tableName);
+        if (table == null) {
+            throw new RuntimeException("no table(" + tableName + ") defined with: " + type);
         }
 
         String columnName = getColumnName(column);
         if (columnName.isEmpty()) {
-            throw new RuntimeException("schema(" + schemaName + ") column cant' be blank with: " + type);
+            throw new RuntimeException("table(" + tableName + ") column cant' be blank with: " + type);
         }
 
-        SchemaColumn schemaColumn = schemaColumnInfo.findSchemaColumn(schema, columnName);
-        if (schemaColumn == null) {
-            throw new RuntimeException("schema(" + schemaName + ") no column(" + columnName + ") defined with: " + type);
+        TableColumn tableColumn = tableColumnInfo.findTableColumn(table, columnName);
+        if (tableColumn == null) {
+            throw new RuntimeException("table(" + tableName + ") no column(" + columnName + ") defined with: " + type);
         }
-        return schemaColumn;
+        return tableColumn;
     }
 
-    public static String getUseColumn(boolean needAlias, String column, String mainSchema, SchemaColumnInfo schemaColumnInfo) {
-        String schemaName = getSchemaName(column, mainSchema);
+    public static String getUseColumn(boolean needAlias, String column, String mainTable, TableColumnInfo tableColumnInfo) {
+        String tableName = getTableName(column, mainTable);
         String columnName = getColumnName(column);
-        Schema schema = schemaColumnInfo.findSchema(schemaName);
-        SchemaColumn schemaColumn = schemaColumnInfo.findSchemaColumn(schema, columnName);
-        String useColumnName = QuerySqlUtil.toSqlField(schemaColumn.getName());
-        return needAlias ? (QuerySqlUtil.toSqlField(schema.getAlias()) + "." + useColumnName) : useColumnName;
+        Table table = tableColumnInfo.findTable(tableName);
+        TableColumn tableColumn = tableColumnInfo.findTableColumn(table, columnName);
+        String useColumnName = QuerySqlUtil.toSqlField(tableColumn.getName());
+        return needAlias ? (QuerySqlUtil.toSqlField(table.getAlias()) + "." + useColumnName) : useColumnName;
     }
 }

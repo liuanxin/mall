@@ -5,7 +5,7 @@ import com.github.common.collection.MapMultiValue;
 import com.github.common.json.JsonUtil;
 import com.github.global.query.constant.QueryConst;
 import com.github.global.query.enums.ReqResultType;
-import com.github.global.query.enums.SchemaRelationType;
+import com.github.global.query.enums.TableRelationType;
 import com.github.global.query.model.*;
 import com.github.global.query.util.QuerySqlUtil;
 import com.github.global.query.util.QueryUtil;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 @Component
-public class QuerySchemaInfoConfig {
+public class QueryTableInfoConfig {
 
     @Value("${query.scan-packages:}")
     private String scanPackages;
@@ -25,60 +25,60 @@ public class QuerySchemaInfoConfig {
     private int deepMaxPageSize;
 
     private final JdbcTemplate jdbcTemplate;
-    private final SchemaColumnInfo schemaColumnInfo;
+    private final TableColumnInfo tableColumnInfo;
 
-    public QuerySchemaInfoConfig(JdbcTemplate jdbcTemplate) {
+    public QueryTableInfoConfig(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.schemaColumnInfo = (scanPackages == null || scanPackages.isEmpty())
-                ? initWithDb() : QueryUtil.scanSchema(scanPackages);
+        this.tableColumnInfo = (scanPackages == null || scanPackages.isEmpty())
+                ? initWithDb() : QueryUtil.scanTable(scanPackages);
     }
-    private SchemaColumnInfo initWithDb() {
+    private TableColumnInfo initWithDb() {
         Map<String, String> aliasMap = new HashMap<>();
-        Map<String, Schema> schemaMap = new LinkedHashMap<>();
-        List<SchemaColumnRelation> relationList = new ArrayList<>();
+        Map<String, Table> tableMap = new LinkedHashMap<>();
+        List<TableColumnRelation> relationList = new ArrayList<>();
 
         String dbName = jdbcTemplate.queryForObject(QueryConst.DB_SQL, String.class);
         // table_name, table_comment
-        List<Map<String, Object>> schemaList = jdbcTemplate.queryForList(QueryConst.SCHEMA_SQL, dbName);
+        List<Map<String, Object>> tableList = jdbcTemplate.queryForList(QueryConst.SCHEMA_SQL, dbName);
         // table_name, column_name, column_type, column_comment, has_pri, varchar_length
-        List<Map<String, Object>> schemaColumnList = jdbcTemplate.queryForList(QueryConst.COLUMN_SQL, dbName);
+        List<Map<String, Object>> tableColumnList = jdbcTemplate.queryForList(QueryConst.COLUMN_SQL, dbName);
         // table_name, column_name, relation_table_name, relation_column_name (relation : one or many)
         List<Map<String, Object>> relationColumnList = jdbcTemplate.queryForList(QueryConst.RELATION_SQL, dbName);
         // table_name, column_name, has_single_unique
         List<Map<String, Object>> indexList = jdbcTemplate.queryForList(QueryConst.INDEX_SQL, dbName);
 
-        MapMultiValue<String, Map<String, Object>, List<Map<String, Object>>> schemaColumnMap = MapMultiUtil.createMapList();
-        if (!schemaColumnList.isEmpty()) {
-            for (Map<String, Object> schemaColumn : schemaColumnList) {
-                schemaColumnMap.put(QueryUtil.toStr(schemaColumn.get("tn")), schemaColumn);
+        MapMultiValue<String, Map<String, Object>, List<Map<String, Object>>> tableColumnMap = MapMultiUtil.createMapList();
+        if (!tableColumnList.isEmpty()) {
+            for (Map<String, Object> tableColumn : tableColumnList) {
+                tableColumnMap.put(QueryUtil.toStr(tableColumn.get("tn")), tableColumn);
             }
         }
         Map<String, Map<String, Map<String, Object>>> relationColumnMap = new HashMap<>();
         if (!relationColumnList.isEmpty()) {
             for (Map<String, Object> relationColumn : relationColumnList) {
-                String schemaName = QueryUtil.toStr(relationColumn.get("tn"));
-                Map<String, Map<String, Object>> columnMap = relationColumnMap.getOrDefault(schemaName, new HashMap<>());
+                String tableName = QueryUtil.toStr(relationColumn.get("tn"));
+                Map<String, Map<String, Object>> columnMap = relationColumnMap.getOrDefault(tableName, new HashMap<>());
                 columnMap.put(QueryUtil.toStr(relationColumn.get("cn")), relationColumn);
-                relationColumnMap.put(schemaName, columnMap);
+                relationColumnMap.put(tableName, columnMap);
             }
         }
         Map<String, Set<String>> columnUniqueMap = new HashMap<>();
         if (!indexList.isEmpty()) {
             for (Map<String, Object> index : indexList) {
-                String schemaName = QueryUtil.toStr(index.get("tn"));
-                Set<String> uniqueColumnSet = columnUniqueMap.getOrDefault(schemaName, new HashSet<>());
+                String tableName = QueryUtil.toStr(index.get("tn"));
+                Set<String> uniqueColumnSet = columnUniqueMap.getOrDefault(tableName, new HashSet<>());
                 uniqueColumnSet.add(QueryUtil.toStr(index.get("cn")));
-                columnUniqueMap.put(schemaName, uniqueColumnSet);
+                columnUniqueMap.put(tableName, uniqueColumnSet);
             }
         }
 
-        for (Map<String, Object> schemaInfo : schemaList) {
-            String schemaName = QueryUtil.toStr(schemaInfo.get("tn"));
-            String schemaAlias = QueryUtil.schemaNameToAlias(schemaName);
-            String schemaDesc = QueryUtil.toStr(schemaInfo.get("tc"));
-            Map<String, SchemaColumn> columnMap = new LinkedHashMap<>();
+        for (Map<String, Object> tableInfo : tableList) {
+            String tableName = QueryUtil.toStr(tableInfo.get("tn"));
+            String tableAlias = QueryUtil.tableNameToAlias(tableName);
+            String tableDesc = QueryUtil.toStr(tableInfo.get("tc"));
+            Map<String, TableColumn> columnMap = new LinkedHashMap<>();
 
-            List<Map<String, Object>> columnList = schemaColumnMap.get(schemaName);
+            List<Map<String, Object>> columnList = tableColumnMap.get(tableName);
             for (Map<String, Object> columnInfo : columnList) {
                 Class<?> clazz = QueryUtil.mappingClass(QueryUtil.toStr(columnInfo.get("ct")));
                 String columnName = QueryUtil.toStr(columnInfo.get("cn"));
@@ -88,100 +88,100 @@ public class QuerySchemaInfoConfig {
                 int strLen = QueryUtil.toInt(QueryUtil.toStr(columnInfo.get("cml")));
 
                 aliasMap.put(QueryConst.COLUMN_PREFIX + columnName, columnAlias);
-                columnMap.put(columnAlias, new SchemaColumn(columnName, columnDesc, columnAlias, primary, strLen, clazz));
+                columnMap.put(columnAlias, new TableColumn(columnName, columnDesc, columnAlias, primary, strLen, clazz));
             }
-            aliasMap.put(QueryConst.SCHEMA_PREFIX + schemaName, schemaAlias);
-            schemaMap.put(schemaAlias, new Schema(schemaName, schemaDesc, schemaAlias, columnMap));
+            aliasMap.put(QueryConst.SCHEMA_PREFIX + tableName, tableAlias);
+            tableMap.put(tableAlias, new Table(tableName, tableDesc, tableAlias, columnMap));
         }
 
         if (!relationColumnMap.isEmpty()) {
             for (Map.Entry<String, Map<String, Map<String, Object>>> entry : relationColumnMap.entrySet()) {
-                String relationSchema = entry.getKey();
-                Set<String> uniqueColumnSet = columnUniqueMap.get(relationSchema);
+                String relationTable = entry.getKey();
+                Set<String> uniqueColumnSet = columnUniqueMap.get(relationTable);
                 for (Map.Entry<String, Map<String, Object>> columnEntry : entry.getValue().entrySet()) {
                     String relationColumn = columnEntry.getKey();
-                    SchemaRelationType type = uniqueColumnSet.contains(relationColumn)
-                            ? SchemaRelationType.ONE_TO_ONE : SchemaRelationType.ONE_TO_MANY;
+                    TableRelationType type = uniqueColumnSet.contains(relationColumn)
+                            ? TableRelationType.ONE_TO_ONE : TableRelationType.ONE_TO_MANY;
 
                     Map<String, Object> relationInfoMap = columnEntry.getValue();
-                    String oneSchema = QueryUtil.toStr(relationInfoMap.get("ftn"));
+                    String oneTable = QueryUtil.toStr(relationInfoMap.get("ftn"));
                     String oneColumn = QueryUtil.toStr(relationInfoMap.get("fcn"));
 
-                    relationList.add(new SchemaColumnRelation(oneSchema, oneColumn, type, relationSchema, relationColumn));
+                    relationList.add(new TableColumnRelation(oneTable, oneColumn, type, relationTable, relationColumn));
                 }
             }
         }
-        return new SchemaColumnInfo(aliasMap, schemaMap, relationList);
+        return new TableColumnInfo(aliasMap, tableMap, relationList);
     }
 
 
     public List<QueryInfo> queryInfo() {
         List<QueryInfo> queryList = new ArrayList<>();
-        for (Schema schema : schemaColumnInfo.allSchema()) {
+        for (Table table : tableColumnInfo.allTable()) {
             List<QueryInfo.QueryColumn> columnList = new ArrayList<>();
-            for (SchemaColumn column : schema.getColumnMap().values()) {
+            for (TableColumn column : table.getColumnMap().values()) {
                 String type = column.getColumnType().getSimpleName();
                 Integer length = (column.getStrLen() == 0) ? null : column.getStrLen();
-                SchemaColumnRelation relation = schemaColumnInfo.findRelationByChild(schema.getName(), column.getName());
-                String rel = (relation == null) ? null : (relation.getOneSchema() + "." + relation.getOneColumn());
+                TableColumnRelation relation = tableColumnInfo.findRelationByChild(table.getName(), column.getName());
+                String rel = (relation == null) ? null : (relation.getOneTable() + "." + relation.getOneColumn());
                 columnList.add(new QueryInfo.QueryColumn(column.getAlias(), column.getDesc(), type, length, rel));
             }
-            queryList.add(new QueryInfo(schema.getAlias(), schema.getDesc(), columnList));
+            queryList.add(new QueryInfo(table.getAlias(), table.getDesc(), columnList));
         }
         return queryList;
     }
 
     public Object query(RequestInfo req) {
-        req.check(schemaColumnInfo);
+        req.check(tableColumnInfo);
 
-        String mainSchema = req.getSchema();
+        String mainTable = req.getTable();
         ReqParam param = req.getParam();
         ReqResult result = req.getResult();
 
-        Set<String> paramSchemaSet = param.allParamSchema(schemaColumnInfo);
-        Map<String, Set<SchemaJoinRelation>> joinRelationMap = param.joinRelationMap(schemaColumnInfo);
+        Set<String> paramTableSet = param.allParamTable(tableColumnInfo);
+        Map<String, Set<TableJoinRelation>> joinRelationMap = param.joinRelationMap(tableColumnInfo);
 
         List<Object> params = new ArrayList<>();
-        String fromAndWhere = QuerySqlUtil.toFromWhereSql(schemaColumnInfo, mainSchema,
-                paramSchemaSet, param, joinRelationMap, params);
+        String fromAndWhere = QuerySqlUtil.toFromWhereSql(tableColumnInfo, mainTable,
+                paramTableSet, param, joinRelationMap, params);
 
         if (param.needQueryPage()) {
             if (param.needQueryCount()) {
-                return queryCountPage(fromAndWhere, mainSchema, paramSchemaSet, param, result, joinRelationMap, params);
+                return queryCountPage(fromAndWhere, mainTable, paramTableSet, param, result, joinRelationMap, params);
             } else {
                 // 「移动端-瀑布流」时不需要「SELECT COUNT(*)」
-                return queryListLimit(fromAndWhere, mainSchema, paramSchemaSet, param, result, params);
+                return queryListLimit(fromAndWhere, mainTable, paramTableSet, param, result, params);
             }
         } else {
             if (req.getType() == ReqResultType.OBJ) {
-                return queryObj(fromAndWhere, mainSchema, paramSchemaSet, param, result, params);
+                return queryObj(fromAndWhere, mainTable, paramTableSet, param, result, params);
             } else {
-                return queryListNoLimit(fromAndWhere, mainSchema, paramSchemaSet, param, result, params);
+                return queryListNoLimit(fromAndWhere, mainTable, paramTableSet, param, result, params);
             }
         }
     }
 
-    private Map<String, Object> queryCountPage(String fromAndWhere, String mainSchema, Set<String> paramSchemaSet,
+    private Map<String, Object> queryCountPage(String fromAndWhere, String mainTable, Set<String> paramTableSet,
                                                ReqParam param, ReqResult result,
-                                               Map<String, Set<SchemaJoinRelation>> joinRelationMap, List<Object> params) {
+                                               Map<String, Set<TableJoinRelation>> joinRelationMap, List<Object> params) {
         long count;
         List<Map<String, Object>> pageList;
         if (result.notNeedGroup()) {
-            String countSql = QuerySqlUtil.toCountWithoutGroupSql(schemaColumnInfo, mainSchema,
-                    !paramSchemaSet.isEmpty(), param, fromAndWhere);
+            String countSql = QuerySqlUtil.toCountWithoutGroupSql(tableColumnInfo, mainTable,
+                    !paramTableSet.isEmpty(), param, fromAndWhere);
             count = queryCount(countSql, params);
             if (param.needQueryCurrentPage(count)) {
-                pageList = queryPageListWithoutGroup(fromAndWhere, mainSchema, paramSchemaSet, param,
+                pageList = queryPageListWithoutGroup(fromAndWhere, mainTable, paramTableSet, param,
                         result, joinRelationMap, params);
             } else {
                 pageList = Collections.emptyList();
             }
         } else {
-            String selectGroupSql = QuerySqlUtil.toSelectGroupSql(schemaColumnInfo, fromAndWhere, mainSchema,
-                    paramSchemaSet, result, params);
+            String selectGroupSql = QuerySqlUtil.toSelectGroupSql(tableColumnInfo, fromAndWhere, mainTable,
+                    paramTableSet, result, params);
             count = queryCount(QuerySqlUtil.toCountGroupSql(selectGroupSql), params);
             if (param.needQueryCurrentPage(count)) {
-                pageList = queryPageListWithGroup(selectGroupSql, param, paramSchemaSet, result, params);
+                pageList = queryPageListWithGroup(selectGroupSql, param, paramTableSet, result, params);
             } else {
                 pageList = Collections.emptyList();
             }
@@ -196,66 +196,66 @@ public class QuerySchemaInfoConfig {
         return QueryUtil.toLong(jdbcTemplate.queryForObject(countSql, Long.class, params.toArray()));
     }
 
-    private List<Map<String, Object>> queryPageListWithoutGroup(String fromAndWhere, String mainSchema,
-                                                                Set<String> paramSchemaSet, ReqParam param,
+    private List<Map<String, Object>> queryPageListWithoutGroup(String fromAndWhere, String mainTable,
+                                                                Set<String> paramTableSet, ReqParam param,
                                                                 ReqResult result,
-                                                                Map<String, Set<SchemaJoinRelation>> joinRelationMap,
+                                                                Map<String, Set<TableJoinRelation>> joinRelationMap,
                                                                 List<Object> params) {
         // 很深的查询(深分页)时, 先用「条件 + 排序 + 分页」只查 id, 再用 id 查具体的数据列
         String sql;
         if (param.hasDeepPage(deepMaxPageSize)) {
             // SELECT id FROM ... WHERE ... ORDER BY ... LIMIT ...
-            String idPageSql = QuerySqlUtil.toIdPageSql(schemaColumnInfo,
-                    fromAndWhere, mainSchema, !paramSchemaSet.isEmpty(), param, params);
+            String idPageSql = QuerySqlUtil.toIdPageSql(tableColumnInfo,
+                    fromAndWhere, mainTable, !paramTableSet.isEmpty(), param, params);
             List<Map<String, Object>> idList = jdbcTemplate.queryForList(idPageSql, params.toArray());
 
             // SELECT ... FROM ... WHERE id IN (x, y, z)
             params.clear();
-            sql = QuerySqlUtil.toSelectWithIdSql(schemaColumnInfo, mainSchema, paramSchemaSet,
+            sql = QuerySqlUtil.toSelectWithIdSql(tableColumnInfo, mainTable, paramTableSet,
                     result, idList, joinRelationMap, params);
         } else {
-            sql = QuerySqlUtil.toPageWithoutGroupSql(schemaColumnInfo, fromAndWhere, mainSchema,
-                    paramSchemaSet, param, result, params);
+            sql = QuerySqlUtil.toPageWithoutGroupSql(tableColumnInfo, fromAndWhere, mainTable,
+                    paramTableSet, param, result, params);
         }
-        return assemblyResult(sql, params, paramSchemaSet, param, result);
+        return assemblyResult(sql, params, paramTableSet, param, result);
     }
 
     private List<Map<String, Object>> queryPageListWithGroup(String selectGroupSql, ReqParam param,
-                                                             Set<String> paramSchemaSet,
+                                                             Set<String> paramTableSet,
                                                              ReqResult result, List<Object> params) {
         String sql = selectGroupSql + param.generatePageSql(params);
-        return assemblyResult(sql, params, paramSchemaSet, param, result);
+        return assemblyResult(sql, params, paramTableSet, param, result);
     }
 
-    private List<Map<String, Object>> queryListLimit(String fromAndWhere, String mainSchema, Set<String> paramSchemaSet,
+    private List<Map<String, Object>> queryListLimit(String fromAndWhere, String mainTable, Set<String> paramTableSet,
                                                      ReqParam param, ReqResult result, List<Object> params) {
-        String selectGroupSql = QuerySqlUtil.toSelectGroupSql(schemaColumnInfo, fromAndWhere, mainSchema,
-                paramSchemaSet, result, params);
-        String orderSql = param.generateOrderSql(mainSchema, !paramSchemaSet.isEmpty(), schemaColumnInfo);
+        String selectGroupSql = QuerySqlUtil.toSelectGroupSql(tableColumnInfo, fromAndWhere, mainTable,
+                paramTableSet, result, params);
+        String orderSql = param.generateOrderSql(mainTable, !paramTableSet.isEmpty(), tableColumnInfo);
         String sql = selectGroupSql + orderSql + param.generatePageSql(params);
-        return assemblyResult(sql, params, paramSchemaSet, param, result);
+        return assemblyResult(sql, params, paramTableSet, param, result);
     }
 
-    private List<Map<String, Object>> queryListNoLimit(String fromAndWhere, String mainSchema, Set<String> paramSchemaSet,
+    private List<Map<String, Object>> queryListNoLimit(String fromAndWhere, String mainTable, Set<String> paramTableSet,
                                                        ReqParam param, ReqResult result, List<Object> params) {
-        String selectGroupSql = QuerySqlUtil.toSelectGroupSql(schemaColumnInfo, fromAndWhere, mainSchema,
-                paramSchemaSet, result, params);
-        String orderSql = param.generateOrderSql(mainSchema, !paramSchemaSet.isEmpty(), schemaColumnInfo);
+        String selectGroupSql = QuerySqlUtil.toSelectGroupSql(tableColumnInfo, fromAndWhere, mainTable,
+                paramTableSet, result, params);
+        String orderSql = param.generateOrderSql(mainTable, !paramTableSet.isEmpty(), tableColumnInfo);
         String sql = selectGroupSql + orderSql;
-        return assemblyResult(sql, params, paramSchemaSet, param, result);
+        return assemblyResult(sql, params, paramTableSet, param, result);
     }
 
-    private Map<String, Object> queryObj(String fromAndWhere, String mainSchema, Set<String> paramSchemaSet,
+    private Map<String, Object> queryObj(String fromAndWhere, String mainTable, Set<String> paramTableSet,
                                          ReqParam param, ReqResult result, List<Object> params) {
-        String selectGroupSql = QuerySqlUtil.toSelectGroupSql(schemaColumnInfo, fromAndWhere, mainSchema,
-                paramSchemaSet, result, params);
-        String orderSql = param.generateOrderSql(mainSchema, !paramSchemaSet.isEmpty(), schemaColumnInfo);
+        String selectGroupSql = QuerySqlUtil.toSelectGroupSql(tableColumnInfo, fromAndWhere, mainTable,
+                paramTableSet, result, params);
+        String orderSql = param.generateOrderSql(mainTable, !paramTableSet.isEmpty(), tableColumnInfo);
         String sql = selectGroupSql + orderSql + param.generateArrToObjSql(params);
-        Map<String, Object> obj = QueryUtil.first(assemblyResult(sql, params, paramSchemaSet, param, result));
+        Map<String, Object> obj = QueryUtil.first(assemblyResult(sql, params, paramTableSet, param, result));
         return (obj == null) ? Collections.emptyMap() : obj;
     }
 
-    private List<Map<String, Object>> assemblyResult(String Sql, List<Object> params, Set<String> paramSchemaSet,
+    private List<Map<String, Object>> assemblyResult(String Sql, List<Object> params, Set<String> paramTableSet,
                                                      ReqParam param, ReqResult result) {
         List<Map<String, Object>> mapList = jdbcTemplate.queryForList(Sql, params.toArray());
 
