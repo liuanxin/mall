@@ -7,6 +7,8 @@ import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -64,6 +66,11 @@ public class DateUtil {
 
     public static String format(Date date, String type) {
         return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : DateTimeFormat.forPattern(type).print(date.getTime());
+    }
+
+    public static LocalDateTime parseLocalDateTime(String source) {
+        Date date = parse(source);
+        return U.isNull(date) ? null : LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
 
     /**
