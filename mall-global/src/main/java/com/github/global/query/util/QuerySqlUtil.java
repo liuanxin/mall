@@ -13,34 +13,34 @@ public class QuerySqlUtil {
         return MysqlKeyWordUtil.hasKeyWord(field) ? ("`" + field + "`") : field;
     }
 
-    public static String toFromSql(TableColumnInfo tableColumnInfo, String mainTable,
+    public static String toFromSql(TableColumnInfo tcInfo, String mainTable,
                                    List<TableJoinRelation> joinRelationList) {
         StringBuilder sbd = new StringBuilder("FROM ");
-        Table table = tableColumnInfo.findTable(mainTable);
+        Table table = tcInfo.findTable(mainTable);
         String mainTableName = table.getName();
         sbd.append(toSqlField(mainTableName));
-        if (joinRelationList != null && !joinRelationList.isEmpty()) {
+        if (!joinRelationList.isEmpty()) {
             sbd.append(" AS ").append(table.getAlias());
             for (TableJoinRelation joinRelation : joinRelationList) {
-                sbd.append(joinRelation.generateJoin(tableColumnInfo));
+                sbd.append(joinRelation.generateJoin(tcInfo));
             }
         }
         return sbd.toString();
     }
 
-    public static String toWhereSql(TableColumnInfo tableColumnInfo, String mainTable,
+    public static String toWhereSql(TableColumnInfo tcInfo, String mainTable,
                                     boolean needAlias, ReqParam param, List<Object> params) {
-        return param.generateWhereSql(mainTable, tableColumnInfo, needAlias, params);
+        return param.generateWhereSql(mainTable, tcInfo, needAlias, params);
     }
 
     public static String toCountGroupSql(String selectSql) {
         return "SELECT COUNT(*) FROM ( " + selectSql + " ) TMP";
     }
 
-    public static String toSelectGroupSql(TableColumnInfo tableColumnInfo, String fromAndWhere, String mainTable,
-                                          boolean needAlias, ReqResult result,
-                                          Set<String> firstQueryTableSet, List<Object> params) {
-        String selectField = result.generateSelectSql(mainTable, needAlias, tableColumnInfo, firstQueryTableSet);
+    public static String toSelectGroupSql(TableColumnInfo tcInfo, String fromAndWhere, String mainTable,
+                                          ReqResult result, Set<String> tableSet, List<Object> params) {
+        boolean needAlias = !tableSet.isEmpty();
+        String selectField = result.generateSelectSql(mainTable, tcInfo, tableSet);
         boolean emptySelect = selectField.isEmpty();
 
         // SELECT ... FROM ... WHERE ... GROUP BY ... HAVING ...
@@ -48,7 +48,7 @@ public class QuerySqlUtil {
         if (!emptySelect) {
             sbd.append(selectField);
         }
-        String functionSql = result.generateFunctionSql(mainTable, needAlias, tableColumnInfo);
+        String functionSql = result.generateFunctionSql(mainTable, needAlias, tcInfo);
         if (!functionSql.isEmpty()) {
             if (!emptySelect) {
                 sbd.append(", ");
@@ -56,45 +56,45 @@ public class QuerySqlUtil {
             sbd.append(functionSql);
         }
         sbd.append(fromAndWhere);
-        sbd.append(result.generateGroupSql(mainTable, needAlias, tableColumnInfo));
-        sbd.append(result.generateHavingSql(mainTable, needAlias, tableColumnInfo, params));
+        sbd.append(result.generateGroupSql(mainTable, needAlias, tcInfo));
+        sbd.append(result.generateHavingSql(mainTable, needAlias, tcInfo, params));
         return sbd.toString();
     }
 
-    public static String toCountWithoutGroupSql(TableColumnInfo tableColumnInfo, String mainTable,
+    public static String toCountWithoutGroupSql(TableColumnInfo tcInfo, String mainTable,
                                                 boolean needAlias, ReqParam param, String fromAndWhere) {
-        if (param.hasManyRelation(tableColumnInfo)) {
+        if (param.hasManyRelation(tcInfo)) {
             // SELECT COUNT(DISTINCT xx.id) FROM ...
-            String idSelect = tableColumnInfo.findTable(mainTable).idSelect(needAlias);
+            String idSelect = tcInfo.findTable(mainTable).idSelect(needAlias);
             return String.format("SELECT COUNT(DISTINCT %s) %s", idSelect, fromAndWhere);
         } else {
             return "SELECT COUNT(*) " + fromAndWhere;
         }
     }
 
-    public static String toPageWithoutGroupSql(TableColumnInfo tableColumnInfo, String fromAndWhere, String mainTable,
-                                               boolean needAlias, ReqParam param, ReqResult result,
+    public static String toPageWithoutGroupSql(TableColumnInfo tcInfo, String fromAndWhere, String mainTable,
+                                               ReqParam param, ReqResult result,
                                                Set<String> firstQueryTableSet, List<Object> params) {
-        String selectField = result.generateSelectSql(mainTable, needAlias, tableColumnInfo, firstQueryTableSet);
-        // SELECT ... FROM ... WHERE ... ORDER BY ..
+        String selectField = result.generateSelectSql(mainTable, tcInfo, firstQueryTableSet);
+        // SELECT ... FROM ... WHERE ... ORDER BY ... limit ...
         return "SELECT " + selectField + fromAndWhere + param.generatePageSql(params);
     }
 
-    public static String toIdPageSql(TableColumnInfo tableColumnInfo, String fromAndWhere, String mainTable,
+    public static String toIdPageSql(TableColumnInfo tcInfo, String fromAndWhere, String mainTable,
                                      boolean needAlias, ReqParam param, List<Object> params) {
-        String idSelect = tableColumnInfo.findTable(mainTable).idSelect(needAlias);
+        String idSelect = tcInfo.findTable(mainTable).idSelect(needAlias);
         // SELECT id FROM ... WHERE ... ORDER BY ... LIMIT ...
-        String orderSql = param.generateOrderSql(mainTable, needAlias, tableColumnInfo);
+        String orderSql = param.generateOrderSql(mainTable, needAlias, tcInfo);
         return "SELECT " + idSelect + fromAndWhere + orderSql + param.generatePageSql(params);
     }
-    public static String toSelectWithIdSql(TableColumnInfo tableColumnInfo, String mainTable, String fromSql,
-                                           boolean needAlias, ReqResult result, List<Map<String, Object>> idList,
-                                           Set<String> firstQueryTableSet, List<Object> params) {
+    public static String toSelectWithIdSql(TableColumnInfo tcInfo, String mainTable, String fromSql,
+                                           ReqResult result, List<Map<String, Object>> idList,
+                                           Set<String> allTableSet, List<Object> params) {
         // SELECT ... FROM ... WHERE id IN (x, y, z)
-        String selectColumn = result.generateSelectSql(mainTable, needAlias, tableColumnInfo, firstQueryTableSet);
+        String selectColumn = result.generateSelectSql(mainTable, tcInfo, allTableSet);
 
-        Table table = tableColumnInfo.findTable(mainTable);
-        String idWhere = table.idWhere(needAlias);
+        Table table = tcInfo.findTable(mainTable);
+        String idWhere = table.idWhere(!allTableSet.isEmpty());
         List<String> idKey = table.getIdKey();
         StringJoiner sj = new StringJoiner(", ", "( ", " )");
         for (Map<String, Object> idMap : idList) {

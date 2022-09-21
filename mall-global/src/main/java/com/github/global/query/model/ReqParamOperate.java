@@ -103,7 +103,7 @@ public class ReqParamOperate {
     private List<Object> conditions;
 
 
-    public Set<String> checkCondition(String mainTable, TableColumnInfo tableColumnInfo) {
+    public Set<String> checkCondition(String mainTable, TableColumnInfo tcInfo) {
         if (conditions == null || conditions.isEmpty()) {
             return Collections.emptySet();
         }
@@ -125,7 +125,7 @@ public class ReqParamOperate {
                         throw new RuntimeException("param condition(" + condition + ") column can't be blank");
                     }
 
-                    Table te = tableColumnInfo.findTable(QueryUtil.getTableName(column, currentTable));
+                    Table te = tcInfo.findTable(QueryUtil.getTableName(column, currentTable));
                     if (te == null) {
                         throw new RuntimeException("param condition(" + condition + ") column has no table info");
                     }
@@ -137,7 +137,7 @@ public class ReqParamOperate {
                         throw new RuntimeException(String.format("param condition column(%s) need type", column));
                     }
 
-                    TableColumn tableColumn = tableColumnInfo.findTableColumn(te, QueryUtil.getColumnName(column));
+                    TableColumn tableColumn = tcInfo.findTableColumn(te, QueryUtil.getColumnName(column));
                     if (tableColumn == null) {
                         throw new RuntimeException(String.format("param condition column(%s) has no column info", column));
                     }
@@ -147,14 +147,14 @@ public class ReqParamOperate {
                     if (compose == null) {
                         throw new RuntimeException("compose condition(" + condition + ") error");
                     }
-                    compose.checkCondition(currentTable, tableColumnInfo);
+                    compose.checkCondition(currentTable, tcInfo);
                 }
             }
         }
         return queryTableSet;
     }
 
-    public String generateSql(String mainTable, TableColumnInfo tableColumnInfo, List<Object> params, boolean needAlias) {
+    public String generateSql(String mainTable, TableColumnInfo tcInfo, List<Object> params, boolean needAlias) {
         if (conditions == null || conditions.isEmpty()) {
             return "";
         }
@@ -172,11 +172,11 @@ public class ReqParamOperate {
                         ReqParamConditionType type = standardSize ? ReqParamConditionType.EQ : ReqParamConditionType.deserializer(list.get(1));
                         Object value = list.get(standardSize ? 1 : 2);
 
-                        String useColumn = QueryUtil.getUseColumn(needAlias, column, currentTable, tableColumnInfo);
+                        String useColumn = QueryUtil.getUseColumn(needAlias, column, currentTable, tcInfo);
 
                         String tableName = QueryUtil.getTableName(column, currentTable);
                         String columnName = QueryUtil.getColumnName(column);
-                        Class<?> columnType = tableColumnInfo.findTableColumn(tableName, columnName).getColumnType();
+                        Class<?> columnType = tcInfo.findTableColumn(tableName, columnName).getColumnType();
                         String sql = type.generateSql(useColumn, columnType, value, params);
                         if (!sql.isEmpty()) {
                             sj.add(sql);
@@ -185,7 +185,7 @@ public class ReqParamOperate {
                 } else {
                     ReqParamOperate compose = JsonUtil.convert(condition, ReqParamOperate.class);
                     if (compose != null) {
-                        String innerWhereSql = compose.generateSql(currentTable, tableColumnInfo, params, needAlias);
+                        String innerWhereSql = compose.generateSql(currentTable, tcInfo, params, needAlias);
                         if (!innerWhereSql.isEmpty()) {
                             sj.add("( " + innerWhereSql + " )");
                         }

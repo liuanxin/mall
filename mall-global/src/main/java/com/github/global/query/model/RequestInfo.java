@@ -22,23 +22,23 @@ public class RequestInfo {
     private ReqResult result;
 
 
-    public Set<String> checkParam(TableColumnInfo tableColumnInfo) {
+    public Set<String> checkParam(TableColumnInfo tcInfo) {
         if (table == null || table.isEmpty()) {
             throw new RuntimeException("no table");
         }
-        if (tableColumnInfo.findTable(table) == null) {
+        if (tcInfo.findTable(table) == null) {
             throw new RuntimeException("no table(" + table + ") defined");
         }
         if (param == null) {
             throw new RuntimeException("request need param");
         }
-        return param.checkParam(table, tableColumnInfo);
+        return param.checkParam(table, tcInfo);
     }
 
-    public Set<String> checkResult(TableColumnInfo tableColumnInfo) {
+    public Set<String> checkResult(TableColumnInfo tcInfo) {
         if (result == null) {
             throw new RuntimeException("request need result");
         }
-        return result.checkResult(table, tableColumnInfo);
+        return result.checkResult(table, tcInfo);
     }
 }

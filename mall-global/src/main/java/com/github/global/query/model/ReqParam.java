@@ -39,20 +39,20 @@ public class ReqParam {
     private Boolean notCount;
 
 
-    public Set<String> checkParam(String mainTable, TableColumnInfo tableColumnInfo) {
+    public Set<String> checkParam(String mainTable, TableColumnInfo tcInfo) {
         Set<String> paramTableSet = new LinkedHashSet<>();
         if (query != null) {
-            paramTableSet.addAll(query.checkCondition(mainTable, tableColumnInfo));
+            paramTableSet.addAll(query.checkCondition(mainTable, tcInfo));
         }
 
         if (sort != null && !sort.isEmpty()) {
             for (String column : sort.keySet()) {
                 String tableName = QueryUtil.getTableName(column, mainTable);
-                Table table = tableColumnInfo.findTable(tableName);
+                Table table = tcInfo.findTable(tableName);
                 if (table == null) {
                     throw new RuntimeException("param sort(" + column + ") no table defined");
                 }
-                if (tableColumnInfo.findTableColumn(table, QueryUtil.getColumnName(column)) == null) {
+                if (tcInfo.findTableColumn(table, QueryUtil.getColumnName(column)) == null) {
                     throw new RuntimeException("param sort(" + column + ") no column defined");
                 }
                 paramTableSet.add(table.getName());
@@ -78,7 +78,7 @@ public class ReqParam {
                 }
                 String masterTable = values.get(0);
                 String childTable = values.get(2);
-                if (tableColumnInfo.findRelationByMasterChild(masterTable, childTable) == null) {
+                if (tcInfo.findRelationByMasterChild(masterTable, childTable) == null) {
                     throw new RuntimeException("param relation " + masterTable + " and " + childTable + " has no relation");
                 }
 
@@ -102,13 +102,28 @@ public class ReqParam {
         return paramTableSet;
     }
 
-    public List<TableJoinRelation> joinRelationList(TableColumnInfo tableColumnInfo, String mainTable,
-                                                    Set<String> paramTableSet, Set<String> resultFunctionTableSet) {
+    public List<TableJoinRelation> allRelationList(TableColumnInfo tcInfo, String mainTable) {
         Map<String, Set<TableJoinRelation>> relationMap = new HashMap<>();
         if (relation != null && !relation.isEmpty()) {
             for (List<String> values : relation) {
-                Table masterTable = tableColumnInfo.findTable(values.get(0));
-                Table childTable = tableColumnInfo.findTable(values.get(2));
+                Table masterTable = tcInfo.findTable(values.get(0));
+                Table childTable = tcInfo.findTable(values.get(2));
+                ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
+                TableJoinRelation joinRelation = new TableJoinRelation(masterTable, joinType, childTable);
+                Set<TableJoinRelation> relationSet = relationMap.getOrDefault(masterTable.getName(), new LinkedHashSet<>());
+                relationSet.add(joinRelation);
+                relationMap.put(masterTable.getName(), relationSet);
+            }
+        }
+        return handleRelation(mainTable, relationMap);
+    }
+    public List<TableJoinRelation> paramRelationList(TableColumnInfo tcInfo, String mainTable,
+                                                     Set<String> paramTableSet, Set<String> resultFunctionTableSet) {
+        Map<String, Set<TableJoinRelation>> relationMap = new HashMap<>();
+        if (relation != null && !relation.isEmpty()) {
+            for (List<String> values : relation) {
+                Table masterTable = tcInfo.findTable(values.get(0));
+                Table childTable = tcInfo.findTable(values.get(2));
                 String mn = masterTable.getName();
                 String cn = childTable.getName();
                 if ((paramTableSet.contains(mn) && paramTableSet.contains(cn))
@@ -121,6 +136,9 @@ public class ReqParam {
                 }
             }
         }
+        return handleRelation(mainTable, relationMap);
+    }
+    private List<TableJoinRelation> handleRelation(String mainTable, Map<String, Set<TableJoinRelation>> relationMap) {
         List<TableJoinRelation> relationList = new ArrayList<>();
         Set<String> relationSet = new HashSet<>();
         Set<TableJoinRelation> mainSet = relationMap.remove(mainTable);
@@ -145,7 +163,7 @@ public class ReqParam {
         return relationList;
     }
 
-    public boolean hasManyRelation(TableColumnInfo tableColumnInfo) {
+    public boolean hasManyRelation(TableColumnInfo tcInfo) {
         if (relation.isEmpty()) {
             return false;
         }
@@ -155,7 +173,7 @@ public class ReqParam {
             if (joinType != null) {
                 String masterTableName = values.get(0);
                 String childTableName = values.get(2);
-                TableColumnRelation relation = tableColumnInfo.findRelationByMasterChild(masterTableName, childTableName);
+                TableColumnRelation relation = tcInfo.findRelationByMasterChild(masterTableName, childTableName);
                 if (relation != null && relation.getType() == TableRelationType.ONE_TO_MANY) {
                     return true;
                 }
@@ -164,22 +182,22 @@ public class ReqParam {
         return false;
     }
 
-    public String generateWhereSql(String mainTable, TableColumnInfo tableColumnInfo, boolean needAlias, List<Object> params) {
+    public String generateWhereSql(String mainTable, TableColumnInfo tcInfo, boolean needAlias, List<Object> params) {
         if (query == null) {
             return "";
         }
 
-        String where = query.generateSql(mainTable, tableColumnInfo, params, needAlias);
+        String where = query.generateSql(mainTable, tcInfo, params, needAlias);
         return where.isEmpty() ? "" : (" WHERE " + where);
     }
 
-    public String generateOrderSql(String mainTable, boolean needAlias, TableColumnInfo tableColumnInfo) {
+    public String generateOrderSql(String mainTable, boolean needAlias, TableColumnInfo tcInfo) {
         if (sort != null && !sort.isEmpty()) {
             StringJoiner orderSj = new StringJoiner(", ");
             for (Map.Entry<String, String> entry : sort.entrySet()) {
                 String value = entry.getValue().toLowerCase();
                 String desc = ("asc".equals(value) || "a".equals(value)) ? "" : " DESC";
-                orderSj.add(QueryUtil.getUseColumn(needAlias, entry.getKey(), mainTable, tableColumnInfo) + desc);
+                orderSj.add(QueryUtil.getUseColumn(needAlias, entry.getKey(), mainTable, tcInfo) + desc);
             }
             String orderBy = orderSj.toString();
             if (!orderBy.isEmpty()) {

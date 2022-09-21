@@ -443,11 +443,11 @@ public class QueryUtil {
         return column.contains(".") ? column.split("\\.")[1].trim() : column.trim();
     }
 
-    public static String getUseColumn(boolean needAlias, String column, String mainTable, TableColumnInfo tableColumnInfo) {
+    public static String getUseColumn(boolean needAlias, String column, String mainTable, TableColumnInfo tcInfo) {
         String tableName = getTableName(column, mainTable);
         String columnName = getColumnName(column);
-        Table table = tableColumnInfo.findTable(tableName);
-        TableColumn tableColumn = tableColumnInfo.findTableColumn(table, columnName);
+        Table table = tcInfo.findTable(tableName);
+        TableColumn tableColumn = tcInfo.findTableColumn(table, columnName);
         String useColumnName = QuerySqlUtil.toSqlField(tableColumn.getName());
         if (needAlias) {
             String alias = table.getAlias();
@@ -456,11 +456,11 @@ public class QueryUtil {
             return useColumnName;
         }
     }
-    public static String getColumnAlias(boolean needAlias, String column, String mainTable, TableColumnInfo tableColumnInfo) {
+    public static String getColumnAlias(boolean needAlias, String column, String mainTable, TableColumnInfo tcInfo) {
         String tableName = getTableName(column, mainTable);
         String columnName = getColumnName(column);
-        Table table = tableColumnInfo.findTable(tableName);
-        TableColumn tableColumn = tableColumnInfo.findTableColumn(table, columnName);
+        Table table = tcInfo.findTable(tableName);
+        TableColumn tableColumn = tcInfo.findTableColumn(table, columnName);
         return needAlias ? (table.getAlias() + "_" + tableColumn.getName()) : tableColumn.getName();
     }
 }

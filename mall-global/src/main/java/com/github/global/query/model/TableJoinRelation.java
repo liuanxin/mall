@@ -13,10 +13,10 @@ public class TableJoinRelation {
     private ReqJoinType joinType;
     private Table childTable;
 
-    public String generateJoin(TableColumnInfo tableColumnInfo) {
+    public String generateJoin(TableColumnInfo tcInfo) {
         String masterTableName = masterTable.getName();
         String childTableName = childTable.getName();
-        TableColumnRelation relation = tableColumnInfo.findRelationByMasterChild(masterTableName, childTableName);
+        TableColumnRelation relation = tcInfo.findRelationByMasterChild(masterTableName, childTableName);
         String masterAlias = masterTable.getAlias();
         String childAlias = QuerySqlUtil.toSqlField(childTable.getAlias());
         return " " + joinType.name() +
