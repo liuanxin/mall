@@ -18,11 +18,10 @@ public class TableJoinRelation {
         String childTableName = childTable.getName();
         TableColumnRelation relation = tableColumnInfo.findRelationByMasterChild(masterTableName, childTableName);
         String masterAlias = masterTable.getAlias();
-        String childAlias = childTable.getAlias();
+        String childAlias = QuerySqlUtil.toSqlField(childTable.getAlias());
         return " " + joinType.name() +
                 " JOIN " + QuerySqlUtil.toSqlField(childTableName) +
-                " AS " + QuerySqlUtil.toSqlField(childAlias) +
-                " ON " + QuerySqlUtil.toSqlField(childAlias) +
+                " AS " + childAlias + " ON " + childAlias +
                 "." + QuerySqlUtil.toSqlField(relation.getOneOrManyColumn()) +
                 " = " + QuerySqlUtil.toSqlField(masterAlias) +
                 "." + QuerySqlUtil.toSqlField(relation.getOneColumn());

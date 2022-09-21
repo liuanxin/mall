@@ -79,22 +79,32 @@ public class ReqParam {
                 String masterTable = values.get(0);
                 String childTable = values.get(2);
                 if (tableColumnInfo.findRelationByMasterChild(masterTable, childTable) == null) {
-                    throw new RuntimeException(masterTable + " and " + childTable + " has no relation");
+                    throw new RuntimeException("param relation " + masterTable + " and " + childTable + " has no relation");
                 }
 
                 String key = masterTable + "." + childTable;
                 if (tableRelation.contains(key)) {
-                    throw new RuntimeException(masterTable + " and " + childTable + " can only has one relation");
+                    throw new RuntimeException("param relation " + masterTable + " and " + childTable + " can only has one relation");
                 }
                 tableRelation.add(key);
+            }
+            boolean hasMain = false;
+            for (String table : tableRelation) {
+                if (table.startsWith(mainTable + ".")) {
+                    hasMain = true;
+                    break;
+                }
+            }
+            if (!hasMain) {
+                throw new RuntimeException("param relation has no " + mainTable + "'s info");
             }
         }
         return paramTableSet;
     }
 
-    public List<TableJoinRelation> joinRelationList(TableColumnInfo tableColumnInfo, Set<String> paramTableSet,
-                                                    Set<String> resultFunctionTableSet) {
-        List<TableJoinRelation> relationList = new ArrayList<>();
+    public List<TableJoinRelation> joinRelationList(TableColumnInfo tableColumnInfo, String mainTable,
+                                                    Set<String> paramTableSet, Set<String> resultFunctionTableSet) {
+        Map<String, Set<TableJoinRelation>> relationMap = new HashMap<>();
         if (relation != null && !relation.isEmpty()) {
             for (List<String> values : relation) {
                 Table masterTable = tableColumnInfo.findTable(values.get(0));
@@ -103,7 +113,32 @@ public class ReqParam {
                 String cn = childTable.getName();
                 if ((paramTableSet.contains(mn) && paramTableSet.contains(cn))
                         || (resultFunctionTableSet.contains(mn) && resultFunctionTableSet.contains(cn))) {
-                    relationList.add(new TableJoinRelation(masterTable, ReqJoinType.deserializer(values.get(1)), childTable));
+                    Set<TableJoinRelation> relationSet = relationMap.getOrDefault(masterTable.getName(), new LinkedHashSet<>());
+                    ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
+                    TableJoinRelation joinRelation = new TableJoinRelation(masterTable, joinType, childTable);
+                    relationSet.add(joinRelation);
+                    relationMap.put(masterTable.getName(), relationSet);
+                }
+            }
+        }
+        List<TableJoinRelation> relationList = new ArrayList<>();
+        Set<String> relationSet = new HashSet<>();
+        Set<TableJoinRelation> mainSet = relationMap.remove(mainTable);
+        if (mainSet != null && !mainSet.isEmpty()) {
+            for (TableJoinRelation relation : mainSet) {
+                relationList.add(relation);
+                relationSet.add(relation.getMasterTable().getName());
+                relationSet.add(relation.getChildTable().getName());
+            }
+        }
+        for (int i = 0; i < relationMap.size(); i++) {
+            for (Map.Entry<String, Set<TableJoinRelation>> entry : relationMap.entrySet()) {
+                if (relationSet.contains(entry.getKey())) {
+                    for (TableJoinRelation relation : entry.getValue()) {
+                        relationList.add(relation);
+                        relationSet.add(relation.getMasterTable().getName());
+                        relationSet.add(relation.getChildTable().getName());
+                    }
                 }
             }
         }

@@ -217,34 +217,28 @@ public class ReqResult {
     public String generateSelectSql(String mainTable, boolean needAlias, TableColumnInfo tableColumnInfo,
                                     Set<String> firstQueryTableSet) {
         String currentTableName = (table == null || table.trim().isEmpty()) ? mainTable : table.trim();
-        StringJoiner sj = new StringJoiner(", ");
-        Set<String> columnNameSet = new HashSet<>();
+        Set<String> columnNameSet = new LinkedHashSet<>();
+        if (!firstQueryTableSet.isEmpty()) {
+            columnNameSet.add(tableColumnInfo.findTable(mainTable).idSelect(true));
+        }
 
         for (Object obj : columns) {
             if (obj instanceof String column) {
                 String col = column.trim();
                 String tableName = QueryUtil.getTableName(col, currentTableName);
                 if (tableName.equals(currentTableName) || firstQueryTableSet.contains(tableName)) {
-                    String addKey = tableName + "." + QueryUtil.getColumnName(col);
-                    if (!columnNameSet.contains(addKey)) {
-                        sj.add(QueryUtil.getUseColumn(needAlias, col, mainTable, tableColumnInfo));
-                    }
-                    columnNameSet.add(addKey);
+                    columnNameSet.add(QueryUtil.getUseColumn(needAlias, col, mainTable, tableColumnInfo));
                 }
             } else if (!(obj instanceof List<?>)) {
                 Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
                 for (ReqResult innerResult : inner.values()) {
                     String innerTable = innerResult.getTable();
                     TableColumnRelation relation = tableColumnInfo.findRelationByMasterChild(currentTableName, innerTable);
-                    String addKey = relation.getOneTable() + "." + relation.getOneColumn();
-                    if (!columnNameSet.contains(addKey)) {
-                        sj.add(QueryUtil.getUseColumn(needAlias, relation.getOneColumn(), currentTableName, tableColumnInfo));
-                    }
-                    columnNameSet.add(addKey);
+                    columnNameSet.add(QueryUtil.getUseColumn(needAlias, relation.getOneColumn(), currentTableName, tableColumnInfo));
                 }
             }
         }
-        return sj.toString();
+        return String.join(", ", columnNameSet);
     }
 
     public String generateOtherSelectSql() {

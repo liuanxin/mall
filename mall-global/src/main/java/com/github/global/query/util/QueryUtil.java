@@ -449,6 +449,18 @@ public class QueryUtil {
         Table table = tableColumnInfo.findTable(tableName);
         TableColumn tableColumn = tableColumnInfo.findTableColumn(table, columnName);
         String useColumnName = QuerySqlUtil.toSqlField(tableColumn.getName());
-        return needAlias ? (QuerySqlUtil.toSqlField(table.getAlias()) + "." + useColumnName) : useColumnName;
+        if (needAlias) {
+            String alias = table.getAlias();
+            return QuerySqlUtil.toSqlField(alias) + "." + useColumnName + " AS " + alias + "_" + tableColumn.getName();
+        } else {
+            return useColumnName;
+        }
+    }
+    public static String getColumnAlias(boolean needAlias, String column, String mainTable, TableColumnInfo tableColumnInfo) {
+        String tableName = getTableName(column, mainTable);
+        String columnName = getColumnName(column);
+        Table table = tableColumnInfo.findTable(tableName);
+        TableColumn tableColumn = tableColumnInfo.findTableColumn(table, columnName);
+        return needAlias ? (table.getAlias() + "_" + tableColumn.getName()) : tableColumn.getName();
     }
 }

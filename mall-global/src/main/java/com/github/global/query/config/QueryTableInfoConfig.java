@@ -139,7 +139,7 @@ public class QueryTableInfoConfig {
         ReqParam param = req.getParam();
         ReqResult result = req.getResult();
 
-        List<TableJoinRelation> paramJoinRelationList = param.joinRelationList(tableColumnInfo,
+        List<TableJoinRelation> paramJoinRelationList = param.joinRelationList(tableColumnInfo, mainTable,
                 paramTableSet, resultFunctionTableSet);
         Set<String> firstQueryTableSet = new HashSet<>();
         for (TableJoinRelation joinRelation : paramJoinRelationList) {
@@ -274,6 +274,17 @@ public class QueryTableInfoConfig {
         }
         return mapList;
     }
+
+    /**
+     * <pre>
+     * select a.x, b.xx, c.xxx, d.xxxx
+     * from a
+     *   inner join b on b.a_id = a.id
+     *   inner join c on c.a_id = a.id
+     *   left join d on d.a_id = a.id
+     * where a.id in (...)
+     * </pre>
+     */
     private Map<String, List<Map<String, Object>>> queryOtherData(String mainTable, ReqResult result) {
         String otherSelectSql = result.generateOtherSelectSql();
         if (otherSelectSql == null || otherSelectSql.isEmpty()) {
