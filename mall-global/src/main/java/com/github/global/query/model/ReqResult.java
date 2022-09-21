@@ -170,7 +170,7 @@ public class ReqResult {
                             }
 
                             Object value = groups.get(i + 1);
-                            if (group.checkHavingValue(value)) {
+                            if (group.checkNotHavingValue(value)) {
                                 throw new RuntimeException("result table(" + currentTable + ") function("
                                         + groups + ") having condition value(" + value + ") type error");
                             }

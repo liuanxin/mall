@@ -43,8 +43,15 @@ public enum ReqResultGroup {
         return String.format(value, column);
     }
 
-    public boolean checkHavingValue(Object value) {
-        // 组拼接需要是字符串, 数量需要用数字进行 having 运算
-        return (this == GROUP_CONCAT) ? (value instanceof String) : QueryUtil.isDouble(value);
+    public boolean checkNotHavingValue(Object value) {
+        if (this == COUNT || this == COUNT_DISTINCT) {
+            // COUNT  SUM  function needs to be int
+            return QueryUtil.isNotLong(value);
+        } else if (this == SUM || this == MIN || this == MAX || this == AVG) {
+            // MIN  MAX  AVG  function needs to be double
+            return QueryUtil.isNotDouble(value);
+        } else {
+            return false;
+        }
     }
 }

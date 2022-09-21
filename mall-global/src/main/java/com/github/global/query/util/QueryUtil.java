@@ -270,20 +270,6 @@ public class QueryUtil {
         return obj == null ? "" : obj.toString().trim();
     }
 
-    public static Integer toInteger(Object obj) {
-        if (obj == null) {
-            return null;
-        }
-        if (obj instanceof Number n) {
-            return n.intValue();
-        }
-        try {
-            return Integer.parseInt(obj.toString().trim());
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
-
     public static int toInt(Object obj) {
         if (obj == null) {
             return 0;
@@ -298,6 +284,20 @@ public class QueryUtil {
         }
     }
 
+    public static Integer toInteger(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof Number n) {
+            return n.intValue();
+        }
+        try {
+            return Integer.parseInt(obj.toString().trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     public static Long toLonger(Object obj) {
         if (obj == null) {
             return null;
@@ -309,20 +309,6 @@ public class QueryUtil {
             return Long.parseLong(obj.toString().trim());
         } catch (NumberFormatException e) {
             return null;
-        }
-    }
-
-    public static Long toLong(Object obj) {
-        if (obj == null) {
-            return 0L;
-        }
-        if (obj instanceof Number n) {
-            return n.longValue();
-        }
-        try {
-            return Long.parseLong(obj.toString().trim());
-        } catch (NumberFormatException e) {
-            return 0L;
         }
     }
 
@@ -352,25 +338,6 @@ public class QueryUtil {
                 "true", "1", "on", "yes",
                 "false", "0", "off", "no"
         )).contains(obj.toString().toLowerCase());
-    }
-    public static boolean isNotBoolean(Object obj) {
-        return obj != null && !isBoolean(obj);
-    }
-
-    public static boolean isInt(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-
-        try {
-            Integer.parseInt(obj.toString().trim());
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-    public static boolean isNotInt(Object obj) {
-        return !isInt(obj);
     }
 
     public static boolean isLong(Object obj) {
@@ -407,25 +374,6 @@ public class QueryUtil {
         return !isDouble(obj);
     }
 
-    public static boolean isDate(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        for (String format : QueryConst.DATE_FORMAT_LIST) {
-            try {
-                Date date = new SimpleDateFormat(format).parse(obj.toString().trim());
-                if (date != null) {
-                    return true;
-                }
-            } catch (ParseException ignore) {
-            }
-        }
-        return false;
-    }
-    public static boolean isNotDate(Object obj) {
-        return !isDate(obj);
-    }
-
     public static String defaultIfBlank(String str1, String defaultStr) {
         return (str1 == null || str1.isEmpty()) ? defaultStr : str1;
     }
@@ -455,12 +403,5 @@ public class QueryUtil {
         } else {
             return useColumnName;
         }
-    }
-    public static String getColumnAlias(boolean needAlias, String column, String mainTable, TableColumnInfo tcInfo) {
-        String tableName = getTableName(column, mainTable);
-        String columnName = getColumnName(column);
-        Table table = tcInfo.findTable(tableName);
-        TableColumn tableColumn = tcInfo.findTableColumn(table, columnName);
-        return needAlias ? (table.getAlias() + "_" + tableColumn.getName()) : tableColumn.getName();
     }
 }
