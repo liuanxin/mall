@@ -24,18 +24,6 @@ public enum Gender {
         return value;
     }
 
-    public static Gender fromCode(Integer code) {
-        if (U.isNotNull(code)) {
-            for (Gender value : values()) {
-                if (value.code == code) {
-                    return value;
-                }
-            }
-        }
-        return Nil;
-    }
-
-    /** 数据反序列化. 如 male、0、男、{"code": 0, "value": "男"} 都可以反序列化为 Gender.Male 值 */
     @JsonCreator
     public static Gender deserializer(Object obj) {
         if (U.isNotNull(obj)) {
