@@ -1,6 +1,6 @@
 package com.github.global.query.annotation;
 
-import com.github.global.query.enums.TableRelationType;
+import com.github.global.query.enums.SchemaRelationType;
 
 import java.lang.annotation.*;
 
@@ -9,13 +9,13 @@ import java.lang.annotation.*;
 @Documented
 public @interface ColumnInfo {
 
-    /** table column name */
+    /** schema column name */
     String value();
 
-    /** table column comment */
+    /** schema column comment */
     String desc() default "";
 
-    /** table column alias, use column name if empty */
+    /** schema column alias, use column name if empty */
     String alias() default "";
 
     /** true: this field is not associated with a column */
@@ -26,11 +26,11 @@ public @interface ColumnInfo {
 
     int varcharLength() default 0;
 
-    /** just set on child table, no need to mark on the main table */
-    TableRelationType relationType() default TableRelationType.NULL;
+    /** just set on child schema, no need to mark on the main schema */
+    SchemaRelationType relationType() default SchemaRelationType.NULL;
 
     /** use if relationType has not NULL */
-    String relationTable() default "";
+    String relationSchema() default "";
 
     /** use if relationType has not NULL */
     String relationColumn() default "";

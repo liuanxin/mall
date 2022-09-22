@@ -2,17 +2,19 @@ package com.github.global.query.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
-public enum ReqParamOperateType {
+@AllArgsConstructor
+public enum JoinType {
 
-    AND("并且"),
-    OR("或者");
+    INNER("内联"),
+    LEFT("左联"),
+    RIGHT("右联");
 
     private final String msg;
+
 
     @JsonValue
     public String value() {
@@ -20,10 +22,10 @@ public enum ReqParamOperateType {
     }
 
     @JsonCreator
-    public static ReqParamOperateType deserializer(Object obj) {
+    public static JoinType deserializer(Object obj) {
         if (obj != null) {
             String str = obj.toString().trim();
-            for (ReqParamOperateType e : values()) {
+            for (JoinType e : values()) {
                 if (str.equalsIgnoreCase(e.name())) {
                     return e;
                 }

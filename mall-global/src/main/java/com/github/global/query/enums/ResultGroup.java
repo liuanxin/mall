@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ReqResultGroup {
+public enum ResultGroup {
 
     COUNT("COUNT(%s)", "总条数"),
     COUNT_DISTINCT("COUNT(DISTINCT %s)", "总条数(去重)"),
@@ -27,10 +27,10 @@ public enum ReqResultGroup {
     }
 
     @JsonCreator
-    public static ReqResultGroup deserializer(Object obj) {
+    public static ResultGroup deserializer(Object obj) {
         if (obj != null) {
             String str = obj.toString().trim();
-            for (ReqResultGroup e : values()) {
+            for (ResultGroup e : values()) {
                 if (str.equalsIgnoreCase(e.name())) {
                     return e;
                 }

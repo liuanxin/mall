@@ -1,6 +1,6 @@
 package com.github.global.query.constant;
 
-import com.github.global.query.enums.ReqParamConditionType;
+import com.github.global.query.enums.ParamConditionType;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -46,7 +46,7 @@ public final class QueryConst {
         DB_TYPE_MAP.put("double", Double.class);
     }
 
-    public static final String SCHEMA_PREFIX = "table-";
+    public static final String SCHEMA_PREFIX = "schema-";
     public static final String COLUMN_PREFIX = "column-";
 
 
@@ -57,53 +57,53 @@ public final class QueryConst {
 
 
     /** string 类型: 只 等于(eq)、不等于(ne)、批量(in)、包含(like)、开头(ll)、结尾(rl)、不包含(nl) 条件 */
-    public static final Set<ReqParamConditionType> STRING_TYPE_SET = new LinkedHashSet<>(Arrays.asList(
-            ReqParamConditionType.EQ,
-            ReqParamConditionType.NE,
-            ReqParamConditionType.IN,
-            ReqParamConditionType.LK,
-            ReqParamConditionType.LKS,
-            ReqParamConditionType.LKE,
-            ReqParamConditionType.NL
+    public static final Set<ParamConditionType> STRING_TYPE_SET = new LinkedHashSet<>(Arrays.asList(
+            ParamConditionType.EQ,
+            ParamConditionType.NE,
+            ParamConditionType.IN,
+            ParamConditionType.LK,
+            ParamConditionType.LKS,
+            ParamConditionType.LKE,
+            ParamConditionType.NL
     ));
     public static final String STRING_TYPE_INFO = String.format("String type can only be used in 「%s」 conditions",
-            STRING_TYPE_SET.stream().map(ReqParamConditionType::info).collect(Collectors.joining(", ")));
+            STRING_TYPE_SET.stream().map(ParamConditionType::info).collect(Collectors.joining(", ")));
 
     /** number 类型: 只 等于(eq)、大于(gt)、大于等于(ge)、小于(lt)、小于等于(le)、区间(bet) 条件 */
-    public static final Set<ReqParamConditionType> NUMBER_TYPE_SET = new LinkedHashSet<>(Arrays.asList(
-            ReqParamConditionType.EQ,
-            ReqParamConditionType.GT,
-            ReqParamConditionType.GE,
-            ReqParamConditionType.LT,
-            ReqParamConditionType.LE,
-            ReqParamConditionType.BET
+    public static final Set<ParamConditionType> NUMBER_TYPE_SET = new LinkedHashSet<>(Arrays.asList(
+            ParamConditionType.EQ,
+            ParamConditionType.GT,
+            ParamConditionType.GE,
+            ParamConditionType.LT,
+            ParamConditionType.LE,
+            ParamConditionType.BET
     ));
     public static final String NUMBER_TYPE_INFO = String.format("Number type can only be used in 「%s」 conditions",
-            NUMBER_TYPE_SET.stream().map(ReqParamConditionType::info).collect(Collectors.joining(", ")));
+            NUMBER_TYPE_SET.stream().map(ParamConditionType::info).collect(Collectors.joining(", ")));
 
     /** date 类型: 只 大于(gt)、大于等于(ge)、小于(lt)、小于等于(le)、区间(bet) 条件 */
-    public static final Set<ReqParamConditionType> DATE_TYPE_SET = new LinkedHashSet<>(Arrays.asList(
-            ReqParamConditionType.GT,
-            ReqParamConditionType.GE,
-            ReqParamConditionType.LT,
-            ReqParamConditionType.LE,
-            ReqParamConditionType.BET
+    public static final Set<ParamConditionType> DATE_TYPE_SET = new LinkedHashSet<>(Arrays.asList(
+            ParamConditionType.GT,
+            ParamConditionType.GE,
+            ParamConditionType.LT,
+            ParamConditionType.LE,
+            ParamConditionType.BET
     ));
     public static final String DATE_TYPE_INFO = String.format("Date type can only be used in 「%s」 conditions",
-            DATE_TYPE_SET.stream().map(ReqParamConditionType::info).collect(Collectors.joining(", ")));
+            DATE_TYPE_SET.stream().map(ParamConditionType::info).collect(Collectors.joining(", ")));
 
     /**  非 string/number/date 类型: 只 等于(eq)、不等于(ne) 条件 */
-    public static final Set<ReqParamConditionType> OTHER_TYPE_SET = Set.of(
-            ReqParamConditionType.EQ,
-            ReqParamConditionType.NE
+    public static final Set<ParamConditionType> OTHER_TYPE_SET = Set.of(
+            ParamConditionType.EQ,
+            ParamConditionType.NE
     );
     public static final String OTHER_TYPE_INFO = String.format("Non(String, Number, Date) type can only be used in 「%s」 conditions",
-            OTHER_TYPE_SET.stream().map(ReqParamConditionType::info).collect(Collectors.joining(", ")));
+            OTHER_TYPE_SET.stream().map(ParamConditionType::info).collect(Collectors.joining(", ")));
 
-    public static final Set<ReqParamConditionType> MULTI_TYPE = Set.of(
-            ReqParamConditionType.IN,
-            ReqParamConditionType.NI,
-            ReqParamConditionType.BET
+    public static final Set<ParamConditionType> MULTI_TYPE = Set.of(
+            ParamConditionType.IN,
+            ParamConditionType.NI,
+            ParamConditionType.BET
     );
 
     public static final Set<Class<?>> BOOLEAN_TYPE_SET = new HashSet<>(Arrays.asList(Boolean.class, boolean.class));

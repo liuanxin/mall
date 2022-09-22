@@ -7,10 +7,10 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ReqParamJoinType {
+public enum ResultType {
 
-    LEFT("左联"),
-    RIGHT("右连");
+    OBJ("对象(键值对映射)"),
+    ARR("数组");
 
     private final String msg;
 
@@ -20,10 +20,10 @@ public enum ReqParamJoinType {
     }
 
     @JsonCreator
-    public static ReqParamJoinType deserializer(Object obj) {
+    public static ResultType deserializer(Object obj) {
         if (obj != null) {
             String str = obj.toString().trim();
-            for (ReqParamJoinType e : values()) {
+            for (ResultType e : values()) {
                 if (str.equalsIgnoreCase(e.name())) {
                     return e;
                 }

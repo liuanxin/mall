@@ -44,7 +44,7 @@ import java.util.StringJoiner;
  */
 @Getter
 @RequiredArgsConstructor
-public enum ReqParamConditionType {
+public enum ParamConditionType {
 
     INU("IS NULL", "为空") {
         @Override
@@ -147,10 +147,10 @@ public enum ReqParamConditionType {
     private final String msg;
 
     @JsonCreator
-    public static ReqParamConditionType deserializer(Object obj) {
+    public static ParamConditionType deserializer(Object obj) {
         if (obj != null) {
             String str = obj.toString().trim();
-            for (ReqParamConditionType e : values()) {
+            for (ParamConditionType e : values()) {
                 if (str.equalsIgnoreCase(e.name()) || str.equalsIgnoreCase(e.value)) {
                     return e;
                 }

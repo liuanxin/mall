@@ -1,7 +1,7 @@
 package com.github.global.query.model;
 
 import com.github.global.query.constant.QueryConst;
-import com.github.global.query.enums.ReqJoinType;
+import com.github.global.query.enums.JoinType;
 import com.github.global.query.util.QueryUtil;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.*;
  *   "query": ...
  *   "sort": { "createTime": "desc", "id", "asc" },
  *   "page": [ 1, 20 ],
- *   "notCount": true  -- true 表示不发起 SELECT COUNT(*) 查询(移动端瀑布流时有用), 不设置则默认是 false
+ *   "noCount": true  -- true 表示不发起 SELECT COUNT(*) 查询(移动端瀑布流时有用), 不设置则默认是 false
  * }
  * </pre>
  */
@@ -32,29 +32,29 @@ public class ReqParam {
     private ReqParamOperate query;
     /** 排序信息 */
     private Map<String, String> sort;
-    /** 分页信息 */
+    /** 分页信息 [ 当前页, 每页行数 ], 每页行数在「10, 20, 50, 100, 200, 500, 1000」, 省略则默认是 10 */
     private List<Integer> page;
     /** 当上面的分页信息有值且当前值是 true 时表示不发起 SELECT COUNT(*) 查询 */
-    private Boolean notCount;
+    private Boolean noCount;
 
 
-    public Set<String> checkParam(String mainTable, TableColumnInfo tcInfo) {
-        Set<String> paramTableSet = new LinkedHashSet<>();
+    public Set<String> checkParam(String mainSchema, SchemaColumnInfo scInfo) {
+        Set<String> paramSchemaSet = new LinkedHashSet<>();
         if (query != null) {
-            paramTableSet.addAll(query.checkCondition(mainTable, tcInfo));
+            paramSchemaSet.addAll(query.checkCondition(mainSchema, scInfo));
         }
 
         if (sort != null && !sort.isEmpty()) {
             for (String column : sort.keySet()) {
-                String tableName = QueryUtil.getTableName(column, mainTable);
-                Table table = tcInfo.findTable(tableName);
-                if (table == null) {
-                    throw new RuntimeException("param sort(" + column + ") has no defined table");
+                String schemaName = QueryUtil.getSchemaName(column, mainSchema);
+                Schema schema = scInfo.findSchema(schemaName);
+                if (schema == null) {
+                    throw new RuntimeException("param sort(" + column + ") has no defined schema");
                 }
-                if (tcInfo.findTableColumn(table, QueryUtil.getColumnName(column)) == null) {
+                if (scInfo.findSchemaColumn(schema, QueryUtil.getColumnName(column)) == null) {
                     throw new RuntimeException("param sort(" + column + ") has no defined column");
                 }
-                paramTableSet.add(table.getName());
+                paramSchemaSet.add(schema.getName());
             }
         }
 
@@ -66,95 +66,95 @@ public class ReqParam {
         }
 
         if (relation != null && !relation.isEmpty()) {
-            Set<String> tableRelation = new HashSet<>();
+            Set<String> schemaRelation = new HashSet<>();
             for (List<String> values : relation) {
                 if (values.size() < 3) {
                     throw new RuntimeException("param relation error");
                 }
-                ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
+                JoinType joinType = JoinType.deserializer(values.get(1));
                 if (joinType == null) {
                     throw new RuntimeException("param relation join type error");
                 }
-                String masterTable = values.get(0);
-                String childTable = values.get(2);
-                if (tcInfo.findRelationByMasterChild(masterTable, childTable) == null) {
-                    throw new RuntimeException("param relation " + masterTable + " and " + childTable + " has no relation");
+                String masterSchema = values.get(0);
+                String childSchema = values.get(2);
+                if (scInfo.findRelationByMasterChild(masterSchema, childSchema) == null) {
+                    throw new RuntimeException("param relation " + masterSchema + " and " + childSchema + " has no relation");
                 }
 
-                String key = masterTable + "." + childTable;
-                if (tableRelation.contains(key)) {
-                    throw new RuntimeException("param relation " + masterTable + " and " + childTable + " can only has one relation");
+                String key = masterSchema + "." + childSchema;
+                if (schemaRelation.contains(key)) {
+                    throw new RuntimeException("param relation " + masterSchema + " and " + childSchema + " can only has one relation");
                 }
-                tableRelation.add(key);
+                schemaRelation.add(key);
             }
             boolean hasMain = false;
-            for (String table : tableRelation) {
-                if (table.startsWith(mainTable + ".")) {
+            for (String schema : schemaRelation) {
+                if (schema.startsWith(mainSchema + ".")) {
                     hasMain = true;
                     break;
                 }
             }
             if (!hasMain) {
-                throw new RuntimeException("param relation has no " + mainTable + "'s info");
+                throw new RuntimeException("param relation has no " + mainSchema + "'s info");
             }
         }
-        return paramTableSet;
+        return paramSchemaSet;
     }
 
-    public List<TableJoinRelation> allRelationList(TableColumnInfo tcInfo, String mainTable) {
-        Map<String, Set<TableJoinRelation>> relationMap = new HashMap<>();
+    public List<SchemaJoinRelation> allRelationList(SchemaColumnInfo scInfo, String mainSchema) {
+        Map<String, Set<SchemaJoinRelation>> relationMap = new HashMap<>();
         if (relation != null && !relation.isEmpty()) {
             for (List<String> values : relation) {
-                Table masterTable = tcInfo.findTable(values.get(0));
-                Table childTable = tcInfo.findTable(values.get(2));
-                ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
-                TableJoinRelation joinRelation = new TableJoinRelation(masterTable, joinType, childTable);
-                Set<TableJoinRelation> relationSet = relationMap.getOrDefault(masterTable.getName(), new LinkedHashSet<>());
+                Schema masterSchema = scInfo.findSchema(values.get(0));
+                Schema childSchema = scInfo.findSchema(values.get(2));
+                JoinType joinType = JoinType.deserializer(values.get(1));
+                SchemaJoinRelation joinRelation = new SchemaJoinRelation(masterSchema, joinType, childSchema);
+                Set<SchemaJoinRelation> relationSet = relationMap.getOrDefault(masterSchema.getName(), new LinkedHashSet<>());
                 relationSet.add(joinRelation);
-                relationMap.put(masterTable.getName(), relationSet);
+                relationMap.put(masterSchema.getName(), relationSet);
             }
         }
-        return handleRelation(mainTable, relationMap);
+        return handleRelation(mainSchema, relationMap);
     }
-    public List<TableJoinRelation> paramRelationList(TableColumnInfo tcInfo, String mainTable,
-                                                     Set<String> paramTableSet, Set<String> resultFunctionTableSet) {
-        Map<String, Set<TableJoinRelation>> relationMap = new HashMap<>();
+    public List<SchemaJoinRelation> paramRelationList(SchemaColumnInfo scInfo, String mainSchema,
+                                                      Set<String> paramSchemaSet, Set<String> resultFunctionSchemaSet) {
+        Map<String, Set<SchemaJoinRelation>> relationMap = new HashMap<>();
         if (relation != null && !relation.isEmpty()) {
             for (List<String> values : relation) {
-                Table masterTable = tcInfo.findTable(values.get(0));
-                Table childTable = tcInfo.findTable(values.get(2));
-                String mn = masterTable.getName();
-                String cn = childTable.getName();
-                if ((paramTableSet.contains(mn) && paramTableSet.contains(cn))
-                        || (resultFunctionTableSet.contains(mn) && resultFunctionTableSet.contains(cn))) {
-                    Set<TableJoinRelation> relationSet = relationMap.getOrDefault(masterTable.getName(), new LinkedHashSet<>());
-                    ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
-                    TableJoinRelation joinRelation = new TableJoinRelation(masterTable, joinType, childTable);
+                Schema masterSchema = scInfo.findSchema(values.get(0));
+                Schema childSchema = scInfo.findSchema(values.get(2));
+                String mn = masterSchema.getName();
+                String cn = childSchema.getName();
+                if ((paramSchemaSet.contains(mn) && paramSchemaSet.contains(cn))
+                        || (resultFunctionSchemaSet.contains(mn) && resultFunctionSchemaSet.contains(cn))) {
+                    Set<SchemaJoinRelation> relationSet = relationMap.getOrDefault(masterSchema.getName(), new LinkedHashSet<>());
+                    JoinType joinType = JoinType.deserializer(values.get(1));
+                    SchemaJoinRelation joinRelation = new SchemaJoinRelation(masterSchema, joinType, childSchema);
                     relationSet.add(joinRelation);
-                    relationMap.put(masterTable.getName(), relationSet);
+                    relationMap.put(masterSchema.getName(), relationSet);
                 }
             }
         }
-        return handleRelation(mainTable, relationMap);
+        return handleRelation(mainSchema, relationMap);
     }
-    private List<TableJoinRelation> handleRelation(String mainTable, Map<String, Set<TableJoinRelation>> relationMap) {
-        List<TableJoinRelation> relationList = new ArrayList<>();
+    private List<SchemaJoinRelation> handleRelation(String mainSchema, Map<String, Set<SchemaJoinRelation>> relationMap) {
+        List<SchemaJoinRelation> relationList = new ArrayList<>();
         Set<String> relationSet = new HashSet<>();
-        Set<TableJoinRelation> mainSet = relationMap.remove(mainTable);
+        Set<SchemaJoinRelation> mainSet = relationMap.remove(mainSchema);
         if (mainSet != null && !mainSet.isEmpty()) {
-            for (TableJoinRelation relation : mainSet) {
+            for (SchemaJoinRelation relation : mainSet) {
                 relationList.add(relation);
-                relationSet.add(relation.getMasterTable().getName());
-                relationSet.add(relation.getChildTable().getName());
+                relationSet.add(relation.getMasterSchema().getName());
+                relationSet.add(relation.getChildSchema().getName());
             }
         }
         for (int i = 0; i < relationMap.size(); i++) {
-            for (Map.Entry<String, Set<TableJoinRelation>> entry : relationMap.entrySet()) {
+            for (Map.Entry<String, Set<SchemaJoinRelation>> entry : relationMap.entrySet()) {
                 if (relationSet.contains(entry.getKey())) {
-                    for (TableJoinRelation relation : entry.getValue()) {
+                    for (SchemaJoinRelation relation : entry.getValue()) {
                         relationList.add(relation);
-                        relationSet.add(relation.getMasterTable().getName());
-                        relationSet.add(relation.getChildTable().getName());
+                        relationSet.add(relation.getMasterSchema().getName());
+                        relationSet.add(relation.getChildSchema().getName());
                     }
                 }
             }
@@ -162,17 +162,17 @@ public class ReqParam {
         return relationList;
     }
 
-    public boolean hasManyRelation(TableColumnInfo tcInfo) {
+    public boolean hasManyRelation(SchemaColumnInfo scInfo) {
         if (relation == null || relation.isEmpty()) {
             return false;
         }
 
         for (List<String> values : relation) {
-            ReqJoinType joinType = ReqJoinType.deserializer(values.get(1));
+            JoinType joinType = JoinType.deserializer(values.get(1));
             if (joinType != null) {
-                String masterTableName = values.get(0);
-                String childTableName = values.get(2);
-                TableColumnRelation relation = tcInfo.findRelationByMasterChild(masterTableName, childTableName);
+                String masterSchemaName = values.get(0);
+                String childSchemaName = values.get(2);
+                SchemaColumnRelation relation = scInfo.findRelationByMasterChild(masterSchemaName, childSchemaName);
                 if (relation != null && relation.getType().hasMany()) {
                     return true;
                 }
@@ -181,22 +181,22 @@ public class ReqParam {
         return false;
     }
 
-    public String generateWhereSql(String mainTable, TableColumnInfo tcInfo, boolean needAlias, List<Object> params) {
+    public String generateWhereSql(String mainSchema, SchemaColumnInfo scInfo, boolean needAlias, List<Object> params) {
         if (query == null) {
             return "";
         } else {
-            String where = query.generateSql(mainTable, tcInfo, needAlias, params);
+            String where = query.generateSql(mainSchema, scInfo, needAlias, params);
             return where.isEmpty() ? "" : (" WHERE " + where);
         }
     }
 
-    public String generateOrderSql(String mainTable, boolean needAlias, TableColumnInfo tcInfo) {
+    public String generateOrderSql(String mainSchema, boolean needAlias, SchemaColumnInfo scInfo) {
         if (sort != null && !sort.isEmpty()) {
             StringJoiner orderSj = new StringJoiner(", ");
             for (Map.Entry<String, String> entry : sort.entrySet()) {
                 String value = entry.getValue().toLowerCase();
                 String desc = ("asc".equals(value) || "a".equals(value)) ? "" : " DESC";
-                orderSj.add(QueryUtil.getUseColumn(needAlias, entry.getKey(), mainTable, tcInfo) + desc);
+                orderSj.add(QueryUtil.getUseColumn(needAlias, entry.getKey(), mainSchema, scInfo) + desc);
             }
             String orderBy = orderSj.toString();
             if (!orderBy.isEmpty()) {
@@ -210,7 +210,7 @@ public class ReqParam {
         return page != null && !page.isEmpty();
     }
     public boolean needQueryCount() {
-        return notCount == null || !notCount;
+        return noCount == null || !noCount;
     }
     public boolean needQueryCurrentPage(long count) {
         if (count <= 0) {

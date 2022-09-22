@@ -13,7 +13,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class QueryInfo {
 
-    /** 表使用名 */
+    /** 表名 */
     private String name;
 
     /** 表说明 */
@@ -28,19 +28,19 @@ public class QueryInfo {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public static class QueryColumn {
 
-        /** 表列名 */
+        /** 列名 */
         private String name;
 
-        /** 表列说明 */
+        /** 列说明 */
         private String desc;
 
-        /** 表列对应的类型 */
+        /** 列类型 */
         private String type;
 
-        /** 表列类型是字符串时的长度 */
+        /** 列类型是字符串时的长度 */
         private Integer length;
 
-        /** 关联关系 */
+        /** 关联信息 */
         private String relation;
     }
 }

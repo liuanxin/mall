@@ -1,6 +1,6 @@
 package com.github.global.query.model;
 
-import com.github.global.query.enums.ReqResultType;
+import com.github.global.query.enums.ResultType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,35 +13,35 @@ import java.util.Set;
 public class RequestInfo {
 
     /** 主表 */
-    private String table;
+    private String schema;
     /** 入参 */
     private ReqParam param;
     /** 出参类型, 对象(obj)还是数组(arr), 不设置则是数组 */
-    private ReqResultType type;
+    private ResultType type;
     /** 出参 */
     private ReqResult result;
 
 
-    public void checkTable(TableColumnInfo tcInfo) {
-        if (table == null || table.isEmpty()) {
-            throw new RuntimeException("request need table");
+    public void checkSchema(SchemaColumnInfo scInfo) {
+        if (schema == null || schema.isEmpty()) {
+            throw new RuntimeException("request need schema");
         }
-        if (tcInfo.findTable(table) == null) {
-            throw new RuntimeException("request has no defined table(" + table + ")");
+        if (scInfo.findSchema(schema) == null) {
+            throw new RuntimeException("request has no defined schema(" + schema + ")");
         }
     }
 
-    public Set<String> checkParam(TableColumnInfo tcInfo) {
+    public Set<String> checkParam(SchemaColumnInfo scInfo) {
         if (param == null) {
             throw new RuntimeException("request need param");
         }
-        return param.checkParam(table, tcInfo);
+        return param.checkParam(schema, scInfo);
     }
 
-    public Set<String> checkResult(TableColumnInfo tcInfo) {
+    public Set<String> checkResult(SchemaColumnInfo scInfo) {
         if (result == null) {
             throw new RuntimeException("request need result");
         }
-        return result.checkResult(table, tcInfo);
+        return result.checkResult(schema, scInfo);
     }
 }

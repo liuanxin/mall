@@ -5,17 +5,17 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface TableInfo {
+public @interface SchemaInfo {
 
-    /** table name */
+    /** schema name */
     String value();
 
-    /** table comment */
+    /** schema comment */
     String desc() default "";
 
-    /** table alias, use table name if empty */
+    /** schema alias, use schema name if empty */
     String alias() default "";
 
-    /** true: this class is not associated with a table */
+    /** true: this class is not associated with a schema */
     boolean ignore() default false;
 }

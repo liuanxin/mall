@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TableColumn {
+public class SchemaColumn {
 
     /** 表列名 */
     private String name;

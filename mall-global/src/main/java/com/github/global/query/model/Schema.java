@@ -11,7 +11,7 @@ import java.util.StringJoiner;
 
 @Data
 @NoArgsConstructor
-public class Table {
+public class Schema {
 
     /** 表名 */
     private String name;
@@ -23,12 +23,12 @@ public class Table {
     private String alias;
 
     /** 列信息 */
-    private Map<String, TableColumn> columnMap;
+    private Map<String, SchemaColumn> columnMap;
 
     /** 主键列 */
     private List<String> idKey;
 
-    public Table(String name, String desc, String alias, Map<String, TableColumn> columnMap) {
+    public Schema(String name, String desc, String alias, Map<String, SchemaColumn> columnMap) {
         this.name = name;
         this.desc = desc;
         this.alias = alias;
@@ -36,9 +36,9 @@ public class Table {
 
         List<String> idKey = new ArrayList<>();
         if (!columnMap.isEmpty()) {
-            for (TableColumn tableColumn : columnMap.values()) {
-                if (tableColumn.isPrimary()) {
-                    idKey.add(tableColumn.getName());
+            for (SchemaColumn schemaColumn : columnMap.values()) {
+                if (schemaColumn.isPrimary()) {
+                    idKey.add(schemaColumn.getName());
                 }
             }
         }
