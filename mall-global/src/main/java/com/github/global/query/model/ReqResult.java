@@ -42,7 +42,7 @@ import java.util.*;
  * }
  *
  *
- * COUNT(*) 跟 COUNT(1) 是等价的, 使用标准 COUNT(*) 即可
+ * COUNT(*) 跟 COUNT(1) 是等价的, 使用标准 COUNT(*) 就好了
  * 见: https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count
  *
  * SELECT
@@ -63,8 +63,8 @@ import java.util.*;
  *     [ "stu", "group_concat", "name", "lks", "aaa" ]
  *   ]
  * }
- * 第一个参数表示接口响应回去时的属性,
- * 每四个和第五个参数表示 HAVING 过滤时的条件, 只支持 AND 条件过滤, 复杂的嵌套没有想到好的抽象方式
+ * 第一个参数表示接口响应回去时的属性, 第二个参数是函数(只支持上面 6 种), 第三个参数是函数中的列,
+ * 每四个和第五个参数表示 HAVING 过滤时的条件, 只支持 AND 条件过滤, 复杂的嵌套暂没有想到好的抽象方式
  * </pre>
  */
 @Data
