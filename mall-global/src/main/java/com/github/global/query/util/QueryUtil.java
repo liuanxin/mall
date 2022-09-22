@@ -15,7 +15,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -39,27 +38,26 @@ public class QueryUtil {
         return handleSchema(scanPackage(classPackages));
     }
     private static Set<Class<?>> scanPackage(String classPackages) {
-        if (classPackages == null || classPackages.trim().isEmpty()) {
-            return Collections.emptySet();
-        }
-        String[] paths = StringUtils.commaDelimitedListToStringArray(StringUtils.trimAllWhitespace(classPackages));
-        if (paths.length == 0) {
+        if (classPackages == null) {
             return Collections.emptySet();
         }
 
         Set<Class<?>> set = new LinkedHashSet<>();
-        for (String path : paths) {
-            try {
-                String location = String.format("classpath*:**/%s/**/*.class", path.replace(".", "/"));
-                for (Resource resource : RESOLVER.getResources(location)) {
-                    if (resource.isReadable()) {
-                        String className = READER.getMetadataReader(resource).getClassMetadata().getClassName();
-                        set.add(Class.forName(className));
+        for (String cp : classPackages.split(",")) {
+            String path = (cp != null) ? cp.trim() : null;
+            if (path != null && !path.isEmpty()) {
+                try {
+                    String location = String.format("classpath*:**/%s/**/*.class", path.replace(".", "/"));
+                    for (Resource resource : RESOLVER.getResources(location)) {
+                        if (resource.isReadable()) {
+                            String className = READER.getMetadataReader(resource).getClassMetadata().getClassName();
+                            set.add(Class.forName(className));
+                        }
                     }
-                }
-            } catch (Exception e) {
-                if (LOG.isErrorEnabled()) {
-                    LOG.error("get({}) class exception", path, e);
+                } catch (Exception e) {
+                    if (LOG.isErrorEnabled()) {
+                        LOG.error("get({}) class exception", path, e);
+                    }
                 }
             }
         }
@@ -258,16 +256,13 @@ public class QueryUtil {
         return sbd.toString();
     }
 
-    public static List<Field> getFields(Object obj) {
-        return new ArrayList<>(getFields(obj, 0).values());
+    public static List<Field> getFields(Class<?> clazz) {
+        return new ArrayList<>(getFields(clazz, 0).values());
     }
-    private static Map<String, Field> getFields(Object obj, int depth) {
-        if (obj == null) {
+    private static Map<String, Field> getFields(Class<?> clazz, int depth) {
+        if (clazz == null) {
             return Collections.emptyMap();
         }
-
-        // noinspection DuplicatedCode
-        Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
         if (clazz == Object.class) {
             return Collections.emptyMap();
         }
