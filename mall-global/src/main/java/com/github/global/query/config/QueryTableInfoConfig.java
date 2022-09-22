@@ -298,9 +298,9 @@ public class QueryTableInfoConfig {
 
             Map<String, List<Map<String, Object>>> innerColumnMap = queryInnerData(table, result);
             for (Map<String, Object> data : mapList) {
-                result.handleDateType(data, mainTable, tcInfo);
                 fillInnerData(data, idKeyList, innerColumnMap);
                 needRemoveColumnList.forEach(data::remove);
+                result.handleDateType(data, mainTable, tcInfo);
             }
         }
         return mapList;
