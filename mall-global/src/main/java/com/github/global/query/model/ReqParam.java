@@ -2,7 +2,6 @@ package com.github.global.query.model;
 
 import com.github.global.query.constant.QueryConst;
 import com.github.global.query.enums.ReqJoinType;
-import com.github.global.query.enums.TableRelationType;
 import com.github.global.query.util.QueryUtil;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -50,10 +49,10 @@ public class ReqParam {
                 String tableName = QueryUtil.getTableName(column, mainTable);
                 Table table = tcInfo.findTable(tableName);
                 if (table == null) {
-                    throw new RuntimeException("param sort(" + column + ") no table defined");
+                    throw new RuntimeException("param sort(" + column + ") has no defined table");
                 }
                 if (tcInfo.findTableColumn(table, QueryUtil.getColumnName(column)) == null) {
-                    throw new RuntimeException("param sort(" + column + ") no column defined");
+                    throw new RuntimeException("param sort(" + column + ") has no defined column");
                 }
                 paramTableSet.add(table.getName());
             }
@@ -174,7 +173,7 @@ public class ReqParam {
                 String masterTableName = values.get(0);
                 String childTableName = values.get(2);
                 TableColumnRelation relation = tcInfo.findRelationByMasterChild(masterTableName, childTableName);
-                if (relation != null && relation.getType() == TableRelationType.ONE_TO_MANY) {
+                if (relation != null && relation.getType().hasMany()) {
                     return true;
                 }
             }
@@ -185,10 +184,10 @@ public class ReqParam {
     public String generateWhereSql(String mainTable, TableColumnInfo tcInfo, boolean needAlias, List<Object> params) {
         if (query == null) {
             return "";
+        } else {
+            String where = query.generateSql(mainTable, tcInfo, needAlias, params);
+            return where.isEmpty() ? "" : (" WHERE " + where);
         }
-
-        String where = query.generateSql(mainTable, tcInfo, params, needAlias);
-        return where.isEmpty() ? "" : (" WHERE " + where);
     }
 
     public String generateOrderSql(String mainTable, boolean needAlias, TableColumnInfo tcInfo) {

@@ -1,9 +1,8 @@
 package com.github.global.query.model;
 
-import com.github.common.json.JsonUtil;
-import com.github.global.query.constant.QueryConst;
 import com.github.global.query.enums.ReqParamConditionType;
 import com.github.global.query.enums.ReqResultGroup;
+import com.github.global.query.util.QueryJsonUtil;
 import com.github.global.query.util.QueryUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,6 +26,8 @@ import java.util.*;
  *   "columns": [
  *     "id",
  *     "orderNo",
+ *     { "create_time" : [ "yyyy-MM-dd HH:mm", "GMT+8" ] },  -- format date [ "pattern", "timeZone" ]
+ *     "update_time",  -- format pattern default: yyyy-MM-dd HH:mm:ss
  *     {
  *       "address": {
  *         "table": "orderAddress",
@@ -81,7 +82,7 @@ public class ReqResult {
         String currentTable = (table == null || table.trim().isEmpty()) ? mainTable : table.trim();
         Table tableInfo = tcInfo.findTable(currentTable);
         if (tableInfo == null) {
-            throw new RuntimeException("no result table(" + currentTable + ") defined");
+            throw new RuntimeException("result has no defined table(" + currentTable + ")");
         }
         if (columns == null || columns.isEmpty()) {
             throw new RuntimeException("result table(" + currentTable + ") need columns");
@@ -94,23 +95,7 @@ public class ReqResult {
         for (Object obj : columns) {
             if (obj != null) {
                 if (obj instanceof String column) {
-                    if (column.trim().isEmpty()) {
-                        throw new RuntimeException("result table(" + currentTable + ") column can't be blank");
-                    }
-
-                    String col = column.trim();
-                    Table te = tcInfo.findTable(QueryUtil.getTableName(col, currentTable));
-                    if (te == null) {
-                        throw new RuntimeException("result table(" + currentTable + ") column(" + col + ") has no defined table");
-                    }
-                    if (tcInfo.findTableColumn(te, QueryUtil.getColumnName(col)) == null) {
-                        throw new RuntimeException("result table(" + currentTable + ") column(" + col + ") has no defined column");
-                    }
-
-                    if (columnCheckRepeatedSet.contains(col)) {
-                        throw new RuntimeException("result table(" + currentTable + ") column(" + col + ") has repeated");
-                    }
-                    columnCheckRepeatedSet.add(col);
+                    checkColumn(column, currentTable, tcInfo, columnCheckRepeatedSet);
                     hasColumnOrFunction = true;
                 } else if (obj instanceof List<?> groups) {
                     if (groups.isEmpty()) {
@@ -178,7 +163,15 @@ public class ReqResult {
                     }
                     hasColumnOrFunction = true;
                 } else {
-                    innerList.add(obj);
+                    Map<String, List<String>> dateColumn = QueryJsonUtil.convertDateResult(obj);
+                    if (dateColumn != null) {
+                        for (String column : dateColumn.keySet()) {
+                            checkColumn(column, currentTable, tcInfo, columnCheckRepeatedSet);
+                        }
+                        hasColumnOrFunction = true;
+                    } else {
+                        innerList.add(obj);
+                    }
                 }
             }
         }
@@ -187,7 +180,7 @@ public class ReqResult {
         }
 
         for (Object obj : innerList) {
-            Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
+            Map<String, ReqResult> inner = QueryJsonUtil.convertResult(obj);
             if (inner == null) {
                 throw new RuntimeException("result table(" + currentTable + ") relation(" + obj + ") error");
             }
@@ -213,6 +206,25 @@ public class ReqResult {
         }
         return resultFunctionTableSet;
     }
+    private void checkColumn(String column, String currentTable, TableColumnInfo tcInfo, Set<String> columnSet) {
+        if (column.trim().isEmpty()) {
+            throw new RuntimeException("result table(" + currentTable + ") column can't be blank");
+        }
+
+        String col = column.trim();
+        Table te = tcInfo.findTable(QueryUtil.getTableName(col, currentTable));
+        if (te == null) {
+            throw new RuntimeException("result table(" + currentTable + ") column(" + col + ") has no defined table");
+        }
+        if (tcInfo.findTableColumn(te, QueryUtil.getColumnName(col)) == null) {
+            throw new RuntimeException("result table(" + currentTable + ") column(" + col + ") has no defined column");
+        }
+
+        if (columnSet.contains(col)) {
+            throw new RuntimeException("result table(" + currentTable + ") column(" + col + ") has repeated");
+        }
+        columnSet.add(col);
+    }
 
     public String generateAllSelectSql(String mainTable, TableColumnInfo tcInfo, Set<String> tableSet) {
         Set<String> columnNameSet = new LinkedHashSet<>();
@@ -231,7 +243,18 @@ public class ReqResult {
                 String col = column.trim();
                 String tableName = QueryUtil.getTableName(col, currentTableName);
                 if (tableName.equals(currentTableName) || tableSet.contains(tableName)) {
-                    columnNameSet.add(QueryUtil.getUseQueryColumn(needAlias, col, mainTable, tcInfo));
+                    columnNameSet.add(QueryUtil.getUseQueryColumn(needAlias, col, currentTableName, tcInfo));
+                }
+            } else {
+                Map<String, List<String>> dateColumn = QueryJsonUtil.convertDateResult(obj);
+                if (dateColumn != null) {
+                    for (String column : dateColumn.keySet()) {
+                        String col = column.trim();
+                        String tableName = QueryUtil.getTableName(col, currentTableName);
+                        if (tableName.equals(currentTableName) || tableSet.contains(tableName)) {
+                            columnNameSet.add(QueryUtil.getUseQueryColumn(needAlias, col, currentTableName, tcInfo));
+                        }
+                    }
                 }
             }
         }
@@ -243,11 +266,12 @@ public class ReqResult {
         String currentTableName = (table == null || table.isEmpty()) ? mainTable : table.trim();
         for (Object obj : columns) {
             if (!(obj instanceof String)  && !(obj instanceof List<?>)) {
-                Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
-                for (ReqResult innerResult : inner.values()) {
-                    String innerTable = innerResult.getTable();
-                    TableColumnRelation relation = tcInfo.findRelationByMasterChild(currentTableName, innerTable);
-                    columnNameSet.add(QueryUtil.getUseQueryColumn(needAlias, relation.getOneColumn(), currentTableName, tcInfo));
+                Map<String, ReqResult> inner = QueryJsonUtil.convertResult(obj);
+                if (inner != null) {
+                    for (ReqResult innerResult : inner.values()) {
+                        String column = tcInfo.findRelationByMasterChild(currentTableName, innerResult.getTable()).getOneColumn();
+                        columnNameSet.add(QueryUtil.getUseQueryColumn(needAlias, column, currentTableName, tcInfo));
+                    }
                 }
             }
         }
@@ -337,5 +361,40 @@ public class ReqResult {
         }
         String groupBy = groupSj.toString();
         return groupBy.isEmpty() ? "" : (" HAVING " + groupBy);
+    }
+
+
+    public void handleDateType(Map<String, Object> data, String mainTable, TableColumnInfo tcInfo) {
+        String currentTableName = (table == null || table.isEmpty()) ? mainTable : table.trim();
+        for (Object obj : columns) {
+            if (obj != null) {
+                if (obj instanceof String column) {
+                    String tableName = QueryUtil.getTableName(column, currentTableName);
+                    String columnName = QueryUtil.getColumnName(column);
+                    Class<?> columnType = tcInfo.findTableColumn(tableName, columnName).getColumnType();
+                    if (Date.class.isAssignableFrom(columnType)) {
+                        Date date = QueryUtil.toDate(data.get(columnName));
+                        if (date != null) {
+                            data.put(columnName, QueryUtil.formatDate(date));
+                        }
+                    }
+                } else if (!(obj instanceof List<?>)) {
+                    Map<String, List<String>> dateColumn = QueryJsonUtil.convertDateResult(obj);
+                    if (dateColumn != null) {
+                        for (Map.Entry<String, List<String>> entry : dateColumn.entrySet()) {
+                            List<String> values = entry.getValue();
+                            if (values != null && !values.isEmpty()) {
+                                Date date = QueryUtil.toDate(data.get(entry.getKey()));
+                                if (date != null) {
+                                    String pattern = values.get(0);
+                                    String timezone = (values.size() > 1) ? values.get(1) : null;
+                                    data.put(entry.getKey(), QueryUtil.formatDate(date, pattern, timezone));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

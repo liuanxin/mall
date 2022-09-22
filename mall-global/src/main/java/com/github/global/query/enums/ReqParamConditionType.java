@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -169,33 +168,10 @@ public enum ReqParamConditionType {
 
 
     public void checkTypeAndValue(Class<?> type, String column, Object value, int strLen) {
-        checkParamType(type);
+        QueryUtil.checkParamType(type, this);
         checkValue(type, column, value, strLen);
     }
 
-    private void checkParamType(Class<?> type) {
-        if (Number.class.isAssignableFrom(type)) {
-            if (!QueryConst.NUMBER_TYPE_SET.contains(this)) {
-                throw new RuntimeException(String.format("Number type can only be used in 「%s」 conditions",
-                        QueryConst.NUMBER_TYPE_INFO));
-            }
-        } else if (Date.class.isAssignableFrom(type)) {
-            if (!QueryConst.DATE_TYPE_SET.contains(this)) {
-                throw new RuntimeException(String.format("Date type can only be used in 「%s」 conditions",
-                        QueryConst.DATE_TYPE_INFO));
-            }
-        } else if (String.class.isAssignableFrom(type)) {
-            if (!QueryConst.STRING_TYPE_SET.contains(this)) {
-                throw new RuntimeException(String.format("String type can only be used in 「%s」 conditions",
-                        QueryConst.STRING_TYPE_INFO));
-            }
-        } else {
-            if (!QueryConst.OTHER_TYPE_SET.contains(this)) {
-                throw new RuntimeException(String.format("Non(string, number, datetime) type can only be used in 「%s」 conditions",
-                        QueryConst.OTHER_TYPE_INFO));
-            }
-        }
-    }
     private void checkValue(Class<?> type, String column, Object value, int strLen) {
         if (value != null) {
             if (QueryConst.MULTI_TYPE.contains(this)) {
@@ -214,39 +190,23 @@ public enum ReqParamConditionType {
         }
     }
     private void checkValueType(Class<?> type, String column, Object value, int strLen) {
-        Object obj = toValue(type, value);
+        Object obj = QueryUtil.toValue(type, value);
         if (obj == null) {
-            throw new RuntimeException(String.format("column(%s) data(%s) has null or not %s type",
+            throw new RuntimeException(String.format("column(%s) data(%s) has not %s type",
                     column, value, type.getSimpleName().toLowerCase()));
         }
         if (strLen > 0 && obj.toString().length() > strLen) {
             throw new RuntimeException(String.format("column(%s) data(%s) length can only be <= %s", column, value, strLen));
         }
     }
-    private Object toValue(Class<?> type, Object value) {
-        if (QueryConst.BOOLEAN_TYPE_SET.contains(type)) {
-            return QueryUtil.isBoolean(value);
-        } else if (QueryConst.INT_TYPE_SET.contains(type)) {
-            return QueryUtil.toInteger(value);
-        } else if (QueryConst.LONG_TYPE_SET.contains(type)) {
-            return QueryUtil.toLonger(value);
-        } else if (Number.class.isAssignableFrom(type)) {
-            return QueryUtil.toDecimal(value);
-        } else if (Date.class.isAssignableFrom(type)) {
-            return QueryUtil.toDate(value);
-        } else {
-            return value;
-        }
-    }
-
 
     protected String generateCondition(String column, Class<?> type, Object value, List<Object> params) {
         if (value == null) {
             return "";
+        } else {
+            params.add(QueryUtil.toValue(type, value));
+            return String.format(" %s %s ?", column, getValue());
         }
-
-        params.add(toValue(type, value));
-        return String.format(" %s %s ?", column, getValue());
     }
     protected String generateMulti(String column, Class<?> type, Object value, List<Object> params) {
         if (value == null || !QueryConst.MULTI_TYPE.contains(this)) {
@@ -264,16 +224,16 @@ public enum ReqParamConditionType {
 
             StringBuilder sbd = new StringBuilder();
             if (start != null && end != null) {
-                params.add(toValue(type, start));
-                params.add(toValue(type, end));
+                params.add(QueryUtil.toValue(type, start));
+                params.add(QueryUtil.toValue(type, end));
                 sbd.append(" ").append(column).append(" BETWEEN ? AND ?");
             } else {
                 if (start != null) {
-                    params.add(toValue(type, start));
+                    params.add(QueryUtil.toValue(type, start));
                     sbd.append(" ").append(column).append(" >= ?");
                 }
                 if (end != null) {
-                    params.add(toValue(type, end));
+                    params.add(QueryUtil.toValue(type, end));
                     sbd.append(" ").append(column).append(" <= ?");
                 }
             }
@@ -287,7 +247,7 @@ public enum ReqParamConditionType {
                         hasChange = true;
                     }
                     sj.add("?");
-                    params.add(toValue(type, obj));
+                    params.add(QueryUtil.toValue(type, obj));
                 }
             }
             return hasChange ? String.format(" %s %s (%s)", column, getValue(), sj) : "";

@@ -2,11 +2,11 @@ package com.github.global.query.config;
 
 import com.github.common.collection.MapMultiUtil;
 import com.github.common.collection.MapMultiValue;
-import com.github.common.json.JsonUtil;
 import com.github.global.query.constant.QueryConst;
 import com.github.global.query.enums.ReqResultType;
 import com.github.global.query.enums.TableRelationType;
 import com.github.global.query.model.*;
+import com.github.global.query.util.QueryJsonUtil;
 import com.github.global.query.util.QuerySqlUtil;
 import com.github.global.query.util.QueryUtil;
 import org.springframework.beans.factory.annotation.Value;
@@ -132,8 +132,8 @@ public class QueryTableInfoConfig {
                     String type = column.getColumnType().getSimpleName();
                     Integer length = (column.getStrLen() == 0) ? null : column.getStrLen();
                     TableColumnRelation relation = tcInfo.findRelationByChild(table.getName(), column.getName());
-                    String rel = (relation == null) ? null : (relation.getOneTable() + "." + relation.getOneColumn());
-                    columnList.add(new QueryInfo.QueryColumn(column.getAlias(), column.getDesc(), type, length, rel));
+                    String tableColumn = (relation == null) ? null : (relation.getOneTable() + "." + relation.getOneColumn());
+                    columnList.add(new QueryInfo.QueryColumn(column.getAlias(), column.getDesc(), type, length, tableColumn));
                 }
                 queryList.add(new QueryInfo(table.getAlias(), table.getDesc(), columnList));
             }
@@ -142,6 +142,7 @@ public class QueryTableInfoConfig {
     }
 
     public Object query(RequestInfo req) {
+        req.checkTable(tcInfo);
         Set<String> paramTableSet = req.checkParam(tcInfo);
         Set<String> resultFuncTableSet = req.checkResult(tcInfo);
 
@@ -284,14 +285,12 @@ public class QueryTableInfoConfig {
         List<Map<String, Object>> mapList = jdbcTemplate.queryForList(mainSql, params.toArray());
         if (!mapList.isEmpty()) {
             boolean needAlias = !allTableSet.isEmpty();
-            // todo
             Table table = tcInfo.findTable(mainTable);
             List<String> idKeyList = table.getIdKey();
 
             Set<String> selectColumnSet = result.selectColumn(mainTable, tcInfo, allTableSet);
-            Set<String> innerColumnSet = result.innerColumn(mainTable, tcInfo, needAlias);
             List<String> needRemoveColumnList = new ArrayList<>();
-            for (String ic : innerColumnSet) {
+            for (String ic : result.innerColumn(mainTable, tcInfo, needAlias)) {
                 if (!selectColumnSet.contains(ic)) {
                     needRemoveColumnList.add(ic);
                 }
@@ -299,14 +298,14 @@ public class QueryTableInfoConfig {
 
             Map<String, List<Map<String, Object>>> innerColumnMap = queryInnerData(table, result);
             for (Map<String, Object> data : mapList) {
+                result.handleDateType(data, mainTable, tcInfo);
                 fillInnerData(data);
-                for (String nrc : needRemoveColumnList) {
-                    data.remove(nrc);
-                }
+                needRemoveColumnList.forEach(data::remove);
             }
         }
         return mapList;
     }
+
 
     private void fillInnerData(Map<String, Object> data) {
     }
@@ -316,10 +315,12 @@ public class QueryTableInfoConfig {
         for (Object obj : result.getColumns()) {
             if (obj != null) {
                 if (!(obj instanceof String) && !(obj instanceof List<?>)) {
-                    Map<String, ReqResult> inner = JsonUtil.convertType(obj, QueryConst.RESULT_TYPE);
-                    for (Map.Entry<String, ReqResult> entry : inner.entrySet()) {
-                        String innerName = entry.getKey();
-                        innerMap.put(innerName + "-id", queryInnerData(entry.getValue()));
+                    Map<String, ReqResult> inner = QueryJsonUtil.convertResult(obj);
+                    if (inner != null) {
+                        for (Map.Entry<String, ReqResult> entry : inner.entrySet()) {
+                            String innerName = entry.getKey();
+                            innerMap.put(innerName + "-id", queryInnerData(entry.getValue()));
+                        }
                     }
                 }
             }

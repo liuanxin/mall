@@ -1,8 +1,6 @@
 package com.github.global.query.constant;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.global.query.enums.ReqParamConditionType;
-import com.github.global.query.model.ReqResult;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -48,8 +46,6 @@ public final class QueryConst {
         DB_TYPE_MAP.put("double", Double.class);
     }
 
-    public static final TypeReference<Map<String, ReqResult>> RESULT_TYPE = new TypeReference<>() {};
-
     public static final String SCHEMA_PREFIX = "table-";
     public static final String COLUMN_PREFIX = "column-";
 
@@ -70,7 +66,8 @@ public final class QueryConst {
             ReqParamConditionType.LKE,
             ReqParamConditionType.NL
     ));
-    public static final String STRING_TYPE_INFO = STRING_TYPE_SET.stream().map(ReqParamConditionType::info).collect(Collectors.joining(", "));
+    public static final String STRING_TYPE_INFO = String.format("String type can only be used in 「%s」 conditions",
+            STRING_TYPE_SET.stream().map(ReqParamConditionType::info).collect(Collectors.joining(", ")));
 
     /** number 类型: 只 等于(eq)、大于(gt)、大于等于(ge)、小于(lt)、小于等于(le)、区间(bet) 条件 */
     public static final Set<ReqParamConditionType> NUMBER_TYPE_SET = new LinkedHashSet<>(Arrays.asList(
@@ -81,7 +78,8 @@ public final class QueryConst {
             ReqParamConditionType.LE,
             ReqParamConditionType.BET
     ));
-    public static final String NUMBER_TYPE_INFO = NUMBER_TYPE_SET.stream().map(ReqParamConditionType::info).collect(Collectors.joining(", "));
+    public static final String NUMBER_TYPE_INFO = String.format("Number type can only be used in 「%s」 conditions",
+            NUMBER_TYPE_SET.stream().map(ReqParamConditionType::info).collect(Collectors.joining(", ")));
 
     /** date 类型: 只 大于(gt)、大于等于(ge)、小于(lt)、小于等于(le)、区间(bet) 条件 */
     public static final Set<ReqParamConditionType> DATE_TYPE_SET = new LinkedHashSet<>(Arrays.asList(
@@ -91,14 +89,16 @@ public final class QueryConst {
             ReqParamConditionType.LE,
             ReqParamConditionType.BET
     ));
-    public static final String DATE_TYPE_INFO = DATE_TYPE_SET.stream().map(ReqParamConditionType::info).collect(Collectors.joining(", "));
+    public static final String DATE_TYPE_INFO = String.format("Date type can only be used in 「%s」 conditions",
+            DATE_TYPE_SET.stream().map(ReqParamConditionType::info).collect(Collectors.joining(", ")));
 
     /**  非 string/number/date 类型: 只 等于(eq)、不等于(ne) 条件 */
     public static final Set<ReqParamConditionType> OTHER_TYPE_SET = Set.of(
             ReqParamConditionType.EQ,
             ReqParamConditionType.NE
     );
-    public static final String OTHER_TYPE_INFO = OTHER_TYPE_SET.stream().map(ReqParamConditionType::info).collect(Collectors.joining(", "));
+    public static final String OTHER_TYPE_INFO = String.format("Non(String, Number, Date) type can only be used in 「%s」 conditions",
+            OTHER_TYPE_SET.stream().map(ReqParamConditionType::info).collect(Collectors.joining(", ")));
 
     public static final Set<ReqParamConditionType> MULTI_TYPE = Set.of(
             ReqParamConditionType.IN,
@@ -110,11 +110,17 @@ public final class QueryConst {
     public static final Set<Class<?>> INT_TYPE_SET = new HashSet<>(Arrays.asList(Integer.class, int.class));
     public static final Set<Class<?>> LONG_TYPE_SET = new HashSet<>(Arrays.asList(Long.class, long.class));
 
+    public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
     public static final List<String> DATE_FORMAT_LIST = Arrays.asList(
+            "yyyy-MM-dd'T'HH:mm:ss'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss",
             "yyyy/MM/dd HH:mm:ss",
+            "yyyy/MM/dd HH:mm",
             "yyyy/MM/dd",
-            "yyyy-MM-dd HH:mm:ss",
+            DEFAULT_DATE_FORMAT,
+            "yyyy-MM-dd HH:mm",
             "yyyy-MM-dd",
-            "HH:mm:ss"
+            "HH:mm:ss",
+            "HH:mm"
     );
 }

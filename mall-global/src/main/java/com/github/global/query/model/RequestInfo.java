@@ -22,13 +22,16 @@ public class RequestInfo {
     private ReqResult result;
 
 
-    public Set<String> checkParam(TableColumnInfo tcInfo) {
+    public void checkTable(TableColumnInfo tcInfo) {
         if (table == null || table.isEmpty()) {
-            throw new RuntimeException("no table");
+            throw new RuntimeException("request need table");
         }
         if (tcInfo.findTable(table) == null) {
-            throw new RuntimeException("no table(" + table + ") defined");
+            throw new RuntimeException("request has no defined table(" + table + ")");
         }
+    }
+
+    public Set<String> checkParam(TableColumnInfo tcInfo) {
         if (param == null) {
             throw new RuntimeException("request need param");
         }

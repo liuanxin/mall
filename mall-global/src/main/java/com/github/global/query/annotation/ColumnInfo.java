@@ -4,28 +4,26 @@ import com.github.global.query.enums.TableRelationType;
 
 import java.lang.annotation.*;
 
-/** 标注在类上, 用来表示跟数据库表的对应关系 */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ColumnInfo {
 
-    /** 表列名 */
+    /** table column name */
     String value();
 
-    /** 表列说明 */
+    /** table column comment */
     String desc() default "";
 
-    /** 表列别名, 为空时则使用类字段名 */
+    /** table column alias, use column name if empty */
     String alias() default "";
 
-    /** true 表示这个字段不与列名关联 */
+    /** true: this field is not associated with a column */
     boolean ignore() default false;
 
-    /** true 表示是主键字段 */
+    /** true: this column is primary key */
     boolean primary() default false;
 
-    /** 字符串长度 */
     int varcharLength() default 0;
 
     /** 关联类型, 设置了 relationTable 和 relationColumn 才有效, 只在「从表」对应的类上标, 主表上无需标注 */

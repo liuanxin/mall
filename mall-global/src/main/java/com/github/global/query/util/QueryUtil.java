@@ -1,9 +1,9 @@
 package com.github.global.query.util;
 
-import com.github.common.util.U;
 import com.github.global.query.annotation.ColumnInfo;
 import com.github.global.query.annotation.TableInfo;
 import com.github.global.query.constant.QueryConst;
+import com.github.global.query.enums.ReqParamConditionType;
 import com.github.global.query.enums.TableRelationType;
 import com.github.global.query.model.Table;
 import com.github.global.query.model.TableColumn;
@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class QueryUtil {
 
@@ -31,6 +32,7 @@ public class QueryUtil {
             new PathMatchingResourcePatternResolver(ClassLoader.getSystemClassLoader());
 
     private static final MetadataReaderFactory READER = new CachingMetadataReaderFactory(RESOLVER);
+    private static final Map<String, Map<String, Field>> FIELDS_CACHE = new ConcurrentHashMap<>();
 
 
     public static TableColumnInfo scanTable(String classPackages) {
@@ -101,7 +103,7 @@ public class QueryUtil {
             tableAliasSet.add(tableAlias);
 
             Map<String, TableColumn> columnMap = new LinkedHashMap<>();
-            for (Field field : U.getFields(clazz)) {
+            for (Field field : getFields(clazz)) {
                 ColumnInfo columnInfo = field.getAnnotation(ColumnInfo.class);
                 Class<?> type = field.getType();
                 String columnName, columnDesc, columnAlias;
@@ -256,8 +258,53 @@ public class QueryUtil {
         return sbd.toString();
     }
 
+    public static List<Field> getFields(Object obj) {
+        return new ArrayList<>(getFields(obj, 0).values());
+    }
+    private static Map<String, Field> getFields(Object obj, int depth) {
+        if (obj == null) {
+            return Collections.emptyMap();
+        }
+
+        // noinspection DuplicatedCode
+        Class<?> clazz = (obj instanceof Class) ? ((Class<?>) obj) : obj.getClass();
+        if (clazz == Object.class) {
+            return Collections.emptyMap();
+        }
+
+        String key = clazz.getName();
+        Map<String, Field> fieldCacheMap = FIELDS_CACHE.get(key);
+        if (fieldCacheMap != null) {
+            return fieldCacheMap;
+        }
+
+        Map<String, Field> returnMap = new LinkedHashMap<>();
+        Field[] declaredFields = clazz.getDeclaredFields();
+        if (declaredFields.length > 0) {
+            for (Field declaredField : declaredFields) {
+                returnMap.put(declaredField.getName(), declaredField);
+            }
+        }
+        Field[] fields = clazz.getFields();
+        if (fields.length > 0) {
+            for (Field field : fields) {
+                returnMap.put(field.getName(), field);
+            }
+        }
+
+        Class<?> superclass = clazz.getSuperclass();
+        if (superclass != Object.class && depth <= 10) {
+            Map<String, Field> fieldMap = getFields(superclass, depth + 1);
+            if (!fieldMap.isEmpty()) {
+                returnMap.putAll(fieldMap);
+            }
+        }
+        FIELDS_CACHE.put(key, returnMap);
+        return returnMap;
+    }
+
     public static Class<?> mappingClass(String dbType) {
-        String type = (dbType.contains("(") ? dbType.substring(0, dbType.indexOf("(")) : dbType).toLowerCase();
+        String type = dbType.toLowerCase();
         for (Map.Entry<String, Class<?>> entry : QueryConst.DB_TYPE_MAP.entrySet()) {
             if (type.contains(entry.getKey().toLowerCase())) {
                 return entry.getValue();
@@ -333,6 +380,24 @@ public class QueryUtil {
         return null;
     }
 
+    public static String formatDate(Date date, String pattern, String timezone) {
+        if (date == null) {
+            return null;
+        }
+        try {
+            SimpleDateFormat df = new SimpleDateFormat(pattern);
+            if (timezone != null && !timezone.trim().isEmpty()) {
+                df.setTimeZone(TimeZone.getTimeZone(timezone.trim()));
+            }
+            return df.format(date);
+        } catch (Exception e) {
+            return formatDate(date);
+        }
+    }
+    public static String formatDate(Date date) {
+        return new SimpleDateFormat(QueryConst.DEFAULT_DATE_FORMAT).format(date);
+    }
+
     public static boolean isBoolean(Object obj) {
         return obj != null && new HashSet<>(Arrays.asList(
                 "true", "1", "on", "yes",
@@ -372,6 +437,42 @@ public class QueryUtil {
     }
     public static boolean isNotDouble(Object obj) {
         return !isDouble(obj);
+    }
+
+    public static Object toValue(Class<?> type, Object value) {
+        if (QueryConst.BOOLEAN_TYPE_SET.contains(type)) {
+            return isBoolean(value);
+        } else if (QueryConst.INT_TYPE_SET.contains(type)) {
+            return toInteger(value);
+        } else if (QueryConst.LONG_TYPE_SET.contains(type)) {
+            return toLonger(value);
+        } else if (Number.class.isAssignableFrom(type)) {
+            return toDecimal(value);
+        } else if (Date.class.isAssignableFrom(type)) {
+            return toDate(value);
+        } else {
+            return value;
+        }
+    }
+
+    public static void checkParamType(Class<?> type, ReqParamConditionType conditionType) {
+        if (Number.class.isAssignableFrom(type)) {
+            if (!QueryConst.NUMBER_TYPE_SET.contains(conditionType)) {
+                throw new RuntimeException(QueryConst.NUMBER_TYPE_INFO);
+            }
+        } else if (Date.class.isAssignableFrom(type)) {
+            if (!QueryConst.DATE_TYPE_SET.contains(conditionType)) {
+                throw new RuntimeException(QueryConst.DATE_TYPE_INFO);
+            }
+        } else if (String.class.isAssignableFrom(type)) {
+            if (!QueryConst.STRING_TYPE_SET.contains(conditionType)) {
+                throw new RuntimeException(QueryConst.STRING_TYPE_INFO);
+            }
+        } else {
+            if (!QueryConst.OTHER_TYPE_SET.contains(conditionType)) {
+                throw new RuntimeException(QueryConst.OTHER_TYPE_INFO);
+            }
+        }
     }
 
     public static String defaultIfBlank(String str1, String defaultStr) {

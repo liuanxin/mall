@@ -2,21 +2,20 @@ package com.github.global.query.annotation;
 
 import java.lang.annotation.*;
 
-/** 标注在类上, 用来表示跟数据库表的对应关系 */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface TableInfo {
 
-    /** 数据库表名 */
+    /** table name */
     String value();
 
-    /** 数据库表说明 */
+    /** table comment */
     String desc() default "";
 
-    /** 表别名, 为空时则使用类名 */
+    /** table alias, use table name if empty */
     String alias() default "";
 
-    /** true 表示这个类不与表有关联 */
+    /** true: this class is not associated with a table */
     boolean ignore() default false;
 }

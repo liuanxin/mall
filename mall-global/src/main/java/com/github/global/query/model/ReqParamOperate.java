@@ -1,8 +1,8 @@
 package com.github.global.query.model;
 
-import com.github.common.json.JsonUtil;
 import com.github.global.query.enums.ReqParamConditionType;
 import com.github.global.query.enums.ReqParamOperateType;
+import com.github.global.query.util.QueryJsonUtil;
 import com.github.global.query.util.QueryUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -143,7 +143,7 @@ public class ReqParamOperate {
                     }
                     type.checkTypeAndValue(tableColumn.getColumnType(), column, list.get(standardSize ? 1 : 2), tableColumn.getStrLen());
                 } else {
-                    ReqParamOperate compose = JsonUtil.convert(condition, ReqParamOperate.class);
+                    ReqParamOperate compose = QueryJsonUtil.convert(condition, ReqParamOperate.class);
                     if (compose == null) {
                         throw new RuntimeException("compose condition(" + condition + ") error");
                     }
@@ -154,7 +154,7 @@ public class ReqParamOperate {
         return queryTableSet;
     }
 
-    public String generateSql(String mainTable, TableColumnInfo tcInfo, List<Object> params, boolean needAlias) {
+    public String generateSql(String mainTable, TableColumnInfo tcInfo, boolean needAlias, List<Object> params) {
         if (conditions == null || conditions.isEmpty()) {
             return "";
         }
@@ -173,20 +173,19 @@ public class ReqParamOperate {
                         ReqParamConditionType type = standardSize ? ReqParamConditionType.EQ : ReqParamConditionType.deserializer(list.get(1));
                         Object value = list.get(standardSize ? 1 : 2);
 
-                        String useColumn = QueryUtil.getUseColumn(needAlias, column, currentTable, tcInfo);
-
                         String tableName = QueryUtil.getTableName(column, currentTable);
                         String columnName = QueryUtil.getColumnName(column);
                         Class<?> columnType = tcInfo.findTableColumn(tableName, columnName).getColumnType();
+                        String useColumn = QueryUtil.getUseColumn(needAlias, column, currentTable, tcInfo);
                         String sql = type.generateSql(useColumn, columnType, value, params);
                         if (!sql.isEmpty()) {
                             sj.add(sql);
                         }
                     }
                 } else {
-                    ReqParamOperate compose = JsonUtil.convert(condition, ReqParamOperate.class);
+                    ReqParamOperate compose = QueryJsonUtil.convert(condition, ReqParamOperate.class);
                     if (compose != null) {
-                        String innerWhereSql = compose.generateSql(currentTable, tcInfo, params, needAlias);
+                        String innerWhereSql = compose.generateSql(currentTable, tcInfo, needAlias, params);
                         if (!innerWhereSql.isEmpty()) {
                             sj.add("( " + innerWhereSql + " )");
                         }
