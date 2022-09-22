@@ -13,15 +13,14 @@ public class QuerySqlUtil {
         return MysqlKeyWordUtil.hasKeyWord(field) ? ("`" + field + "`") : field;
     }
 
-    public static String toFromSql(SchemaColumnInfo scInfo, String mainSchema,
-                                   List<SchemaJoinRelation> joinRelationList) {
+    public static String toFromSql(SchemaColumnInfo scInfo, String mainSchema, List<SchemaJoinRelation> relationList) {
         StringBuilder sbd = new StringBuilder(" FROM ");
         Schema schema = scInfo.findSchema(mainSchema);
         String mainSchemaName = schema.getName();
         sbd.append(toSqlField(mainSchemaName));
-        if (!joinRelationList.isEmpty()) {
+        if (!relationList.isEmpty()) {
             sbd.append(" AS ").append(schema.getAlias());
-            for (SchemaJoinRelation joinRelation : joinRelationList) {
+            for (SchemaJoinRelation joinRelation : relationList) {
                 sbd.append(joinRelation.generateJoin(scInfo));
             }
         }
@@ -61,9 +60,9 @@ public class QuerySqlUtil {
         return sbd.toString();
     }
 
-    public static String toCountWithoutGroupSql(SchemaColumnInfo scInfo, String mainSchema,
-                                                boolean needAlias, ReqParam param, String fromAndWhere) {
-        if (param.hasManyRelation(scInfo)) {
+    public static String toCountWithoutGroupSql(SchemaColumnInfo scInfo, String mainSchema, boolean needAlias,
+                                                boolean queryHasMany, String fromAndWhere) {
+        if (queryHasMany) {
             // SELECT COUNT(DISTINCT xx.id) FROM ...
             String idSelect = scInfo.findSchema(mainSchema).idSelect(needAlias);
             return String.format("SELECT COUNT(DISTINCT %s) %s", idSelect, fromAndWhere);

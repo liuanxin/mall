@@ -78,7 +78,7 @@ public class ReqResult {
     private List<Object> columns;
 
 
-    public Set<String> checkResult(String mainSchema, SchemaColumnInfo scInfo) {
+    public Set<String> checkResult(String mainSchema, SchemaColumnInfo scInfo, Set<String> allSchemaSet) {
         String currentSchema = (schema == null || schema.trim().isEmpty()) ? mainSchema : schema.trim();
         Schema schemaInfo = scInfo.findSchema(currentSchema);
         if (schemaInfo == null) {
@@ -95,7 +95,7 @@ public class ReqResult {
         for (Object obj : columns) {
             if (obj != null) {
                 if (obj instanceof String column) {
-                    checkColumn(column, currentSchema, scInfo, columnCheckRepeatedSet);
+                    allSchemaSet.add(checkColumn(column, currentSchema, scInfo, columnCheckRepeatedSet).getName());
                     hasColumnOrFunction = true;
                 } else if (obj instanceof List<?> groups) {
                     if (groups.isEmpty()) {
@@ -116,25 +116,27 @@ public class ReqResult {
 
                     if (group == ResultGroup.COUNT_DISTINCT) {
                         for (String col : column.split(",")) {
-                            Schema te = scInfo.findSchema(QueryUtil.getSchemaName(col.trim(), currentSchema));
-                            if (te == null) {
+                            Schema sa = scInfo.findSchema(QueryUtil.getSchemaName(col.trim(), currentSchema));
+                            if (sa == null) {
                                 throw new RuntimeException("result schema(" + currentSchema + ") function(" + groups + ") has no defined schema");
                             }
-                            if (scInfo.findSchemaColumn(te, QueryUtil.getColumnName(col.trim())) == null) {
+                            if (scInfo.findSchemaColumn(sa, QueryUtil.getColumnName(col.trim())) == null) {
                                 throw new RuntimeException("result schema(" + currentSchema + ") function(" + groups + ") has no defined column");
                             }
-                            resultFunctionSchemaSet.add(te.getName());
+                            resultFunctionSchemaSet.add(sa.getName());
+                            allSchemaSet.add(sa.getName());
                         }
                     } else {
                         if (!(group == ResultGroup.COUNT && Set.of("*", "1").contains(column))) {
-                            Schema te = scInfo.findSchema(QueryUtil.getSchemaName(column, currentSchema));
-                            if (te == null) {
+                            Schema sa = scInfo.findSchema(QueryUtil.getSchemaName(column, currentSchema));
+                            if (sa == null) {
                                 throw new RuntimeException("result schema(" + currentSchema + ") function(" + groups + ") has no defined schema");
                             }
-                            if (scInfo.findSchemaColumn(te, QueryUtil.getColumnName(column)) == null) {
+                            if (scInfo.findSchemaColumn(sa, QueryUtil.getColumnName(column)) == null) {
                                 throw new RuntimeException("result schema(" + currentSchema + ") function(" + groups + ") has no defined column");
                             }
-                            resultFunctionSchemaSet.add(te.getName());
+                            resultFunctionSchemaSet.add(sa.getName());
+                            allSchemaSet.add(sa.getName());
                         }
                     }
 
@@ -166,7 +168,7 @@ public class ReqResult {
                     Map<String, List<String>> dateColumn = QueryJsonUtil.convertDateResult(obj);
                     if (dateColumn != null) {
                         for (String column : dateColumn.keySet()) {
-                            checkColumn(column, currentSchema, scInfo, columnCheckRepeatedSet);
+                            allSchemaSet.add(checkColumn(column, currentSchema, scInfo, columnCheckRepeatedSet).getName());
                         }
                         hasColumnOrFunction = true;
                     } else {
@@ -201,22 +203,22 @@ public class ReqResult {
                 if (scInfo.findRelationByMasterChild(currentSchema, innerSchema) == null) {
                     throw new RuntimeException("result " + currentSchema + " - " + column + " -" + innerSchema + " has no relation");
                 }
-                innerResult.checkResult(innerSchema, scInfo);
+                innerResult.checkResult(innerSchema, scInfo, allSchemaSet);
             }
         }
         return resultFunctionSchemaSet;
     }
-    private void checkColumn(String column, String currentSchema, SchemaColumnInfo scInfo, Set<String> columnSet) {
+    private Schema checkColumn(String column, String currentSchema, SchemaColumnInfo scInfo, Set<String> columnSet) {
         if (column.trim().isEmpty()) {
             throw new RuntimeException("result schema(" + currentSchema + ") column can't be blank");
         }
 
         String col = column.trim();
-        Schema te = scInfo.findSchema(QueryUtil.getSchemaName(col, currentSchema));
-        if (te == null) {
+        Schema sa = scInfo.findSchema(QueryUtil.getSchemaName(col, currentSchema));
+        if (sa == null) {
             throw new RuntimeException("result schema(" + currentSchema + ") column(" + col + ") has no defined schema");
         }
-        if (scInfo.findSchemaColumn(te, QueryUtil.getColumnName(col)) == null) {
+        if (scInfo.findSchemaColumn(sa, QueryUtil.getColumnName(col)) == null) {
             throw new RuntimeException("result schema(" + currentSchema + ") column(" + col + ") has no defined column");
         }
 
@@ -224,6 +226,7 @@ public class ReqResult {
             throw new RuntimeException("result schema(" + currentSchema + ") column(" + col + ") has repeated");
         }
         columnSet.add(col);
+        return sa;
     }
 
     public String generateAllSelectSql(String mainSchema, SchemaColumnInfo scInfo, Set<String> schemaSet) {

@@ -125,11 +125,11 @@ public class ReqParamOperate {
                         throw new RuntimeException("param condition(" + condition + ") column can't be blank");
                     }
 
-                    Schema te = scInfo.findSchema(QueryUtil.getSchemaName(column, currentSchema));
-                    if (te == null) {
+                    Schema sa = scInfo.findSchema(QueryUtil.getSchemaName(column, currentSchema));
+                    if (sa == null) {
                         throw new RuntimeException("param condition(" + condition + ") column has no schema info");
                     }
-                    querySchemaSet.add(te.getName());
+                    querySchemaSet.add(sa.getName());
 
                     boolean standardSize = (size == 2);
                     ParamConditionType type = standardSize ? ParamConditionType.EQ : ParamConditionType.deserializer(list.get(1));
@@ -137,7 +137,7 @@ public class ReqParamOperate {
                         throw new RuntimeException(String.format("param condition column(%s) need type", column));
                     }
 
-                    SchemaColumn schemaColumn = scInfo.findSchemaColumn(te, QueryUtil.getColumnName(column));
+                    SchemaColumn schemaColumn = scInfo.findSchemaColumn(sa, QueryUtil.getColumnName(column));
                     if (schemaColumn == null) {
                         throw new RuntimeException(String.format("param condition column(%s) has no column info", column));
                     }

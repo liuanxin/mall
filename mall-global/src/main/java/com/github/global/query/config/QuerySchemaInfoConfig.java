@@ -144,24 +144,29 @@ public class QuerySchemaInfoConfig {
     public Object query(RequestInfo req) {
         req.checkSchema(scInfo);
         Set<String> paramSchemaSet = req.checkParam(scInfo);
-        Set<String> resultFuncSchemaSet = req.checkResult(scInfo);
+
+        Set<String> allResultSchemaSet = new LinkedHashSet<>();
+        Set<String> resultFuncSchemaSet = req.checkResult(scInfo, allResultSchemaSet);
+
+        List<SchemaJoinRelation> allRelationList = req.allRelationList(scInfo);
+        Set<String> allSchemaSet = calcSchemaSet(allRelationList);
+        req.checkAllSchema(scInfo, allSchemaSet, paramSchemaSet, allResultSchemaSet);
 
         String mainSchema = req.getSchema();
         ReqParam param = req.getParam();
         ReqResult result = req.getResult();
 
-        List<SchemaJoinRelation> allRelationList = param.allRelationList(scInfo, mainSchema);
-        Set<String> allSchemaSet = calcSchemaSet(allRelationList);
         String allFromSql = QuerySqlUtil.toFromSql(scInfo, mainSchema, allRelationList);
-
         List<Object> params = new ArrayList<>();
         if (param.needQueryPage()) {
             if (param.needQueryCount()) {
-                List<SchemaJoinRelation> paramRelationList = param.paramRelationList(scInfo, mainSchema, paramSchemaSet, resultFuncSchemaSet);
-                Set<String> firstQuerySchemaSet = calcSchemaSet(paramRelationList);
+                List<SchemaJoinRelation> paramRelationList = req.paramRelationList(scInfo, paramSchemaSet, resultFuncSchemaSet);
+                Set<String> querySchemaSet = calcSchemaSet(paramRelationList);
+                boolean queryHasMany = calcQueryHasMany(paramRelationList);
+
                 String firstFromSql = QuerySqlUtil.toFromSql(scInfo, mainSchema, paramRelationList);
-                String whereSql = QuerySqlUtil.toWhereSql(scInfo, mainSchema, !firstQuerySchemaSet.isEmpty(), param, params);
-                return queryPage(firstFromSql, allFromSql, whereSql, mainSchema, param, result, firstQuerySchemaSet, allSchemaSet, params);
+                String whereSql = QuerySqlUtil.toWhereSql(scInfo, mainSchema, !querySchemaSet.isEmpty(), param, params);
+                return queryPage(firstFromSql, allFromSql, whereSql, mainSchema, param, result, queryHasMany, querySchemaSet, allSchemaSet, params);
             } else {
                 String whereSql = QuerySqlUtil.toWhereSql(scInfo, mainSchema, !allSchemaSet.isEmpty(), param, params);
                 return queryList(allFromSql + whereSql, mainSchema, param, result, allSchemaSet, params);
@@ -176,24 +181,35 @@ public class QuerySchemaInfoConfig {
         }
     }
 
-    private Set<String> calcSchemaSet(List<SchemaJoinRelation> paramRelationList) {
-        Set<String> firstQuerySchemaSet = new HashSet<>();
-        for (SchemaJoinRelation joinRelation : paramRelationList) {
-            firstQuerySchemaSet.add(joinRelation.getMasterSchema().getName());
-            firstQuerySchemaSet.add(joinRelation.getChildSchema().getName());
+    private Set<String> calcSchemaSet(List<SchemaJoinRelation> relationList) {
+        Set<String> schemaSet = new HashSet<>();
+        for (SchemaJoinRelation joinRelation : relationList) {
+            schemaSet.add(joinRelation.getMasterSchema().getName());
+            schemaSet.add(joinRelation.getChildSchema().getName());
         }
-        return firstQuerySchemaSet;
+        return schemaSet;
+    }
+    private boolean calcQueryHasMany(List<SchemaJoinRelation> paramRelationList) {
+        for (SchemaJoinRelation joinRelation : paramRelationList) {
+            String masterSchemaName = joinRelation.getMasterSchema().getName();
+            String childSchemaName = joinRelation.getChildSchema().getName();
+            SchemaColumnRelation relation = scInfo.findRelationByMasterChild(masterSchemaName, childSchemaName);
+            if (relation != null && relation.getType().hasMany()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Map<String, Object> queryPage(String firstFromSql, String allFromSql, String whereSql, String mainSchema,
-                                          ReqParam param, ReqResult result, Set<String> firstQuerySchemaSet,
-                                          Set<String> allSchemaSet, List<Object> params) {
+                                          ReqParam param, ReqResult result, boolean queryHasMany,
+                                          Set<String> querySchemaSet, Set<String> allSchemaSet, List<Object> params) {
         String fromAndWhere = firstFromSql + whereSql;
         long count;
         List<Map<String, Object>> pageList;
         if (result.needGroup()) {
             // SELECT COUNT(*) FROM ( SELECT ... FROM ... WHERE .?. GROUP BY ... HAVING ... ) tmp    (only where's schema)
-            String selectCountGroupSql = QuerySqlUtil.toSelectGroupSql(scInfo, fromAndWhere, mainSchema, result, firstQuerySchemaSet, params);
+            String selectCountGroupSql = QuerySqlUtil.toSelectGroupSql(scInfo, fromAndWhere, mainSchema, result, querySchemaSet, params);
             count = queryCount(QuerySqlUtil.toCountGroupSql(selectCountGroupSql), params);
             if (param.needQueryCurrentPage(count)) {
                 String fromAndWhereList = allFromSql + whereSql;
@@ -204,13 +220,13 @@ public class QuerySchemaInfoConfig {
                 pageList = Collections.emptyList();
             }
         } else {
-            boolean needAlias = !firstQuerySchemaSet.isEmpty();
+            boolean needAlias = !querySchemaSet.isEmpty();
             // SELECT COUNT(DISTINCT id) FROM ... WHERE .?..   (only where's schema)
-            String countSql = QuerySqlUtil.toCountWithoutGroupSql(scInfo, mainSchema, needAlias, param, fromAndWhere);
+            String countSql = QuerySqlUtil.toCountWithoutGroupSql(scInfo, mainSchema, needAlias, queryHasMany, fromAndWhere);
             count = queryCount(countSql, params);
             if (param.needQueryCurrentPage(count)) {
                 pageList = queryPageListWithoutGroup(firstFromSql, allFromSql, whereSql, mainSchema, param,
-                        result, firstQuerySchemaSet, allSchemaSet, params);
+                        result, querySchemaSet, allSchemaSet, params);
             } else {
                 pageList = Collections.emptyList();
             }
@@ -228,14 +244,14 @@ public class QuerySchemaInfoConfig {
 
     private List<Map<String, Object>> queryPageListWithoutGroup(String firstFromSql, String allFromSql,
                                                                 String whereSql, String mainSchema, ReqParam param,
-                                                                ReqResult result, Set<String> firstQuerySchemaSet,
+                                                                ReqResult result, Set<String> querySchemaSet,
                                                                 Set<String> allSchemaSet, List<Object> params) {
         String fromAndWhere = firstFromSql + whereSql;
         String sql;
         // deep paging(need offset a lot of result), use 「where + order + limit」 to query id, then use id to query specific columns
         if (param.hasDeepPage(deepMaxPageSize)) {
             // SELECT id FROM ... WHERE .?. ORDER BY ... LIMIT ...   (only where's schema)
-            String idPageSql = QuerySqlUtil.toIdPageSql(scInfo, fromAndWhere, mainSchema, !firstQuerySchemaSet.isEmpty(), param, params);
+            String idPageSql = QuerySqlUtil.toIdPageSql(scInfo, fromAndWhere, mainSchema, !querySchemaSet.isEmpty(), param, params);
             List<Map<String, Object>> idList = jdbcTemplate.queryForList(idPageSql, params.toArray());
 
             // SELECT ... FROM .?. WHERE id IN (...)    (all where's schema)

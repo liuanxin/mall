@@ -1,7 +1,6 @@
 package com.github.global.query.model;
 
 import com.github.global.query.constant.QueryConst;
-import com.github.global.query.enums.JoinType;
 import com.github.global.query.util.QueryUtil;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,8 +25,6 @@ import java.util.*;
 @NoArgsConstructor
 public class ReqParam {
 
-    /** { [ "order", "left", "orderItem" ] , [ "order", "right", "orderPrice" ] ] */
-    private List<List<String>> relation;
     /** 查询信息 */
     private ReqParamOperate query;
     /** 排序信息 */
@@ -64,121 +61,7 @@ public class ReqParam {
                 throw new RuntimeException("param page error");
             }
         }
-
-        if (relation != null && !relation.isEmpty()) {
-            Set<String> schemaRelation = new HashSet<>();
-            for (List<String> values : relation) {
-                if (values.size() < 3) {
-                    throw new RuntimeException("param relation error");
-                }
-                JoinType joinType = JoinType.deserializer(values.get(1));
-                if (joinType == null) {
-                    throw new RuntimeException("param relation join type error");
-                }
-                String masterSchema = values.get(0);
-                String childSchema = values.get(2);
-                if (scInfo.findRelationByMasterChild(masterSchema, childSchema) == null) {
-                    throw new RuntimeException("param relation " + masterSchema + " and " + childSchema + " has no relation");
-                }
-
-                String key = masterSchema + "." + childSchema;
-                if (schemaRelation.contains(key)) {
-                    throw new RuntimeException("param relation " + masterSchema + " and " + childSchema + " can only has one relation");
-                }
-                schemaRelation.add(key);
-            }
-            boolean hasMain = false;
-            for (String schema : schemaRelation) {
-                if (schema.startsWith(mainSchema + ".")) {
-                    hasMain = true;
-                    break;
-                }
-            }
-            if (!hasMain) {
-                throw new RuntimeException("param relation has no " + mainSchema + "'s info");
-            }
-        }
         return paramSchemaSet;
-    }
-
-    public List<SchemaJoinRelation> allRelationList(SchemaColumnInfo scInfo, String mainSchema) {
-        Map<String, Set<SchemaJoinRelation>> relationMap = new HashMap<>();
-        if (relation != null && !relation.isEmpty()) {
-            for (List<String> values : relation) {
-                Schema masterSchema = scInfo.findSchema(values.get(0));
-                Schema childSchema = scInfo.findSchema(values.get(2));
-                JoinType joinType = JoinType.deserializer(values.get(1));
-                SchemaJoinRelation joinRelation = new SchemaJoinRelation(masterSchema, joinType, childSchema);
-                Set<SchemaJoinRelation> relationSet = relationMap.getOrDefault(masterSchema.getName(), new LinkedHashSet<>());
-                relationSet.add(joinRelation);
-                relationMap.put(masterSchema.getName(), relationSet);
-            }
-        }
-        return handleRelation(mainSchema, relationMap);
-    }
-    public List<SchemaJoinRelation> paramRelationList(SchemaColumnInfo scInfo, String mainSchema,
-                                                      Set<String> paramSchemaSet, Set<String> resultFunctionSchemaSet) {
-        Map<String, Set<SchemaJoinRelation>> relationMap = new HashMap<>();
-        if (relation != null && !relation.isEmpty()) {
-            for (List<String> values : relation) {
-                Schema masterSchema = scInfo.findSchema(values.get(0));
-                Schema childSchema = scInfo.findSchema(values.get(2));
-                String mn = masterSchema.getName();
-                String cn = childSchema.getName();
-                if ((paramSchemaSet.contains(mn) && paramSchemaSet.contains(cn))
-                        || (resultFunctionSchemaSet.contains(mn) && resultFunctionSchemaSet.contains(cn))) {
-                    Set<SchemaJoinRelation> relationSet = relationMap.getOrDefault(masterSchema.getName(), new LinkedHashSet<>());
-                    JoinType joinType = JoinType.deserializer(values.get(1));
-                    SchemaJoinRelation joinRelation = new SchemaJoinRelation(masterSchema, joinType, childSchema);
-                    relationSet.add(joinRelation);
-                    relationMap.put(masterSchema.getName(), relationSet);
-                }
-            }
-        }
-        return handleRelation(mainSchema, relationMap);
-    }
-    private List<SchemaJoinRelation> handleRelation(String mainSchema, Map<String, Set<SchemaJoinRelation>> relationMap) {
-        List<SchemaJoinRelation> relationList = new ArrayList<>();
-        Set<String> relationSet = new HashSet<>();
-        Set<SchemaJoinRelation> mainSet = relationMap.remove(mainSchema);
-        if (mainSet != null && !mainSet.isEmpty()) {
-            for (SchemaJoinRelation relation : mainSet) {
-                relationList.add(relation);
-                relationSet.add(relation.getMasterSchema().getName());
-                relationSet.add(relation.getChildSchema().getName());
-            }
-        }
-        for (int i = 0; i < relationMap.size(); i++) {
-            for (Map.Entry<String, Set<SchemaJoinRelation>> entry : relationMap.entrySet()) {
-                if (relationSet.contains(entry.getKey())) {
-                    for (SchemaJoinRelation relation : entry.getValue()) {
-                        relationList.add(relation);
-                        relationSet.add(relation.getMasterSchema().getName());
-                        relationSet.add(relation.getChildSchema().getName());
-                    }
-                }
-            }
-        }
-        return relationList;
-    }
-
-    public boolean hasManyRelation(SchemaColumnInfo scInfo) {
-        if (relation == null || relation.isEmpty()) {
-            return false;
-        }
-
-        for (List<String> values : relation) {
-            JoinType joinType = JoinType.deserializer(values.get(1));
-            if (joinType != null) {
-                String masterSchemaName = values.get(0);
-                String childSchemaName = values.get(2);
-                SchemaColumnRelation relation = scInfo.findRelationByMasterChild(masterSchemaName, childSchemaName);
-                if (relation != null && relation.getType().hasMany()) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     public String generateWhereSql(String mainSchema, SchemaColumnInfo scInfo, boolean needAlias, List<Object> params) {
