@@ -299,7 +299,7 @@ public class QueryTableInfoConfig {
             Map<String, List<Map<String, Object>>> innerColumnMap = queryInnerData(table, result);
             for (Map<String, Object> data : mapList) {
                 result.handleDateType(data, mainTable, tcInfo);
-                fillInnerData(data);
+                fillInnerData(data, idKeyList, innerColumnMap);
                 needRemoveColumnList.forEach(data::remove);
             }
         }
@@ -307,7 +307,8 @@ public class QueryTableInfoConfig {
     }
 
 
-    private void fillInnerData(Map<String, Object> data) {
+    private void fillInnerData(Map<String, Object> data, List<String> idKeyList,
+                               Map<String, List<Map<String, Object>>> innerColumnMap) {
     }
 
     private Map<String, List<Map<String, Object>>> queryInnerData(Table mainTable, ReqResult result) {

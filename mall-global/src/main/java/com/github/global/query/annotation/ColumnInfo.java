@@ -26,12 +26,12 @@ public @interface ColumnInfo {
 
     int varcharLength() default 0;
 
-    /** 关联类型, 设置了 relationTable 和 relationColumn 才有效, 只在「从表」对应的类上标, 主表上无需标注 */
+    /** just set on child table, no need to mark on the main table */
     TableRelationType relationType() default TableRelationType.NULL;
 
-    /** 设置了 relationType 非 NULL 时有效, 关联表的列名, 配合 relationType 一起使用, 只在「从表」对应的类上标, 主表上无需标注 */
+    /** use if relationType has not NULL */
     String relationTable() default "";
 
-    /** 设置了 relationType 非 NULL 时有效, 关联表的列名, 配合 relationTable 一起使用, 只在「从表」对应的类上标, 主表上无需标注 */
+    /** use if relationType has not NULL */
     String relationColumn() default "";
 }
