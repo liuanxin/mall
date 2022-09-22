@@ -12,26 +12,28 @@ public final class QueryConst {
 
     public static final String DB_SQL = "SELECT DATABASE()";
     public static final String SCHEMA_SQL = "SELECT `TABLE_NAME` tn, `TABLE_COMMENT` tc" +
-            " FROM information_table.`TABLES`" +
+            " FROM `information_schema`.`TABLES`" +
             " WHERE `TABLE_SCHEMA` = ?";
     public static final String COLUMN_SQL = "SELECT `TABLE_NAME` tn, `COLUMN_NAME` cn, `COLUMN_TYPE` ct," +
             " `COLUMN_COMMENT` cc, `COLUMN_KEY` ck, `CHARACTER_MAXIMUM_LENGTH` cml" +
-            " FROM `information_table`.`COLUMNS`" +
+            " FROM `information_schema`.`COLUMNS`" +
             " WHERE `TABLE_SCHEMA` = ?" +
             " ORDER BY `TABLE_NAME`, `ORDINAL_POSITION`";
     public static final String RELATION_SQL = "SELECT `REFERENCED_TABLE_NAME` ftn, `REFERENCED_COLUMN_NAME` fcn," +
             " `TABLE_NAME` tn, `COLUMN_NAME` cn" +
-            " FROM `information_table`.`KEY_COLUMN_USAGE`" +
+            " FROM `information_schema`.`KEY_COLUMN_USAGE`" +
             " WHERE `REFERENCED_TABLE_SCHEMA` = ?";
     public static final String INDEX_SQL = "SELECT `TABLE_NAME` tn, `COLUMN_NAME` cn" +
-            " FROM `INFORMATION_SCHEMA`.`STATISTICS`" +
+            " FROM `information_schema`.`STATISTICS`" +
             " WHERE `NON_UNIQUE` = 0 AND `TABLE_SCHEMA` = ?" +
             " GROUP BY tn, cn" +
             " HAVING COUNT(`SEQ_IN_INDEX`) = 1";
 
     public static final Map<String, Class<?>> DB_TYPE_MAP = new LinkedHashMap<>();
     static {
+        DB_TYPE_MAP.put("tinyint(1) unsigned", Integer.class);
         DB_TYPE_MAP.put("tinyint(1)", Boolean.class);
+        DB_TYPE_MAP.put("bigint", Long.class);
         DB_TYPE_MAP.put("int", Integer.class);
 
         DB_TYPE_MAP.put("char", String.class);
@@ -52,9 +54,9 @@ public final class QueryConst {
     public static final String COLUMN_PREFIX = "column-";
 
 
-    public static final Integer MIN_LIMIT = 20;
+    public static final Integer MIN_LIMIT = 10;
     public static final Set<Integer> LIMIT_SET = new HashSet<>(Arrays.asList(
-            MIN_LIMIT, 50, 100, 200, 500, 1000)
+            MIN_LIMIT, 20, 50, 100, 200, 500, 1000)
     );
 
 

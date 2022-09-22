@@ -38,7 +38,7 @@ public class QueryInfo {
         private String type;
 
         /** 表列类型是字符串时的长度 */
-        private Integer strLen;
+        private Integer length;
 
         /** 关联关系 */
         private String relation;

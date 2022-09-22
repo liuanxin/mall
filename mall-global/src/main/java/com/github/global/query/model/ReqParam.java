@@ -164,7 +164,7 @@ public class ReqParam {
     }
 
     public boolean hasManyRelation(TableColumnInfo tcInfo) {
-        if (relation.isEmpty()) {
+        if (relation == null || relation.isEmpty()) {
             return false;
         }
 

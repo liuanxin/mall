@@ -21,8 +21,8 @@ public class QueryApiController {
     private final QueryTableInfoConfig tableInfoConfig;
 
     @GetMapping("/list")
-    public JsonResult<List<QueryInfo>> query() {
-        return JsonResult.success("table info list", online ? null : tableInfoConfig.queryInfo());
+    public JsonResult<List<QueryInfo>> query(String tables) {
+        return JsonResult.success("table info list", online ? null : tableInfoConfig.queryInfo(tables));
     }
 
     @PostMapping("/query")

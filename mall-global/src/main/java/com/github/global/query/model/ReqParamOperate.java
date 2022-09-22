@@ -97,7 +97,7 @@ import java.util.*;
 public class ReqParamOperate {
 
     private String table;
-    /** 条件拼接类型: and 还是 or */
+    /** 条件拼接类型: 并且(and) 和 或者(or) 两种, 不设置则默认是 and */
     private ReqParamOperateType operate;
     /** 条件 */
     private List<Object> conditions;
@@ -159,7 +159,8 @@ public class ReqParamOperate {
             return "";
         }
 
-        StringJoiner sj = new StringJoiner(" " + operate.name().toUpperCase() + " ");
+        String operateType = (operate == null ? ReqParamOperateType.AND : operate).name().toUpperCase();
+        StringJoiner sj = new StringJoiner(" " + operateType + " ");
         String currentTable = (table == null || table.trim().isEmpty()) ? mainTable : table.trim();
         for (Object condition : conditions) {
             if (condition != null) {

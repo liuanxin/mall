@@ -15,7 +15,7 @@ public class QuerySqlUtil {
 
     public static String toFromSql(TableColumnInfo tcInfo, String mainTable,
                                    List<TableJoinRelation> joinRelationList) {
-        StringBuilder sbd = new StringBuilder("FROM ");
+        StringBuilder sbd = new StringBuilder(" FROM ");
         Table table = tcInfo.findTable(mainTable);
         String mainTableName = table.getName();
         sbd.append(toSqlField(mainTableName));
@@ -40,7 +40,7 @@ public class QuerySqlUtil {
     public static String toSelectGroupSql(TableColumnInfo tcInfo, String fromAndWhere, String mainTable,
                                           ReqResult result, Set<String> tableSet, List<Object> params) {
         boolean needAlias = !tableSet.isEmpty();
-        String selectField = result.generateSelectSql(mainTable, tcInfo, tableSet);
+        String selectField = result.generateAllSelectSql(mainTable, tcInfo, tableSet);
         boolean emptySelect = selectField.isEmpty();
 
         // SELECT ... FROM ... WHERE ... GROUP BY ... HAVING ...
@@ -74,10 +74,11 @@ public class QuerySqlUtil {
 
     public static String toPageWithoutGroupSql(TableColumnInfo tcInfo, String fromAndWhere, String mainTable,
                                                ReqParam param, ReqResult result,
-                                               Set<String> firstQueryTableSet, List<Object> params) {
-        String selectField = result.generateSelectSql(mainTable, tcInfo, firstQueryTableSet);
+                                               Set<String> allTableSet, List<Object> params) {
+        String selectField = result.generateAllSelectSql(mainTable, tcInfo, allTableSet);
         // SELECT ... FROM ... WHERE ... ORDER BY ... limit ...
-        return "SELECT " + selectField + fromAndWhere + param.generatePageSql(params);
+        String orderSql = param.generateOrderSql(mainTable, !allTableSet.isEmpty(), tcInfo);
+        return "SELECT " + selectField + fromAndWhere + orderSql + param.generatePageSql(params);
     }
 
     public static String toIdPageSql(TableColumnInfo tcInfo, String fromAndWhere, String mainTable,
@@ -91,7 +92,7 @@ public class QuerySqlUtil {
                                            ReqResult result, List<Map<String, Object>> idList,
                                            Set<String> allTableSet, List<Object> params) {
         // SELECT ... FROM ... WHERE id IN (x, y, z)
-        String selectColumn = result.generateSelectSql(mainTable, tcInfo, allTableSet);
+        String selectColumn = result.generateAllSelectSql(mainTable, tcInfo, allTableSet);
 
         Table table = tcInfo.findTable(mainTable);
         String idWhere = table.idWhere(!allTableSet.isEmpty());

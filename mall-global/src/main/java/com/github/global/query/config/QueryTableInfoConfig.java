@@ -114,18 +114,29 @@ public class QueryTableInfoConfig {
     }
 
 
-    public List<QueryInfo> queryInfo() {
+    public List<QueryInfo> queryInfo(String tables) {
+        Set<String> tableSet = new LinkedHashSet<>();
+        if (tables != null && !tables.isEmpty()) {
+            for (String te : tables.split(",")) {
+                String trim = te.trim();
+                if (!trim.isEmpty()) {
+                    tableSet.add(trim.toLowerCase());
+                }
+            }
+        }
         List<QueryInfo> queryList = new ArrayList<>();
         for (Table table : tcInfo.allTable()) {
-            List<QueryInfo.QueryColumn> columnList = new ArrayList<>();
-            for (TableColumn column : table.getColumnMap().values()) {
-                String type = column.getColumnType().getSimpleName();
-                Integer length = (column.getStrLen() == 0) ? null : column.getStrLen();
-                TableColumnRelation relation = tcInfo.findRelationByChild(table.getName(), column.getName());
-                String rel = (relation == null) ? null : (relation.getOneTable() + "." + relation.getOneColumn());
-                columnList.add(new QueryInfo.QueryColumn(column.getAlias(), column.getDesc(), type, length, rel));
+            if (tableSet.isEmpty() || tableSet.contains(table.getAlias().toLowerCase())) {
+                List<QueryInfo.QueryColumn> columnList = new ArrayList<>();
+                for (TableColumn column : table.getColumnMap().values()) {
+                    String type = column.getColumnType().getSimpleName();
+                    Integer length = (column.getStrLen() == 0) ? null : column.getStrLen();
+                    TableColumnRelation relation = tcInfo.findRelationByChild(table.getName(), column.getName());
+                    String rel = (relation == null) ? null : (relation.getOneTable() + "." + relation.getOneColumn());
+                    columnList.add(new QueryInfo.QueryColumn(column.getAlias(), column.getDesc(), type, length, rel));
+                }
+                queryList.add(new QueryInfo(table.getAlias(), table.getDesc(), columnList));
             }
-            queryList.add(new QueryInfo(table.getAlias(), table.getDesc(), columnList));
         }
         return queryList;
     }
@@ -187,7 +198,7 @@ public class QueryTableInfoConfig {
                 String fromAndWhereList = allFromSql + whereSql;
                 // SELECT ... FROM ... WHERE .?. GROUP BY ... HAVING ... LIMIT ...    (all where's table)
                 String selectListGroupSql = QuerySqlUtil.toSelectGroupSql(tcInfo, fromAndWhereList, mainTable, result, allTableSet, params);
-                pageList = queryPageListWithGroup(selectListGroupSql, mainTable, !allTableSet.isEmpty(), param, result, params);
+                pageList = queryPageListWithGroup(selectListGroupSql, mainTable, allTableSet, param, result, params);
             } else {
                 pageList = Collections.emptyList();
             }
@@ -233,31 +244,29 @@ public class QueryTableInfoConfig {
             // SELECT ... FROM ... WHERE ... ORDER BY ... limit ...
             sql = QuerySqlUtil.toPageWithoutGroupSql(tcInfo, fromAndWhere, mainTable, param, result, allTableSet, params);
         }
-        return assemblyResult(sql, params, mainTable, !allTableSet.isEmpty(), result);
+        return assemblyResult(sql, params, mainTable, allTableSet, result);
     }
 
-    private List<Map<String, Object>> queryPageListWithGroup(String selectGroupSql, String mainTable, boolean needAlias,
+    private List<Map<String, Object>> queryPageListWithGroup(String selectGroupSql, String mainTable, Set<String> allTableSet,
                                                              ReqParam param, ReqResult result, List<Object> params) {
         String sql = selectGroupSql + param.generatePageSql(params);
-        return assemblyResult(sql, params, mainTable, needAlias, result);
+        return assemblyResult(sql, params, mainTable, allTableSet, result);
     }
 
     private List<Map<String, Object>> queryList(String fromAndWhere, String mainTable, ReqParam param,
                                                 ReqResult result, Set<String> allTableSet, List<Object> params) {
-        boolean needAlias = !allTableSet.isEmpty();
         String selectGroupSql = QuerySqlUtil.toSelectGroupSql(tcInfo, fromAndWhere, mainTable, result, allTableSet, params);
-        String orderSql = param.generateOrderSql(mainTable, needAlias, tcInfo);
+        String orderSql = param.generateOrderSql(mainTable, !allTableSet.isEmpty(), tcInfo);
         String sql = selectGroupSql + orderSql + param.generatePageSql(params);
-        return assemblyResult(sql, params, mainTable, needAlias, result);
+        return assemblyResult(sql, params, mainTable, allTableSet, result);
     }
 
     private List<Map<String, Object>> queryListNoLimit(String fromAndWhere, String mainTable, ReqParam param,
                                                        ReqResult result, Set<String> allTableSet, List<Object> params) {
-        boolean needAlias = !allTableSet.isEmpty();
         String selectGroupSql = QuerySqlUtil.toSelectGroupSql(tcInfo, fromAndWhere, mainTable, result, allTableSet, params);
-        String orderSql = param.generateOrderSql(mainTable, needAlias, tcInfo);
+        String orderSql = param.generateOrderSql(mainTable, !allTableSet.isEmpty(), tcInfo);
         String sql = selectGroupSql + orderSql;
-        return assemblyResult(sql, params, mainTable, needAlias, result);
+        return assemblyResult(sql, params, mainTable, allTableSet, result);
     }
 
     private Map<String, Object> queryObj(String fromAndWhere, String mainTable, ReqParam param, ReqResult result,
@@ -266,21 +275,40 @@ public class QueryTableInfoConfig {
         String selectGroupSql = QuerySqlUtil.toSelectGroupSql(tcInfo, fromAndWhere, mainTable, result, allTableSet, params);
         String orderSql = param.generateOrderSql(mainTable, needAlias, tcInfo);
         String sql = selectGroupSql + orderSql + param.generateArrToObjSql(params);
-        Map<String, Object> obj = QueryUtil.first(assemblyResult(sql, params, mainTable, needAlias, result));
+        Map<String, Object> obj = QueryUtil.first(assemblyResult(sql, params, mainTable, allTableSet, result));
         return (obj == null) ? Collections.emptyMap() : obj;
     }
 
     private List<Map<String, Object>> assemblyResult(String mainSql, List<Object> params, String mainTable,
-                                                     boolean needAlias, ReqResult result) {
+                                                     Set<String> allTableSet, ReqResult result) {
         List<Map<String, Object>> mapList = jdbcTemplate.queryForList(mainSql, params.toArray());
         if (!mapList.isEmpty()) {
+            boolean needAlias = !allTableSet.isEmpty();
             // todo
             Table table = tcInfo.findTable(mainTable);
             List<String> idKeyList = table.getIdKey();
-            Set<String> relationColumnSet = result.innerColumn(mainTable, tcInfo, needAlias);
+
+            Set<String> selectColumnSet = result.selectColumn(mainTable, tcInfo, allTableSet);
+            Set<String> innerColumnSet = result.innerColumn(mainTable, tcInfo, needAlias);
+            List<String> needRemoveColumnList = new ArrayList<>();
+            for (String ic : innerColumnSet) {
+                if (!selectColumnSet.contains(ic)) {
+                    needRemoveColumnList.add(ic);
+                }
+            }
+
             Map<String, List<Map<String, Object>>> innerColumnMap = queryInnerData(table, result);
+            for (Map<String, Object> data : mapList) {
+                fillInnerData(data);
+                for (String nrc : needRemoveColumnList) {
+                    data.remove(nrc);
+                }
+            }
         }
         return mapList;
+    }
+
+    private void fillInnerData(Map<String, Object> data) {
     }
 
     private Map<String, List<Map<String, Object>>> queryInnerData(Table mainTable, ReqResult result) {
