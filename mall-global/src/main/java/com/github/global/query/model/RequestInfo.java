@@ -51,8 +51,10 @@ public class RequestInfo {
 
     public void checkAllSchema(SchemaColumnInfo scInfo, Set<String> allSchemaSet,
                                Set<String> paramSchemaSet, Set<String> resultSchemaSet) {
+        paramSchemaSet.remove(schema);
+        resultSchemaSet.remove(schema);
         if (relation == null || relation.isEmpty()) {
-            if (!paramSchemaSet.isEmpty() || resultSchemaSet.isEmpty()) {
+            if (!paramSchemaSet.isEmpty() || !resultSchemaSet.isEmpty()) {
                 throw new RuntimeException("request need relation");
             }
         }
