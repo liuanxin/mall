@@ -50,8 +50,6 @@ public class JsonResult<T> {
         this.data = data;
     }
 
-    /** 跟踪号 */
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public String getTraceId() {
         return U.defaultIfBlank(traceId, LogUtil.getTraceId());
     }
