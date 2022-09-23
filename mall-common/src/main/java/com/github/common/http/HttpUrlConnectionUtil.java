@@ -128,7 +128,7 @@ public class HttpUrlConnectionUtil {
             if (hasParam || hasFile) {
                 con.setDoOutput(true);
 
-                String boundary = "*****"; // U.uuid16();
+                String boundary = U.uuid16();
                 // 使用 from 表单上传文件时, 需设置 enctype="multipart/form-data" 属性
                 con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
                 try (DataOutputStream data = new DataOutputStream(con.getOutputStream())) {

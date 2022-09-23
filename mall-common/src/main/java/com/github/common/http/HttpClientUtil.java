@@ -112,7 +112,7 @@ public class HttpClientUtil {
             boolean hasFile = A.isNotEmpty(files);
             HttpRequest.BodyPublisher body;
             if (hasParam || hasFile) {
-                String boundary = "*****"; // U.uuid16();
+                String boundary = U.uuid16();
                 builder.setHeader("Content-Type", "multipart/form-data;boundary=" + boundary);
                 List<byte[]> arr = new ArrayList<>();
                 if (hasParam) {
