@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class QueryJsonUtil {
 
-    private static final TypeReference<Map<String, ReqResult>> RESULT_TYPE = new TypeReference<>() {};
+    private static final TypeReference<Map<String, ReqResult>> INNER_RESULT_TYPE = new TypeReference<>() {};
     private static final TypeReference<Map<String, List<String>>> DATE_FORMAT_RESULT_TYPE = new TypeReference<>() {};
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -54,8 +54,8 @@ public class QueryJsonUtil {
         }
     }
 
-    public static Map<String, ReqResult> convertResult(Object obj) {
-        return convertType(obj, RESULT_TYPE);
+    public static Map<String, ReqResult> convertInnerResult(Object obj) {
+        return convertType(obj, INNER_RESULT_TYPE);
     }
 
     public static Map<String, List<String>> convertDateResult(Object obj) {

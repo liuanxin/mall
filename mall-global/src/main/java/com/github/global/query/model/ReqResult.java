@@ -182,7 +182,7 @@ public class ReqResult {
         }
 
         for (Object obj : innerList) {
-            Map<String, ReqResult> inner = QueryJsonUtil.convertResult(obj);
+            Map<String, ReqResult> inner = QueryJsonUtil.convertInnerResult(obj);
             if (inner == null) {
                 throw new RuntimeException("result schema(" + currentSchema + ") relation(" + obj + ") error");
             }
@@ -269,7 +269,7 @@ public class ReqResult {
         String currentSchemaName = (schema == null || schema.isEmpty()) ? mainSchema : schema.trim();
         for (Object obj : columns) {
             if (!(obj instanceof String)  && !(obj instanceof List<?>)) {
-                Map<String, ReqResult> inner = QueryJsonUtil.convertResult(obj);
+                Map<String, ReqResult> inner = QueryJsonUtil.convertInnerResult(obj);
                 if (inner != null) {
                     for (ReqResult innerResult : inner.values()) {
                         String column = scInfo.findRelationByMasterChild(currentSchemaName, innerResult.getSchema()).getOneColumn();
@@ -279,6 +279,19 @@ public class ReqResult {
             }
         }
         return columnNameSet;
+    }
+
+    public Map<String, ReqResult> innerResult() {
+        Map<String, ReqResult> returnMap = new LinkedHashMap<>();
+        for (Object obj : columns) {
+            if (!(obj instanceof String)  && !(obj instanceof List<?>)) {
+                Map<String, ReqResult> inner = QueryJsonUtil.convertInnerResult(obj);
+                if (inner != null) {
+                    returnMap.putAll(inner);
+                }
+            }
+        }
+        return returnMap;
     }
 
     public String generateFunctionSql(String mainSchema, boolean needAlias, SchemaColumnInfo scInfo) {

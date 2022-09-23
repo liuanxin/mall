@@ -305,17 +305,18 @@ public class QuerySchemaInfoConfig {
             List<String> idKeyList = schema.getIdKey();
 
             Set<String> selectColumnSet = result.selectColumn(mainSchema, scInfo, allSchemaSet);
-            List<String> needRemoveColumnList = new ArrayList<>();
+            List<String> removeColumnList = new ArrayList<>();
             for (String ic : result.innerColumn(mainSchema, scInfo, needAlias)) {
                 if (!selectColumnSet.contains(ic)) {
-                    needRemoveColumnList.add(ic);
+                    removeColumnList.add(ic);
                 }
             }
 
+            Map<String, ReqResult> innerMap = result.innerResult();
             Map<String, List<Map<String, Object>>> innerColumnMap = queryInnerData(schema, result);
             for (Map<String, Object> data : mapList) {
-                fillInnerData(data, idKeyList, innerColumnMap);
-                needRemoveColumnList.forEach(data::remove);
+                fillInnerData(data, idKeyList, innerMap, innerColumnMap);
+                removeColumnList.forEach(data::remove);
                 result.handleDateType(data, mainSchema, scInfo);
             }
         }
@@ -323,8 +324,12 @@ public class QuerySchemaInfoConfig {
     }
 
 
-    private void fillInnerData(Map<String, Object> data, List<String> idKeyList,
+    private void fillInnerData(Map<String, Object> data, List<String> idKeyList, Map<String, ReqResult> innerMap,
                                Map<String, List<Map<String, Object>>> innerColumnMap) {
+        for (Map.Entry<String, ReqResult> entry : innerMap.entrySet()) {
+            String innerColumn = entry.getKey();
+            data.put(innerColumn, innerColumnMap.get(innerColumn));
+        }
     }
 
     private Map<String, List<Map<String, Object>>> queryInnerData(Schema mainSchema, ReqResult result) {
@@ -332,7 +337,7 @@ public class QuerySchemaInfoConfig {
         for (Object obj : result.getColumns()) {
             if (obj != null) {
                 if (!(obj instanceof String) && !(obj instanceof List<?>)) {
-                    Map<String, ReqResult> inner = QueryJsonUtil.convertResult(obj);
+                    Map<String, ReqResult> inner = QueryJsonUtil.convertInnerResult(obj);
                     if (inner != null) {
                         for (Map.Entry<String, ReqResult> entry : inner.entrySet()) {
                             String innerName = entry.getKey();
