@@ -231,7 +231,16 @@ public final class RequestUtil {
     }
 
     /**
-     * 格式化参数, 如果使用 RequestBody 的方式发送数据, request.getParameterMap() 将获取不到数据
+     * <pre>
+     * 格式化参数, 只针对 Content-Type: application/x-www-form-urlencoded 方式.
+     *
+     * 如果使用文件上传 &lt;from type="multipart/form-data"...&gt; 的方式(Content-Type: multipart/form-data)
+     * 或者 RequestBody 的方式(Content-Type: application/json)发送数据,
+     * 请求是一个二进制流, 这里是无法获取到数据的
+     *
+     * 想要获取得基于 request.getInputStream() 或 request.getReader(),
+     * 并且在重复读取时会报 getXX can't be called after getXXX 异常, 要解决还得多复制一遍字节码
+     * </pre>
      *
      * @return 示例: id=xxx&name=yyy
      */
@@ -239,8 +248,11 @@ public final class RequestUtil {
         HttpServletRequest request = getRequest();
         if (U.isNull(request)) {
             return U.EMPTY;
+        } else {
+            String contentType = request.getContentType();
+            boolean upload = U.isNotBlank(contentType) && contentType.startsWith("multipart/");
+            return upload ? U.EMPTY : U.formatParam(des, request.getParameterMap());
         }
-        return U.formatParam(des, request.getParameterMap());
     }
 
     public static String getTraceId() {
