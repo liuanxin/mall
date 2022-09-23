@@ -231,7 +231,7 @@ public final class RequestUtil {
     }
 
     /**
-     * 格式化参数
+     * 格式化参数, 如果使用 RequestBody 的方式发送数据, request.getParameterMap() 将获取不到数据
      *
      * @return 示例: id=xxx&name=yyy
      */
