@@ -231,7 +231,7 @@ public final class RequestUtil {
     }
 
     /**
-     * 格式化参数, 如果是文件流(form 表单中有 type="multipart/form-data" 这种), 则不打印出参数
+     * 格式化参数
      *
      * @return 示例: id=xxx&name=yyy
      */
@@ -240,10 +240,7 @@ public final class RequestUtil {
         if (U.isNull(request)) {
             return U.EMPTY;
         }
-
-        String contentType = request.getContentType();
-        boolean upload = U.isNotBlank(contentType) && contentType.startsWith("multipart/");
-        return upload ? "uploading file" : U.formatParam(des, request.getParameterMap());
+        return U.formatParam(des, request.getParameterMap());
     }
 
     public static String getTraceId() {
