@@ -46,7 +46,7 @@ class ManagerSessionModel implements Serializable {
     }
 
     public String userInfo() {
-        return id + "/"  + userName;
+        return U.toStr(id) + "/"  + U.toStr(userName);
     }
 
 

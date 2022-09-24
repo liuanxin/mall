@@ -236,10 +236,11 @@ public final class RequestUtil {
      *
      * 如果使用文件上传 &lt;from type="multipart/form-data"...&gt; 的方式(Content-Type: multipart/form-data)
      * 或者 RequestBody 的方式(Content-Type: application/json)发送数据,
-     * 请求是一个二进制流, 这里是无法获取到数据的
+     * 请求是一个二进制流, 是无法在最开始直接获取到数据的
      *
      * 想要获取得基于 request.getInputStream() 或 request.getReader(),
-     * 并且在重复读取时会报 getXX can't be called after getXXX 异常, 要解决还得多复制一遍字节码
+     * 而且一旦获取后, 在之后的操作时会报 getXX can't be called after getXXX 异常(数据流的偏移指针没有指到最开头),
+     * 要解决得包装一层 request 并复制一遍字节码, 这多少就有点得不偿失了
      * </pre>
      *
      * @return 示例: id=xxx&name=yyy
