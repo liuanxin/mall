@@ -3,7 +3,6 @@ package com.github.global.query.util;
 import com.github.global.query.annotation.ColumnInfo;
 import com.github.global.query.annotation.SchemaInfo;
 import com.github.global.query.constant.QueryConst;
-import com.github.global.query.enums.ParamConditionType;
 import com.github.global.query.enums.SchemaRelationType;
 import com.github.global.query.model.Schema;
 import com.github.global.query.model.SchemaColumn;
@@ -432,42 +431,6 @@ public class QueryUtil {
     }
     public static boolean isNotDouble(Object obj) {
         return !isDouble(obj);
-    }
-
-    public static Object toValue(Class<?> type, Object value) {
-        if (QueryConst.BOOLEAN_TYPE_SET.contains(type)) {
-            return isBoolean(value);
-        } else if (QueryConst.INT_TYPE_SET.contains(type)) {
-            return toInteger(value);
-        } else if (QueryConst.LONG_TYPE_SET.contains(type)) {
-            return toLonger(value);
-        } else if (Number.class.isAssignableFrom(type)) {
-            return toDecimal(value);
-        } else if (Date.class.isAssignableFrom(type)) {
-            return toDate(value);
-        } else {
-            return value;
-        }
-    }
-
-    public static void checkParamType(Class<?> type, ParamConditionType conditionType) {
-        if (Number.class.isAssignableFrom(type)) {
-            if (!QueryConst.NUMBER_TYPE_SET.contains(conditionType)) {
-                throw new RuntimeException(QueryConst.NUMBER_TYPE_INFO);
-            }
-        } else if (Date.class.isAssignableFrom(type)) {
-            if (!QueryConst.DATE_TYPE_SET.contains(conditionType)) {
-                throw new RuntimeException(QueryConst.DATE_TYPE_INFO);
-            }
-        } else if (String.class.isAssignableFrom(type)) {
-            if (!QueryConst.STRING_TYPE_SET.contains(conditionType)) {
-                throw new RuntimeException(QueryConst.STRING_TYPE_INFO);
-            }
-        } else {
-            if (!QueryConst.OTHER_TYPE_SET.contains(conditionType)) {
-                throw new RuntimeException(QueryConst.OTHER_TYPE_INFO);
-            }
-        }
     }
 
     public static String defaultIfBlank(String str1, String defaultStr) {
