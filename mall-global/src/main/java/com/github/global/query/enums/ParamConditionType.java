@@ -45,24 +45,38 @@ import java.util.stream.Collectors;
 public enum ParamConditionType {
 
     /*
-    eq(=)           : 等于
-    ne(<>)          : 不等于
-    in              : 批量(多个)
-    bet(BETWEEN)    : 区间(时间或数字)
-    gt(>)           : 大于
-    ge(>=)          : 大于等于
-    lt(<)           : 小于
-    le(<=)          : 小于等于
-    inc(LIKE '%x%') : 包含
-    sta(LIKE 'x%')  : 开头
-    end(LIKE '%x')  : 结尾
+    eq  : 等于
+    ne  : 不等于
+    in  : 批量(多个)
+    bet : 区间(时间或数字)
+    gt  : 大于
+    ge  : 大于等于
+    lt  : 小于
+    le  : 小于等于
+    inc : 包含
+    sta : 开头
+    end : 结尾
+
+    ------------------------------
+
+    eq  : =
+    ne  : <>
+    in  :
+    bet : BETWEEN
+    gt  : >
+    ge  : >=
+    lt  : <
+    le  : <=
+    inc : LIKE '%x%'
+    sta : LIKE 'x%'
+    end : LIKE '%x'
 
     下面几种是不常用的
 
-    nu(IS NULL)     : 为空
-    nn(IS NOT NULL) : 不为空
-    ni(NOT IN)      : 不在其中(多个)
-    nl(NOT LIKE ..) : 不包含
+    nu  : IS NULL        : 为空
+    nn  : IS NOT NULL    : 不为空
+    ni  : NOT IN         : 不在其中(多个)
+    nl  : NOT LIKE '%x%' : 不包含
     */
 
     NU("IS NULL", "为空") {
