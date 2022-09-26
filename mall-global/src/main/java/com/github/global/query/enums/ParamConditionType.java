@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 /**
  * <pre>
  * global:
- *   is null
- *   is not null
+ *   is null      不常用
+ *   is not null  不常用
  *   =
  *   <>
  *
@@ -31,10 +31,10 @@ import java.util.stream.Collectors;
  *
  * string:
  *   like
- *   not like
+ *   not like     不常用
  *
  *
- * string 类型: 只 等于(eq)、不等于(ne)、批量(in)、包含(lk)、开头(lks)、结尾(lke)、不包含(nl) 条件
+ * string 类型: 只 等于(eq)、不等于(ne)、批量(in)、包含(inc)、开头(sta)、结尾(end) 条件
  * number 类型: 只 等于(eq)、大于(gt)、大于等于(ge)、小于(lt)、小于等于(le)、区间(bet) 条件
  * date 类型: 只 大于(gt)、大于等于(ge)、小于(lt)、小于等于(le)、区间(bet) 条件
  * 非 string/number/date 类型: 只 等于(eq)、不等于(ne) 条件
@@ -45,24 +45,24 @@ import java.util.stream.Collectors;
 public enum ParamConditionType {
 
     /*
-    nu       : 为空
-    eq       : 等于
-    ne       : 不等于
-    in       : 批量(多个)
-    between  : 区间(时间或数字)
-    gt       : 大于
-    ge       : 大于等于
-    lt       : 小于
-    le       : 小于等于
-    include  : 包含
-    start    : 开头
-    end      : 结尾
+    eq(=)           : 等于
+    ne(<>)          : 不等于
+    in              : 批量(多个)
+    bet(BETWEEN)    : 区间(时间或数字)
+    gt(>)           : 大于
+    ge(>=)          : 大于等于
+    lt(<)           : 小于
+    le(<=)          : 小于等于
+    inc(LIKE '%x%') : 包含
+    sta(LIKE 'x%')  : 开头
+    end(LIKE '%x')  : 结尾
 
-    下面是几种用不到的
+    下面几种是不常用的
 
-    nn  : 不为空
-    ni  : 不在其中(多个)
-    nl  : 不包含
+    nu(IS NULL)     : 为空
+    nn(IS NOT NULL) : 不为空
+    ni(NOT IN)      : 不在其中(多个)
+    nl(NOT LIKE ..) : 不包含
     */
 
     NU("IS NULL", "为空") {
@@ -71,12 +71,12 @@ public enum ParamConditionType {
             return String.format(" %s %s", QuerySqlUtil.toSqlField(column), getValue());
         }
     },
-//    NN("IS NOT NULL", "不为空") {
-//        @Override
-//        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
-//            return String.format(" %s %s", QuerySqlUtil.toSqlField(column), getValue());
-//        }
-//    },
+    NN("IS NOT NULL", "不为空") {
+        @Override
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
+            return String.format(" %s %s", QuerySqlUtil.toSqlField(column), getValue());
+        }
+    },
 
     EQ("=", "等于") {
         @Override
@@ -97,14 +97,14 @@ public enum ParamConditionType {
             return generateMulti(column, type, value, params);
         }
     },
-//    NI("NOT IN", "不在其中") {
-//        @Override
-//        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
-//            return generateMulti(column, type, value, params);
-//        }
-//    },
+    NI("NOT IN", "不在其中") {
+        @Override
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
+            return generateMulti(column, type, value, params);
+        }
+    },
 
-    BETWEEN("BETWEEN", "区间") {
+    BET("BETWEEN", "区间") {
         @Override
         public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
             return generateMulti(column, type, value, params);
@@ -135,13 +135,13 @@ public enum ParamConditionType {
         }
     },
 
-    INCLUDE("LIKE", "包含") {
+    INC("LIKE", "包含") {
         @Override
         public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
             return generateCondition(column, type, ("%" + value + "%"), params);
         }
     },
-    START("LIKE", "开头") {
+    STA("LIKE", "开头") {
         @Override
         public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
             return generateCondition(column, type, (value + "%"), params);
@@ -153,13 +153,12 @@ public enum ParamConditionType {
             return generateCondition(column, type, ("%" + value), params);
         }
     },
-//    NL("NOT LIKE", "不包含") {
-//        @Override
-//        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
-//            return generateCondition(column, type, ("%" + value + "%"), params);
-//        }
-//    }
-    ;
+    NL("NOT LIKE", "不包含") {
+        @Override
+        public String generateSql(String column, Class<?> type, Object value, List<Object> params) {
+            return generateCondition(column, type, ("%" + value + "%"), params);
+        }
+    };
 
 
     @JsonValue
@@ -171,7 +170,10 @@ public enum ParamConditionType {
         if (obj != null) {
             String str = obj.toString().trim();
             for (ParamConditionType e : values()) {
-                if (str.equalsIgnoreCase(e.name()) || str.equalsIgnoreCase(e.value)) {
+                if (str.equalsIgnoreCase(e.name())) {
+                    return e;
+                }
+                if (str.length() > 2 && str.toLowerCase().startsWith(e.name().toLowerCase())) {
                     return e;
                 }
             }
@@ -210,7 +212,7 @@ public enum ParamConditionType {
             return "";
         }
 
-        if (this == BETWEEN) {
+        if (this == BET) {
             Object[] arr = c.toArray();
             Object start = arr[0];
             Object end = arr.length > 1 ? arr[1] : null;
@@ -251,15 +253,15 @@ public enum ParamConditionType {
     private static final Set<ParamConditionType> MULTI_TYPE = Set.of(
             ParamConditionType.IN,
             // ParamConditionType.NI,
-            ParamConditionType.BETWEEN
+            ParamConditionType.BET
     );
     /** string 类型: 只 等于(eq)、不等于(ne)、批量(in)、包含(include)、开头(start)、结尾(end) 条件 */
     private static final Set<ParamConditionType> STRING_TYPE_SET = new LinkedHashSet<>(Arrays.asList(
             ParamConditionType.EQ,
             ParamConditionType.NE,
             ParamConditionType.IN,
-            ParamConditionType.INCLUDE,
-            ParamConditionType.START,
+            ParamConditionType.INC,
+            ParamConditionType.STA,
             ParamConditionType.END
     ));
     private static final String STRING_TYPE_INFO = String.format("String type can only be used in 「%s」 conditions",
@@ -272,7 +274,7 @@ public enum ParamConditionType {
             ParamConditionType.GE,
             ParamConditionType.LT,
             ParamConditionType.LE,
-            ParamConditionType.BETWEEN
+            ParamConditionType.BET
     ));
     private static final String NUMBER_TYPE_INFO = String.format("Number type can only be used in 「%s」 conditions",
             NUMBER_TYPE_SET.stream().map(ParamConditionType::info).collect(Collectors.joining(", ")));
@@ -283,7 +285,7 @@ public enum ParamConditionType {
             ParamConditionType.GE,
             ParamConditionType.LT,
             ParamConditionType.LE,
-            ParamConditionType.BETWEEN
+            ParamConditionType.BET
     ));
     private static final String DATE_TYPE_INFO = String.format("Date type can only be used in 「%s」 conditions",
             DATE_TYPE_SET.stream().map(ParamConditionType::info).collect(Collectors.joining(", ")));
