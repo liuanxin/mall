@@ -128,12 +128,12 @@ public class QuerySchemaInfoConfig {
         for (Schema schema : scInfo.allSchema()) {
             if (schemaSet.isEmpty() || schemaSet.contains(schema.getAlias().toLowerCase())) {
                 List<QueryInfo.QueryColumn> columnList = new ArrayList<>();
-                for (SchemaColumn column : schema.getColumnMap().values()) {
-                    String type = column.getColumnType().getSimpleName();
-                    Integer length = (column.getStrLen() == 0) ? null : column.getStrLen();
-                    SchemaColumnRelation relation = scInfo.findRelationByChild(schema.getName(), column.getName());
+                for (SchemaColumn sc : schema.getColumnMap().values()) {
+                    String type = sc.getColumnType().getSimpleName();
+                    Integer length = (sc.getStrLen() == 0) ? null : sc.getStrLen();
+                    SchemaColumnRelation relation = scInfo.findRelationByChild(schema.getName(), sc.getName());
                     String schemaColumn = (relation == null) ? null : (relation.getOneSchema() + "." + relation.getOneColumn());
-                    columnList.add(new QueryInfo.QueryColumn(column.getAlias(), column.getDesc(), type, length, schemaColumn));
+                    columnList.add(new QueryInfo.QueryColumn(sc.getAlias(), sc.getDesc(), type, length, schemaColumn));
                 }
                 queryList.add(new QueryInfo(schema.getAlias(), schema.getDesc(), columnList));
             }
@@ -323,16 +323,8 @@ public class QuerySchemaInfoConfig {
         return mapList;
     }
 
-
-    private void fillInnerData(Map<String, Object> data, List<String> idKeyList, Map<String, ReqResult> innerMap,
-                               Map<String, List<Map<String, Object>>> innerColumnMap) {
-        for (Map.Entry<String, ReqResult> entry : innerMap.entrySet()) {
-            String innerColumn = entry.getKey();
-            data.put(innerColumn, innerColumnMap.get(innerColumn));
-        }
-    }
-
     private Map<String, List<Map<String, Object>>> queryInnerData(Schema mainSchema, ReqResult result) {
+        // todo
         Map<String, List<Map<String, Object>>> innerMap = new HashMap<>();
         for (Object obj : result.getColumns()) {
             if (obj != null) {
@@ -351,5 +343,14 @@ public class QuerySchemaInfoConfig {
     }
     private List<Map<String, Object>> queryInnerData(ReqResult result) {
         return null;
+    }
+
+    private void fillInnerData(Map<String, Object> data, List<String> idKeyList, Map<String, ReqResult> innerMap,
+                               Map<String, List<Map<String, Object>>> innerColumnMap) {
+        // todo
+        for (Map.Entry<String, ReqResult> entry : innerMap.entrySet()) {
+            String innerColumn = entry.getKey();
+            data.put(innerColumn, innerColumnMap.get(innerColumn));
+        }
     }
 }
