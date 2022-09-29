@@ -1,6 +1,5 @@
 package com.github.global.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
@@ -41,7 +40,6 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
     private boolean printComplete;
 
     private final GlobalLogHandler logHandler;
-    private final ObjectMapper mapper;
 
     @Override
     public boolean supports(MethodParameter methodParameter, Type type, Class<? extends HttpMessageConverter<?>> aClass) {
