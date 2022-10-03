@@ -10,6 +10,6 @@ public enum SchemaRelationType {
     ;
 
     public boolean hasMany() {
-        return this == ONE_TO_MANY; // || this == MANY_TO_MANY;
+        return this != NULL && this != ONE_TO_ONE;
     }
 }
