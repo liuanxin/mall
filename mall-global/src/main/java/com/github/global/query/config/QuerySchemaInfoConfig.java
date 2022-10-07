@@ -226,7 +226,7 @@ public class QuerySchemaInfoConfig {
             count = queryCount(countSql, params);
             if (param.needQueryCurrentPage(count)) {
                 pageList = queryPageListWithoutGroup(firstFromSql, allFromSql, whereSql, mainSchema, param,
-                        result, querySchemaSet, allSchemaSet, params);
+                        result, needAlias, allSchemaSet, params);
             } else {
                 pageList = Collections.emptyList();
             }
@@ -244,14 +244,14 @@ public class QuerySchemaInfoConfig {
 
     private List<Map<String, Object>> queryPageListWithoutGroup(String firstFromSql, String allFromSql,
                                                                 String whereSql, String mainSchema, ReqParam param,
-                                                                ReqResult result, Set<String> querySchemaSet,
+                                                                ReqResult result, boolean needAlias,
                                                                 Set<String> allSchemaSet, List<Object> params) {
         String fromAndWhere = firstFromSql + whereSql;
         String sql;
         // deep paging(need offset a lot of result), use 「where + order + limit」 to query id, then use id to query specific columns
         if (param.hasDeepPage(deepMaxPageSize)) {
             // SELECT id FROM ... WHERE .?. ORDER BY ... LIMIT ...   (only where's schema)
-            String idPageSql = QuerySqlUtil.toIdPageSql(scInfo, fromAndWhere, mainSchema, !querySchemaSet.isEmpty(), param, params);
+            String idPageSql = QuerySqlUtil.toIdPageSql(scInfo, fromAndWhere, mainSchema, needAlias, param, params);
             List<Map<String, Object>> idList = jdbcTemplate.queryForList(idPageSql, params.toArray());
 
             // SELECT ... FROM .?. WHERE id IN (...)    (all where's schema)

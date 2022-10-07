@@ -29,7 +29,7 @@ public class ReqParam {
     private ReqParamOperate query;
     /** 排序信息 */
     private Map<String, String> sort;
-    /** 分页信息 [ 当前页, 每页行数 ], 每页行数在「10, 20, 50, 100, 200, 500, 1000」, 省略则默认是 10 */
+    /** 分页信息 [ 当前页, 每页行数 ], 每页行数在「10, 20, 50, 100, 200, 500, 1000」中, 省略则默认是 10 */
     private List<Integer> page;
     /** 当上面的分页信息有值且当前值是 true 时表示不发起 SELECT COUNT(*) 查询 */
     private Boolean noCount;

@@ -22,7 +22,7 @@ public class RequestInfo {
     /** 出参 */
     private ReqResult result;
 
-    /** { [ "order", "left", "orderItem" ] , [ "order", "right", "orderPrice" ] ] */
+    /** { [ "order", "inner", "orderAddress" ] , [ "order", "left", "orderItem" ] , [ "order", "right", "orderPrice" ] ] */
     private List<List<String>> relation;
 
 
@@ -88,7 +88,7 @@ public class RequestInfo {
                     throw new RuntimeException("relation " + masterSchema + " and " + childSchema + " has no relation");
                 }
 
-                String key = masterSchema + "." + childSchema;
+                String key = masterSchema + "<->" + childSchema;
                 if (schemaRelation.contains(key)) {
                     throw new RuntimeException("relation " + masterSchema + " and " + childSchema + " can only has one relation");
                 }
