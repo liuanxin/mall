@@ -123,28 +123,28 @@ public class RequestInfo {
         return handleRelation(schema, relationMap);
     }
     private List<SchemaJoinRelation> handleRelation(String mainSchema, Map<String, Set<SchemaJoinRelation>> relationMap) {
-        List<SchemaJoinRelation> relationList = new ArrayList<>();
-        Set<String> relationSet = new HashSet<>();
+        Set<SchemaJoinRelation> relationSet = new LinkedHashSet<>();
+        Set<String> schemaSet = new HashSet<>();
         Set<SchemaJoinRelation> mainSet = relationMap.remove(mainSchema);
         if (mainSet != null && !mainSet.isEmpty()) {
             for (SchemaJoinRelation relation : mainSet) {
-                relationList.add(relation);
-                relationSet.add(relation.getMasterSchema().getName());
-                relationSet.add(relation.getChildSchema().getName());
+                relationSet.add(relation);
+                schemaSet.add(relation.getMasterSchema().getName());
+                schemaSet.add(relation.getChildSchema().getName());
             }
         }
         for (int i = 0; i < relationMap.size(); i++) {
             for (Map.Entry<String, Set<SchemaJoinRelation>> entry : relationMap.entrySet()) {
-                if (relationSet.contains(entry.getKey())) {
+                if (schemaSet.contains(entry.getKey())) {
                     for (SchemaJoinRelation relation : entry.getValue()) {
-                        relationList.add(relation);
-                        relationSet.add(relation.getMasterSchema().getName());
-                        relationSet.add(relation.getChildSchema().getName());
+                        relationSet.add(relation);
+                        schemaSet.add(relation.getMasterSchema().getName());
+                        schemaSet.add(relation.getChildSchema().getName());
                     }
                 }
             }
         }
-        return relationList;
+        return new ArrayList<>(relationSet);
     }
     public List<SchemaJoinRelation> paramRelationList(SchemaColumnInfo scInfo, Set<String> paramSchemaSet,
                                                       Set<String> resultFunctionSchemaSet) {

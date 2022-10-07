@@ -288,9 +288,8 @@ public class QuerySchemaInfoConfig {
 
     private Map<String, Object> queryObj(String fromAndWhere, String mainSchema, ReqParam param, ReqResult result,
                                          Set<String> allSchemaSet, List<Object> params) {
-        boolean needAlias = !allSchemaSet.isEmpty();
         String selectGroupSql = QuerySqlUtil.toSelectGroupSql(scInfo, fromAndWhere, mainSchema, result, allSchemaSet, params);
-        String orderSql = param.generateOrderSql(mainSchema, needAlias, scInfo);
+        String orderSql = param.generateOrderSql(mainSchema, !allSchemaSet.isEmpty(), scInfo);
         String sql = selectGroupSql + orderSql + param.generateArrToObjSql(params);
         Map<String, Object> obj = QueryUtil.first(assemblyResult(sql, params, mainSchema, allSchemaSet, result));
         return (obj == null) ? Collections.emptyMap() : obj;
