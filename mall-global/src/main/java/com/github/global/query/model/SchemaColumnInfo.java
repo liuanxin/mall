@@ -7,13 +7,16 @@ import java.util.*;
 public class SchemaColumnInfo {
 
     private final Map<String, String> aliasMap;
+    private final Map<String, String> schemaClassMap;
     private final Map<String, Schema> schemaMap;
 
     private final Map<String, Map<String, SchemaColumnRelation>> childRelationMap;
     private final Map<String, Map<String, SchemaColumnRelation>> masterChildSchemaMap;
 
-    public SchemaColumnInfo(Map<String, String> aliasMap, Map<String, Schema> schemaMap, List<SchemaColumnRelation> relationList) {
+    public SchemaColumnInfo(Map<String, String> aliasMap, Map<String, String> schemaClassMap,
+                            Map<String, Schema> schemaMap, List<SchemaColumnRelation> relationList) {
         this.aliasMap = aliasMap;
+        this.schemaClassMap = schemaClassMap;
         this.schemaMap = schemaMap;
 
         Map<String, Map<String, SchemaColumnRelation>> childRelationMap = new HashMap<>();
@@ -40,6 +43,11 @@ public class SchemaColumnInfo {
 
     public Collection<Schema> allSchema() {
         return schemaMap.values();
+    }
+
+    public Schema findSchemaByClass(Class<?> clazz) {
+        String schemaName = schemaClassMap.get(clazz.getName());
+        return (schemaName == null || schemaName.isEmpty()) ? null : schemaMap.get(schemaName);
     }
 
     public Schema findSchema(String schemaName) {

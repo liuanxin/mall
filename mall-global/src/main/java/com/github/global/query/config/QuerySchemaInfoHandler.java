@@ -2,6 +2,7 @@ package com.github.global.query.config;
 
 import com.github.common.collection.MapMultiUtil;
 import com.github.common.collection.MapMultiValue;
+import com.github.common.util.A;
 import com.github.global.query.constant.QueryConst;
 import com.github.global.query.enums.ResultType;
 import com.github.global.query.enums.SchemaRelationType;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 @Component
-public class QuerySchemaInfoConfig {
+public class QuerySchemaInfoHandler {
 
     @Value("${query.scan-packages:}")
     private String scanPackages;
@@ -27,7 +28,7 @@ public class QuerySchemaInfoConfig {
     private final JdbcTemplate jdbcTemplate;
     private final SchemaColumnInfo scInfo;
 
-    public QuerySchemaInfoConfig(JdbcTemplate jdbcTemplate) {
+    public QuerySchemaInfoHandler(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
         this.scInfo = (scanPackages == null || scanPackages.isEmpty()) ? initWithDb() : QueryUtil.scanSchema(scanPackages);
     }
@@ -110,11 +111,11 @@ public class QuerySchemaInfoConfig {
                 }
             }
         }
-        return new SchemaColumnInfo(aliasMap, schemaMap, relationList);
+        return new SchemaColumnInfo(aliasMap, new HashMap<>(), schemaMap, relationList);
     }
 
 
-    public List<QueryInfo> queryInfo(String schemas) {
+    public List<QueryInfo> info(String schemas) {
         Set<String> schemaSet = new LinkedHashSet<>();
         if (schemas != null && !schemas.isEmpty()) {
             for (String te : schemas.split(",")) {
@@ -140,6 +141,97 @@ public class QuerySchemaInfoConfig {
         }
         return queryList;
     }
+
+
+    public <T> int insert(T obj) {
+        return insert(obj, false);
+    }
+    public <T> int insert(T obj, boolean generateNullField) {
+        if (obj == null) {
+            return 0;
+        }
+
+        Schema schema = scInfo.findSchemaByClass(obj.getClass());
+        if (schema == null) {
+            return 0;
+        }
+
+        List<Object> params = new ArrayList<>();
+        String insertSql = schema.generateInsert(obj, generateNullField, params);
+        if (insertSql != null && !insertSql.isEmpty() && !params.isEmpty()) {
+            return jdbcTemplate.update(insertSql, params.toArray());
+        } else {
+            return 0;
+        }
+    }
+    public <T> int insertBatch(List<T> list) {
+        return insertBatch(list, 500, false);
+    }
+    public <T> int insertBatch(List<T> list, int singleCount, boolean generateNullField) {
+        if (list == null || list.isEmpty()) {
+            return 0;
+        }
+
+        Schema schema = scInfo.findSchemaByClass(list.get(0).getClass());
+        if (schema == null) {
+            return 0;
+        }
+
+        int flag = 0;
+        List<List<T>> splitList = A.split(list, singleCount);
+        for (List<T> lt : splitList) {
+            List<Object> params = new ArrayList<>();
+            String insertSql = schema.generateBatchInsert(lt, generateNullField, params);
+            if (insertSql != null && !insertSql.isEmpty()) {
+                flag += jdbcTemplate.update(insertSql, params.toArray());
+            }
+        }
+        return flag;
+    }
+
+
+    public <T> int delete(Class<T> clazz, WhereCondition query) {
+        if (clazz == null || query == null) {
+            return 0;
+        }
+
+        Schema schema = scInfo.findSchemaByClass(clazz);
+        if (schema == null) {
+            return 0;
+        }
+
+        List<Object> params = new ArrayList<>();
+        String deleteSql = schema.generateDelete(query, params);
+        if (deleteSql != null && !deleteSql.isEmpty()) {
+            return jdbcTemplate.update(deleteSql, params.toArray());
+        } else {
+            return 0;
+        }
+    }
+
+
+    public <T> int update(T obj, WhereCondition query) {
+        return update(obj, query, false);
+    }
+    public <T> int update(T updateObj, WhereCondition query, boolean generateNullField) {
+        if (updateObj == null || query == null) {
+            return 0;
+        }
+
+        Schema schema = scInfo.findSchemaByClass(updateObj.getClass());
+        if (schema == null) {
+            return 0;
+        }
+
+        List<Object> params = new ArrayList<>();
+        String updateSql = schema.generateUpdate(updateObj, generateNullField, query, params);
+        if (updateSql != null && !updateSql.isEmpty()) {
+            return jdbcTemplate.update(updateSql, params.toArray());
+        } else {
+            return 0;
+        }
+    }
+
 
     public Object query(RequestInfo req) {
         req.checkSchema(scInfo);

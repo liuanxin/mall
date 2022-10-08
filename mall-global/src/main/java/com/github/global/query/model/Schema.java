@@ -69,4 +69,21 @@ public class Schema {
         }
         return sj.toString();
     }
+
+
+    // todo
+    public <T> String generateInsert(T obj, boolean generateNullField, List<Object> params) {
+        return "";
+    }
+    public <T> String generateBatchInsert(List<T> list, boolean generateNullField, List<Object> params) {
+        return "";
+    }
+
+    public <T> String generateDelete(WhereCondition query, List<Object> params) {
+        return "";
+    }
+
+    public <T> String generateUpdate(T updateObj, boolean generateNullField, WhereCondition query, List<Object> params) {
+        return "";
+    }
 }

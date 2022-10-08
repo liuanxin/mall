@@ -36,7 +36,7 @@ public class BackendUserController {
     @ApiTokens
     @ApiMethod(value = "登录", develop = Develop.USER)
     @GetMapping("/login")
-    public JsonResult<UserLoginRes> login(@ApiParam(value = "用户名", must = true) String userName,
+    public JsonResult<UserLoginRes> login(@ApiParam(value = "用户名", required = true) String userName,
                                           @ApiParam("密码, 当验证码为空时") String password,
                                           @ApiParam("验证码") String code) {
         U.assertBlank(userName, "请输入用户名");

@@ -64,6 +64,7 @@ public class QueryUtil {
     }
     private static SchemaColumnInfo handleSchema(Set<Class<?>> classes) {
         Map<String, String> aliasMap = new HashMap<>();
+        Map<String, String> schemaClassMap = new HashMap<>();
         Map<String, Schema> schemaMap = new LinkedHashMap<>();
         List<SchemaColumnRelation> relationList = new ArrayList<>();
 
@@ -142,6 +143,7 @@ public class QueryUtil {
                 columnMap.put(columnName, new SchemaColumn(columnName, columnDesc, columnAlias, primary, strLen, type));
             }
             aliasMap.put(QueryConst.SCHEMA_PREFIX + schemaAlias, schemaName);
+            schemaClassMap.put(clazz.getName(), schemaName);
             schemaMap.put(schemaName, new Schema(schemaName, schemaDesc, schemaAlias, columnMap));
         }
 
@@ -185,7 +187,7 @@ public class QueryUtil {
                 }
             }
         }
-        return new SchemaColumnInfo(aliasMap, schemaMap, relationList);
+        return new SchemaColumnInfo(aliasMap, schemaClassMap, schemaMap, relationList);
     }
     /** UserInfo --> user_info */
     private static String aliasToSchemaName(String className) {
