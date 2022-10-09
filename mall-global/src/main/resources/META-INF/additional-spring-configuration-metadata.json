@@ -68,27 +68,6 @@
       "defaultValue": "lang",
       "sourceType": "com.github.global.config.GlobalWebConfig",
       "description": "处理语言时的参数名(/path?lang=zh-CN)."
-    },
-    {
-      "name": "query.online",
-      "type": "java.lang.Boolean",
-      "defaultValue": "false",
-      "sourceType": "com.github.global.query.web.SchemaColumnController",
-      "description": "设置为 true 则表字段结构接口返回空数据."
-    },
-    {
-      "name": "query.scan-packages",
-      "type": "java.lang.String",
-      "defaultValue": "",
-      "sourceType": "com.github.global.query.config.QuerySchemaInfoHandler",
-      "description": "存放关联表的类的包地址, 多个用英文逗号隔开."
-    },
-    {
-      "name": "query.deep-max-page-size",
-      "type": "java.lang.Integer",
-      "defaultValue": "10000",
-      "sourceType": "com.github.global.query.config.QuerySchemaInfoHandler",
-      "description": "当要请求的数据页(page * limit)大于当前值时, sql 会先查出 id 再查具体的数据."
     }
   ]
 }
