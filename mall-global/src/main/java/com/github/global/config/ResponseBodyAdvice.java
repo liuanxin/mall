@@ -22,7 +22,6 @@ import org.springframework.web.servlet.mvc.method.annotation.AbstractMappingJack
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
 
-@SuppressWarnings({"NullableProblems"})
 @RequiredArgsConstructor
 @ConditionalOnClass({ HttpServletResponse.class, ResponseBody.class })
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
