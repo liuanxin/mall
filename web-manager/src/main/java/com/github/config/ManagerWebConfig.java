@@ -7,37 +7,31 @@ import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
+ * 不要使用继承 WebMvcConfigurationSupport 或 DelegatingWebMvcConfiguration 的方式, 会覆盖掉原有的默认配置
+ *
  * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurer
  * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport
  * @see org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
  */
 @SuppressWarnings("NullableProblems")
 @Configuration
-public class ManagerWebConfig extends DelegatingWebMvcConfiguration {
+public class ManagerWebConfig implements WebMvcConfigurer {
 
     /** 打印请求日志时, 是否输出头信息 */
     @Value("${req.logPrintHeader:true}")
     private boolean printHeader;
 
     @Override
-    protected void addResourceHandlers(ResourceHandlerRegistry registry) {
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    protected PathMatchConfigurer getPathMatchConfigurer() {
-        // 当使用 @PathVariable("{xx}") 里面有带 . 的参数时, 也能匹配上
-        return super.getPathMatchConfigurer().setUseSuffixPatternMatch(false);
     }
 
     @Override
