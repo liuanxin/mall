@@ -272,15 +272,18 @@ public class ApacheHttpClientUtil {
         ) {
             HttpEntity entity = response.getEntity();
             if (U.isNotNull(entity)) {
-                resHeaders = response.getAllHeaders();
-                StatusLine status = response.getStatusLine();
-                responseCode = status.getStatusCode();
-                resCode = responseCode + " ";
-                result = EntityUtils.toString(entity, StandardCharsets.UTF_8);
-                if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                    LogUtil.ROOT_LOG.info(collectContext(start, method, url, params, reqHeaders, resCode, resHeaders, result));
+                try {
+                    resHeaders = response.getAllHeaders();
+                    StatusLine status = response.getStatusLine();
+                    responseCode = status.getStatusCode();
+                    resCode = responseCode + " ";
+                    result = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+                    if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                        LogUtil.ROOT_LOG.info(collectContext(start, method, url, params, reqHeaders, resCode, resHeaders, result));
+                    }
+                } finally {
+                    EntityUtils.consume(entity);
                 }
-                EntityUtils.consume(entity);
             }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {

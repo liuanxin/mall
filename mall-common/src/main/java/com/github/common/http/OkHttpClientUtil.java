@@ -181,12 +181,15 @@ public class OkHttpClientUtil {
         String statusCode = "";
         String result = "";
         long start = System.currentTimeMillis();
-        try (Response response = HTTP_CLIENT.newCall(request).execute()) {
+        try (
+                Response response = HTTP_CLIENT.newCall(request).execute();
+                ResponseBody body = response.body()
+        ) {
             resHeaders = response.headers();
             responseCode = response.code();
             statusCode = responseCode + " ";
             // noinspection ConstantConditions
-            result = response.body().string();
+            result = body.string();
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info(collectContext(start, method, url, params, reqHeaders, statusCode, resHeaders, result));
             }
