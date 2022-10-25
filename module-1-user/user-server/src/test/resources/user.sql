@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `t_user_login_history` (
   `login_type` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0.站内登录, 1.第三方登录',
   `login_time` datetime(3) NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '登录时间',
   `login_ip` bigint NOT NULL DEFAULT '' COMMENT '登录地址(使用整数存储 ip)',
-  `login_user_agent` varchar(128) NOT NULL DEFAULT '' COMMENT '登录时的 user-agent',
+  `login_user_agent` varchar(128) NOT NULL DEFAULT '' COMMENT '登录时的 User-Agent',
   `create_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
   `update_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
   `is_deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '1 已删除, 默认是 0 未删除',
