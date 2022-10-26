@@ -2,8 +2,6 @@ package com.github.web;
 
 import com.github.common.annotation.NotNeedLogin;
 import com.github.common.annotation.NotNeedPermission;
-import com.github.common.collection.MapMultiUtil;
-import com.github.common.collection.MapMultiValue;
 import com.github.common.util.A;
 import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiGroup;
@@ -21,6 +19,8 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,7 +37,7 @@ public class ManagerCollectionController {
     @GetMapping("/collect-menu-permission")
     public boolean version() {
         Map<RequestMappingInfo, HandlerMethod> handlerMethods = mapping.getHandlerMethods();
-        MapMultiValue<String, String, Set<String>> multi = MapMultiUtil.createLinkedMapLinkedSet();
+        Map<String, Set<String>> multiMap = new HashMap<>();
         String sp = "~!~";
         String classSuffix = "Controller";
         for (Map.Entry<RequestMappingInfo, HandlerMethod> entry : handlerMethods.entrySet()) {
@@ -78,11 +78,11 @@ public class ManagerCollectionController {
                 String url = U.isNull(patternsCondition) ? U.EMPTY : A.toStr(patternsCondition.getPatterns());
                 String value = Joiner.on(sp).join(permissionName, method, url);
 
-                multi.put(key, value);
+                multiMap.computeIfAbsent(key, (k1) -> new LinkedHashSet<>()).add(value);
             }
         }
         int i = 1;
-        for (Map.Entry<String, Set<String>> entry : multi.asMap().entrySet()) {
+        for (Map.Entry<String, Set<String>> entry : multiMap.entrySet()) {
             String[] menuArr = entry.getKey().split(sp);
             System.out.printf(
                     "REPLACE INTO `t_manager_menu`(`id`, `name`, `front`) VALUES(%s,'%s','%s')%n",

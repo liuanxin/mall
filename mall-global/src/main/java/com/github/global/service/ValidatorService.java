@@ -1,7 +1,5 @@
 package com.github.global.service;
 
-import com.github.common.collection.MapMultiUtil;
-import com.github.common.collection.MapMultiValue;
 import com.github.common.exception.ParamException;
 import com.github.common.util.A;
 import com.github.common.util.U;
@@ -11,10 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /** 需要引入 jakarta.validation-api 包, 因此按需装载 */
 @RequiredArgsConstructor
@@ -64,14 +59,15 @@ public class ValidatorService {
             return Collections.emptyMap();
         }
 
-        MapMultiValue<String, String, Set<String>> fieldErrorMap = MapMultiUtil.createLinkedMapLinkedSet();
+        Map<String, Set<String>> fieldErrorMap = new LinkedHashMap<>();
         for (ConstraintViolation<?> error : errorSet) {
             Class<?> clazz = error.getRootBeanClass();
             String field = validationService.getParamField(clazz, error.getPropertyPath().toString());
             if (U.isNotBlank(field)) {
-                fieldErrorMap.put(field, validationService.getMessage(error.getMessage()));
+                String message = validationService.getMessage(error.getMessage());
+                fieldErrorMap.computeIfAbsent(field, (k1) -> new LinkedHashSet<>()).add(message);
             }
         }
-        return validationService.handleError(fieldErrorMap.asMap());
+        return validationService.handleError(fieldErrorMap);
     }
 }

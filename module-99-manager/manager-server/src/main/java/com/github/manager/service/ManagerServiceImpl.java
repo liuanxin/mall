@@ -3,8 +3,6 @@ package com.github.manager.service;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.github.common.collection.MapMultiUtil;
-import com.github.common.collection.MapMultiValue;
 import com.github.common.encrypt.Encrypt;
 import com.github.common.page.PageParam;
 import com.github.common.page.PageReturn;
@@ -17,10 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -137,7 +132,7 @@ public class ManagerServiceImpl implements ManagerService {
             return Collections.emptyList();
         }
 
-        MapMultiValue<Long, ManagerMenu, List<ManagerMenu>> menuMultiMap = MapMultiUtil.createMapList();
+        Map<Long, List<ManagerMenu>> menuMultiMap = new HashMap<>();
         if (loadMenu) {
             List<ManagerRoleMenu> roleMenus = roleMenuMapper.selectList(Wrappers.lambdaQuery(ManagerRoleMenu.class)
                     .in(ManagerRoleMenu::getRoleId, rids));
@@ -151,14 +146,14 @@ public class ManagerServiceImpl implements ManagerService {
                     for (ManagerRoleMenu roleMenu : roleMenus) {
                         ManagerMenu menu = menuMap.get(roleMenu.getMenuId());
                         if (U.isNotNull(menu)) {
-                            menuMultiMap.put(roleMenu.getRoleId(), menu);
+                            menuMultiMap.computeIfAbsent(roleMenu.getRoleId(), (k1) -> new ArrayList<>()).add(menu);
                         }
                     }
                 }
             }
         }
 
-        MapMultiValue<Long, ManagerPermission, List<ManagerPermission>> permissionMultiMap = MapMultiUtil.createMapList();
+        Map<Long, List<ManagerPermission>> permissionMultiMap = new HashMap<>();
         if (loadPermission) {
             Wrapper<ManagerRolePermission> rolePermissionQuery = Wrappers.lambdaQuery(ManagerRolePermission.class)
                     .in(ManagerRolePermission::getRoleId, rids);
@@ -172,9 +167,10 @@ public class ManagerServiceImpl implements ManagerService {
 
                     Map<Long, ManagerPermission> permissionMap = A.listToMap(permissions, ManagerPermission::getId);
                     for (ManagerRolePermission rolePermission : rolePermissions) {
-                        ManagerPermission permission = permissionMap.get(rolePermission.getPermissionId());
+                        Long permissionId = rolePermission.getPermissionId();
+                        ManagerPermission permission = permissionMap.get(permissionId);
                         if (U.isNotNull(permission)) {
-                            permissionMultiMap.put(rolePermission.getPermissionId(), permission);
+                            permissionMultiMap.computeIfAbsent(permissionId, (k1) -> new ArrayList<>()).add(permission);
                         }
                     }
                 }

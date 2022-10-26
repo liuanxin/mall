@@ -14,7 +14,7 @@ public enum MapValueDuplicateType {
         }
     },
 
-    /** 覆盖 */
+    /** 覆盖(用后写入的为准) */
     COVER {
         @Override
         public <K, V> void handle(Map<K, V> map, Collection<?> list, K k, V v) {
@@ -22,7 +22,7 @@ public enum MapValueDuplicateType {
         }
     },
 
-    /** 忽略 */
+    /** 忽略(用先写入的为准) */
     IGNORE {
         @Override
         public <K, V> void handle(Map<K, V> map, Collection<?> list, K k, V v) {
