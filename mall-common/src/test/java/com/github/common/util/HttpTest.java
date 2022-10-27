@@ -1,24 +1,29 @@
 package com.github.common.util;
 
-import com.github.common.http.*;
+import com.github.common.http.ApacheHttpClientUtil;
+import com.github.common.http.HttpClientUtil;
+import com.github.common.http.HttpUrlConnectionUtil;
+import com.github.common.http.OkHttpClientUtil;
 
 public class HttpTest {
 
     public static void main(String[] args) {
-        String url = "https://weibo.com";
+        String url = "http://weibo.com";
 
-        ResponseData<String> res;
-        res = OkHttpClientUtil.get(url);
-        String okhttp = res.getData().trim();
+        OkHttpClientUtil.get(url);
+        System.out.println("okhttp");
         System.out.println("\n-----");
-        res = ApacheHttpClientUtil.get(url);
-        String apache = res.getData().trim();
+
+        ApacheHttpClientUtil.get(url);
+        System.out.println("Apache-HttpClient");
         System.out.println("\n-----");
-        res = HttpUrlConnectionUtil.get(url);
-        String connection = res.getData().trim();
+
+        HttpUrlConnectionUtil.get(url);
+        System.out.println("jdk-HttpUrlConnection");
         System.out.println("\n-----");
-        res = HttpClientUtil.get(url);
-        String httpclient = res.getData().trim();
+
+        HttpClientUtil.get(url);
+        System.out.println("jdk-HttpClient");
         System.out.println("\n-----");
     }
 }

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ResponseData<T> {
+public class ResponseData {
 
     private static final String UNKNOWN_STATUS = "Unknown Status";
     private static final Map<Integer, String> REASONS = new HashMap<>();
@@ -85,10 +85,10 @@ public class ResponseData<T> {
     }
 
     private Integer status;
-    private T data;
+    private String data;
 
     public ResponseData() {}
-    public ResponseData(Integer status, T data) {
+    public ResponseData(Integer status, String data) {
         this.status = status;
         this.data = data;
     }
@@ -105,10 +105,10 @@ public class ResponseData<T> {
         return status != null ? REASONS.getOrDefault(status, UNKNOWN_STATUS) : UNKNOWN_STATUS;
     }
 
-    public void setData(T data) {
+    public void setData(String data) {
         this.data = data;
     }
-    public T getData() {
+    public String getData() {
         return data;
     }
 }
