@@ -1,5 +1,6 @@
 package com.github.mq.handle;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.common.date.DateUtil;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
@@ -42,6 +43,8 @@ import java.util.function.Function;
 @Configuration
 @ConditionalOnClass(RabbitListener.class)
 public class MqReceiverHandler {
+
+    private static final TypeReference<Map<String, Object>> MAP_REFERENCE = new TypeReference<>(){};
 
     @Value("${spring.rabbitmq.listener.simple.retry.max-attempts:3}")
     private int consumerRetryCount;
@@ -145,18 +148,24 @@ public class MqReceiverHandler {
                 LogUtil.ROOT_LOG.info("开始消费 {} 数据({})", desc, json);
             }
             String data = U.isNotNull(mqData) && U.isNotBlank(mqData.getJson()) ? mqData.getJson() : json;
-            model.setSearchKey(U.toStr(fun.apply(data)));
+            String searchKey = U.toStr(fun.apply(data));
+            StringBuilder sbd = new StringBuilder(U.toStr(model.getRemark()));
+            String oldSearchKey = U.toStr(model.getSearchKey());
+            if (U.isNotBlank(oldSearchKey) && !oldSearchKey.equals(searchKey)) {
+                sbd.append(" -- old-search-key: ").append(oldSearchKey);
+            }
+            model.setSearchKey(searchKey);
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("消费({})数据({})成功", desc, msgId);
             }
             status = MqConst.SUCCESS;
-            remark = String.format("<%s : 消费(%s)数据成功>%s", DateUtil.nowDateTime(), desc, U.toStr(model.getRemark()));
+            remark = String.format("<%s : 消费(%s)数据成功>%s", DateUtil.nowDateTime(), desc, sbd);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("消费({})数据({})异常", desc, msgId, e);
             }
             status = MqConst.FAIL;
-            String oldRemark = U.toStr(U.isNull(model) ? null : model.getRemark());
+            String oldRemark = U.isNull(model) ? "" : U.toStr(model.getRemark());
             String now = DateUtil.nowDateTime();
             String msg = e.getMessage();
             if (currentRetryCount < consumerRetryCount) {
@@ -185,14 +194,13 @@ public class MqReceiverHandler {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private String getMsgId(String defaultId, MqData mqData, String json) {
         if (U.isNotBlank(defaultId)) {
             return defaultId;
         }
 
         String dataJson = U.isNull(mqData) ? json : U.defaultIfBlank(mqData.getJson(), json);
-        Map<String, Object> map = JsonUtil.toObjectNil(dataJson, Map.class);
+        Map<String, Object> map = JsonUtil.toObjectType(dataJson, MAP_REFERENCE);
         if (A.isNotEmpty(map)) {
             for (String key : msgIdKey.split(",")) {
                 String msgId = U.toStr(map.get(key.trim()));
