@@ -11,7 +11,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
+ * <pre>
  * https://github.com/mongodb/mongo-java-driver/blob/master/bson/src/main/org/bson/types/ObjectId.java
+ *
  * https://github.com/callicoder/java-snowflake/blob/master/src/main/java/com/callicoder/snowflake/Snowflake.java
  *
  * 1. 时间部分(当前时间 - 某个起始时间)
@@ -19,8 +21,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * 3. 进程数据
  * 4. 自增数据
  *
- * 当 1 毫秒内自增达到了最大则使用下一毫秒
- * 如果碰到时钟回拨会休眠到下一时钟
+ * 当 1 毫秒内自增达到了最大则使用下一毫秒; 如果碰到时钟回拨会休眠到下一时钟;
+ * </pre>
  */
 public class IdUtil {
 
@@ -163,5 +165,4 @@ public class IdUtil {
             public static final TimeMillis INSTANCE = new TimeMillis();
         }
     }
-
 }
