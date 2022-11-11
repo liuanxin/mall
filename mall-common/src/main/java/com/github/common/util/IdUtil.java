@@ -111,12 +111,12 @@ public class IdUtil {
                 if (offset <= 5) {
                     try {
                         Thread.sleep(5 - offset);
-                        timestamp = getMs();
-                        if (timestamp < lastTimestamp) {
-                            throw new RuntimeException(String.format("时钟回拨. %d 毫秒内不生成 id", (lastTimestamp - timestamp)));
-                        }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
+                    }
+                    timestamp = getMs();
+                    if (timestamp < lastTimestamp) {
+                        throw new RuntimeException(String.format("再次时钟回拨. %d 毫秒内拒绝生成 id", (lastTimestamp - timestamp)));
                     }
                 } else {
                     throw new RuntimeException(String.format("时钟回拨. %d 毫秒内拒绝生成 id", offset));
@@ -133,12 +133,12 @@ public class IdUtil {
                 // 不同毫秒序列号随机 1 或 2
                 sequence = ThreadLocalRandom.current().nextLong(1, 3);
             }
-            // 上次生成ID的时间截
+            // 上次的时间截
             lastTimestamp = timestamp;
         } finally {
             LOCK.unlock();
         }
-        // 移位并通过或运算拼到一起组成 64 位的 id
+        // 移位 及 或运算 组成 64 位 id
         return ((timestamp - START_MS) << TIMESTAMP_LEFT_SHIFT)
                 | (DATACENTER_ID << DATACENTER_ID_SHIFT)
                 | (WORKER_ID << WORKER_ID_SHIFT)
@@ -159,10 +159,10 @@ public class IdUtil {
 
         public static long getMs() {
             // 使用 static class 来确保延迟加载的单例
-            return InstanceHolder.INSTANCE.now.get();
+            return Instance.TIME_MILLIS.now.get();
         }
-        private static class InstanceHolder {
-            public static final TimeMillis INSTANCE = new TimeMillis();
+        private static class Instance {
+            public static final TimeMillis TIME_MILLIS = new TimeMillis();
         }
     }
 }
