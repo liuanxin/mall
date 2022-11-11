@@ -24,8 +24,7 @@ public final class AsyncUtil {
         );
     }
     private static BlockingQueue<Runnable> queue() {
-        // 左移 11 位相当于乘以 2048
-        return new LinkedBlockingQueue<>(U.PROCESSORS << 11);
+        return new LinkedBlockingQueue<>(U.PROCESSORS << 14);
     }
     /** CPU 密集型的线程池(时间都消耗在了计算上) */
     public static ExecutorService cpuExecutor() {
