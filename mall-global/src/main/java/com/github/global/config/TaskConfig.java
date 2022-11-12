@@ -45,7 +45,7 @@ public class TaskConfig implements AsyncConfigurer {
         int poolSize = U.calcPoolSize(0.8, 20, 180);
         executor.setCorePoolSize(corePoolSize > 0 ? corePoolSize : poolSize);
         executor.setMaxPoolSize(maxPoolSize > 0 ? maxPoolSize : (poolSize + 1));
-        executor.setQueueCapacity(queueCapacity > 0 ? queueCapacity : (U.PROCESSORS << 11));
+        executor.setQueueCapacity(queueCapacity > 0 ? queueCapacity : (U.CPU_SIZE << 11));
         executor.setThreadNamePrefix("task-executor-");
         // 见: https://moelholm.com/blog/2017/07/24/spring-43-using-a-taskdecorator-to-copy-mdc-data-to-async-threads
         executor.setTaskDecorator(AsyncUtil::wrapRunContext);

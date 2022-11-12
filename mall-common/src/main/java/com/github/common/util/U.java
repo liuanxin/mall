@@ -31,7 +31,7 @@ public final class U {
     public static final Random RANDOM = new Random();
 
     /** 本机的 cpu 核心数 */
-    public static final int PROCESSORS = Runtime.getRuntime().availableProcessors();
+    public static final int CPU_SIZE = Runtime.getRuntime().availableProcessors();
 
     public static final String EMPTY = "";
 
@@ -133,10 +133,10 @@ public final class U {
         double realRate = (cpuRate > 0 && cpuRate < 1) ? cpuRate : 1;
         int realCpuTime = (cpuTime <= 0) ? 1 : Math.min(cpuTime, 999);
         int realIoTime = (ioTime <= 0) ? 1 : Math.min(ioTime, 999);
-        double num = PROCESSORS * realRate * (realCpuTime + realIoTime) / realCpuTime;
+        double num = CPU_SIZE * realRate * (realCpuTime + realIoTime) / realCpuTime;
         int calcNum = (int) num;
         int returnNum = (num == calcNum) ? calcNum : (calcNum + 1);
-        return (returnNum == PROCESSORS) ? (returnNum + 1) : returnNum;
+        return (returnNum == CPU_SIZE) ? (returnNum + 1) : returnNum;
     }
 
     /** 生成指定位数的随机数: 纯数字 */
