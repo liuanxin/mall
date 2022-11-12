@@ -428,7 +428,7 @@ public final class U {
         return count;
     }
 
-    /** 字符串转 unicode(中文转成 \\u) */
+    /** 字符串转 unicode(字符串转成 \\u 形式的字符串) */
     public static String encodeUnicode(String str) {
         if (isBlank(str)) {
             return str;
@@ -441,7 +441,7 @@ public final class U {
         }
         return sbd.toString();
     }
-    /** unicode 转字符串(\\u 转成中文) */
+    /** unicode 转字符串(\\u 形式的字符串转成字符串) */
     public static String decodeUnicode(String unicode) {
         if (isBlank(unicode)) {
             return unicode;
@@ -454,7 +454,7 @@ public final class U {
             sbd.append(unicode, pos, i);
             if (i + 5 < unicode.length()) {
                 pos = i + 6;
-                sbd.append((char) Integer.parseInt(unicode.substring(i + 2, i + 6), 16));
+                sbd.append((char) Integer.parseInt(unicode.substring(i + 2, pos), 16));
             }
         }
         sbd.append(unicode.substring(pos));
