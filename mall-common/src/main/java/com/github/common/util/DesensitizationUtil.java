@@ -24,7 +24,7 @@ public final class DesensitizationUtil {
         String lower = key.toLowerCase();
         String str = lower.contains("_") ? lower.replace("_", "-") : lower;
         return switch (str) {
-            case "password" -> "***";
+            case "pwd", "password" -> "***";
             case "phone", "tel", "telephone" -> U.foggyPhone(value);
             case "idcard", "id-card" -> U.foggyIdCard(value);
             case "token", "x-token" -> U.foggyValue(value, 50, 10);
