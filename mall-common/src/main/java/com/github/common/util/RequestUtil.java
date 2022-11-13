@@ -237,8 +237,8 @@ public final class RequestUtil {
      * 如果使用文件上传 &lt;from type="multipart/form-data"...&gt; 的方式(Content-Type: multipart/form-data)
      * 或者 RequestBody 的方式(Content-Type: application/json)发送数据,
      * 请求是一个二进制流, 用 request.getParameterMap() 获取到的是一个空数据,
-     * 想要获取得基于 request.getInputStream() 或 request.getReader(),
-     * 而直接获取流后, 当想要再次获取时将会报 getXX can't be called after getXXX 异常(数据流的偏移指针没有指到最开头),
+     * 想要获取得基于 request.getInputStream() 或 request.getReader() 或 request.getParts() 操作流,
+     * 而获取流后, 当后续要再次获取时将会报 getXX can't be called after getXXX 异常(数据流的偏移指针没有指到最开头),
      * 要解决得包装一层 request 并复制一遍字节码, 这多少就有点得不偿失了
      * </pre>
      *
