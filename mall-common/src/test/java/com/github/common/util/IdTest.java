@@ -25,6 +25,12 @@ public class IdTest {
 
     @Test
     public void generateOrderNo() throws Exception {
+        System.out.println("------------------");
+        for (int i = 0; i < 20; i++) {
+            System.out.println(IdUtil.getId());
+        }
+        System.out.println("------------------");
+
         long start = System.currentTimeMillis();
         System.out.println("start : " + FORMATTER.format(LocalDateTime.ofInstant(new Date(start).toInstant(), ZONE_ID)));
 
@@ -43,9 +49,5 @@ public class IdTest {
         System.out.println("------------------");
         System.out.println("all   : " + COUNT);
         System.out.println("real  : " + set.size());
-
-        for (int i = 0; i < 20; i++) {
-            System.out.println(IdUtil.getId());
-        }
     }
 }
