@@ -49,13 +49,6 @@
       "description": "响应错误时, 错误码是否以 ResponseStatus 返回."
     },
     {
-      "name": "log.printComplete",
-      "type": "java.lang.Boolean",
-      "defaultValue": false,
-      "sourceType": "com.github.global.config.RequestBodyAdvice",
-      "description": "是否在转换前打印日志(false 表示在转换后打印, 但如果转换失败将无法打印, 如果设置在转换前会消耗更多资源)."
-    },
-    {
       "name": "http.cors.allow-headers",
       "type": "java.lang.String",
       "defaultValue": "",
