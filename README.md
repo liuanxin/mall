@@ -158,7 +158,7 @@ public class DemoRes {
      创建时间: DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),  
      更新时间: DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)  
    另外, 不要使用 not null default '0000-00-00 00:00:00' 这种做法, 这是一个无效日期,  
-   在 mysql 8 中需要开启 `SET SQL_MODE='ALLOW_INVALID_DATES'` 才能写入, 此时这个字段允许 null 就好了(**NULL 并不会导致索引失效**)
+   在 mysql 8 中需要开启 `SET SQL_MODE='ALLOW_INVALID_DATES'` 才能写入, 此时这个字段允许 null 就好了(NULL 并不会导致索引失效)
 
 ```txt
 从 MySQL 8.0.17 开始, float, double, decimal 类型不再推荐使用 unsigned, 推荐使用 CHECK 约束:
@@ -168,11 +168,10 @@ public class DemoRes {
 见: https://dev.mysql.com/doc/refman/8.0/en/numeric-type-syntax.html
 
 
-tinyint 保存的是 -128 ~ 127, 加上 unsigned 后可以保存 0 ~ 255, 只有 tinyint(1) 是一个例外, 用来映射应用程序的 Boolean 类型,  
-但其实它依然可以保存除 0 和 1 之外 -128 ~ 127 的其他值, 这里只能自我约束了. 当想要映射 Boolean 类型时, 数据库类型用 tinyint(1),  
-并且不要用保存除 0 1 以外的其他值, 注意: 不要加 unsigned, 如果加了保存时长度信息会被忽略, 除此外,  
-其他的 int 字段不要再设置长度, 直接用 tinyint、int、bigint 就好, 如果确定不会保存负数, 则加上 unsigned,  
-设置了长度保存时会提示警告(包括 tinyint(1) 这个特例), 长度也会被 MySQL 8 忽略.
+tinyint 保存的是 -128 ~ 127, 加上 unsigned 后可以保存 0 ~ 255, 只有 tinyint(1) 是一个例外(其用来映射应用程序的 Boolean 类型), 但其实
+它依然可以保存除 0 和 1 以外 -128 ~ 127 的其他值, 因此只能自我约束, 当要映射 Boolean 类型时, 数据库类型用 tinyint(1), 并且只存 0 或 1,
+注意: 不要加 unsigned, 如果加了保存时长度信息会被忽略. 此外, 其他的整数类型不用再设置长度, 直接用 tinyint、int、bigint 就好, 如果不会
+有负数则加上 unsigned, 如果设置了长度保存时会提示警告(包括 tinyint(1) 这个特例), 长度也会被 MySQL 8 忽略.
 ```
 
 
