@@ -66,8 +66,8 @@ public final class JsonModule {
 
             Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
             if (U.isNotNull(field)) {
-                // noinspection DuplicatedCode
                 JsonFormat jsonFormat = getFormatField(field);
+                // noinspection DuplicatedCode
                 if (U.isNotNull(jsonFormat)) {
                     JsonFormat.Value format = new JsonFormat.Value(jsonFormat);
                     Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();

@@ -45,31 +45,40 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
     }
 
     private void handleString(String value, JsonGenerator gen) throws IOException {
-        if (U.isBlank(value)) {
-            gen.writeString(value);
-        } else {
-            JsonSensitive sensitive = getSensitiveAnnotation(gen);
-            if (U.isNotNull(sensitive)) {
-                gen.writeString(DesensitizationUtil.desString(value, sensitive.start(), sensitive.end()));
-            } else {
-                gen.writeString(value);
+        if (U.isNotBlank(value)) {
+            Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
+            if (U.isNotNull(field)) {
+                JsonSensitiveString sensitiveField = getFieldAnnotation(field, JsonSensitiveString.class);
+                if (U.isNotNull(sensitiveField)) {
+                    gen.writeString(sensitiveField.value().des(value, sensitiveField.showLen()));
+                    return;
+                }
+
+                JsonSensitive sensitive = getFieldAnnotation(field, JsonSensitive.class);
+                if (U.isNotNull(sensitive)) {
+                    gen.writeString(DesensitizationUtil.desString(value, sensitive.start(), sensitive.end()));
+                    return;
+                }
             }
         }
+        gen.writeString(value);
     }
 
     private void handleNumber(Number value, JsonGenerator gen) throws IOException {
-        JsonSensitive sensitive = getSensitiveAnnotation(gen);
-        if (U.isNotNull(sensitive)) {
-            gen.writeObject(DesensitizationUtil.descNumber(value, sensitive.randomNumber(), sensitive.digitsNumber()));
-        } else {
-            gen.writeString(value.toString());
+        Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
+        if (U.isNotNull(field)) {
+            JsonSensitive sensitive = getFieldAnnotation(field, JsonSensitive.class);
+            if (U.isNotNull(sensitive)) {
+                gen.writeObject(DesensitizationUtil.descNumber(value, sensitive.randomNumber(), sensitive.digitsNumber()));
+            }
         }
+        gen.writeString(value.toString());
     }
 
     private void handleDate(Date value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
         if (U.isNotNull(field)) {
-            JsonSensitive sensitive = getSensitiveField(field);
+            JsonSensitive sensitive = getFieldAnnotation(field, JsonSensitive.class);
             if (U.isNotNull(sensitive)) {
                 long randomDateTimeMillis = sensitive.randomDateTimeMillis();
                 if (randomDateTimeMillis != 0) {
@@ -78,8 +87,8 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
                 }
             }
 
+            JsonFormat jsonFormat = getFieldAnnotation(field, JsonFormat.class);
             // noinspection DuplicatedCode
-            JsonFormat jsonFormat = getFormatField(field);
             if (U.isNotNull(jsonFormat)) {
                 // @see com.fasterxml.jackson.databind.ser.std.DateSerializer
                 JsonFormat.Value format = new JsonFormat.Value(jsonFormat);
@@ -93,32 +102,22 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
         provider.defaultSerializeDateValue(value, gen);
     }
 
-    private JsonSensitive getSensitiveAnnotation(JsonGenerator gen) {
-        Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
-        return U.isNull(field) ? null : getSensitiveField(field);
-    }
-    private JsonSensitive getSensitiveField(Field field) {
-        Class<JsonSensitive> clazz = JsonSensitive.class;
+    @SuppressWarnings("unchecked")
+    private <T extends Annotation> T getFieldAnnotation(Field field, Class<T> clazz) {
         String key = field.getType().getName() + "#" + field.getName() + "." + clazz.getName();
-        JsonSensitive sensitive = (JsonSensitive) FIELD_MAP.get(key);
-        if (U.isNull(sensitive)) {
-            sensitive = field.getAnnotation(clazz);
-            if (U.isNotNull(sensitive)) {
-                FIELD_MAP.put(key, sensitive);
+        try {
+            T sen = (T) FIELD_MAP.get(key);
+            if (U.isNotNull(sen)) {
+                return sen;
+            } else {
+                T s = field.getAnnotation(clazz);
+                if (U.isNotNull(s)) {
+                    FIELD_MAP.put(key, s);
+                }
+                return s;
             }
+        } catch (Exception e) {
+            return null;
         }
-        return sensitive;
-    }
-    private JsonFormat getFormatField(Field field) {
-        Class<JsonFormat> clazz = JsonFormat.class;
-        String key = field.getType().getName() + "#" + field.getName() + "." + clazz.getName();
-        JsonFormat format = (JsonFormat) FIELD_MAP.get(key);
-        if (U.isNull(format)) {
-            format = field.getAnnotation(clazz);
-            if (U.isNotNull(format)) {
-                FIELD_MAP.put(key, format);
-            }
-        }
-        return format;
     }
 }

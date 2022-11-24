@@ -592,15 +592,6 @@ public final class U {
     }
 
 
-    /** 雾化手机号: 13012345678 -> 130****5678 */
-    public static String foggyPhone(String phone) {
-        return hasPhone(phone) ? phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4) : phone;
-    }
-    /** 雾化身份证号: 110011191001011010 -> 110***10 */
-    public static String foggyIdCard(String idCard) {
-        // 是标准的 15 或 18 位身份证就返回「前面 3 位 + 后面 2 位」
-        return hasIdCard(idCard) ? foggyValue(idCard, 15, 3, 2) : idCard;
-    }
     /**
      * 如果字符长度大于指定长度, 则只输出头尾的固定字符
      * <pre>
@@ -608,18 +599,25 @@ public final class U {
      * </pre>
      */
     public static String foggyValue(String value, int max, int leftRight) {
-        return foggyValue(value, max, leftRight, leftRight);
+        return foggyValue(value, max, leftRight, leftRight, true);
     }
     /**
      * 如果字符长度大于指定长度, 则只输出头尾的固定字符
      * <pre>
-     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 0)」 -> 「***[36]」
-     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 3)」 -> 「***890[36]」
-     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 0)」 -> 「abc***[36]」
-     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 3)」 -> 「abc***890[36]」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 0, true)」  -> 「***[36]」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 0, false)」 -> 「***」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 3, true)」  -> 「***890[36]」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 3, false)」 -> 「***890」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 0, true)」  -> 「abc***[36]」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 0, false)」 -> 「abc***」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 3, true)」  -> 「abc***890[36]」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 3, false)」 -> 「abc***890」
      * </pre>
      */
-    public static String foggyValue(String value, int max, int left, int right) {
+//    public static String foggyValue(String value, int max, int left, int right) {
+//
+//    }
+    public static String foggyValue(String value, int max, int left, int right, boolean showLen) {
         if (isBlank(value)) {
             return value.trim();
         }
@@ -627,7 +625,11 @@ public final class U {
         int lt = (left < 0 || left > valueLen) ? 0 : left;
         int rt = (right < 0 || right > valueLen) ? 0 : right;
         if (valueLen >= max && max > (lt + rt)) {
-            return String.format("%s***%s[%s]", value.substring(0, lt), value.substring(valueLen - rt), valueLen);
+            if (showLen) {
+                return String.format("%s***%s[%s]", value.substring(0, lt), value.substring(valueLen - rt), valueLen);
+            } else {
+                return String.format("%s***%s", value.substring(0, lt), value.substring(valueLen - rt));
+            }
         } else {
             return value;
         }
