@@ -58,8 +58,7 @@ public final class DesensitizationUtil {
         double random = Math.abs(randomNumber);
         if (value instanceof BigDecimal || value instanceof Double || value instanceof Float) {
             double d = (random != 0) ? RANDOM.nextDouble(random) : value.doubleValue();
-            // BigDecimal 或 float 或 double 使用 String 序列化
-            // 去掉尾部的 0(比如 10.00 --> 10, 比如 10.020 -> 10.02)
+            // BigDecimal 或 float 或 double 使用 String 序列化    去掉尾部的 0(比如 10.00 --> 10    10.020 -> 10.02)
             return BigDecimal.valueOf(d).setScale(Math.abs(digitsNumber), RoundingMode.DOWN).stripTrailingZeros().toPlainString();
         }
         else if (value instanceof BigInteger || value instanceof Long) {
