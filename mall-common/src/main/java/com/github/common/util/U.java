@@ -614,13 +614,11 @@ public final class U {
      * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 3, false)」 -> 「abc***890」
      * </pre>
      */
-//    public static String foggyValue(String value, int max, int left, int right) {
-//
-//    }
     public static String foggyValue(String value, int max, int left, int right, boolean showLen) {
         if (isBlank(value)) {
             return value.trim();
         }
+
         int valueLen = value.length();
         int lt = (left < 0 || left > valueLen) ? 0 : left;
         int rt = (right < 0 || right > valueLen) ? 0 : right;
