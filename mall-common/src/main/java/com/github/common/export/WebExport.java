@@ -241,7 +241,6 @@ public final class WebExport {
         String fileName = name + "-" + (new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
         String userAgent = RequestUtil.userAgent();
         if (U.isNotBlank(userAgent) && userAgent.contains("Mozilla")) {
-            // Chrome, Firefox, Safari etc...
             return new String(fileName.getBytes(), StandardCharsets.ISO_8859_1);
         } else {
             return U.urlEncode(fileName);
