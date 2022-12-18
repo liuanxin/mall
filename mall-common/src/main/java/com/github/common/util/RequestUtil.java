@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
@@ -346,17 +347,17 @@ public final class RequestUtil {
             LogUtil.ROOT_LOG.debug("return data: " + data);
         }
         try {
-            response.setCharacterEncoding("utf-8");
-            response.setContentType(type + ";charset=utf-8;");
+            response.setCharacterEncoding(StandardCharsets.UTF_8.displayName());
+            response.setContentType(type);
             response.getWriter().write(data);
-        } catch (IllegalStateException e) {
-            // 基于 response 调用了 getOutputStream(), 又再调用 getWriter() 会被 web 容器拒绝
-            if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-                LogUtil.ROOT_LOG.debug("response state exception", e);
-            }
         } catch (IOException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("handle json to {} io exception", type, e);
+            }
+        } catch (Exception e) {
+            // 基于 response 调用了 getOutputStream(), 又再调用 getWriter() 会被 web 容器拒绝
+            if (LogUtil.ROOT_LOG.isDebugEnabled()) {
+                LogUtil.ROOT_LOG.debug("response exception", e);
             }
         }
     }

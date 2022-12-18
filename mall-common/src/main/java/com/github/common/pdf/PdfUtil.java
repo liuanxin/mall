@@ -13,6 +13,7 @@ import com.itextpdf.text.pdf.qrcode.EncodeHintType;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +27,7 @@ public class PdfUtil {
     private static final Pattern SPACE_PATTERN = Pattern.compile("([a-zA-Z0-9])");
     private static final Map<EncodeHintType, Object> HINTS = new HashMap<>();
     static {
-        HINTS.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+        HINTS.put(EncodeHintType.CHARACTER_SET, StandardCharsets.UTF_8.displayName());
     }
 
     /** 英文字体 */

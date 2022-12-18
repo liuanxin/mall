@@ -233,7 +233,7 @@ public final class WebExport {
     private static void typeAndHeader(HttpServletResponse response, String type, String fileName) {
         // response.setContentType("application/octet-stream; charset=utf-8");
         response.setContentType(type);
-        response.setCharacterEncoding("utf-8");
+        response.setCharacterEncoding(StandardCharsets.UTF_8.displayName());
         response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
     }
 
