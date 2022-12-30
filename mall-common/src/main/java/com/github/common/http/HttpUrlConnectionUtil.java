@@ -299,7 +299,7 @@ public class HttpUrlConnectionUtil {
             sbd.append("header(");
             for (Map.Entry<String, List<String>> entry : reqHeaders.entrySet()) {
                 String key = entry.getKey();
-                String value = A.toStr(entry.getValue());
+                String value = String.join(",", entry.getValue());
                 sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
             }
             sbd.append(")");
@@ -310,7 +310,7 @@ public class HttpUrlConnectionUtil {
             sbd.append("header(");
             for (Map.Entry<String, List<String>> entry : resHeaders.entrySet()) {
                 String key = entry.getKey();
-                String value = A.toStr(entry.getValue());
+                String value = String.join(",", entry.getValue());
                 sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
             }
             sbd.append(")");

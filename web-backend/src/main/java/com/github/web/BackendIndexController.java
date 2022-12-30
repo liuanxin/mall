@@ -61,7 +61,7 @@ public class BackendIndexController {
             RequestMappingInfo info = entry.getKey();
             HandlerMethod method = entry.getValue();
             urlList.add(Map.of(
-                    "url", U.isNull(info.getPatternsCondition()) ? U.EMPTY : A.toStr(info.getPatternsCondition().getPatterns()),
+                    "url", U.isNull(info.getPatternsCondition()) ? U.EMPTY : String.join(",", info.getPatternsCondition().getPatterns()),
                     "method", A.toStr(info.getMethodsCondition().getMethods()),
                     "class", method.getBeanType().getName() + "#" + method.getMethod().getName()
             ));

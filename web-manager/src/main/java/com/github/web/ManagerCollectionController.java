@@ -74,8 +74,8 @@ public class ManagerCollectionController {
                 String key = Joiner.on(sp).join(menu, className);
 
                 String method = A.toStr(requestMapping.getMethodsCondition().getMethods());
-                PatternsRequestCondition patternsCondition = requestMapping.getPatternsCondition();
-                String url = U.isNull(patternsCondition) ? U.EMPTY : A.toStr(patternsCondition.getPatterns());
+                PatternsRequestCondition prc = requestMapping.getPatternsCondition();
+                String url = U.isNull(prc) ? U.EMPTY : String.join(",", prc.getPatterns());
                 String value = Joiner.on(sp).join(permissionName, method, url);
 
                 multiMap.computeIfAbsent(key, (k1) -> new LinkedHashSet<>()).add(value);
