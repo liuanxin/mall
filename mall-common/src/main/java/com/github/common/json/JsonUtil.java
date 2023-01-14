@@ -3,6 +3,7 @@ package com.github.common.json;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.github.common.date.DateFormatType;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
@@ -37,10 +38,9 @@ public class JsonUtil {
     private static final ObjectMapper OBJECT_MAPPER = new RenderObjectMapper();
 
     private static final ObjectMapper EMPTY_OBJECT_MAPPER = new ObjectMapper();
-    private static final ObjectMapper IGNORE_OBJECT_MAPPER = new ObjectMapper();
-    static {
-        IGNORE_OBJECT_MAPPER.configure(MapperFeature.USE_ANNOTATIONS, false);
-    }
+    private static final ObjectMapper IGNORE_OBJECT_MAPPER = JsonMapper.builder()
+                .configure(MapperFeature.USE_ANNOTATIONS, false)
+                .build();
 
     private static class RenderObjectMapper extends ObjectMapper {
         private RenderObjectMapper() {
