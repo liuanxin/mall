@@ -62,6 +62,7 @@ public final class JsonModule {
             // 时间戳为 0 的序列化为 null, 这样当数据库表字段设置 1970-01-01 这样的默认值时, 序列化当成 null 处理
             if (U.isNull(value) || value.getTime() <= 0) {
                 gen.writeNull();
+                return;
             }
 
             Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
