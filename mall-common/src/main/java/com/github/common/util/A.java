@@ -44,7 +44,7 @@ public final class A {
 
     /** 数组为空或其每一项都是空则返回 true */
     public static <T> boolean isEmpty(T[] array) {
-        if (array == null || array.length == 0) {
+        if (array == null) {
             return true;
         }
         for (T t : array) {
@@ -210,7 +210,6 @@ public final class A {
         }
 
         StringJoiner joiner = new StringJoiner(split);
-        int len = array.length;
         for (Object obj : array) {
             if (U.isNull(obj)) {
                 if (!ignoreNull) {
