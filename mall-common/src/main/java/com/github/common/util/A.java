@@ -113,6 +113,19 @@ public final class A {
         }
         return sbd.toString();
     }
+    /** 将集合中每一项 执行返回值是 String 的方法 后分隔(忽略空) */
+    public static <T> String toStr(Collection<T> list, Function<T, String> func, String split) {
+        if (isEmpty(list)) {
+            return "";
+        }
+        StringJoiner sj = new StringJoiner(split);
+        for (T obj : list) {
+            if (U.isNotNull(obj)) {
+                sj.add(func.apply(obj));
+            }
+        }
+        return sj.toString();
+    }
 
     /** 拿英文逗号(,)分隔集合(忽略空) */
     public static String toStr(Collection<?> collection) {
