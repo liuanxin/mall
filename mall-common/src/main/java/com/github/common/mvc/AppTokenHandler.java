@@ -14,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 /** 专门针对 app 操作的 token 处理器, 登录时生成 token, 每次请求都刷新过期时间, 删除由客户端处理 */
 public final class AppTokenHandler {
 
+    private static final String TOKEN_PREFIX = "Auth-Key ";
+
     /** 生成 token 的过期时间 */
     private static final Long TOKEN_EXPIRE_TIME = 7L;
     /** 生成 token 的过期时间单位 */
@@ -29,7 +31,7 @@ public final class AppTokenHandler {
         if (U.isNotNull(session)) {
             Map<String, Object> jwt = JsonUtil.convert(session, Map.class);
             if (A.isNotEmpty(jwt)) {
-                return Encrypt.jwtEncode(jwt, expireDay, TOKEN_EXPIRE_TIME_UNIT);
+                return genToken(jwt, expireDay);
             }
         }
         return U.EMPTY;
@@ -50,15 +52,24 @@ public final class AppTokenHandler {
                 throw new NotLoginException(e.getMessage());
             }
             if (A.isNotEmpty(session)) {
-                return Encrypt.jwtEncode(session, expireDay, TOKEN_EXPIRE_TIME_UNIT);
+                return genToken(session, expireDay);
             }
         }
         return U.EMPTY;
     }
 
+    private static String genToken(Map<String, Object> session, long expireDay) {
+        return TOKEN_PREFIX + Encrypt.jwtEncode(session, expireDay, TOKEN_EXPIRE_TIME_UNIT);
+    }
     /** 从请求中获取 token 数据 */
     private static String getToken() {
-        return RequestUtil.getHeaderOrParam(Const.TOKEN);
+        String token = RequestUtil.getHeaderOrParam(Const.TOKEN);
+        if (U.isNotBlank(token)) {
+            if (token.startsWith(TOKEN_PREFIX)) {
+                return token.substring(TOKEN_PREFIX.length());
+            }
+        }
+        return token;
     }
 
     /** 从 token 中读 session 信息, 如果登录已过期或解密失败将返回 null */

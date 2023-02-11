@@ -29,7 +29,8 @@ public final class DesensitizationUtil {
             case "phone", "tel", "telephone" -> U.foggyValue(value, 11, 3, 4, false);
             case "address", "street" -> U.foggyValue(value, 10, 3);
             case "idcard", "id-card" -> U.foggyValue(value, 15, 2);
-            case "token", "x-token", "apptoken", "app-token", "x-app-token",
+            case "authorization", "x-auth-key",
+                    "token", "x-token", "apptoken", "app-token", "x-app-token",
                     "appkey", "app-key", "x-app-key",
                     "appsecret", "app-secret", "x-app-secret" -> U.foggyValue(value, 16, 3);
             default -> U.foggyValue(value, 500, 100);

@@ -51,7 +51,7 @@ public final class Const {
     public static final String REDIRECT_PREFIX = "redirect:";
 
     /** pc 端传过来的 token 的 key */
-    public static final String TOKEN = "X-Token"; // Authorization
+    public static final String TOKEN = "Authorization";
     /** pc 端放在 header 中的跟踪号 */
     public static final String TRACE = "X-Trace";
     /** pc 端传过来的 version 的 key */
