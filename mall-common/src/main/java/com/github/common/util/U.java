@@ -325,7 +325,7 @@ public final class U {
         }
     }
     public static boolean isNotLong(Object obj) {
-        return !isInt(obj);
+        return !isLong(obj);
     }
 
     public static boolean isDouble(Object obj) {
