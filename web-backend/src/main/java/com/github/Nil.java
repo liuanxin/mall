@@ -1,5 +1,8 @@
 package com.github;
 
+import com.github.common.json.JsonUtil;
+import lombok.Data;
+
 public class Nil {
 
 //    public static void main(String[] args) {
@@ -120,4 +123,16 @@ public class Nil {
 //                "image", image.contains("?") ? image.substring(0, image.indexOf("?")).trim() : image
 //        ));
 //    }
+
+    @Data
+    public static class Abc {
+        private String abc;
+    }
+
+
+    public static void main(String[] args) {
+        String json = "{\"abc\":123}";
+        Abc abc = JsonUtil.toObject(json, Abc.class);
+        System.out.println(abc);
+    }
 }

@@ -99,126 +99,28 @@ public class ApacheHttpClientUtil {
     }
 
 
-    /** 向指定 url 进行 get 请求 */
+    /** 向指定 url 进行 get 请求(普通表单方式) */
     public static ResponseData get(String url) {
         return get(url, null);
     }
-    /** 向指定 url 进行 get 请求 */
+    /** 向指定 url 进行 get 请求(普通表单方式) */
     public static ResponseData get(String url, Map<String, Object> params) {
-        return getWithHeader(url, params, null);
+        return get(url, params, null);
     }
-    /** 向指定 url 进行 get 请求 */
-    public static ResponseData getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap) {
-        url = HttpConst.handleGetParams(url, params);
-        HttpGet request = new HttpGet(HttpConst.handleEmptyScheme(url));
-        handleHeader(request, headerMap);
+    /** 向指定 url 进行 get 请求(普通表单方式) */
+    public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers) {
+        HttpGet request = new HttpGet(HttpConst.handleEmptyScheme(HttpConst.handleGetParams(url, params)));
+        handleHeader(request, HttpConst.handleContentType(headers, false));
         return handleRequest(request, null);
     }
 
 
-    /** 向指定的 url 进行 post 请求(表单) */
-    public static ResponseData post(String url, Map<String, Object> params) {
-        return postWithHeader(url, params, null);
+    /** 向指定的 url 进行 post 请求(普通表单方式) */
+    public static ResponseData postWithForm(String url, Map<String, Object> params) {
+        return postWithForm(url, params, null);
     }
-    /** 向指定的 url 进行 post 请求(表单) */
-    public static ResponseData postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
-        HttpPost request = handlePostParams(url, params);
-        handleHeader(request, headers);
-        // Content-Type 不设置则默认是 application/x-www-form-urlencoded
-        return handleRequest(request, U.formatParam(params));
-    }
-
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postBody(String url, String json) {
-        return postBodyWithHeader(url, json, null);
-    }
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postBodyWithHeader(String url, String json, Map<String, Object> headers) {
-        HttpPost request = new HttpPost(HttpConst.handleEmptyScheme(url));
-        request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
-        handleHeader(request, headers);
-        request.addHeader("Content-Type", "application/json");
-        return handleRequest(request, json);
-    }
-
-
-    /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static ResponseData put(String url, String json) {
-        return putWithHeader(url, json, null);
-    }
-    /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static ResponseData putWithHeader(String url, String json, Map<String, Object> headers) {
-        HttpPut request = new HttpPut(HttpConst.handleEmptyScheme(url));
-        request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
-        handleHeader(request, headers);
-        request.addHeader("Content-Type", "application/json");
-        return handleRequest(request, json);
-    }
-
-
-    /** 向指定的 url 基于 delete 发起 request-body 请求 */
-    public static ResponseData delete(String url, String json) {
-        return deleteWithHeader(url, json, null);
-    }
-    /** 向指定的 url 基于 delete 发起 request-body 请求 */
-    public static ResponseData deleteWithHeader(String url, String json, Map<String, Object> headers) {
-        HttpEntityEnclosingRequestBase request = new HttpEntityEnclosingRequestBase() {
-            @Override
-            public String getMethod() {
-                return "DELETE";
-            }
-        };
-        request.setURI(URI.create(HttpConst.handleEmptyScheme(url)));
-        request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
-        handleHeader(request, headers);
-        request.addHeader("Content-Type", "application/json");
-        return handleRequest(request, json);
-    }
-
-
-    /** 向指定 url 上传文件 */
-    public static ResponseData postFile(String url, Map<String, Object> headers,
-                                        Map<String, Object> params, Map<String, File> files) {
-        if (A.isEmpty(params)) {
-            params = new HashMap<>();
-        }
-        StringBuilder sbd = new StringBuilder();
-        HttpPost request = handlePostParams(url, params);
-        handleHeader(request, headers);
-        boolean hasParam = A.isNotEmpty(params);
-        if (hasParam) {
-            sbd.append("param(");
-            for (Map.Entry<String, Object> entry : params.entrySet()) {
-                String key = entry.getKey();
-                String value = U.toStr(entry.getValue());
-                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
-            }
-            sbd.append(")");
-        }
-        boolean hasFile = A.isNotEmpty(files);
-        if (hasParam && hasFile) {
-            sbd.append(" ");
-        }
-        if (hasFile) {
-            sbd.append("file(");
-            MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create().setLaxMode();
-            for (Map.Entry<String, File> entry : files.entrySet()) {
-                File file = entry.getValue();
-                if (U.isNotNull(file)) {
-                    String key = entry.getKey();
-                    entityBuilder.addBinaryBody(key, file);
-                    sbd.append("<").append(key).append(" : ").append(file.getPath()).append(">");
-                }
-            }
-            request.setEntity(entityBuilder.build());
-            sbd.append(")");
-        }
-        return handleRequest(request, String.format("upload file[%s]", sbd));
-    }
-
-
-    /** 处理 post 请求的参数(表单) */
-    private static HttpPost handlePostParams(String url, Map<String, Object> params) {
+    /** 向指定的 url 进行 post 请求(普通表单方式) */
+    public static ResponseData postWithForm(String url, Map<String, Object> params, Map<String, Object> headers) {
         HttpPost request = new HttpPost(HttpConst.handleEmptyScheme(url));
         List<NameValuePair> nameValuePairs = new ArrayList<>();
         if (A.isNotEmpty(params)) {
@@ -231,8 +133,98 @@ public class ApacheHttpClientUtil {
             }
             request.setEntity(new UrlEncodedFormEntity(nameValuePairs, StandardCharsets.UTF_8));
         }
-        return request;
+        handleHeader(request, HttpConst.handleContentType(headers, false));
+        return handleRequest(request, U.formatParam(params));
     }
+
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static ResponseData postWithBody(String url, String data) {
+        return postWithBody(url, data, null);
+    }
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static ResponseData postWithBody(String url, String data, Map<String, Object> headers) {
+        HttpPost request = new HttpPost(HttpConst.handleEmptyScheme(url));
+        request.setEntity(new ByteArrayEntity(data.getBytes(StandardCharsets.UTF_8)));
+        handleHeader(request, HttpConst.handleContentType(headers, true));
+        return handleRequest(request, data);
+    }
+
+
+    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    public static ResponseData put(String url, String data) {
+        return putWithHeader(url, data, null);
+    }
+    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    public static ResponseData putWithHeader(String url, String data, Map<String, Object> headers) {
+        HttpPut request = new HttpPut(HttpConst.handleEmptyScheme(url));
+        request.setEntity(new ByteArrayEntity(data.getBytes(StandardCharsets.UTF_8)));
+        handleHeader(request, HttpConst.handleContentType(headers, true));
+        return handleRequest(request, data);
+    }
+
+
+    /** 向指定的 url 基于 delete 发起 request-body 请求 */
+    public static ResponseData delete(String url, String data) {
+        return deleteWithHeader(url, data, null);
+    }
+    /** 向指定的 url 基于 delete 发起 request-body 请求 */
+    public static ResponseData deleteWithHeader(String url, String data, Map<String, Object> headers) {
+        HttpEntityEnclosingRequestBase request = new HttpEntityEnclosingRequestBase() {
+            @Override
+            public String getMethod() {
+                return "DELETE";
+            }
+        };
+        request.setURI(URI.create(HttpConst.handleEmptyScheme(url)));
+        request.setEntity(new ByteArrayEntity(data.getBytes(StandardCharsets.UTF_8)));
+        handleHeader(request, HttpConst.handleContentType(headers, true));
+        return handleRequest(request, data);
+    }
+
+
+    /** 向指定 url 上传文件 */
+    public static ResponseData postFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
+        if (A.isEmpty(params)) {
+            params = new HashMap<>();
+        }
+        StringBuilder sbd = new StringBuilder();
+        HttpPost request = new HttpPost(HttpConst.handleEmptyScheme(url));
+        handleHeader(request, HttpConst.handleContentType(headers));
+        MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create().setLaxMode();
+        boolean hasParam = A.isNotEmpty(params);
+        if (hasParam) {
+            sbd.append("param(");
+            for (Map.Entry<String, Object> entry : params.entrySet()) {
+                String key = entry.getKey();
+                String value = U.toStr(entry.getValue());
+                entityBuilder.addTextBody(key, value);
+                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
+            }
+            sbd.append(")");
+        }
+        boolean hasFile = A.isNotEmpty(files);
+        if (hasFile) {
+            if (hasParam) {
+                sbd.append(" ");
+            }
+            sbd.append("file(");
+            for (Map.Entry<String, File> entry : files.entrySet()) {
+                File file = entry.getValue();
+                if (U.isNotNull(file)) {
+                    String key = entry.getKey();
+                    entityBuilder.addBinaryBody(key, file);
+                    sbd.append("<").append(key).append(" : ").append(file.getPath()).append(">");
+                }
+            }
+            sbd.append(")");
+        }
+        if (hasParam || hasFile) {
+            request.setEntity(entityBuilder.build());
+        }
+        return handleRequest(request, String.format("upload file[%s]", sbd));
+    }
+
+
     /** 处理请求时存到 header 中的数据 */
     private static void handleHeader(HttpRequestBase request, Map<String, Object> headers) {
         if (A.isNotEmpty(headers)) {
@@ -244,7 +236,6 @@ public class ApacheHttpClientUtil {
             }
         }
     }
-    /** 发起 http 请求 */
     private static ResponseData handleRequest(HttpRequestBase request, String params) {
         request.setConfig(config());
 
@@ -302,14 +293,7 @@ public class ApacheHttpClientUtil {
                 .append("(").append(DateUtil.toHuman(now - start)).append(")")
                 .append("] (").append(method).append(" ").append(url).append(")");
         sbd.append(" req[");
-        boolean hasParam = U.isNotBlank(params);
-        if (hasParam) {
-            sbd.append("param(").append(U.compress(params)).append(")");
-        }
         boolean hasReqHeader = A.isNotEmpty(reqHeaders);
-        if (hasParam && hasReqHeader) {
-            sbd.append(" ");
-        }
         if (hasReqHeader) {
             sbd.append("header(");
             for (Header header : reqHeaders) {
@@ -318,6 +302,13 @@ public class ApacheHttpClientUtil {
                 sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
             }
             sbd.append(")");
+        }
+        boolean hasParam = U.isNotBlank(params);
+        if (hasParam) {
+            if (hasReqHeader) {
+                sbd.append(" ");
+            }
+            sbd.append("param(").append(U.compress(params)).append(")");
         }
         sbd.append("], res[").append(statusCode);
         boolean hasResHeader = A.isNotEmpty(resHeaders);

@@ -25,7 +25,13 @@ public class OkHttpClientUtil {
     /** 连接保持时间, 单位: 分, 默认是 5. 见: {@link okhttp3.ConnectionPool} */
     private static final int CONNECTION_KEEP_ALIVE_TIME = 5;
 
-    private static final MediaType JSON = MediaType.parse("application/json");
+    // 请求有三种方式:
+    // 1. 普通表单: <form ...> 的方式(Content-Type: application/x-www-form-urlencoded)
+    // 2. 文件上传表单: <from type="multipart/form-data" ...> 的方式(Content-Type: multipart/form-data)
+    // 3. 请求体: POST|PUT|DELETE + RequestBody 的方式(Content-Type: application/json)
+    private static final MediaType FORM = MediaType.get("application/x-www-form-urlencoded");
+    private static final MediaType FORM_DATA = MediaType.get("multipart/form-data");
+    private static final MediaType JSON = MediaType.get("application/json");
 
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient().newBuilder()
             .connectTimeout(HttpConst.CONNECT_TIME_OUT, TimeUnit.MILLISECONDS)
@@ -34,82 +40,78 @@ public class OkHttpClientUtil {
             .build();
 
 
-    /** 向指定 url 进行 get 请求 */
+    /** 向指定 url 进行 get 请求(普通表单方式) */
     public static ResponseData get(String url) {
         return get(url, null);
     }
-    /** 向指定 url 进行 get 请求 */
+    /** 向指定 url 进行 get 请求(普通表单方式) */
     public static ResponseData get(String url, Map<String, Object> params) {
-        return getWithHeader(url, params, null);
+        return get(url, params, null);
     }
-    /** 向指定 url 进行 get 请求 */
-    public static ResponseData getWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
-        url = HttpConst.handleGetParams(url, params);
+    /** 向指定 url 进行 get 请求(普通表单方式) */
+    public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers) {
         Request.Builder builder = new Request.Builder();
-        handleHeader(builder, headers);
-        return handleRequest(url, builder, null);
+        handleHeader(builder, HttpConst.handleContentType(headers, false));
+        return handleRequest(HttpConst.handleGetParams(url, params), builder, null);
     }
 
 
-    /** 向指定的 url 进行 post 请求(表单) */
-    public static ResponseData post(String url, Map<String, Object> params) {
-        return postWithHeader(url, params, null);
+    /** 向指定的 url 进行 post 请求(普通表单方式) */
+    public static ResponseData postWithForm(String url, Map<String, Object> params) {
+        return postWithForm(url, params, null);
     }
-    /** 向指定的 url 进行 post 请求(表单) */
-    public static ResponseData postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
-        RequestBody request = RequestBody.create(MultipartBody.FORM, U.formatParam(false, params));
-        Request.Builder builder = new Request.Builder().post(request);
-        handleHeader(builder, headers);
-        // Content-Type 不设置则默认是 application/x-www-form-urlencoded
+    /** 向指定的 url 进行 post 请求(普通表单方式) */
+    public static ResponseData postWithForm(String url, Map<String, Object> params, Map<String, Object> headers) {
+        RequestBody requestBody = RequestBody.create(U.formatParam(false, params), FORM);
+        Request.Builder builder = new Request.Builder().post(requestBody);
+        handleHeader(builder, HttpConst.handleContentType(headers, false));
         return handleRequest(url, builder, U.formatParam(params));
     }
 
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postBody(String url, String json) {
-        return postBodyWithHeader(url, json, null);
+    public static ResponseData postWithBody(String url, String data) {
+        return postWithBody(url, data, null);
     }
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postBodyWithHeader(String url, String json, Map<String, Object> headers) {
-        String data = U.toStr(json);
-        Request.Builder builder = new Request.Builder().post(RequestBody.create(JSON, json));
-        handleHeader(builder, headers);
-        builder.addHeader("Content-Type", "application/json");
-        return handleRequest(url, builder, json);
+    public static ResponseData postWithBody(String url, String data, Map<String, Object> headers) {
+        String content = U.toStr(data);
+        Request.Builder builder = new Request.Builder().post(RequestBody.create(content, JSON));
+        handleHeader(builder, HttpConst.handleContentType(headers, true));
+        return handleRequest(url, builder, content);
     }
 
 
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static ResponseData put(String url, String json) {
-        return putWithHeader(url, json, null);
+    public static ResponseData put(String url, String data) {
+        return put(url, data, null);
     }
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static ResponseData putWithHeader(String url, String json, Map<String, Object> headers) {
-        String data = U.toStr(json);
-        Request.Builder builder = new Request.Builder().put(RequestBody.create(JSON, json));
-        handleHeader(builder, headers);
-        builder.addHeader("Content-Type", "application/json");
-        return handleRequest(url, builder, json);
+    public static ResponseData put(String url, String data, Map<String, Object> headers) {
+        String content = U.toStr(data);
+        RequestBody requestBody = RequestBody.create(content, JSON);
+        Request.Builder builder = new Request.Builder().put(requestBody);
+        handleHeader(builder, HttpConst.handleContentType(headers, true));
+        return handleRequest(url, builder, content);
     }
 
 
     /** 向指定的 url 基于 delete 发起 request-body 请求 */
-    public static ResponseData delete(String url, String json) {
-        return deleteWithHeader(url, json, null);
+    public static ResponseData delete(String url, String data) {
+        return deleteWithHeader(url, data, null);
     }
     /** 向指定的 url 基于 delete 发起 request-body 请求 */
-    public static ResponseData deleteWithHeader(String url, String json, Map<String, Object> headers) {
-        String data = U.toStr(json);
-        Request.Builder builder = new Request.Builder().delete(RequestBody.create(JSON, json));
-        handleHeader(builder, headers);
-        builder.addHeader("Content-Type", "application/json");
-        return handleRequest(url, builder, json);
+    public static ResponseData deleteWithHeader(String url, String data, Map<String, Object> headers) {
+        String content = U.toStr(data);
+        RequestBody requestBody = RequestBody.create(content, JSON);
+        Request.Builder builder = new Request.Builder().delete(requestBody);
+        handleHeader(builder, HttpConst.handleContentType(headers, true));
+        return handleRequest(url, builder, data);
     }
 
 
-    /** 向指定 url 上传文件 */
-    public static ResponseData postFile(String url, Map<String, Object> headers,
-                                                Map<String, Object> params, Map<String, File> files) {
-        MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+    /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
+    public static ResponseData uploadFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
+        MultipartBody.Builder builder = new MultipartBody.Builder().setType(FORM_DATA);
         StringBuilder sbd = new StringBuilder();
         boolean hasParam = A.isNotEmpty(params);
         if (hasParam) {
@@ -133,11 +135,12 @@ public class OkHttpClientUtil {
                 File file = entry.getValue();
                 if (U.isNotNull(file)) {
                     String key = entry.getKey();
+                    String fileName = file.getName();
                     try {
                         MediaType type = MediaType.parse(Files.probeContentType(file.toPath()));
-                        builder.addFormDataPart(key, null, RequestBody.create(type, file));
+                        builder.addFormDataPart(key, fileName, RequestBody.create(file, type));
                     } catch (IOException e) {
-                        throw new RuntimeException(String.format("add file(%s) exception", file.getName()), e);
+                        throw new RuntimeException(String.format("add file(%s) exception", fileName), e);
                     }
                     sbd.append("<").append(key).append(" : ").append(file.getPath()).append(">");
                 }
@@ -145,7 +148,7 @@ public class OkHttpClientUtil {
             sbd.append(")");
         }
         Request.Builder request = new Request.Builder().post(builder.build());
-        handleHeader(request, headers);
+        handleHeader(request, HttpConst.handleContentType(headers));
         return handleRequest(url, request, String.format("upload file[%s]", sbd));
     }
 
@@ -188,8 +191,7 @@ public class OkHttpClientUtil {
             resHeaders = response.headers();
             responseCode = response.code();
             statusCode = responseCode + " ";
-            // noinspection ConstantConditions
-            result = body.string();
+            result = U.isNotNull(body) ? body.string() : null;
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info(collectContext(start, method, url, params, reqHeaders, statusCode, resHeaders, result));
             }
@@ -210,14 +212,7 @@ public class OkHttpClientUtil {
                 .append("(").append(DateUtil.toHuman(now - start)).append(")")
                 .append("] (").append(method).append(" ").append(url).append(")");
         sbd.append(" req[");
-        boolean hasParam = U.isNotBlank(params);
-        if (hasParam) {
-            sbd.append("param(").append(U.compress(params)).append(")");
-        }
         boolean hasReqHeader = U.isNotNull(reqHeaders);
-        if (hasParam && hasReqHeader) {
-            sbd.append(" ");
-        }
         if (hasReqHeader) {
             sbd.append("header(");
             for (String key : reqHeaders.names()) {
@@ -225,6 +220,13 @@ public class OkHttpClientUtil {
                 sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
             }
             sbd.append(")");
+        }
+        boolean hasParam = U.isNotBlank(params);
+        if (hasParam) {
+            if (hasReqHeader) {
+                sbd.append(" ");
+            }
+            sbd.append("param(").append(U.compress(params)).append(")");
         }
         sbd.append("], res[").append(statusCode);
         boolean hasResHeader = U.isNotNull(resHeaders);

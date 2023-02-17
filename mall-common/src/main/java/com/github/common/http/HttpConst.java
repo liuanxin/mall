@@ -3,6 +3,7 @@ package com.github.common.http;
 import com.github.common.util.A;
 import com.github.common.util.U;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 final class HttpConst {
@@ -38,5 +39,23 @@ final class HttpConst {
             url = U.appendUrl(url) + U.formatParam(false, params);
         }
         return url;
+    }
+
+    static Map<String, Object> handleContentType(Map<String, Object> headers, boolean requestBody) {
+        Map<String, Object> headerMap = handleContentType(headers);
+        headerMap.put("Content-Type", (requestBody ? "application/json" : "application/x-www-form-urlencoded"));
+        return headerMap;
+    }
+
+    static Map<String, Object> handleContentType(Map<String, Object> headers) {
+        Map<String, Object> headerMap = new LinkedHashMap<>();
+        if (A.isNotEmpty(headers)) {
+            for (Map.Entry<String, Object> entry : headers.entrySet()) {
+                if (!"Content-Type".equalsIgnoreCase(entry.getKey())) {
+                    headerMap.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        return headerMap;
     }
 }

@@ -14,7 +14,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,77 +23,66 @@ public class HttpUrlConnectionUtil {
     private static final String USER_AGENT = HttpConst.getUserAgent("http_url_connection");
 
 
-    /** 向指定 url 进行 get 请求 */
+    /** 向指定 url 进行 get 请求(普通表单方式) */
     public static ResponseData get(String url) {
         return get(url, null);
     }
-    /** 向指定 url 进行 get 请求 */
+    /** 向指定 url 进行 get 请求(普通表单方式) */
     public static ResponseData get(String url, Map<String, Object> params) {
-        return getWithHeader(url, params, null);
+        return get(url, params, null);
     }
-    /** 向指定 url 进行 get 请求 */
-    public static ResponseData getWithHeader(String url, Map<String, Object> params, Map<String, Object> headerMap) {
+    /** 向指定 url 进行 get 请求(普通表单方式) */
+    public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers) {
+        Map<String, Object> headerMap = HttpConst.handleContentType(headers, false);
         return handleRequest("GET", HttpConst.handleGetParams(url, params), null, headerMap);
     }
 
 
-    /** 向指定的 url 进行 post 请求(表单) */
-    public static ResponseData post(String url, Map<String, Object> params) {
-        return postWithHeader(url, params, null);
+    /** 向指定的 url 进行 post 请求(普通表单方式) */
+    public static ResponseData postWithForm(String url, Map<String, Object> params) {
+        return postWithForm(url, params, null);
     }
-    /** 向指定的 url 进行 post 请求(表单) */
-    public static ResponseData postWithHeader(String url, Map<String, Object> params, Map<String, Object> headers) {
-        // Content-Type 不设置则默认是 application/x-www-form-urlencoded
-        return handleRequest("POST", url, U.formatParam(false, params), headers);
+    /** 向指定的 url 进行 post 请求(普通表单方式) */
+    public static ResponseData postWithForm(String url, Map<String, Object> params, Map<String, Object> headers) {
+        Map<String, Object> headerMap = HttpConst.handleContentType(headers, false);
+        return handleRequest("POST", url, U.formatParam(false, params), headerMap);
     }
 
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postBody(String url, String json) {
-        return postBodyWithHeader(url, json, null);
+    public static ResponseData postWithBody(String url, String data) {
+        return postWithBody(url, data, null);
     }
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postBodyWithHeader(String url, String json, Map<String, Object> headers) {
-        Map<String, Object> headerMap = new LinkedHashMap<>();
-        if (A.isNotEmpty(headers)) {
-            headerMap.putAll(headers);
-        }
-        headerMap.put("Content-Type", "application/json");
-        return handleRequest("POST", url, U.toStr(json), headerMap);
+    public static ResponseData postWithBody(String url, String data, Map<String, Object> headers) {
+        Map<String, Object> headerMap = HttpConst.handleContentType(headers, true);
+        return handleRequest("POST", url, U.toStr(data), headerMap);
     }
 
 
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static ResponseData put(String url, String json) {
-        return putWithHeader(url, json, null);
+    public static ResponseData put(String url, String data) {
+        return put(url, data, null);
     }
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static ResponseData putWithHeader(String url, String json, Map<String, Object> headers) {
-        Map<String, Object> headerMap = new LinkedHashMap<>();
-        if (A.isNotEmpty(headers)) {
-            headerMap.putAll(headers);
-        }
-        headerMap.put("Content-Type", "application/json");
-        return handleRequest("PUT", url, U.toStr(json), headerMap);
+    public static ResponseData put(String url, String data, Map<String, Object> headers) {
+        Map<String, Object> headerMap = HttpConst.handleContentType(headers, true);
+        return handleRequest("PUT", url, U.toStr(data), headerMap);
     }
 
 
     /** 向指定的 url 基于 delete 发起 request-body 请求 */
     public static ResponseData delete(String url, String json) {
-        return deleteWithHeader(url, json, null);
+        return delete(url, json, null);
     }
     /** 向指定的 url 基于 delete 发起 request-body 请求 */
-    public static ResponseData deleteWithHeader(String url, String json, Map<String, Object> headers) {
-        Map<String, Object> headerMap = new LinkedHashMap<>();
-        if (A.isNotEmpty(headers)) {
-            headerMap.putAll(headers);
-        }
-        headerMap.put("Content-Type", "application/json");
+    public static ResponseData delete(String url, String json, Map<String, Object> headers) {
+        Map<String, Object> headerMap = HttpConst.handleContentType(headers, true);
         return handleRequest("DELETE", url, U.toStr(json), headerMap);
     }
 
 
-    /** 向指定 url 上传文件 */
-    public static String postFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
+    /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
+    public static String uploadFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
         long start = System.currentTimeMillis();
         HttpURLConnection con = null;
         Map<String, List<String>> reqHeaders = null;
@@ -108,8 +96,9 @@ public class HttpUrlConnectionUtil {
             con.setRequestMethod("POST");
             con.setConnectTimeout(HttpConst.CONNECT_TIME_OUT);
             con.setReadTimeout(HttpConst.READ_TIME_OUT);
-            if (A.isNotEmpty(headers)) {
-                for (Map.Entry<String, ?> entry : headers.entrySet()) {
+            Map<String, Object> headerMap = HttpConst.handleContentType(headers);
+            if (A.isNotEmpty(headerMap)) {
+                for (Map.Entry<String, ?> entry : headerMap.entrySet()) {
                     con.setRequestProperty(entry.getKey(), U.toStr(entry.getValue()));
                 }
             }
@@ -287,14 +276,7 @@ public class HttpUrlConnectionUtil {
             sbd.append(" redirect-count(").append(redirectCount).append(")");
         }
         sbd.append(" req[");
-        boolean hasParam = U.isNotBlank(params);
-        if (hasParam) {
-            sbd.append("param(").append(U.compress(params)).append(")");
-        }
         boolean hasReqHeader = A.isNotEmpty(reqHeaders);
-        if (hasParam && hasReqHeader) {
-            sbd.append(" ");
-        }
         if (hasReqHeader) {
             sbd.append("header(");
             for (Map.Entry<String, List<String>> entry : reqHeaders.entrySet()) {
@@ -303,6 +285,13 @@ public class HttpUrlConnectionUtil {
                 sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
             }
             sbd.append(")");
+        }
+        boolean hasParam = U.isNotBlank(params);
+        if (hasParam) {
+            if (hasReqHeader) {
+                sbd.append(" ");
+            }
+            sbd.append("param(").append(U.compress(params)).append(")");
         }
         sbd.append("], res[").append(resCode);
         boolean hasResHeader = A.isNotEmpty(resHeaders);
