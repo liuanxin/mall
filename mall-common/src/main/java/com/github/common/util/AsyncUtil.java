@@ -51,6 +51,7 @@ public final class AsyncUtil {
 
     /** 线程想要共享主线程的上下文, 使用此方法 */
     public static Runnable wrapRunContext(Runnable runnable) {
+        // noinspection DuplicatedCode
         if (U.isNull(runnable)) {
             return null;
         }
@@ -90,6 +91,7 @@ public final class AsyncUtil {
 
     /** 回调线程想要共享主线程的上下文, 使用此方法 */
     public static <T> Callable<T> wrapCallContext(Callable<T> callable) {
+        // noinspection DuplicatedCode
         if (U.isNull(callable)) {
             return null;
         }
