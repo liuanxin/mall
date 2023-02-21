@@ -65,7 +65,7 @@
         <!--<mysql.version>5.1.49 | 8.0.27</mysql.version>-->
         <mybatis-plus.version>3.5.2</mybatis-plus.version>
 
-        <api-document.version>0.8.8</api-document.version>
+        <api-document.version>0.8.9</api-document.version>
         <jib-maven-plugin.version>3.2.1</jib-maven-plugin.version>
 
         <docker-repository>106.12.99.55:8082</docker-repository>
