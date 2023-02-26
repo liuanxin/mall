@@ -47,7 +47,7 @@ public final class LogUtil {
             MDC.put(REAL_IP, ip);
         }
         if (U.isNotNull(locale)) {
-            // 请求头中用的是中横线(en-US、zh-CN), 但是 locale 时却是下划线
+            // 请求头中用的是中横线(en-US、zh-CN), 但是 locale 时却是下划线, 写进上下文的时候用中横线
             MDC.put(LANGUAGE, locale.toString().replace("_", "-"));
         }
     }
