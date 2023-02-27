@@ -367,9 +367,10 @@ public final class RequestUtil {
     }
 
     public static String logBasicInfo() {
-        String method = U.callIfNotNull(getRequest(), HttpServletRequest::getMethod, U.EMPTY);
+        HttpServletRequest request = getRequest();
+        String method = U.isNull(request) ? U.EMPTY : request.getMethod();
         String url = getRequestUrl();
-        return method + " " + url;
+        return (method + " " + url).trim();
     }
     public static String logRequestInfo(boolean printHeader) {
         boolean des = true;
