@@ -4,9 +4,7 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 
 import java.util.regex.Pattern;
 
-/**
- * 在页面渲染时拼接 url 等的工具类
- */
+/** 在页面渲染时拼接 url 等的工具类 */
 public final class Render {
 
     private static final Pattern HTTP_PATTERN =  Pattern.compile("(?i)^http(s?):");

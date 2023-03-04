@@ -1,10 +1,10 @@
 package com.github.common.util;
 
 import com.github.common.date.DateUtil;
-import com.github.common.encrypt.Encrypt;
 import com.github.common.exception.*;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -175,7 +175,7 @@ public final class U {
     public static <E extends Enum> E toEnum(Class<E> clazz, Object obj) {
         if (isNotNull(obj)) {
             E[] constants = clazz.getEnumConstants();
-            if (A.isNotEmpty(constants)) {
+            if (constants != null && constants.length > 0) {
                 String source = obj.toString().trim();
                 for (E em : constants) {
                     // 如果传递过来的是枚举名, 且能匹配上则返回
@@ -346,6 +346,13 @@ public final class U {
         return !isDouble(obj);
     }
 
+    public static boolean isNumber(Object obj) {
+        return isDouble(obj);
+    }
+    public static boolean isNotNumber(Object obj) {
+        return isNotDouble(obj);
+    }
+
     /** 返回当前时间戳(到秒), 相当于 mysql 中的 SELECT UNIX_TIMESTAMP() 语句 */
     public static int unixTimestamp() {
         return (int) (System.currentTimeMillis() / 1000);
@@ -353,7 +360,7 @@ public final class U {
 
     /** 将数值转换成 ipv4, 类似于 mysql 中 INET_NTOA(134744072) ==> 8.8.8.8 */
     public static String num2ip(long num) {
-        return ((num & 0xff000000) >> 24) + "." + ((num & 0xff0000) >> 16)
+        return ((num & 0xff000000L) >> 24) + "." + ((num & 0xff0000) >> 16)
                 + "." + ((num & 0xff00) >> 8) + "." + ((num & 0xff));
     }
     /** 将 ipv4 的地址转换成数值. 类似于 mysql 中 INET_ATON('8.8.8.8') ==> 134744072 */
@@ -822,7 +829,7 @@ public final class U {
     /** 获取对象的所有方法(包括父类) */
     public static List<Method> getMethods(Object obj) {
         Map<String, Method> methodMap = getMethods(obj, 0);
-        return A.isEmpty(methodMap) ? Collections.emptyList() : new ArrayList<>(methodMap.values());
+        return methodMap.isEmpty() ? Collections.emptyList() : new ArrayList<>(methodMap.values());
     }
     private static Map<String, Method> getMethods(Object obj, int depth) {
         // noinspection DuplicatedCode
@@ -837,28 +844,22 @@ public final class U {
 
         String key = clazz.getName();
         Map<String, Method> methodCacheMap = METHODS_CACHE.get(key);
-        if (A.isNotEmpty(methodCacheMap)) {
+        if (methodCacheMap != null && !methodCacheMap.isEmpty()) {
             return methodCacheMap;
         }
 
         Map<String, Method> returnMap = new LinkedHashMap<>();
-        Method[] declaredMethods = clazz.getDeclaredMethods();
-        if (A.isNotEmpty(declaredMethods)) {
-            for (Method declaredMethod : declaredMethods) {
-                returnMap.put(declaredMethod.getName(), declaredMethod);
-            }
+        for (Method declaredMethod : clazz.getDeclaredMethods()) {
+            returnMap.put(declaredMethod.getName(), declaredMethod);
         }
-        Method[] methods = clazz.getMethods();
-        if (A.isNotEmpty(methods)) {
-            for (Method method : methods) {
-                returnMap.put(method.getName(), method);
-            }
+        for (Method method : clazz.getMethods()) {
+            returnMap.put(method.getName(), method);
         }
 
         Class<?> superclass = clazz.getSuperclass();
         if (superclass != Object.class && depth <= MAX_DEPTH) {
             Map<String, Method> methodMap = getMethods(superclass, depth + 1);
-            if (A.isNotEmpty(methodMap)) {
+            if (!methodMap.isEmpty()) {
                 returnMap.putAll(methodMap);
             }
         }
@@ -868,13 +869,13 @@ public final class U {
     /** 获取对象的指定方法 */
     public static Method getMethod(Object obj, String method) {
         Map<String, Method> methodMap = getMethods(obj, 0);
-        return A.isEmpty(methodMap) ? null : methodMap.get(method);
+        return methodMap.isEmpty() ? null : methodMap.get(method);
     }
 
     /** 获取对象的所有属性(包括父类) */
     public static List<Field> getFields(Object obj) {
         Map<String, Field> fieldMap = getFields(obj, 0);
-        return A.isEmpty(fieldMap) ? Collections.emptyList() : new ArrayList<>(fieldMap.values());
+        return (fieldMap == null || fieldMap.isEmpty()) ? Collections.emptyList() : new ArrayList<>(fieldMap.values());
     }
     private static Map<String, Field> getFields(Object obj, int depth) {
         // noinspection DuplicatedCode
@@ -894,23 +895,17 @@ public final class U {
         }
 
         Map<String, Field> returnMap = new LinkedHashMap<>();
-        Field[] declaredFields = clazz.getDeclaredFields();
-        if (A.isNotEmpty(declaredFields)) {
-            for (Field declaredField : declaredFields) {
-                returnMap.put(declaredField.getName(), declaredField);
-            }
+        for (Field declaredField : clazz.getDeclaredFields()) {
+            returnMap.put(declaredField.getName(), declaredField);
         }
-        Field[] fields = clazz.getFields();
-        if (A.isNotEmpty(fields)) {
-            for (Field field : fields) {
-                returnMap.put(field.getName(), field);
-            }
+        for (Field field : clazz.getFields()) {
+            returnMap.put(field.getName(), field);
         }
 
         Class<?> superclass = clazz.getSuperclass();
         if (superclass != Object.class && depth <= MAX_DEPTH) {
             Map<String, Field> fieldMap = getFields(superclass, depth + 1);
-            if (A.isNotEmpty(fieldMap)) {
+            if (fieldMap != null && !fieldMap.isEmpty()) {
                 returnMap.putAll(fieldMap);
             }
         }
@@ -920,7 +915,7 @@ public final class U {
     /** 获取对象的指定属性 */
     public static Field getField(Object obj, String field) {
         Map<String, Field> fieldMap = getFields(obj, 0);
-        return A.isEmpty(fieldMap) ? null : fieldMap.get(field);
+        return (fieldMap == null || fieldMap.isEmpty()) ? null : fieldMap.get(field);
     }
 
 
@@ -930,7 +925,7 @@ public final class U {
     }
     /** 转换成 id=123&name=xyz&name=opq */
     public static String formatParam(boolean des, Map<String, ?> params) {
-        if (A.isEmpty(params)) {
+        if (params == null || params.isEmpty()) {
             return EMPTY;
         }
 
@@ -939,9 +934,26 @@ public final class U {
             String key = entry.getKey();
             Object obj = entry.getValue();
             if (isNotBlank(key) && isNotNull(obj)) {
-                String str = A.toString(obj);
-                String value = des ? DesensitizationUtil.desByKey(key, str) : str;
-                joiner.add(key + "=" + value);
+                String value;
+                String split = ",";
+                if (obj.getClass().isArray()) {
+                    StringJoiner stringJoiner = new StringJoiner(split);
+                    int len = Array.getLength(obj);
+                    for (int i = 0; i < len; i++) {
+                        Object o = Array.get(obj, i);
+                        stringJoiner.add(o == null ? EMPTY : o.toString());
+                    }
+                    value = stringJoiner.toString();
+                } else if (obj instanceof Collection<?> c) {
+                    StringJoiner stringJoiner = new StringJoiner(split);
+                    for (Object o : c) {
+                        stringJoiner.add(o == null ? EMPTY : o.toString());
+                    }
+                    value = stringJoiner.toString();
+                } else {
+                    value = obj.toString();
+                }
+                joiner.add(key + "=" + (des ? DesensitizationUtil.desByKey(key, value) : value));
             }
         }
         return joiner.toString();
@@ -1035,7 +1047,7 @@ public final class U {
         ) {
             gzip.write(trim.getBytes(StandardCharsets.UTF_8));
             gzip.finish();
-            return new String(Encrypt.base64Encode(output.toByteArray()), StandardCharsets.UTF_8);
+            return new String(Base64.getEncoder().encode(output.toByteArray()), StandardCharsets.UTF_8);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("压缩字符串异常", e);
@@ -1059,7 +1071,7 @@ public final class U {
 
         byte[] bytes;
         try {
-            bytes = Encrypt.base64Decode(str.getBytes(StandardCharsets.UTF_8));
+            bytes = Base64.getDecoder().decode(str.getBytes(StandardCharsets.UTF_8));
             if (bytes.length == 0) {
                 return trim;
             }
@@ -1107,19 +1119,19 @@ public final class U {
 
     /** 数组为 null 或 长度为 0 时则抛出异常 */
     public static <T> void assertEmpty(T[] array, String msg) {
-        if (A.isEmpty(array)) {
+        if (array == null || array.length == 0) {
             serviceException(msg);
         }
     }
     /** 列表为 null 或 长度为 0 时则抛出异常 */
     public static <T> void assertEmpty(Collection<T> list, String msg) {
-        if (A.isEmpty(list)) {
+        if (list == null || list.isEmpty()) {
             serviceException(msg);
         }
     }
     /** map 为 null 或 长度为 0 时则抛出异常 */
     public static <K, V> void assertEmpty(Map<K, V> map, String msg) {
-        if (A.isEmpty(map)) {
+        if (map == null || map.isEmpty()) {
             serviceException(msg);
         }
     }

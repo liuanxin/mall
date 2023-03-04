@@ -170,9 +170,7 @@ public final class A {
     public static String toString(Object arrayOrCollection, String split) {
         if (U.isNull(arrayOrCollection)) {
             return U.EMPTY;
-        }
-
-        if (arrayOrCollection.getClass().isArray()) {
+        } else if (arrayOrCollection.getClass().isArray()) {
             StringJoiner joiner = new StringJoiner(split);
             int len = Array.getLength(arrayOrCollection);
             for (int i = 0; i < len; i++) {
@@ -182,11 +180,11 @@ public final class A {
                 }
             }
             return joiner.toString();
-        }
-        if (arrayOrCollection instanceof Collection c) {
+        } else if (arrayOrCollection instanceof Collection c) {
             return toStr(c, split);
+        } else {
+            return arrayOrCollection.toString();
         }
-        return arrayOrCollection.toString();
     }
 
     /** 拿英文逗号(,)分隔数组(忽略空) */
