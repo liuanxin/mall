@@ -623,7 +623,7 @@ public final class U {
      */
     public static String foggyValue(String value, int max, int left, int right, boolean showLen) {
         if (isBlank(value)) {
-            return value.trim();
+            return value;
         }
 
         int valueLen = value.length();

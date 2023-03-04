@@ -2,11 +2,11 @@ package com.github.res;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.github.common.collection.MapMultiUtil;
 import com.github.common.enums.Gender;
 import com.github.common.json.JsonUtil;
 import com.github.common.page.PageReturn;
 import com.github.common.util.A;
+import com.github.common.util.MapMultiUtil;
 import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiReturn;
 import com.github.product.enums.ProductTestType;

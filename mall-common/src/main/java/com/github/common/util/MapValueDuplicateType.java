@@ -1,4 +1,4 @@
-package com.github.common.collection;
+package com.github.common.util;
 
 import java.util.Collection;
 import java.util.Map;

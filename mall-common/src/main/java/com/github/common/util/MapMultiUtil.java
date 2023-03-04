@@ -1,7 +1,4 @@
-package com.github.common.collection;
-
-import com.github.common.util.A;
-import com.github.common.util.U;
+package com.github.common.util;
 
 import java.util.*;
 import java.util.function.Function;

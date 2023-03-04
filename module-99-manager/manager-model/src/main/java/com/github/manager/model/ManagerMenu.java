@@ -2,8 +2,8 @@ package com.github.manager.model;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.github.common.collection.MapMultiUtil;
 import com.github.common.util.A;
+import com.github.common.util.MapMultiUtil;
 import com.github.common.util.U;
 import lombok.Data;
 
