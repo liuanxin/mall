@@ -1,7 +1,7 @@
 package com.github;
 
-import com.github.common.json.JsonUtil;
-import lombok.Data;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class Nil {
 
@@ -124,15 +124,25 @@ public class Nil {
 //        ));
 //    }
 
-    @Data
-    public static class Abc {
-        private String abc;
-    }
-
+//    @Data
+//    public static class Abc {
+//        private String abc;
+//    }
+//
+//
+//    public static void main(String[] args) {
+//        String json = "{\"abc\":123}";
+//        Abc abc = JsonUtil.toObject(json, Abc.class);
+//        System.out.println(abc);
+//    }
 
     public static void main(String[] args) {
-        String json = "{\"abc\":123}";
-        Abc abc = JsonUtil.toObject(json, Abc.class);
-        System.out.println(abc);
+        Map<String, Object> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        map.put("aBC", "123");
+        map.put("abc", "123");
+        map.put("ABc", "123");
+        System.out.println(map.size());
+        System.out.println(map.get("aBc"));
+        System.out.println(map);
     }
 }

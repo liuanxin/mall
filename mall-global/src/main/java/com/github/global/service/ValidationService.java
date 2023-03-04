@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.common.exception.ParamException;
 import com.github.common.util.A;
 import com.github.common.util.U;
-import com.google.common.base.Joiner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -69,7 +68,7 @@ public class ValidationService {
         } else {
             List<String> modelList = new ArrayList<>();
             calcParamProperty(clazz, field, modelList);
-            return Joiner.on(".").join(modelList);
+            return String.join(".", modelList);
         }
     }
 

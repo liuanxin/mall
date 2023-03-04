@@ -6,14 +6,9 @@ import com.github.common.date.DateUtil;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.U;
-import com.google.common.base.Joiner;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public final class BeanChange {
 
@@ -27,7 +22,6 @@ public final class BeanChange {
     private static final String VALUE_OTHER_KEY = "OTHER";
 
     private static final TypeReference<Map<String, String>> MAP_REFERENCE = new TypeReference<>() {};
-    private static final Cache<String, Method> METHOD_CACHE_MAP = CacheBuilder.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build();
 
 
     public static <T> String diff(T oldObj, T newObj) {
@@ -88,7 +82,7 @@ public final class BeanChange {
             for (BeanField field : fieldList) {
                 values.add(U.toStr(field.value()));
             }
-            return "<" + Joiner.on(">,<").join(values) + ">";
+            return "<" + String.join(">,<", values) + ">";
         }
         return null;
     }

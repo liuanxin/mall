@@ -1,9 +1,11 @@
-package com.github.common.util;
+package com.github.common.money;
+
+import com.github.common.util.U;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-public class NumberUtil {
+public class MoneyUtil {
 
     /** 元转换为分 */
     public static Long yuan2Cent(String yuan, int scale) {

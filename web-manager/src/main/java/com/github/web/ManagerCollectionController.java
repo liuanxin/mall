@@ -7,7 +7,6 @@ import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiGroup;
 import com.github.liuanxin.api.annotation.ApiIgnore;
 import com.github.liuanxin.api.annotation.ApiMethod;
-import com.google.common.base.Joiner;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,10 +18,7 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @ApiIgnore
 @RestController
@@ -71,12 +67,12 @@ public class ManagerCollectionController {
                 ApiMethod apiMethod = handlerMethod.getMethodAnnotation(ApiMethod.class);
                 String permissionName = U.isNull(apiMethod) ? U.EMPTY : apiMethod.value();
                 // 类名用作 front
-                String key = Joiner.on(sp).join(menu, className);
+                String key = String.join(sp, Arrays.asList(menu, className));
 
                 String method = A.toStr(requestMapping.getMethodsCondition().getMethods());
                 PatternsRequestCondition prc = requestMapping.getPatternsCondition();
                 String url = U.isNull(prc) ? U.EMPTY : String.join(",", prc.getPatterns());
-                String value = Joiner.on(sp).join(permissionName, method, url);
+                String value = String.join(sp, Arrays.asList(permissionName, method, url));
 
                 multiMap.computeIfAbsent(key, (k1) -> new LinkedHashSet<>()).add(value);
             }

@@ -4,7 +4,6 @@ import com.github.common.json.JsonCode;
 import com.github.common.json.JsonResult;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.LogUtil;
-import com.google.common.base.Joiner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -41,7 +40,7 @@ public class ValidatorControllerAdvice {
         }
         Map<String, String> errorMap = validatorService.validate(e.getConstraintViolations());
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
-        JsonResult<String> result = JsonResult.badRequest(Joiner.on(",").join(errorMap.values()), errorMap);
+        JsonResult<String> result = JsonResult.badRequest(String.join(",", errorMap.values()), errorMap);
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
             LogUtil.ROOT_LOG.info("Constraint validator exception result: ({})", JsonUtil.toJson(result), e);
         }

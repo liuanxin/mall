@@ -1,15 +1,14 @@
 package com.github.util;
 
 import com.github.common.constant.CommonConst;
-import com.github.common.resource.CollectEnumUtil;
 import com.github.common.util.A;
+import com.github.common.util.CollectClassUtil;
 import com.github.common.util.U;
 import com.github.global.constant.GlobalConst;
 import com.github.manager.constant.ManagerConst;
 import com.github.order.constant.OrderConst;
 import com.github.product.constant.ProductConst;
 import com.github.user.constant.UserConst;
-import com.google.common.base.CaseFormat;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,24 +31,13 @@ public final class ManagerDataCollectUtil {
     // public static final Class[] VIEW_ENUM_ARRAY = CollectEnumUtil.getEnumClass(ENUM_MAP);
 
     /** 提供接口出去的 所有 枚举信息 */
-    public static final Map<String, Object> ALL_ENUM_INFO = CollectEnumUtil.enumMap(ENUM_MAP);
+    public static final Map<String, Object> ALL_ENUM_INFO = CollectClassUtil.getEnumMap(ENUM_MAP);
     /** 提供接口出去的 单个 枚举信息 */
     public static Map<String, Object> singleEnumInfo(String type) {
         Map<String, Object> returnMap = new HashMap<>();
         for (String anEnum : type.split(",")) {
             if (U.isNotBlank(anEnum)) {
-                anEnum = anEnum.trim();
-                String name;
-                if (anEnum.contains("-")) {
-                    name = CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, anEnum);
-                } else if (anEnum.contains("_")) {
-                    name = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, anEnum);
-                } else if (Character.isUpperCase(anEnum.charAt(0))) {
-                    name = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, anEnum);
-                } else {
-                    name = anEnum;
-                }
-                Object data = ALL_ENUM_INFO.get(name);
+                Object data = ALL_ENUM_INFO.get(anEnum.trim());
                 if (U.isNotNull(data)) {
                     returnMap.put(anEnum, data);
                 }

@@ -10,7 +10,6 @@ import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 import com.github.global.service.I18nService;
 import com.github.global.service.ValidationService;
-import com.google.common.base.Joiner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -26,7 +25,10 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * 处理全局异常的控制类
@@ -125,7 +127,7 @@ public class GlobalException {
     public ResponseEntity<JsonResult<String>> paramValidException(BindException e) {
         Map<String, String> errorMap = validationService.validate(e.getBindingResult());
         int status = (returnStatusCode ? JsonCode.BAD_REQUEST : JsonCode.SUCCESS).getCode();
-        String msg = Joiner.on("; ").join(new LinkedHashSet<>(errorMap.values()));
+        String msg = String.join("; ", errorMap.values());
         return handle("valid fail", status, handleErrorResult(JsonResult.badRequest(msg, errorMap)), e);
     }
 

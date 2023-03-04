@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
 import com.baomidou.mybatisplus.core.toolkit.support.LambdaMeta;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import com.google.common.base.CaseFormat;
 import org.apache.ibatis.reflection.property.PropertyNamer;
 
 import java.util.ArrayList;
@@ -86,13 +85,23 @@ public class MybatisPlusUtil {
         }
 
         if (returnColumn == null || returnColumn.trim().length() == 0) {
-            // 上面的不成功就按驼峰规则转换: lowerCamel => lower_camel)
-            // 如果是大写(lowerCamel => LOWER_CAMEL)则用 UPPER_UNDERSCORE
-            return "`" + CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.LOWER_UNDERSCORE).convert(fieldName) + "`";
-        } else if (returnColumn.startsWith("`") && returnColumn.endsWith("`")) {
-            return returnColumn;
+            // 上面的不成功就按驼峰规则转换: lowerCamel => lower_camel
+            StringBuilder sbd = new StringBuilder();
+            for (char c : fieldName.toCharArray()) {
+                if (Character.isUpperCase(c)) {
+                    sbd.append("_").append(Character.toLowerCase(c));
+                } else {
+                    sbd.append(c);
+                }
+            }
+            return sbd.toString();
         } else {
-            return "`" + returnColumn + "`";
+            String col = returnColumn.trim();
+            if (col.startsWith("`") && col.endsWith("`")) {
+                return col;
+            } else {
+                return "`" + col + "`";
+            }
         }
     }
 

@@ -1,9 +1,8 @@
-package com.github.common;
+package com.github.common.money;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.common.util.ChineseConvert;
-import com.github.common.util.NumberUtil;
 import com.github.common.util.U;
 
 import java.io.Serializable;
@@ -32,19 +31,19 @@ public class Money implements Serializable {
     /** 从前台过来的数据转换成金额对象时使用此构造 */
     @JsonCreator
     public Money(String yuan) {
-        cent = NumberUtil.yuan2Cent(yuan, SCALE);
+        cent = MoneyUtil.yuan2Cent(yuan, SCALE);
     }
 
     /** 在前台或者在页面上显示 */
     @JsonValue
     @Override
     public String toString() {
-        return NumberUtil.cent2Yuan(cent, SCALE);
+        return MoneyUtil.cent2Yuan(cent, SCALE);
     }
 
     /** 输出 1,234,567,890.50 的形式 */
     public String toShow() {
-        return NumberUtil.cent2ShowYuan(cent);
+        return MoneyUtil.cent2ShowYuan(cent);
     }
 
     public Long getCent() {
