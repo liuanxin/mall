@@ -68,16 +68,16 @@ public class DateUtil {
         return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : DateTimeFormat.forPattern(type).print(date.getTime());
     }
 
-    public static LocalDateTime convertDateToLocalDateTime(Date date) {
+    public static LocalDateTime convert(Date date) {
         return U.isNull(date) ? null : LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
 
-    public static Date convertLocalDateTimeToDate(LocalDateTime localDateTime) {
+    public static Date convert(LocalDateTime localDateTime) {
         return U.isNull(localDateTime) ? null : Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
     public static LocalDateTime parseLocalDateTime(String source) {
-        return convertDateToLocalDateTime(parse(source));
+        return convert(parse(source));
     }
 
     /**
