@@ -154,7 +154,7 @@ public class OkHttpClientUtil {
         }
 
         Request.Builder request;
-        if (U.isNotBlank(method) && "PUT".equalsIgnoreCase(method)) {
+        if ("PUT".equalsIgnoreCase(method)) {
             request = new Request.Builder().put(builder.build());
         } else {
             request = new Request.Builder().post(builder.build());

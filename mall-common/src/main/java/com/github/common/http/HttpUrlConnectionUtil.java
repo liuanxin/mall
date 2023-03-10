@@ -13,7 +13,6 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -99,7 +98,7 @@ public class HttpUrlConnectionUtil {
         url = HttpConst.handleEmptyScheme(url);
         try {
             con = (HttpURLConnection) new URL(url).openConnection();
-            String useMethod = (U.isNotBlank(method) && Arrays.asList("POST", "PUT").contains(method.toUpperCase())) ? method : "POST";
+            String useMethod = "PUT".equalsIgnoreCase(method) ? "PUT" : "POST";
             con.setRequestMethod(useMethod);
             con.setConnectTimeout(HttpConst.CONNECT_TIME_OUT);
             con.setReadTimeout(HttpConst.READ_TIME_OUT);

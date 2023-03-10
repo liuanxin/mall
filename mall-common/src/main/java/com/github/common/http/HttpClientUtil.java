@@ -12,7 +12,10 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("DuplicatedCode")
 public class HttpClientUtil {
@@ -92,7 +95,7 @@ public class HttpClientUtil {
     public static ResponseData uploadFile(String url, String method, Map<String, Object> headers,
                                           Map<String, Object> params, Map<String, File> files) {
         long start = System.currentTimeMillis();
-        String useMethod = (U.isNotBlank(method) && Arrays.asList("POST", "PUT").contains(method.toUpperCase())) ? method : "POST";
+        String useMethod = "PUT".equalsIgnoreCase(method) ? "PUT" : "POST";
         Map<String, List<String>> reqHeaders = null;
         StringBuilder sbd = new StringBuilder();
         Integer responseCode = null;

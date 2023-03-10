@@ -195,7 +195,7 @@ public class ApacheHttpClientUtil {
         StringBuilder sbd = new StringBuilder();
 
         HttpEntityEnclosingRequestBase request;
-        if (U.isNotBlank(method) && "PUT".equalsIgnoreCase(method)) {
+        if ("PUT".equalsIgnoreCase(method)) {
             request = new HttpPut(HttpConst.handleEmptyScheme(url));
         } else {
             request = new HttpPost(HttpConst.handleEmptyScheme(url));
