@@ -41,7 +41,7 @@ import java.util.Map;
 @ConditionalOnClass({ HttpServletRequest.class, ResponseEntity.class })
 @RestControllerAdvice
 @RequiredArgsConstructor
-public class GlobalException {
+public class GlobalExceptionAdvice {
 
     @Value("${online:false}")
     private boolean online;

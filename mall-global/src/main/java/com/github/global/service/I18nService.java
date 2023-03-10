@@ -5,7 +5,6 @@ import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
-import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.i18n.LocaleContextHolder;
 
@@ -26,7 +25,7 @@ public class I18nService {
         Locale locale = LocaleContextHolder.getLocale();
         try {
             return messageSource.getMessage(code, args, locale);
-        } catch (NoSuchMessageException e) {
+        } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("i18n exception", e);
             }
@@ -35,7 +34,7 @@ public class I18nService {
             if (locale != defaultLocale) {
                 try {
                     return messageSource.getMessage(code, args, defaultLocale);
-                } catch (NoSuchMessageException ex) {
+                } catch (Exception ex) {
                     if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                         LogUtil.ROOT_LOG.error("default i18n exception", ex);
                     }
