@@ -8,6 +8,8 @@ import java.util.Map;
 
 final class HttpConst {
 
+    private static final String CONTENT_TYPE = "Content-Type";
+
     /** 建立连接的超时时间, 单位: 毫秒 */
     static final int CONNECT_TIME_OUT = 5000;
     /** 数据交互的时间, 单位: 毫秒 */
@@ -43,7 +45,7 @@ final class HttpConst {
 
     static Map<String, Object> handleContentType(Map<String, Object> headers, boolean requestBody) {
         Map<String, Object> headerMap = handleContentType(headers);
-        headerMap.put("Content-Type", (requestBody ? "application/json" : "application/x-www-form-urlencoded"));
+        headerMap.put(CONTENT_TYPE, (requestBody ? "application/json" : "application/x-www-form-urlencoded"));
         return headerMap;
     }
 
@@ -51,7 +53,7 @@ final class HttpConst {
         Map<String, Object> headerMap = new LinkedHashMap<>();
         if (A.isNotEmpty(headers)) {
             for (Map.Entry<String, Object> entry : headers.entrySet()) {
-                if (!"Content-Type".equalsIgnoreCase(entry.getKey())) {
+                if (!CONTENT_TYPE.equalsIgnoreCase(entry.getKey())) {
                     headerMap.put(entry.getKey(), entry.getValue());
                 }
             }
