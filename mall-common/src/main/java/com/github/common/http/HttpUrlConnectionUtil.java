@@ -13,6 +13,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +84,11 @@ public class HttpUrlConnectionUtil {
 
     /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
     public static String uploadFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
+        return uploadFile(url, null, headers, params, files);
+    }
+    /** 向指定 url 上传文件, 只支持 POST|PUT(默认是 POST) + form-data 的方式 */
+    public static String uploadFile(String url, String method, Map<String, Object> headers,
+                Map<String, Object> params, Map<String, File> files) {
         long start = System.currentTimeMillis();
         HttpURLConnection con = null;
         Map<String, List<String>> reqHeaders = null;
@@ -93,7 +99,8 @@ public class HttpUrlConnectionUtil {
         url = HttpConst.handleEmptyScheme(url);
         try {
             con = (HttpURLConnection) new URL(url).openConnection();
-            con.setRequestMethod("POST");
+            String useMethod = (U.isNotBlank(method) && Arrays.asList("POST", "PUT").contains(method.toUpperCase())) ? method : "POST";
+            con.setRequestMethod(useMethod);
             con.setConnectTimeout(HttpConst.CONNECT_TIME_OUT);
             con.setReadTimeout(HttpConst.READ_TIME_OUT);
             Map<String, Object> headerMap = HttpConst.handleContentType(headers);

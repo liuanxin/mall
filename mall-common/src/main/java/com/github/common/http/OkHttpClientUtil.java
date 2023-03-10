@@ -111,6 +111,11 @@ public class OkHttpClientUtil {
 
     /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
     public static ResponseData uploadFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
+        return uploadFile(url, null, headers, params, files);
+    }
+    /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
+    public static ResponseData uploadFile(String url, String method, Map<String, Object> headers,
+                                          Map<String, Object> params, Map<String, File> files) {
         MultipartBody.Builder builder = new MultipartBody.Builder().setType(FORM_DATA);
         StringBuilder sbd = new StringBuilder();
         boolean hasParam = A.isNotEmpty(params);
@@ -147,7 +152,13 @@ public class OkHttpClientUtil {
             }
             sbd.append(")");
         }
-        Request.Builder request = new Request.Builder().post(builder.build());
+
+        Request.Builder request;
+        if (U.isNotBlank(method) && "PUT".equalsIgnoreCase(method)) {
+            request = new Request.Builder().put(builder.build());
+        } else {
+            request = new Request.Builder().post(builder.build());
+        }
         handleHeader(request, HttpConst.handleContentType(headers));
         return handleRequest(url, request, String.format("upload file[%s]", sbd));
     }

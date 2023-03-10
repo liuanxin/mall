@@ -182,13 +182,24 @@ public class ApacheHttpClientUtil {
     }
 
 
-    /** 向指定 url 上传文件 */
-    public static ResponseData postFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
+    /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
+    public static ResponseData uploadFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
+        return uploadFile(url, null, headers, params, files);
+    }
+    /** 向指定 url 上传文件, 只支持 POST|PUT(默认是 POST) + form-data 的方式 */
+    public static ResponseData uploadFile(String url, String method, Map<String, Object> headers,
+                                          Map<String, Object> params, Map<String, File> files) {
         if (A.isEmpty(params)) {
             params = new HashMap<>();
         }
         StringBuilder sbd = new StringBuilder();
-        HttpPost request = new HttpPost(HttpConst.handleEmptyScheme(url));
+
+        HttpEntityEnclosingRequestBase request;
+        if (U.isNotBlank(method) && "PUT".equalsIgnoreCase(method)) {
+            request = new HttpPut(HttpConst.handleEmptyScheme(url));
+        } else {
+            request = new HttpPost(HttpConst.handleEmptyScheme(url));
+        }
         handleHeader(request, HttpConst.handleContentType(headers));
         MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create().setLaxMode();
         boolean hasParam = A.isNotEmpty(params);

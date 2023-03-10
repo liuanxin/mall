@@ -12,10 +12,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @SuppressWarnings("DuplicatedCode")
 public class HttpClientUtil {
@@ -87,10 +84,15 @@ public class HttpClientUtil {
         return handleRequest("DELETE", url, U.toStr(json), json, headerMap);
     }
 
-    /** 向指定 url 上传文件 */
-    public static ResponseData postFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
+    /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
+    public static ResponseData uploadFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
+        return uploadFile(url, null, headers, params, files);
+    }
+    /** 向指定 url 上传文件, 只支持 POST|PUT(默认是 POST) + form-data 的方式 */
+    public static ResponseData uploadFile(String url, String method, Map<String, Object> headers,
+                                          Map<String, Object> params, Map<String, File> files) {
         long start = System.currentTimeMillis();
-        String method = "POST";
+        String useMethod = (U.isNotBlank(method) && Arrays.asList("POST", "PUT").contains(method.toUpperCase())) ? method : "POST";
         Map<String, List<String>> reqHeaders = null;
         StringBuilder sbd = new StringBuilder();
         Integer responseCode = null;
@@ -146,7 +148,7 @@ public class HttpClientUtil {
             } else {
                 body = HttpRequest.BodyPublishers.noBody();
             }
-            builder.method(method, body);
+            builder.method(useMethod, body);
             url = HttpConst.handleEmptyScheme(url);
             builder.uri(URI.create(url));
             Map<String, Object> headerMap = HttpConst.handleContentType(headers);
@@ -165,12 +167,12 @@ public class HttpClientUtil {
             result = response.body();
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 String print = String.format("upload file[%s]", sbd);
-                LogUtil.ROOT_LOG.info(collectContext(start, method, url, print, reqHeaders, resCode, resHeaders, result));
+                LogUtil.ROOT_LOG.info(collectContext(start, useMethod, url, print, reqHeaders, resCode, resHeaders, result));
             }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 String print = String.format("upload file[%s]", sbd);
-                LogUtil.ROOT_LOG.error(collectContext(start, method, url, print, reqHeaders, resCode, resHeaders, result), e);
+                LogUtil.ROOT_LOG.error(collectContext(start, useMethod, url, print, reqHeaders, resCode, resHeaders, result), e);
             }
         }
         return new ResponseData(responseCode, result);
