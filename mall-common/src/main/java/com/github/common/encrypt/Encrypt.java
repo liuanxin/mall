@@ -48,8 +48,6 @@ public final class Encrypt {
     private static final JWTSigner JWT_SIGNER = new JWTSigner(JWT_SECRET_KEY);
     private static final JWTVerifier JWT_VERIFIER = new JWTVerifier(JWT_SECRET_KEY);
 
-    private static final Charset UTF8 = StandardCharsets.UTF_8;
-
     // 也不是很懂为什么 guava 已经发布了这么多的版本却还在 Beta, 这个注解用来抑制 idea 的警告
     private static final HashFunction HASH_FUN = Hashing.murmur3_32_fixed();
     /** 62 进制(0-9, a-z, A-Z), 64 进制则再加上 _ 和 @ */
@@ -89,8 +87,8 @@ public final class Encrypt {
         }
         try {
             Cipher cipher = Cipher.getInstance(AES);
-            cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(secretKey.getBytes(UTF8), AES));
-            return binary2Hex(cipher.doFinal(data.getBytes(UTF8)));
+            cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), AES));
+            return binary2Hex(cipher.doFinal(data.getBytes(StandardCharsets.UTF_8)));
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 %s 加密(%s)密钥(%s)时异常", AES, data, secretKey), e);
         }
@@ -109,8 +107,8 @@ public final class Encrypt {
         }
         try {
             Cipher cipher = Cipher.getInstance(AES);
-            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(secretKey.getBytes(UTF8), AES));
-            return new String(cipher.doFinal(hex2Binary(data)), UTF8);
+            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), AES));
+            return new String(cipher.doFinal(hex2Binary(data)), StandardCharsets.UTF_8);
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 %s 解密(%s)密钥(%s)时异常", AES, data, secretKey), e);
         }
@@ -129,7 +127,7 @@ public final class Encrypt {
             throw new RuntimeException(String.format("%s 加密时, 密钥必须是 %s 位", DES, DES_LEN));
         }
         try {
-            DESKeySpec desKey = new DESKeySpec(secretKey.getBytes(UTF8));
+            DESKeySpec desKey = new DESKeySpec(secretKey.getBytes(StandardCharsets.UTF_8));
             SecretKey secretkey = SecretKeyFactory.getInstance(DES).generateSecret(desKey);
 
             Cipher cipher = Cipher.getInstance(DES);
@@ -152,12 +150,12 @@ public final class Encrypt {
             throw new RuntimeException(String.format("%s 解密时, 密钥必须是 %s 位", DES, DES_LEN));
         }
         try {
-            DESKeySpec desKey = new DESKeySpec(secretKey.getBytes(UTF8));
+            DESKeySpec desKey = new DESKeySpec(secretKey.getBytes(StandardCharsets.UTF_8));
             SecretKey secretkey = SecretKeyFactory.getInstance(DES).generateSecret(desKey);
 
             Cipher cipher = Cipher.getInstance(DES);
             cipher.init(Cipher.DECRYPT_MODE, secretkey, new SecureRandom());
-            return new String(cipher.doFinal(hex2Binary(data)), UTF8);
+            return new String(cipher.doFinal(hex2Binary(data)), StandardCharsets.UTF_8);
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 %s 解密(%s)密钥(%s)时异常", DES, data, secretKey), e);
         }
@@ -176,7 +174,7 @@ public final class Encrypt {
             throw new RuntimeException(String.format("%s 加密时, 密钥必须是 %s 位", DES_CBC_PKCS5PADDING, DES_LEN));
         }
         try {
-            byte[] secretKeyBytes = secretKey.getBytes(UTF8);
+            byte[] secretKeyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
             DESKeySpec desKey = new DESKeySpec(secretKeyBytes);
             SecretKey secretkey = SecretKeyFactory.getInstance(DES).generateSecret(desKey);
 
@@ -200,12 +198,12 @@ public final class Encrypt {
             throw new RuntimeException(String.format("%s 解密时, 密钥必须是 %s 位", DES_CBC_PKCS5PADDING, DES_LEN));
         }
         try {
-            byte[] secretKeyBytes = secretKey.getBytes(UTF8);
+            byte[] secretKeyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
             DESKeySpec desKey = new DESKeySpec(secretKeyBytes);
             SecretKey key = SecretKeyFactory.getInstance(DES).generateSecret(desKey);
             Cipher cipher = Cipher.getInstance(DES_CBC_PKCS5PADDING);
             cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(secretKeyBytes));
-            return new String(cipher.doFinal(hex2Binary(data)), UTF8);
+            return new String(cipher.doFinal(hex2Binary(data)), StandardCharsets.UTF_8);
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 %s 解密(%s)密钥(%s)时异常", DES_CBC_PKCS5PADDING, data, secretKey), e);
         }
@@ -227,8 +225,8 @@ public final class Encrypt {
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
             RsaPair pair = new RsaPair();
-            pair.setPublicKey(new String(base64Encode(keyPair.getPublic().getEncoded()), UTF8));
-            pair.setPrivateKey(new String(base64Encode(keyPair.getPrivate().getEncoded()), UTF8));
+            pair.setPublicKey(new String(base64Encode(keyPair.getPublic().getEncoded()), StandardCharsets.UTF_8));
+            pair.setPrivateKey(new String(base64Encode(keyPair.getPrivate().getEncoded()), StandardCharsets.UTF_8));
             return pair;
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 %s 生成 %s 位的密钥对时异常", RSA, keyLength), e);
@@ -237,16 +235,16 @@ public final class Encrypt {
     /** 使用 rsa 的公钥加密 */
     public static String rsaEncode(String publicKey, String data) {
         try {
-            byte[] keyBytes = base64Decode(publicKey.getBytes(UTF8));
+            byte[] keyBytes = base64Decode(publicKey.getBytes(StandardCharsets.UTF_8));
             X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
             KeyFactory keyFactory = KeyFactory.getInstance(RSA);
             PublicKey key = keyFactory.generatePublic(keySpec);
 
             Cipher cipher = Cipher.getInstance(RSA);
             cipher.init(Cipher.ENCRYPT_MODE, key);
-            byte[] encodeBytes = cipher.doFinal(data.getBytes(UTF8));
+            byte[] encodeBytes = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
 
-            return new String(base64Encode(encodeBytes), UTF8);
+            return new String(base64Encode(encodeBytes), StandardCharsets.UTF_8);
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 %s 基于公钥(%s)加密(%s)时异常", RSA, publicKey, data), e);
         }
@@ -254,16 +252,16 @@ public final class Encrypt {
     /** 使用 rsa 的私钥解密 */
     public static String rsaDecode(String privateKey, String data) {
         try {
-            byte[] keyBytes = base64Decode(privateKey.getBytes(UTF8));
+            byte[] keyBytes = base64Decode(privateKey.getBytes(StandardCharsets.UTF_8));
             PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
             KeyFactory keyFactory = KeyFactory.getInstance(RSA);
             PrivateKey key = keyFactory.generatePrivate(keySpec);
 
             Cipher cipher = Cipher.getInstance(RSA);
             cipher.init(Cipher.DECRYPT_MODE, key);
-            byte[] decodeBytes = cipher.doFinal(base64Decode(data.getBytes(UTF8)));
+            byte[] decodeBytes = cipher.doFinal(base64Decode(data.getBytes(StandardCharsets.UTF_8)));
 
-            return new String(decodeBytes, UTF8);
+            return new String(decodeBytes, StandardCharsets.UTF_8);
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 %s 基于私钥(%s)解密(%s)时异常", RSA, privateKey, data), e);
         }
@@ -422,36 +420,64 @@ public final class Encrypt {
 
     /** 生成 md5 值(16 位) */
     public static String to16Md5(String src) {
-        return toMd5(src).substring(8, 24);
+        return to16Md5(src, StandardCharsets.UTF_8);
+    }
+    /** 生成 md5 值(16 位), 指定 src 的字符集 */
+    public static String to16Md5(String src, Charset charset) {
+        return toMd5(src, charset).substring(8, 24);
     }
     /** 生成 md5 值(32 位) */
     public static String toMd5(String src) {
-        return toHash(src, "md5");
+        return toMd5(src, StandardCharsets.UTF_8);
+    }
+    /** 生成 md5 值(32 位), 指定 src 的字符集 */
+    public static String toMd5(String src, Charset charset) {
+        return toHash(src, charset, "md5");
     }
     /** 生成 sha-1 值(40 位) */
     public static String toSha1(String src) {
-        return toHash(src, "sha-1");
+        return toSha1(src, StandardCharsets.UTF_8);
+    }
+    /** 生成 sha-1 值(40 位), 指定 src 的字符集 */
+    public static String toSha1(String src, Charset charset) {
+        return toHash(src, charset, "sha-1");
     }
     /** 生成 sha-224 值(56 位) */
     public static String toSha224(String src) {
-        return toHash(src, "sha-224");
+        return toSha224(src, StandardCharsets.UTF_8);
+    }
+    /** 生成 sha-224 值(56 位), 指定 src 的字符集 */
+    public static String toSha224(String src, Charset charset) {
+        return toHash(src, charset, "sha-224");
     }
     /** 生成 sha-256 值(64 位) */
     public static String toSha256(String src) {
-        return toHash(src, "sha-256");
+        return toSha256(src, StandardCharsets.UTF_8);
+    }
+    /** 生成 sha-256 值(64 位), 指定 src 的字符集 */
+    public static String toSha256(String src, Charset charset) {
+        return toHash(src, charset, "sha-256");
     }
     /** 生成 sha-384 值(96 位) */
     public static String toSha384(String src) {
-        return toHash(src, "sha-384");
+        return toSha384(src, StandardCharsets.UTF_8);
+    }
+    /** 生成 sha-384 值(96 位), 指定 src 的字符集 */
+    public static String toSha384(String src, Charset charset) {
+        return toHash(src, charset, "sha-384");
     }
     /** 生成 sha-512 值(128 位) */
     public static String toSha512(String src) {
-        return toHash(src, "sha-512");
+        return toSha512(src, StandardCharsets.UTF_8);
     }
-    private static String toHash(String src, String algorithm) {
+    /** 生成 sha-512 值(128 位), 指定 src 的字符集 */
+    public static String toSha512(String src, Charset charset) {
+        return toHash(src, charset, "sha-512");
+    }
+    private static String toHash(String src, Charset charset, String algorithm) {
         try {
             MessageDigest md = MessageDigest.getInstance(algorithm);
-            md.update(src.getBytes());
+            md.update(src.getBytes(charset));
             return binary2Hex(md.digest());
         } catch (Exception e) {
             throw new RuntimeException(String.format("无法给(%s)生成 %s 值", src, algorithm), e);
@@ -547,7 +573,7 @@ public final class Encrypt {
     }
     /** 十六进制字符串 转换成 二进制 */
     public static byte[] hex2Binary(String data) {
-        byte[] bt = data.getBytes(UTF8);
+        byte[] bt = data.getBytes(StandardCharsets.UTF_8);
         byte[] bytes = new byte[bt.length / 2];
         for (int n = 0; n < bt.length; n += 2) {
             String item = new String(bt, n, 2);
