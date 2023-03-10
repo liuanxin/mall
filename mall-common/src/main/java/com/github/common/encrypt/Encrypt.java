@@ -5,8 +5,6 @@ import com.github.common.encrypt.jwt.JWTSigner;
 import com.github.common.encrypt.jwt.JWTVerifier;
 import com.github.common.exception.ForbiddenException;
 import com.github.common.util.U;
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
 import lombok.Data;
 
 import javax.crypto.Cipher;
@@ -16,7 +14,6 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.FileInputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
@@ -47,16 +44,6 @@ public final class Encrypt {
     private static final String JWT_SECRET_KEY = "*W0$%Te#nr&y^pOt";
     private static final JWTSigner JWT_SIGNER = new JWTSigner(JWT_SECRET_KEY);
     private static final JWTVerifier JWT_VERIFIER = new JWTVerifier(JWT_SECRET_KEY);
-
-    // 也不是很懂为什么 guava 已经发布了这么多的版本却还在 Beta, 这个注解用来抑制 idea 的警告
-    private static final HashFunction HASH_FUN = Hashing.murmur3_32_fixed();
-    /** 62 进制(0-9, a-z, A-Z), 64 进制则再加上 _ 和 @ */
-    private static final char[] HEX = new char[] {
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
-    };
-    private static final int HEX_LEN = HEX.length;
 
     /** 使用 base64 编码 */
     public static String base64Encode(String src) {
@@ -387,37 +374,6 @@ public final class Encrypt {
         return new String(iOutputChar);
     }
 
-    /**
-     * <pre>
-     * 生成短地址: 长度大于 6 则用 Murmur3_32Hash 算法来生成 hash 并返回其 62 进制数(0-9 加 a-z 加 A-Z)
-     *
-     * getShortString("user/info?id=123&name=中文&sex=0&province=广东") ==> 44y34N
-     * 这样可以将 { http://abc.xyz.com/user/info?id=123&name=中文&sex=0&province=广东 } 缩短成 { http://t.io/44y34N }
-     * </pre>
-     */
-    public static String getShortString(String src) {
-        if (U.isBlank(src)) {
-            return null;
-        } else if (src.length() < 6) {
-            return src;
-        } else {
-            StringBuilder sbd = new StringBuilder();
-            long pad = Math.abs(HASH_FUN.hashBytes(src.getBytes(StandardCharsets.UTF_8)).padToLong());
-            if (pad < HEX_LEN) {
-                sbd.append(HEX[(int) pad]);
-            } else {
-                long t = pad;
-                while (t > HEX_LEN) {
-                    int p = (int) (t % HEX_LEN);
-                    t = t / HEX_LEN;
-                    sbd.insert(0, HEX[p]);
-                }
-                sbd.insert(0, HEX[(int) t]);
-            }
-            return sbd.toString();
-        }
-    }
-
     /** 生成 md5 值(16 位) */
     public static String to16Md5(String src) {
         return to16Md5(src, StandardCharsets.UTF_8);
@@ -484,44 +440,6 @@ public final class Encrypt {
         }
     }
 
-    /** 生成文件的 md5 值(32 位) */
-    public static String toMd5File(String file) {
-        return toHashFile(file, "md5");
-    }
-    /** 生成文件的 sha-1 值(40 位) */
-    public static String toSha1File(String file) {
-        return toHashFile(file, "sha-1");
-    }
-    /** 生成文件的 sha-224 值(56 位) */
-    public static String toSha224File(String file) {
-        return toHashFile(file, "sha-224");
-    }
-    /** 生成文件的 sha-256 值(64 位) */
-    public static String toSha256File(String file) {
-        return toHashFile(file, "sha-256");
-    }
-    /** 生成文件的 sha-384 值(96 位) */
-    public static String toSha384File(String file) {
-        return toHashFile(file, "sha-384");
-    }
-    /** 生成文件的 sha-512 值(128 位) */
-    public static String toSha512File(String file) {
-        return toHashFile(file, "sha-512");
-    }
-    private static String toHashFile(String file, String algorithm) {
-        try (FileInputStream in = new FileInputStream(file)) {
-            MessageDigest md = MessageDigest.getInstance(algorithm);
-            int len, count = 1024;
-            byte[] buffer = new byte[count];
-            while ((len = in.read(buffer, 0, count)) != -1) {
-                md.update(buffer, 0, len);
-            }
-            return binary2Hex(md.digest());
-        } catch (Exception e) {
-            throw new RuntimeException(String.format("无法生成文件(%s)的 %s 值", file, algorithm), e);
-        }
-    }
-
     /** 基于密钥生成 hmac-md5 值(32 位) */
     public static String toHmacMd5(String src, String secret) {
         return toHmacHash(src, "HmacMD5", secret);
@@ -560,13 +478,6 @@ public final class Encrypt {
     public static String binary2Hex(byte[] bytes) {
         StringBuilder sbd = new StringBuilder();
         for (byte b : bytes) {
-            /*
-            String hex = (Integer.toHexString(b & 0XFF));
-            if (hex.length() == 1) {
-                sbd.append("0");
-            }
-            sbd.append(hex);
-            */
             sbd.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
         }
         return sbd.toString();
