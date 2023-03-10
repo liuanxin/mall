@@ -37,7 +37,7 @@ public class CronUtil {
      * </pre>
      *
      * @param desc 当前定时任务的业务说明
-     * @param cron 定时任务的表达式
+     * @param cron 定时任务的表达式, 见 {@link org.springframework.scheduling.support.CronExpression#parse(String)}
      * @param predicate 入参是任务的业务说明, 出参是 boolean(表示运行是否成功)的方法
      */
     public static void runTask(ScheduledTaskRegistrar schedule, String desc, String cron, Predicate<String> predicate) {
@@ -50,7 +50,6 @@ public class CronUtil {
             }
             return;
         }
-
         schedule.addTriggerTask(() -> runTask(desc, predicate), cronTrigger);
     }
 
