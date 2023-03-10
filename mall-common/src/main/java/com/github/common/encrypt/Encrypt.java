@@ -14,6 +14,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.FileInputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
@@ -439,6 +440,46 @@ public final class Encrypt {
             throw new RuntimeException(String.format("无法给(%s)生成 %s 值", src, algorithm), e);
         }
     }
+
+
+    /** 生成文件的 md5 值(32 位) */
+    public static String toMd5File(String file) {
+        return toHashFile(file, "md5");
+    }
+    /** 生成文件的 sha-1 值(40 位) */
+    public static String toSha1File(String file) {
+        return toHashFile(file, "sha-1");
+    }
+    /** 生成文件的 sha-224 值(56 位) */
+    public static String toSha224File(String file) {
+        return toHashFile(file, "sha-224");
+    }
+    /** 生成文件的 sha-256 值(64 位) */
+    public static String toSha256File(String file) {
+        return toHashFile(file, "sha-256");
+    }
+    /** 生成文件的 sha-384 值(96 位) */
+    public static String toSha384File(String file) {
+        return toHashFile(file, "sha-384");
+    }
+    /** 生成文件的 sha-512 值(128 位) */
+    public static String toSha512File(String file) {
+        return toHashFile(file, "sha-512");
+    }
+    private static String toHashFile(String file, String algorithm) {
+        try (FileInputStream in = new FileInputStream(file)) {
+            MessageDigest md = MessageDigest.getInstance(algorithm);
+            int len, count = 1024;
+            byte[] buffer = new byte[count];
+            while ((len = in.read(buffer, 0, count)) != -1) {
+                md.update(buffer, 0, len);
+            }
+            return binary2Hex(md.digest());
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("无法生成文件(%s)的 %s 值", file, algorithm), e);
+        }
+    }
+
 
     /** 基于密钥生成 hmac-md5 值(32 位) */
     public static String toHmacMd5(String src, String secret) {
