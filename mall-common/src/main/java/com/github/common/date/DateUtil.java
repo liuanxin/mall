@@ -103,7 +103,7 @@ public class DateUtil {
         return null;
     }
     public static Date parse(String source, DateFormatType type) {
-        if (U.isNotBlank(source)) {
+        if (U.isNotBlank(source) && U.isNotNull(type)) {
             if (type.isCst()) {
                 try {
                     // cst 单独处理
