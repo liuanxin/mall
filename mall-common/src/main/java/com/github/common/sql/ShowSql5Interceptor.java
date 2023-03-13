@@ -42,7 +42,7 @@
 //
 //                TIME_CACHE.put(Thread.currentThread(), counter + TIME_SPLIT + start);
 //                String url = connection.getMetaData().getURL();
-//                connection.getHost() + ":" + connection.getSocksProxyPort()
+//                // connection.getHost() + ":" + connection.getSocksProxyPort();
 //                LogUtil.SQL_LOG.debug("counter: {}, data-source: {}, sql: {}", counter,
 //                        url.substring(url.indexOf("//") + 2, url.indexOf("?")), realSql);
 //            }
