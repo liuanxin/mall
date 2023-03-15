@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.github.common.date.DateUtil;
 import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.U;
 
@@ -11,6 +12,8 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
@@ -38,6 +41,12 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
         }
         else if (obj instanceof Date d) {
             handleDate(d, gen, provider);
+        }
+        else if (obj instanceof LocalDate d) {
+            handleDate(DateUtil.convertDate(d), gen, provider);
+        }
+        else if (obj instanceof LocalDateTime d) {
+            handleDate(DateUtil.convertDate(d), gen, provider);
         }
         else {
             throw new RuntimeException("Annotation @JsonSensitive can not used on types other than String Number Date");

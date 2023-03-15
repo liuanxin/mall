@@ -7,7 +7,9 @@ import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.Locale;
@@ -20,6 +22,32 @@ public class DateUtil {
     private static final long HOUR = 60 * MINUTE;
     private static final long DAY = 24 * HOUR;
     private static final long YEAR = 365 * DAY;
+
+
+    public static LocalDateTime convertLocalDateTime(Date date) {
+        return U.isNull(date) ? null : LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+    }
+
+    public static LocalDateTime convertLocalDateTime(LocalDate date) {
+        return U.isNull(date) ? null : LocalDateTime.of(date, LocalTime.MIN);
+    }
+
+    public static LocalDate convertLocalDate(Date date) {
+        return U.isNull(date) ? null : LocalDate.ofInstant(date.toInstant(), ZoneId.systemDefault());
+    }
+
+    public static LocalDate convertLocalDate(LocalDateTime date) {
+        return U.isNull(date) ? null : date.toLocalDate();
+    }
+
+    public static Date convertDate(LocalDateTime dateTime) {
+        return U.isNull(dateTime) ? null : Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    public static Date convertDate(LocalDate date) {
+        return U.isNull(date) ? null : convertDate(convertLocalDateTime(date));
+    }
+
 
     /** 当前时间 */
     public static Date now() {
@@ -66,18 +94,6 @@ public class DateUtil {
 
     public static String format(Date date, String type) {
         return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : DateTimeFormat.forPattern(type).print(date.getTime());
-    }
-
-    public static LocalDateTime convert(Date date) {
-        return U.isNull(date) ? null : LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
-    }
-
-    public static Date convert(LocalDateTime localDateTime) {
-        return U.isNull(localDateTime) ? null : Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-    }
-
-    public static LocalDateTime parseLocalDateTime(String source) {
-        return convert(parse(source));
     }
 
     /**

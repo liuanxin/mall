@@ -5,12 +5,10 @@ import com.github.common.util.U;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
 import java.time.temporal.TemporalAdjusters;
-import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -66,14 +64,6 @@ public class DateTimeUtil {
 
     public static String format(LocalDateTime date, String type) {
         return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : getFormatter(type).format(date);
-    }
-
-    public static LocalDateTime convert(Date date) {
-        return U.isNull(date) ? null : LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
-    }
-
-    public static Date convert(LocalDateTime localDateTime) {
-        return U.isNull(localDateTime) ? null : Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
     /**
