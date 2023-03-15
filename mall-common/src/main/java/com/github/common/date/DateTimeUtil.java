@@ -11,6 +11,7 @@ import java.time.temporal.IsoFields;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DateTimeUtil {
@@ -19,6 +20,17 @@ public class DateTimeUtil {
 
     private static DateTimeFormatter getFormatter(String type) {
         return FORMATTER_CACHE_MAP.computeIfAbsent(type, DateTimeFormatter::ofPattern);
+    }
+
+    private static DateTimeFormatter getFormatter(String type, String timezone) {
+        return FORMATTER_CACHE_MAP.computeIfAbsent(type, s -> {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(s);
+            TimeZone timeZone = TimeZone.getTimeZone(timezone);
+            if (U.isNotNull(timeZone)) {
+                formatter.withZone(timeZone.toZoneId());
+            }
+            return formatter;
+        });
     }
 
     public static LocalDateTime now() {
@@ -67,6 +79,10 @@ public class DateTimeUtil {
         return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : getFormatter(type).format(date);
     }
 
+    public static String format(TemporalAccessor date, String type, String timezone) {
+        return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : getFormatter(type, timezone).format(date);
+    }
+
     /**
      * 将字符串转换成 LocalDateTime 对象
      *
@@ -88,9 +104,17 @@ public class DateTimeUtil {
     }
     public static LocalDateTime parse(String source, String type) {
         if (U.isNotBlank(source)) {
-            source = source.trim();
             try {
-                return getFormatter(type).parse(source, LocalDateTime::from);
+                return getFormatter(type).parse(source.trim(), LocalDateTime::from);
+            } catch (Exception ignore) {
+            }
+        }
+        return null;
+    }
+    public static LocalDateTime parse(String source, String type, String timezone) {
+        if (U.isNotBlank(source)) {
+            try {
+                return getFormatter(type, timezone).parse(source.trim(), LocalDateTime::from);
             } catch (Exception ignore) {
             }
         }
