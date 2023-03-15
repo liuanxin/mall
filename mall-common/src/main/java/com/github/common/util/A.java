@@ -178,8 +178,14 @@ public final class A {
                 }
             }
             return joiner.toString();
-        } else if (arrayOrCollection instanceof Collection c) {
-            return toStr(c, split);
+        } else if (arrayOrCollection instanceof Collection<?> c) {
+            StringJoiner joiner = new StringJoiner(split);
+            for (Object obj : c) {
+                if (U.isNotNull(obj)) {
+                    joiner.add(obj.toString());
+                }
+            }
+            return joiner.toString();
         } else {
             return arrayOrCollection.toString();
         }
