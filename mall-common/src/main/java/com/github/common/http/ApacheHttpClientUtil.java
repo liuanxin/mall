@@ -144,9 +144,10 @@ public class ApacheHttpClientUtil {
     /** 向指定的 url 基于 post 发起 request-body 请求 */
     public static ResponseData postWithBody(String url, String data, Map<String, Object> headers) {
         HttpPost request = new HttpPost(HttpConst.handleEmptyScheme(url));
-        request.setEntity(new ByteArrayEntity(data.getBytes(StandardCharsets.UTF_8)));
+        String content = U.toStr(data);
+        request.setEntity(new ByteArrayEntity(content.getBytes(StandardCharsets.UTF_8)));
         handleHeader(request, HttpConst.handleContentType(headers, true));
-        return handleRequest(request, data);
+        return handleRequest(request, content);
     }
 
 
