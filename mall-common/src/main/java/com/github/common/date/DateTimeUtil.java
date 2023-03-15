@@ -8,6 +8,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
+import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,11 +59,11 @@ public class DateTimeUtil {
     }
 
     /** 格式化日期对象成字符串 */
-    public static String format(LocalDateTime date, DateFormatType type) {
+    public static String format(TemporalAccessor date, DateFormatType type) {
         return (U.isNull(date) || U.isNull(type)) ? U.EMPTY : format(date, type.getValue());
     }
 
-    public static String format(LocalDateTime date, String type) {
+    public static String format(TemporalAccessor date, String type) {
         return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : getFormatter(type).format(date);
     }
 
