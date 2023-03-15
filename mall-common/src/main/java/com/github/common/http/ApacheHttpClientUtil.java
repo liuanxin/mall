@@ -87,6 +87,7 @@ public class ApacheHttpClientUtil {
     private static CloseableHttpClient createHttpClient() {
         return HttpClients.custom()
                 .setConnectionManager(CONNECTION_MANAGER)
+                .setConnectionManagerShared(true)
                 .setRetryHandler(HTTP_REQUEST_RETRY_HANDLER)
                 .build();
     }
