@@ -33,7 +33,8 @@ public class DateUtil {
     }
 
     public static LocalDate convertLocalDate(Date date) {
-        return U.isNull(date) ? null : LocalDate.ofInstant(date.toInstant(), ZoneId.systemDefault());
+        LocalDateTime localDateTime = convertLocalDateTime(date);
+        return U.isNull(localDateTime) ? null : localDateTime.toLocalDate();
     }
 
     public static LocalDate convertLocalDate(LocalDateTime date) {
