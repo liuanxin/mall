@@ -925,7 +925,7 @@ public final class U {
     }
     /** 转换成 id=123&name=xyz&name=opq */
     public static String formatParam(boolean des, Map<String, ?> params) {
-        if (params == null || params.isEmpty()) {
+        if (A.isEmpty(params)) {
             return EMPTY;
         }
 
@@ -933,28 +933,29 @@ public final class U {
         for (Map.Entry<String, ?> entry : params.entrySet()) {
             String key = entry.getKey();
             Object obj = entry.getValue();
-            if (isNotBlank(key) && isNotNull(obj)) {
-                String value;
-                String split = ",";
-                if (obj.getClass().isArray()) {
-                    StringJoiner stringJoiner = new StringJoiner(split);
-                    int len = Array.getLength(obj);
-                    for (int i = 0; i < len; i++) {
-                        Object o = Array.get(obj, i);
-                        stringJoiner.add(o == null ? EMPTY : o.toString());
-                    }
-                    value = stringJoiner.toString();
-                } else if (obj instanceof Collection<?> c) {
-                    StringJoiner stringJoiner = new StringJoiner(split);
-                    for (Object o : c) {
-                        stringJoiner.add(o == null ? EMPTY : o.toString());
-                    }
-                    value = stringJoiner.toString();
-                } else {
-                    value = obj.toString();
+
+            String value;
+            String split = ",";
+            if (obj == null) {
+                value = EMPTY;
+            } else if (obj.getClass().isArray()) {
+                StringJoiner stringJoiner = new StringJoiner(split);
+                int len = Array.getLength(obj);
+                for (int i = 0; i < len; i++) {
+                    Object o = Array.get(obj, i);
+                    stringJoiner.add(o == null ? EMPTY : o.toString());
                 }
-                joiner.add(key + "=" + (des ? DesensitizationUtil.desByKey(key, value) : value));
+                value = stringJoiner.toString();
+            } else if (obj instanceof Collection<?> c) {
+                StringJoiner stringJoiner = new StringJoiner(split);
+                for (Object o : c) {
+                    stringJoiner.add(o == null ? EMPTY : o.toString());
+                }
+                value = stringJoiner.toString();
+            } else {
+                value = obj.toString();
             }
+            joiner.add(key + "=" + (des ? DesensitizationUtil.desByKey(key, value) : value));
         }
         return joiner.toString();
     }
