@@ -11,14 +11,16 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DateTimeUtil {
 
-    private static final long SECOND = 1000L;
-    private static final long MINUTE = 60 * SECOND;
-    private static final long HOUR = 60 * MINUTE;
-    private static final long DAY = 24 * HOUR;
-    private static final long YEAR = 365 * DAY;
+    private static final Map<String, DateTimeFormatter> FORMATTER_CACHE_MAP = new ConcurrentHashMap<>();
+
+    private static DateTimeFormatter getFormatter(String type) {
+        return FORMATTER_CACHE_MAP.computeIfAbsent(type, DateTimeFormatter::ofPattern);
+    }
 
     public static LocalDateTime now() {
         return LocalDateTime.now();
@@ -63,7 +65,7 @@ public class DateTimeUtil {
     }
 
     public static String format(LocalDateTime date, String type) {
-        return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : DateTimeFormatter.ofPattern(type).format(date);
+        return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : getFormatter(type).format(date);
     }
 
     public static LocalDateTime convert(Date date) {
@@ -97,7 +99,7 @@ public class DateTimeUtil {
         if (U.isNotBlank(source)) {
             source = source.trim();
             try {
-                return LocalDateTime.parse(source, DateTimeFormatter.ofPattern(type));
+                return getFormatter(type).parse(source, LocalDateTime::from);
             } catch (Exception ignore) {
             }
         }
