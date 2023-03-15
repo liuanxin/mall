@@ -109,7 +109,7 @@ public class ApacheHttpClientUtil {
     }
     /** 向指定 url 进行 get 请求(普通表单方式) */
     public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers) {
-        HttpGet request = new HttpGet(HttpConst.handleEmptyScheme(HttpConst.handleGetParams(url, params)));
+        HttpGet request = new HttpGet(HttpConst.handleEmptyScheme(HttpConst.appendParamsToUrl(url, params)));
         handleHeader(request, HttpConst.handleContentType(headers, false));
         return handleRequest(request, null);
     }

@@ -34,7 +34,7 @@ public class HttpUrlConnectionUtil {
     /** 向指定 url 进行 get 请求(普通表单方式) */
     public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers) {
         Map<String, Object> headerMap = HttpConst.handleContentType(headers, false);
-        return handleRequest("GET", HttpConst.handleGetParams(url, params), null, headerMap);
+        return handleRequest("GET", HttpConst.appendParamsToUrl(url, params), null, headerMap);
     }
 
 

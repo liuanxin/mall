@@ -52,7 +52,7 @@ public class OkHttpClientUtil {
     public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers) {
         Request.Builder builder = new Request.Builder();
         handleHeader(builder, HttpConst.handleContentType(headers, false));
-        return handleRequest(HttpConst.handleGetParams(url, params), builder, null);
+        return handleRequest(HttpConst.appendParamsToUrl(url, params), builder, null);
     }
 
 
