@@ -112,7 +112,7 @@ public class ApacheHttpClientUtil {
     public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers) {
         HttpGet request = new HttpGet(HttpConst.handleEmptyScheme(HttpConst.appendParamsToUrl(url, params)));
         handleHeader(request, HttpConst.handleContentType(headers, false));
-        return handleRequest(request, null);
+        return handleRequest(request, null, null);
     }
 
 
@@ -135,42 +135,42 @@ public class ApacheHttpClientUtil {
             request.setEntity(new UrlEncodedFormEntity(nameValuePairs, StandardCharsets.UTF_8));
         }
         handleHeader(request, HttpConst.handleContentType(headers, false));
-        return handleRequest(request, U.formatParam(params));
+        return handleRequest(request, params, null);
     }
 
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithBody(String url, String data) {
-        return postWithBody(url, data, null);
+    public static ResponseData postWithBody(String url, String json) {
+        return postWithBody(url, json, null);
     }
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithBody(String url, String data, Map<String, Object> headers) {
+    public static ResponseData postWithBody(String url, String json, Map<String, Object> headers) {
         HttpPost request = new HttpPost(HttpConst.handleEmptyScheme(url));
-        String content = U.toStr(data);
+        String content = U.toStr(json);
         request.setEntity(new ByteArrayEntity(content.getBytes(StandardCharsets.UTF_8)));
         handleHeader(request, HttpConst.handleContentType(headers, true));
-        return handleRequest(request, content);
+        return handleRequest(request, null, content);
     }
 
 
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static ResponseData put(String url, String data) {
-        return putWithHeader(url, data, null);
+    public static ResponseData put(String url, String json) {
+        return putWithHeader(url, json, null);
     }
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static ResponseData putWithHeader(String url, String data, Map<String, Object> headers) {
+    public static ResponseData putWithHeader(String url, String json, Map<String, Object> headers) {
         HttpPut request = new HttpPut(HttpConst.handleEmptyScheme(url));
-        request.setEntity(new ByteArrayEntity(data.getBytes(StandardCharsets.UTF_8)));
+        request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
         handleHeader(request, HttpConst.handleContentType(headers, true));
-        return handleRequest(request, data);
+        return handleRequest(request, null, json);
     }
 
 
     /** 向指定的 url 基于 delete 发起 request-body 请求 */
-    public static ResponseData delete(String url, String data) {
-        return deleteWithHeader(url, data, null);
+    public static ResponseData delete(String url, String json) {
+        return deleteWithHeader(url, json, null);
     }
     /** 向指定的 url 基于 delete 发起 request-body 请求 */
-    public static ResponseData deleteWithHeader(String url, String data, Map<String, Object> headers) {
+    public static ResponseData deleteWithHeader(String url, String json, Map<String, Object> headers) {
         HttpEntityEnclosingRequestBase request = new HttpEntityEnclosingRequestBase() {
             @Override
             public String getMethod() {
@@ -178,14 +178,15 @@ public class ApacheHttpClientUtil {
             }
         };
         request.setURI(URI.create(HttpConst.handleEmptyScheme(url)));
-        request.setEntity(new ByteArrayEntity(data.getBytes(StandardCharsets.UTF_8)));
+        request.setEntity(new ByteArrayEntity(json.getBytes(StandardCharsets.UTF_8)));
         handleHeader(request, HttpConst.handleContentType(headers, true));
-        return handleRequest(request, data);
+        return handleRequest(request, null, json);
     }
 
 
     /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
-    public static ResponseData uploadFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
+    public static ResponseData uploadFile(String url, Map<String, Object> headers,
+                                          Map<String, Object> params, Map<String, File> files) {
         return uploadFile(url, null, headers, params, files);
     }
     /** 向指定 url 上传文件, 只支持 POST|PUT(默认是 POST) + form-data 的方式 */
@@ -234,7 +235,7 @@ public class ApacheHttpClientUtil {
         if (hasParam || hasFile) {
             request.setEntity(entityBuilder.build());
         }
-        return handleRequest(request, String.format("upload file[%s]", sbd));
+        return handleRequest(request, null, String.format("upload file[%s]", sbd));
     }
 
 
@@ -249,7 +250,7 @@ public class ApacheHttpClientUtil {
             }
         }
     }
-    private static ResponseData handleRequest(HttpRequestBase request, String params) {
+    private static ResponseData handleRequest(HttpRequestBase request, Map<String, Object> printParams, String printJsonBody) {
         request.setConfig(config());
 
         request.setHeader("User-Agent", USER_AGENT);
@@ -283,7 +284,8 @@ public class ApacheHttpClientUtil {
                     resCode = responseCode + " ";
                     result = EntityUtils.toString(entity, StandardCharsets.UTF_8);
                     if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                        LogUtil.ROOT_LOG.info(collectContext(start, method, url, params, reqHeaders, resCode, resHeaders, result));
+                        LogUtil.ROOT_LOG.info(collectContext(start, method, url, printParams,
+                                printJsonBody, reqHeaders, resCode, resHeaders, result));
                     }
                 } finally {
                     EntityUtils.consume(entity);
@@ -291,13 +293,14 @@ public class ApacheHttpClientUtil {
             }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(collectContext(start, method, url, params, reqHeaders, resCode, resHeaders, result), e);
+                LogUtil.ROOT_LOG.error(collectContext(start, method, url, printParams,
+                        printJsonBody, reqHeaders, resCode, resHeaders, result), e);
             }
         }
         return new ResponseData(responseCode, result);
     }
-    private static String collectContext(long start, String method, String url, String params, Header[] reqHeaders,
-                                         String statusCode, Header[] resHeaders, String result) {
+    private static String collectContext(long start, String method, String url, Map<String, Object> printParams, String printJsonBody,
+                                         Header[] reqHeaders, String statusCode, Header[] resHeaders, String result) {
         StringBuilder sbd = new StringBuilder();
         long now = System.currentTimeMillis();
         sbd.append("Apache-HttpClient4 => [")
@@ -316,12 +319,17 @@ public class ApacheHttpClientUtil {
             }
             sbd.append(")");
         }
-        boolean hasParam = U.isNotBlank(params);
-        if (hasParam) {
-            if (hasReqHeader) {
+        if (A.isNotEmpty(printParams)) {
+            if (!sbd.toString().endsWith("[")) {
                 sbd.append(" ");
             }
-            sbd.append("param(").append(U.compress(params)).append(")");
+            sbd.append("param(").append(U.compress(U.formatParam(printParams))).append(")");
+        }
+        if (U.isNotBlank(printJsonBody)) {
+            if (!sbd.toString().endsWith("[")) {
+                sbd.append(" ");
+            }
+            sbd.append("body(").append(U.compress(printJsonBody)).append(")");
         }
         sbd.append("], res[").append(statusCode);
         boolean hasResHeader = A.isNotEmpty(resHeaders);

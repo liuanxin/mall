@@ -41,45 +41,42 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override
     public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
                                            Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
-        if (LogUtil.ROOT_LOG.isInfoEnabled() && !GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
-            return beforePrint(inputMessage);
-        } else {
-            return super.beforeBodyRead(inputMessage, parameter, targetType, converterType);
+        if (!GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
+            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                return new HttpInputMessage() {
+                    @Override
+                    public HttpHeaders getHeaders() {
+                        return inputMessage.getHeaders();
+                    }
+
+                    @Override
+                    public InputStream getBody() throws IOException {
+                        // inputStream 是通过内部偏移来读取的, 读到末尾后没有指回来,
+                        // 一些实现流没有实现 reset 方法, 将会报 inputStream 默认的实现 mark/reset not supported 异常, 比如
+                        //   tomcat 的 org.apache.catalina.connector.CoyoteInputStream
+                        //   undertow 的 io.undertow.servlet.spec.ServletInputStreamImpl
+                        //   jetty 的 org.eclipse.jetty.server.HttpInputOverHTTP
+                        // 这导致当想要重复读取时会报 getXX can't be called after getXXX 异常,
+                        // 所以像下面这样操作: 先将流读取成 byte[], 输出日志后用 byte[] 再返回一个输入流
+                        try (
+                                InputStream input = inputMessage.getBody();
+                                ByteArrayOutputStream output = new ByteArrayOutputStream()
+                        ) {
+                            // 用 ByteArrayOutputStream 的方式是最快的
+                            // 见: https://stackoverflow.com/questions/309424/how-do-i-read-convert-an-inputstream-into-a-string-in-java
+                            U.inputToOutput(input, output);
+                            byte[] bytes = output.toByteArray();
+
+                            Object body = JsonUtil.nativeObject(new String(bytes, StandardCharsets.UTF_8));
+                            LogUtil.ROOT_LOG.info("request-body({})", logHandler.toJson(body));
+
+                            // 在 ByteArrayOutputStream 和 ByteArrayInputStream 上调用 close 是无意义的, 它们也都有实现 reset 方法
+                            return new ByteArrayInputStream(bytes);
+                        }
+                    }
+                };
+            }
         }
-    }
-
-    private HttpInputMessage beforePrint(HttpInputMessage inputMessage) {
-        return new HttpInputMessage() {
-            @Override
-            public HttpHeaders getHeaders() {
-                return inputMessage.getHeaders();
-            }
-
-            @Override
-            public InputStream getBody() throws IOException {
-                // inputStream 是通过内部偏移来读取的, 读到末尾后没有指回来,
-                // 一些实现流没有实现 reset 方法, 将会报 inputStream 默认的实现 mark/reset not supported 异常, 比如
-                //   tomcat 的 org.apache.catalina.connector.CoyoteInputStream
-                //   undertow 的 io.undertow.servlet.spec.ServletInputStreamImpl
-                //   jetty 的 org.eclipse.jetty.server.HttpInputOverHTTP
-                // 这导致当想要重复读取时会报 getXX can't be called after getXXX 异常,
-                // 所以像下面这样操作: 先将流读取成 byte[], 输出日志后用 byte[] 再返回一个输入流
-                try (
-                        InputStream input = inputMessage.getBody();
-                        ByteArrayOutputStream output = new ByteArrayOutputStream()
-                ) {
-                    // 用 ByteArrayOutputStream 的方式是最快的
-                    // 见: https://stackoverflow.com/questions/309424/how-do-i-read-convert-an-inputstream-into-a-string-in-java
-                    U.inputToOutput(input, output);
-                    byte[] bytes = output.toByteArray();
-
-                    Object body = JsonUtil.nativeObject(new String(bytes, StandardCharsets.UTF_8));
-                    LogUtil.ROOT_LOG.info("request-body({})", logHandler.toJson(body));
-
-                    // 在 ByteArrayOutputStream 和 ByteArrayInputStream 上调用 close 是无意义的, 它们也都有实现 reset 方法
-                    return new ByteArrayInputStream(bytes);
-                }
-            }
-        };
+        return super.beforeBodyRead(inputMessage, parameter, targetType, converterType);
     }
 }
