@@ -50,9 +50,10 @@ public class OkHttpClientUtil {
     }
     /** 向指定 url 进行 get 请求(普通表单方式) */
     public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers) {
+        String useUrl = HttpConst.appendParamsToUrl(url, params);
         Request.Builder builder = new Request.Builder();
         handleHeader(builder, HttpConst.handleContentType(headers, false));
-        return handleRequest(HttpConst.appendParamsToUrl(url, params), builder, null);
+        return handleRequest(useUrl, builder, null, null);
     }
 
 
@@ -65,47 +66,65 @@ public class OkHttpClientUtil {
         RequestBody requestBody = RequestBody.create(U.formatParam(false, params), FORM);
         Request.Builder builder = new Request.Builder().post(requestBody);
         handleHeader(builder, HttpConst.handleContentType(headers, false));
-        return handleRequest(url, builder, U.formatParam(params));
+        return handleRequest(url, builder, U.formatParam(params), null);
     }
 
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithBody(String url, String data) {
-        return postWithBody(url, data, null);
+    public static ResponseData postWithBody(String url, String json) {
+        return postWithBody(url, null, json, null);
     }
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithBody(String url, String data, Map<String, Object> headers) {
-        String content = U.toStr(data);
+    public static ResponseData postWithBody(String url, Map<String, Object> params, String json) {
+        return postWithBody(url, params, json, null);
+    }
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static ResponseData postWithBody(String url, String json, Map<String, Object> headers) {
+        return postWithBody(url, null, json, headers);
+    }
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static ResponseData postWithBody(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
+        String content = U.toStr(json);
+        String useUrl = HttpConst.appendParamsToUrl(url, params);
         Request.Builder builder = new Request.Builder().post(RequestBody.create(content, JSON));
         handleHeader(builder, HttpConst.handleContentType(headers, true));
-        return handleRequest(url, builder, content);
+        return handleRequest(useUrl, builder, null, content);
     }
 
 
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static ResponseData put(String url, String data) {
-        return put(url, data, null);
+    public static ResponseData put(String url, String json) {
+        return put(url, null, json, null);
     }
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static ResponseData put(String url, String data, Map<String, Object> headers) {
-        String content = U.toStr(data);
+    public static ResponseData put(String url, Map<String, Object> params, String json) {
+        return put(url, params, json, null);
+    }
+    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    public static ResponseData put(String url, String json, Map<String, Object> headers) {
+        return put(url, null, json, headers);
+    }
+    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    public static ResponseData put(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
+        String content = U.toStr(json);
+        String useUrl = HttpConst.appendParamsToUrl(url, params);
         RequestBody requestBody = RequestBody.create(content, JSON);
         Request.Builder builder = new Request.Builder().put(requestBody);
         handleHeader(builder, HttpConst.handleContentType(headers, true));
-        return handleRequest(url, builder, content);
+        return handleRequest(useUrl, builder, null, content);
     }
 
 
     /** 向指定的 url 基于 delete 发起 request-body 请求 */
-    public static ResponseData delete(String url, String data) {
-        return deleteWithHeader(url, data, null);
+    public static ResponseData delete(String url, String json) {
+        return deleteWithHeader(url, json, null);
     }
     /** 向指定的 url 基于 delete 发起 request-body 请求 */
-    public static ResponseData deleteWithHeader(String url, String data, Map<String, Object> headers) {
-        String content = U.toStr(data);
+    public static ResponseData deleteWithHeader(String url, String json, Map<String, Object> headers) {
+        String content = U.toStr(json);
         RequestBody requestBody = RequestBody.create(content, JSON);
         Request.Builder builder = new Request.Builder().delete(requestBody);
         handleHeader(builder, HttpConst.handleContentType(headers, true));
-        return handleRequest(url, builder, data);
+        return handleRequest(url, builder, null, content);
     }
 
 
@@ -160,7 +179,7 @@ public class OkHttpClientUtil {
             request = new Request.Builder().post(builder.build());
         }
         handleHeader(request, HttpConst.handleContentType(headers));
-        return handleRequest(url, request, String.format("upload file[%s]", sbd));
+        return handleRequest(url, request, String.format("upload file[%s]", sbd), null);
     }
 
 
@@ -177,7 +196,7 @@ public class OkHttpClientUtil {
         }
     }
     /** 发起 http 请求 */
-    private static ResponseData handleRequest(String url, Request.Builder builder, String params) {
+    private static ResponseData handleRequest(String url, Request.Builder builder, String printParams, String printJsonBody) {
         String traceId = LogUtil.getTraceId();
         if (U.isNotBlank(traceId)) {
             builder.header(Const.TRACE, traceId);
@@ -204,17 +223,19 @@ public class OkHttpClientUtil {
             statusCode = responseCode + " ";
             result = U.isNotNull(body) ? body.string() : null;
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info(collectContext(start, method, url, params, reqHeaders, statusCode, resHeaders, result));
+                LogUtil.ROOT_LOG.info(collectContext(start, method, url, printParams,
+                        printJsonBody, reqHeaders, statusCode, resHeaders, result));
             }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(collectContext(start, method, url, params, reqHeaders, statusCode, resHeaders, result), e);
+                LogUtil.ROOT_LOG.error(collectContext(start, method, url, printParams,
+                        printJsonBody, reqHeaders, statusCode, resHeaders, result), e);
             }
         }
         return new ResponseData(responseCode, result);
     }
-    private static String collectContext(long start, String method, String url, String params, Headers reqHeaders,
-                                         String statusCode, Headers resHeaders, String result) {
+    private static String collectContext(long start, String method, String url, String printParams, String printJsonBody,
+                                         Headers reqHeaders, String statusCode, Headers resHeaders, String result) {
         StringBuilder sbd = new StringBuilder();
         long now = System.currentTimeMillis();
         sbd.append("OkHttp3 => [")
@@ -223,8 +244,7 @@ public class OkHttpClientUtil {
                 .append("(").append(DateUtil.toHuman(now - start)).append(")")
                 .append("] (").append(method).append(" ").append(url).append(")");
         sbd.append(" req[");
-        boolean hasReqHeader = U.isNotNull(reqHeaders);
-        if (hasReqHeader) {
+        if (U.isNotNull(reqHeaders)) {
             sbd.append("header(");
             for (String key : reqHeaders.names()) {
                 String value = reqHeaders.get(key);
@@ -232,12 +252,17 @@ public class OkHttpClientUtil {
             }
             sbd.append(")");
         }
-        boolean hasParam = U.isNotBlank(params);
-        if (hasParam) {
-            if (hasReqHeader) {
+        if (U.isNotBlank(printParams)) {
+            if (!sbd.toString().endsWith("[")) {
                 sbd.append(" ");
             }
-            sbd.append("param(").append(U.compress(params)).append(")");
+            sbd.append("param(").append(U.compress(printParams)).append(")");
+        }
+        if (U.isNotBlank(printJsonBody)) {
+            if (!sbd.toString().endsWith("[")) {
+                sbd.append(" ");
+            }
+            sbd.append("body(").append(U.compress(printJsonBody)).append(")");
         }
         sbd.append("], res[").append(statusCode);
         boolean hasResHeader = U.isNotNull(resHeaders);
