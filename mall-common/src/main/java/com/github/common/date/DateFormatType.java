@@ -10,19 +10,21 @@ public enum DateFormatType {
 
     /** yyyy-MM-dd HH:mm:ss */
     YYYY_MM_DD_HH_MM_SS("yyyy-MM-dd HH:mm:ss"),
+    /** yyyy-MM-dd HH:mm:ss SSS */
+    YYYY_MM_DD_HH_MM_SS_SSS("yyyy-MM-dd HH:mm:ss SSS"),
+    /** yyyy-MM-dd HH:mm:ss.SSS 到毫秒 */
+    YYYY_MM_DD_HH_MM_SSSSS("yyyy-MM-dd HH:mm:ss.SSS"),
     /** yyyy-MM-dd HH:mm */
     YYYY_MM_DD_HH_MM("yyyy-MM-dd HH:mm"),
     /** yyyy-MM-dd */
     YYYY_MM_DD("yyyy-MM-dd"),
     /** yyyy-MM */
     YYYY_MM("yyyy-MM"),
+    /** yyyy */
+    YYYY("yyyy"),
 
     /** yyyy-MM-dd HH:mm:ss,SSS */
     YYYY_MM_DD_HH_MM_SS_S("yyyy-MM-dd HH:mm:ss,SSS"),
-    /** yyyy-MM-dd HH:mm:ss SSS */
-    YYYY_MM_DD_HH_MM_SS_SSS("yyyy-MM-dd HH:mm:ss SSS"),
-    /** yyyy-MM-dd HH:mm:ss.SSS 到毫秒 */
-    YYYY_MM_DD_HH_MM_SSSSS("yyyy-MM-dd HH:mm:ss.SSS"),
     /** yyyy-MM-dd HH:mm:ss.SSSSSS 到微秒 */
     YYYY_MM_DD_HH_MM_SSSSSSSS("yyyy-MM-dd HH:mm:ss.SSSSSS"),
     /** yyyy-MM-dd HH:mm:ss.SSSSSSSSS 到纳秒 */
