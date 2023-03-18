@@ -79,6 +79,8 @@ public class DateTimeUtil {
             type = DateFormatType.YYYY_MM_DD.getValue();
         } else if (date instanceof LocalTime) {
             type = DateFormatType.HH_MM_SS.getValue();
+        } else if (date instanceof YearMonth) {
+            type = DateFormatType.YYYY_MM.getValue();
         } else if (date instanceof Year) {
             type = DateFormatType.YYYY.getValue();
         } else if (date instanceof MonthDay) {
