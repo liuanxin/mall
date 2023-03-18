@@ -57,7 +57,7 @@ public class DateTimeUtil {
     public static String formatDateTime(LocalDateTime date) {
         return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SS);
     }
-    /** 格式化日期 yyyy-MM-dd HH:mm:ss SSS */
+    /** 格式化日期 yyyy-MM-dd HH:mm:ss.SSS */
     public static String formatDateTimeMs(LocalDateTime date) {
         return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SSSSS);
     }
