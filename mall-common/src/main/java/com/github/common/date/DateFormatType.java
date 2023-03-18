@@ -22,6 +22,10 @@ public enum DateFormatType {
     YYYY_MM("yyyy-MM"),
     /** yyyy */
     YYYY("yyyy"),
+    /** MM-dd */
+    MM_DD("MM-dd"),
+    /** MM */
+    MM("MM"),
 
     /** yyyy-MM-dd HH:mm:ss,SSS */
     YYYY_MM_DD_HH_MM_SS_S("yyyy-MM-dd HH:mm:ss,SSS"),

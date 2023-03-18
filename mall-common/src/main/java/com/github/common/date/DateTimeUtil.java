@@ -49,10 +49,6 @@ public class DateTimeUtil {
     public static String formatDate(LocalDateTime date) {
         return format(date, DateFormatType.YYYY_MM_DD);
     }
-    /** 格式化日期 yyyy/MM/dd */
-    public static String formatUsaDate(LocalDateTime date) {
-        return format(date, DateFormatType.USA_YYYY_MM_DD);
-    }
     /** 格式化时间 HH:mm:ss */
     public static String formatTime(LocalDateTime date) {
         return format(date, DateFormatType.HH_MM_SS);
@@ -66,13 +62,42 @@ public class DateTimeUtil {
         return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SSSSS);
     }
 
+    /**
+     * 默认格式化
+     *   日期时间: yyyy-MM-dd HH:mm:ss
+     *   日期:    yyyy-MM-dd
+     *   时间:    HH:mm:ss
+     *   年:     yyyy
+     *   月日:   MM-dd
+     *   月:     MM
+     */
+    public static String format(TemporalAccessor date) {
+        String type;
+        if (date instanceof LocalDateTime) {
+            type = DateFormatType.YYYY_MM_DD_HH_MM_SS.getValue();
+        } else if (date instanceof LocalDate) {
+            type = DateFormatType.YYYY_MM_DD.getValue();
+        } else if (date instanceof LocalTime) {
+            type = DateFormatType.HH_MM_SS.getValue();
+        } else if (date instanceof Year) {
+            type = DateFormatType.YYYY.getValue();
+        } else if (date instanceof MonthDay) {
+            type = DateFormatType.MM_DD.getValue();
+        } else if (date instanceof Month) {
+            type = DateFormatType.MM.getValue();
+        } else {
+            return date.toString();
+        }
+        return format(date, type, null);
+    }
+
     /** 格式化日期对象成字符串 */
     public static String format(TemporalAccessor date, DateFormatType type) {
         return (U.isNull(date) || U.isNull(type)) ? U.EMPTY : format(date, type.getValue());
     }
 
     public static String format(TemporalAccessor date, String type) {
-        return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : getFormatter(type, null).format(date);
+        return format(date, type, null);
     }
 
     public static String format(TemporalAccessor date, String type, String timezone) {
