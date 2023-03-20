@@ -72,25 +72,23 @@ public class DateTimeUtil {
      *   月:     MM
      */
     public static String format(TemporalAccessor date) {
-        String type;
         if (date instanceof LocalDateTime) {
-            type = DateFormatType.YYYY_MM_DD_HH_MM_SS.getValue();
+            return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SS.getValue(), null);
         } else if (date instanceof LocalDate) {
-            type = DateFormatType.YYYY_MM_DD.getValue();
+            return format(date, DateFormatType.YYYY_MM_DD.getValue(), null);
         } else if (date instanceof LocalTime) {
-            type = DateFormatType.HH_MM_SS.getValue();
+            return format(date, DateFormatType.HH_MM_SS.getValue(), null);
         } else if (date instanceof YearMonth) {
-            type = DateFormatType.YYYY_MM.getValue();
+            return format(date, DateFormatType.YYYY_MM.getValue(), null);
         } else if (date instanceof Year) {
-            type = DateFormatType.YYYY.getValue();
+            return format(date, DateFormatType.YYYY.getValue(), null);
         } else if (date instanceof MonthDay) {
-            type = DateFormatType.MM_DD.getValue();
+            return format(date, DateFormatType.MM_DD.getValue(), null);
         } else if (date instanceof Month) {
-            type = DateFormatType.MM.getValue();
+            return format(date, DateFormatType.MM.getValue(), null);
         } else {
             return date.toString();
         }
-        return format(date, type, null);
     }
 
     /** 格式化日期对象成字符串 */
