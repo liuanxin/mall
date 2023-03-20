@@ -46,7 +46,7 @@ public class HttpUrlConnectionUtil {
     /** 向指定的 url 进行 post 请求(普通表单方式) */
     public static ResponseData postWithForm(String url, Map<String, Object> params, Map<String, Object> headers) {
         Map<String, Object> headerMap = HttpConst.handleContentType(headers, false);
-        return handleRequest("POST", url, U.formatParam(false, params), headerMap);
+        return handleRequest("POST", url, U.formatParam(false, true, params), headerMap);
     }
 
     /** 向指定的 url 基于 post 发起 request-body 请求 */

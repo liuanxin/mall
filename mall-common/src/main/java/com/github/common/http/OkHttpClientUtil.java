@@ -63,7 +63,7 @@ public class OkHttpClientUtil {
     }
     /** 向指定的 url 进行 post 请求(普通表单方式) */
     public static ResponseData postWithForm(String url, Map<String, Object> params, Map<String, Object> headers) {
-        RequestBody requestBody = RequestBody.create(U.formatParam(false, params), FORM);
+        RequestBody requestBody = RequestBody.create(U.formatParam(false, true, params), FORM);
         Request.Builder builder = new Request.Builder().post(requestBody);
         handleHeader(builder, HttpConst.handleContentType(headers, false));
         return handleRequest(url, builder, U.formatParam(params), null);

@@ -247,7 +247,7 @@ public final class RequestUtil {
      */
     public static String formatParam(boolean des) {
         HttpServletRequest request = getRequest();
-        return U.isNull(request) ? U.EMPTY : U.formatParam(des, request.getParameterMap());
+        return U.isNull(request) ? U.EMPTY : U.formatParam(des, false, request.getParameterMap());
     }
 
     public static String getTraceId() {

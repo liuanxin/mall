@@ -921,10 +921,10 @@ public final class U {
 
     /** 将参数 转换成 id=123&name=xyz&name=opq, 将值进行脱敏(如 password=***&phone=130****) */
     public static String formatParam(Map<String, ?> params) {
-        return formatParam(true, params);
+        return formatParam(true, false, params);
     }
     /** 转换成 id=123&name=xyz&name=opq */
-    public static String formatParam(boolean des, Map<String, ?> params) {
+    public static String formatParam(boolean des, boolean encode, Map<String, ?> params) {
         if (A.isEmpty(params)) {
             return EMPTY;
         }
@@ -955,7 +955,8 @@ public final class U {
             } else {
                 value = obj.toString();
             }
-            joiner.add(key + "=" + (des ? DesensitizationUtil.desByKey(key, value) : value));
+            String content = des ? DesensitizationUtil.desByKey(key, value) : value;
+            joiner.add(key + "=" + (encode ? U.urlEncode(content) : content));
         }
         return joiner.toString();
     }
