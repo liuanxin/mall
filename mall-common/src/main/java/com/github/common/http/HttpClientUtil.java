@@ -52,28 +52,48 @@ public class HttpClientUtil {
     /** 向指定的 url 进行 post 请求(表单) */
     public static ResponseData postWithForm(String url, Map<String, Object> params, Map<String, Object> headers) {
         Map<String, Object> headerMap = HttpConst.handleContentType(headers, false);
-        return handleRequest("POST", url, U.formatParam(false, params), U.formatParam(true, params), headerMap);
+        return handleRequest("POST", url, U.formatParam(false, params), U.formatParam(params), headerMap);
     }
 
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithBody(String url, String data) {
-        return postWithBody(url, data, null);
+    public static ResponseData postWithBody(String url, String json) {
+        return postWithBody(url, null, json, null);
     }
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithBody(String url, String data, Map<String, Object> headers) {
+    public static ResponseData postWithBody(String url, Map<String, Object> params, String json) {
+        return postWithBody(url, params, json, null);
+    }
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static ResponseData postWithBody(String url, String json, Map<String, Object> headers) {
+        return postWithBody(url, null, json, headers);
+    }
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static ResponseData postWithBody(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
+        String content = U.toStr(json);
+        String useUrl = HttpConst.appendParamsToUrl(url, params);
         Map<String, Object> headerMap = HttpConst.handleContentType(headers, true);
-        return handleRequest("POST", url, U.toStr(data), data, headerMap);
+        return handleRequest("POST", useUrl, content, content, headerMap);
     }
 
 
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static ResponseData put(String url, String data) {
-        return put(url, data, null);
+    public static ResponseData put(String url, String json) {
+        return put(url, null, json, null);
     }
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static ResponseData put(String url, String data, Map<String, Object> headers) {
+    public static ResponseData put(String url, Map<String, Object> params, String json) {
+        return put(url, params, json, null);
+    }
+    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    public static ResponseData put(String url, String json, Map<String, Object> headers) {
+        return put(url, null, json, headers);
+    }
+    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    public static ResponseData put(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
+        String content = U.toStr(json);
+        String useUrl = HttpConst.appendParamsToUrl(url, params);
         Map<String, Object> headerMap = HttpConst.handleContentType(headers, true);
-        return handleRequest("PUT", url, U.toStr(data), data, headerMap);
+        return handleRequest("PUT", useUrl, content, content, headerMap);
     }
 
 
@@ -256,7 +276,7 @@ public class HttpClientUtil {
             if (hasReqHeader) {
                 sbd.append(" ");
             }
-            sbd.append("param(").append(U.compress(params)).append(")");
+            sbd.append("param|body(").append(U.compress(params)).append(")");
         }
         sbd.append("], res[").append(resCode);
         boolean hasResHeader = A.isNotEmpty(resHeaders);

@@ -2,24 +2,31 @@ package com.github.common.date;
 
 import com.github.common.util.U;
 
-import java.time.DayOfWeek;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
+import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAdjusters;
-import java.util.Date;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DateTimeUtil {
 
     private static final Map<String, DateTimeFormatter> FORMATTER_CACHE_MAP = new ConcurrentHashMap<>();
 
-    private static DateTimeFormatter getFormatter(String type) {
-        return FORMATTER_CACHE_MAP.computeIfAbsent(type, DateTimeFormatter::ofPattern);
+    private static DateTimeFormatter getFormatter(String type, String timezone) {
+        return FORMATTER_CACHE_MAP.computeIfAbsent(type + "-" + U.toStr(timezone), s -> {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(s);
+            if (U.isNotBlank(timezone)) {
+                TimeZone timeZone = TimeZone.getTimeZone(timezone);
+                if (U.isNotNull(timeZone)) {
+                    formatter.withZone(timeZone.toZoneId());
+                }
+            }
+            return formatter;
+        });
     }
 
     public static LocalDateTime now() {
@@ -42,10 +49,6 @@ public class DateTimeUtil {
     public static String formatDate(LocalDateTime date) {
         return format(date, DateFormatType.YYYY_MM_DD);
     }
-    /** 格式化日期 yyyy/MM/dd */
-    public static String formatUsaDate(LocalDateTime date) {
-        return format(date, DateFormatType.USA_YYYY_MM_DD);
-    }
     /** 格式化时间 HH:mm:ss */
     public static String formatTime(LocalDateTime date) {
         return format(date, DateFormatType.HH_MM_SS);
@@ -54,56 +57,110 @@ public class DateTimeUtil {
     public static String formatDateTime(LocalDateTime date) {
         return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SS);
     }
-    /** 格式化日期 yyyy-MM-dd HH:mm:ss SSS */
+    /** 格式化日期 yyyy-MM-dd HH:mm:ss.SSS */
     public static String formatDateTimeMs(LocalDateTime date) {
         return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SSSSS);
     }
 
+    /**
+     * 默认格式化
+     *   日期时间: yyyy-MM-dd HH:mm:ss
+     *   日期:    yyyy-MM-dd
+     *   时间:    HH:mm:ss
+     *   年:     yyyy
+     *   月日:   MM-dd
+     *   月:     MM
+     */
+    public static String format(TemporalAccessor date) {
+        if (date instanceof LocalDateTime) {
+            return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SS.getValue(), null);
+        } else if (date instanceof LocalDate) {
+            return format(date, DateFormatType.YYYY_MM_DD.getValue(), null);
+        } else if (date instanceof LocalTime) {
+            return format(date, DateFormatType.HH_MM_SS.getValue(), null);
+        } else if (date instanceof YearMonth) {
+            return format(date, DateFormatType.YYYY_MM.getValue(), null);
+        } else if (date instanceof Year) {
+            return format(date, DateFormatType.YYYY.getValue(), null);
+        } else if (date instanceof MonthDay) {
+            return format(date, DateFormatType.MM_DD.getValue(), null);
+        } else if (date instanceof Month) {
+            return format(date, DateFormatType.MM.getValue(), null);
+        } else {
+            return date.toString();
+        }
+    }
+
     /** 格式化日期对象成字符串 */
-    public static String format(LocalDateTime date, DateFormatType type) {
+    public static String format(TemporalAccessor date, DateFormatType type) {
         return (U.isNull(date) || U.isNull(type)) ? U.EMPTY : format(date, type.getValue());
     }
 
-    public static String format(LocalDateTime date, String type) {
-        return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : getFormatter(type).format(date);
+    public static String format(TemporalAccessor date, String type) {
+        return format(date, type, null);
     }
 
-    public static LocalDateTime convert(Date date) {
-        return U.isNull(date) ? null : LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+    public static String format(TemporalAccessor date, String type, String timezone) {
+        return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : getFormatter(type, timezone).format(date);
     }
 
-    public static Date convert(LocalDateTime localDateTime) {
-        return U.isNull(localDateTime) ? null : Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-    }
+    public static TemporalAccessor parse(String source) {
+        if (U.isBlank(source)) {
+            return null;
+        }
 
-    /**
-     * 将字符串转换成 LocalDateTime 对象
-     *
-     * @see DateFormatType
-     */
-    public static LocalDateTime parse(String source) {
-        if (U.isNotBlank(source)) {
-            for (DateFormatType type : DateFormatType.values()) {
-                LocalDateTime date = parse(source, type);
-                if (U.isNotNull(date)) {
-                    return date;
-                }
+        for (DateFormatType type : DateFormatType.values()) {
+            TemporalAccessor accessor = parse(source, type);
+            if (U.isNotNull(accessor)) {
+                return accessor;
             }
         }
         return null;
     }
-    public static LocalDateTime parse(String source, DateFormatType type) {
-        return (U.isNotBlank(source) && U.isNotNull(type)) ? parse(source, type.getValue()) : null;
+    public static TemporalAccessor parse(String source, DateFormatType type) {
+        return U.isNotNull(type) ? parse(source, type.getValue()) : null;
     }
-    public static LocalDateTime parse(String source, String type) {
-        if (U.isNotBlank(source)) {
-            source = source.trim();
-            try {
-                return getFormatter(type).parse(source, LocalDateTime::from);
-            } catch (Exception ignore) {
+    public static TemporalAccessor parse(String source, String type) {
+        return U.isBlank(source) || U.isBlank(type) ? null : parse(getFormatter(type, null), source);
+    }
+    private static TemporalAccessor parse(DateTimeFormatter formatter, String source) {
+        // 如果格式是 yyyy-MM-dd, 想要转换成 yyyy-MM-dd HH:mm:ss 这种格式, 会异常, 无法转换, 只能转换成 LocalDate, 因此像下面这样处理
+        try {
+            LocalDateTime dateTime = formatter.parse(source, LocalDateTime::from);
+            if (dateTime != null) {
+                return dateTime;
             }
+        } catch (Exception ignore) {
         }
+
+        try {
+            LocalDate date = formatter.parse(source, LocalDate::from);
+            if (date != null) {
+                return date;
+            }
+        } catch (Exception ignore) {
+        }
+
+        try {
+            LocalTime time = formatter.parse(source, LocalTime::from);
+            if (time != null) {
+                return time;
+            }
+        } catch (Exception ignore) {
+        }
+
+        try {
+            Year year = formatter.parse(source, Year::from);
+            if (year != null) {
+                return year;
+            }
+        } catch (Exception ignore) {
+        }
+
         return null;
+    }
+    public static TemporalAccessor parse(String source, String type, String timezone) {
+        return U.isBlank(source) || U.isBlank(type) ? null : parse(getFormatter(type, timezone), source);
     }
 
     /** 获取一个日期所在天的最开始的时间(00:00:00 000), 对日期查询尤其有用 */
@@ -111,7 +168,7 @@ public class DateTimeUtil {
         return U.isNull(date) ? null : date.with(LocalTime.MIN);
     }
     /** 获取一个日期所在天的最晚的时间(23:59:59 999), 对日期查询尤其有用 */
-    private static LocalDateTime getDateTimeEnd(LocalDateTime date) {
+    private static LocalDateTime getDayEnd(LocalDateTime date) {
         return U.isNull(date) ? null : date.with(LocalTime.MAX);
     }
 

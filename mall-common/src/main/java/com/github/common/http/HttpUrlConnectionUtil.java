@@ -33,8 +33,9 @@ public class HttpUrlConnectionUtil {
     }
     /** 向指定 url 进行 get 请求(普通表单方式) */
     public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers) {
+        String useUrl = HttpConst.appendParamsToUrl(url, params);
         Map<String, Object> headerMap = HttpConst.handleContentType(headers, false);
-        return handleRequest("GET", HttpConst.appendParamsToUrl(url, params), null, headerMap);
+        return handleRequest("GET", useUrl, null, headerMap);
     }
 
 
@@ -49,24 +50,44 @@ public class HttpUrlConnectionUtil {
     }
 
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithBody(String url, String data) {
-        return postWithBody(url, data, null);
+    public static ResponseData postWithBody(String url, String json) {
+        return postWithBody(url, null, json, null);
     }
     /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithBody(String url, String data, Map<String, Object> headers) {
+    public static ResponseData postWithBody(String url, Map<String, Object> params, String json) {
+        return postWithBody(url, params, json, null);
+    }
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static ResponseData postWithBody(String url, String json, Map<String, Object> headers) {
+        return postWithBody(url, null, json, headers);
+    }
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static ResponseData postWithBody(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
+        String content = U.toStr(json);
+        String useUrl = HttpConst.appendParamsToUrl(url, params);
         Map<String, Object> headerMap = HttpConst.handleContentType(headers, true);
-        return handleRequest("POST", url, U.toStr(data), headerMap);
+        return handleRequest("POST", useUrl, content, headerMap);
     }
 
 
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static ResponseData put(String url, String data) {
-        return put(url, data, null);
+    public static ResponseData put(String url, String json) {
+        return put(url, null, json, null);
     }
     /** 向指定的 url 基于 put 发起 request-body 请求 */
-    public static ResponseData put(String url, String data, Map<String, Object> headers) {
+    public static ResponseData put(String url, Map<String, Object> params, String json) {
+        return put(url, params, json, null);
+    }
+    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    public static ResponseData put(String url, String json, Map<String, Object> headers) {
+        return put(url, null, json, headers);
+    }
+    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    public static ResponseData put(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
+        String content = U.toStr(json);
+        String useUrl = HttpConst.appendParamsToUrl(url, params);
         Map<String, Object> headerMap = HttpConst.handleContentType(headers, true);
-        return handleRequest("PUT", url, U.toStr(data), headerMap);
+        return handleRequest("PUT", useUrl, content, headerMap);
     }
 
 
@@ -202,12 +223,12 @@ public class HttpUrlConnectionUtil {
         String resCode = "";
         Integer responseCode = null;
         String result = "";
-        String originalUrl = HttpConst.handleEmptyScheme(url);
+        String useUrl = HttpConst.handleEmptyScheme(url);
         int count = 0;
         try {
-            String connUrl = originalUrl;
+            String connectionUrl = useUrl;
             while (true) {
-                con = (HttpURLConnection) new URL(connUrl).openConnection();
+                con = (HttpURLConnection) new URL(connectionUrl).openConnection();
                 con.setRequestMethod(method);
                 con.setConnectTimeout(HttpConst.CONNECT_TIME_OUT);
                 con.setReadTimeout(HttpConst.READ_TIME_OUT);
@@ -237,7 +258,7 @@ public class HttpUrlConnectionUtil {
                 switch (responseCode) {
                     // 301 和 302 自动进行重定向
                     case HttpURLConnection.HTTP_MOVED_PERM, HttpURLConnection.HTTP_MOVED_TEMP -> {
-                        connUrl = URLDecoder.decode(con.getHeaderField("Location"), StandardCharsets.UTF_8);
+                        connectionUrl = URLDecoder.decode(con.getHeaderField("Location"), StandardCharsets.UTF_8);
                         count++;
                         continue;
                     }
@@ -297,7 +318,7 @@ public class HttpUrlConnectionUtil {
             if (hasReqHeader) {
                 sbd.append(" ");
             }
-            sbd.append("param(").append(U.compress(params)).append(")");
+            sbd.append("param|body(").append(U.compress(params)).append(")");
         }
         sbd.append("], res[").append(resCode);
         boolean hasResHeader = A.isNotEmpty(resHeaders);
