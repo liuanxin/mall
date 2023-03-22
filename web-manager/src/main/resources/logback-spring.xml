@@ -18,7 +18,7 @@
       level: info          # 项目的日志级别, 默认是 debug
       sqlLevel: info       # sql 日志级别, 高于 debug 级别的将不输出 sql 语句, 默认是 debug
       thirdLevel: error    # 第三方日志级别, 默认是 warn
-      filePath: /opt/logs  # 文件存放目录, 默认是 ~/logs, 生成的文件名为 ${spring.application.name}-${spring.profiles.active}
+      filePath: /path      # 文件存放目录, 默认是 ~/logs/${spring.application.name}, 生成的文件名为 ${spring.application.name}-${spring.profiles.active}
       maxHistory: 30       # 文件最大保存天数, 默认是 15
 
     当下的日志策略是:
@@ -32,7 +32,7 @@
     <springProperty scope="context" name="logLevel" source="log.level" defaultValue="debug"/>
     <springProperty scope="context" name="sqlLevel" source="log.sqlLevel" defaultValue="debug"/>
     <springProperty scope="context" name="thirdLogLevel" source="log.thirdLevel" defaultValue="warn"/>
-    <springProperty scope="context" name="filePath" source="log.filePath" defaultValue="${user.home}/logs"/>
+    <springProperty scope="context" name="filePath" source="log.filePath" defaultValue="${user.home}/logs/${applicationName}"/>
     <springProperty scope="context" name="fileMaxHistory" source="log.maxHistory" defaultValue="15"/>
 
 

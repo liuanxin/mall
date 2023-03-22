@@ -21,7 +21,7 @@
     {
       "name": "log.filePath",
       "type": "java.lang.String",
-      "defaultValue": "~/logs",
+      "defaultValue": "~/logs/${spring.application.name}",
       "description": "日志文件所在目录."
     },
     {
