@@ -74,19 +74,19 @@ public class DateTimeUtil {
      */
     public static String format(TemporalAccessor date) {
         if (date instanceof LocalDateTime) {
-            return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SS.getValue(), null);
+            return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SS.getValue());
         } else if (date instanceof LocalDate) {
-            return format(date, DateFormatType.YYYY_MM_DD.getValue(), null);
+            return format(date, DateFormatType.YYYY_MM_DD.getValue());
         } else if (date instanceof LocalTime) {
-            return format(date, DateFormatType.HH_MM_SS.getValue(), null);
+            return format(date, DateFormatType.HH_MM_SS.getValue());
         } else if (date instanceof YearMonth) {
-            return format(date, DateFormatType.YYYY_MM.getValue(), null);
+            return format(date, DateFormatType.YYYY_MM.getValue());
         } else if (date instanceof Year) {
-            return format(date, DateFormatType.YYYY.getValue(), null);
+            return format(date, DateFormatType.YYYY.getValue());
         } else if (date instanceof MonthDay) {
-            return format(date, DateFormatType.MM_DD.getValue(), null);
+            return format(date, DateFormatType.MM_DD.getValue());
         } else if (date instanceof Month) {
-            return format(date, DateFormatType.MM.getValue(), null);
+            return format(date, DateFormatType.MM.getValue());
         } else {
             return date.toString();
         }
