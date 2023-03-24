@@ -67,6 +67,7 @@ public class DateTimeUtil {
      *   日期时间: yyyy-MM-dd HH:mm:ss
      *   日期:    yyyy-MM-dd
      *   时间:    HH:mm:ss
+     *   年月:    yyyy-MM
      *   年:     yyyy
      *   月日:   MM-dd
      *   月:     MM
