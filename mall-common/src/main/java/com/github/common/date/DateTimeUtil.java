@@ -8,6 +8,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAdjusters;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,12 +18,18 @@ public class DateTimeUtil {
     private static final Map<String, DateTimeFormatter> FORMATTER_CACHE_MAP = new ConcurrentHashMap<>();
 
     private static DateTimeFormatter getFormatter(String type, String timezone) {
+        return getFormatter(type, timezone, null);
+    }
+    private static DateTimeFormatter getFormatter(String type, String timezone, Locale locale) {
         return FORMATTER_CACHE_MAP.computeIfAbsent(type + "-" + U.toStr(timezone), s -> {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(s);
             if (U.isNotBlank(timezone)) {
                 TimeZone timeZone = TimeZone.getTimeZone(timezone);
                 if (U.isNotNull(timeZone)) {
                     formatter.withZone(timeZone.toZoneId());
+                }
+                if (U.isNotNull(locale)) {
+                    formatter.withLocale(locale);
                 }
             }
             return formatter;
@@ -98,11 +105,15 @@ public class DateTimeUtil {
     }
 
     public static String format(TemporalAccessor date, String type) {
-        return format(date, type, null);
+        return format(date, type, Locale.getDefault());
     }
 
     public static String format(TemporalAccessor date, String type, String timezone) {
         return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : getFormatter(type, timezone).format(date);
+    }
+
+    public static String format(TemporalAccessor date, String type, Locale locale) {
+        return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : getFormatter(type, null, locale).format(date);
     }
 
     public static TemporalAccessor parse(String source) {
