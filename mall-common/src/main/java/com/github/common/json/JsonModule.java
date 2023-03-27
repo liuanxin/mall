@@ -110,8 +110,8 @@ public final class JsonModule {
 
         @Override
         public void serialize(Date value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            // 时间戳为 0 的序列化为 null, 这样当数据库表字段设置 1970-01-01 这样的默认值时, 序列化当成 null 处理
-            if (U.isNull(value) || value.getTime() <= 0) {
+            // 时间戳为 0 的是否序列化为 null, 这样当数据库表字段设置 1970-01-01 这样的默认值时, 序列化时就是 null 值
+            if (U.isNull(value)/* || value.getTime() <= 0*/) {
                 gen.writeNull();
                 return;
             }
@@ -134,7 +134,6 @@ public final class JsonModule {
 
         @Override
         public void serialize(LocalDate value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            // noinspection DuplicatedCode
             if (U.isNull(value)) {
                 gen.writeNull();
                 return;
@@ -158,7 +157,6 @@ public final class JsonModule {
 
         @Override
         public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            // noinspection DuplicatedCode
             if (U.isNull(value)) {
                 gen.writeNull();
                 return;
@@ -199,7 +197,8 @@ public final class JsonModule {
         @Override
         public Date deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             Date date = DateUtil.parse(p.getText().trim());
-            return (U.isNull(date) || date.getTime() <= 0) ? null : date;
+            // 时间戳为 0 的是否反序列化为 null, 这样当数据库表字段设置 1970-01-01 这样的默认值时, 反序列化时就是 null 值
+            return (U.isNull(date)/* || date.getTime() <= 0*/) ? null : date;
         }
     }
 
