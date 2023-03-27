@@ -14,13 +14,13 @@ import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.U;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
@@ -49,17 +49,48 @@ public final class JsonModule {
             .addSerializer(String.class, GlobalLogSensitiveSerializer.INSTANCE);
 
 
-    private static final Map<String, ? super Annotation> FIELD_FORMAT_MAP = new ConcurrentHashMap<>();
-    private static JsonFormat getFormatField(Field field) {
-        String key = field.getType().getName() + "#" + field.getName();
-        JsonFormat format = (JsonFormat) FIELD_FORMAT_MAP.get(key);
-        if (U.isNull(format)) {
-            format = field.getAnnotation(JsonFormat.class);
-            if (U.isNotNull(format)) {
-                FIELD_FORMAT_MAP.put(key, format);
+    private static final Map<String, JsonFormat.Value> FIELD_FORMAT_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, DateTimeFormatter> FORMAT_CACHE = new ConcurrentHashMap<>();
+    private static JsonFormat.Value getJsonFormatOnField(JsonGenerator gen) {
+        Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
+        if (U.isNotNull(field)) {
+            String key = field.getType().getName() + "#" + field.getName();
+            JsonFormat.Value format = FIELD_FORMAT_CACHE.get(key);
+            if (U.isNull(format)) {
+                JsonFormat jsonFormat = field.getAnnotation(JsonFormat.class);
+                if (U.isNotNull(jsonFormat)) {
+                    FIELD_FORMAT_CACHE.put(key, new JsonFormat.Value(jsonFormat));
+                }
             }
+            return format;
         }
-        return format;
+        return null;
+    }
+    private static String format(Date value, JsonGenerator gen, SerializerProvider provider) {
+        JsonFormat.Value format = getJsonFormatOnField(gen);
+        if (U.isNotNull(format)) {
+            Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
+            SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+            df.setTimeZone(format.hasTimeZone() ? format.getTimeZone() : provider.getTimeZone());
+            return df.format(value);
+        }
+        return null;
+    }
+    private static String format(TemporalAccessor value, JsonGenerator gen, SerializerProvider provider) {
+        JsonFormat.Value format = getJsonFormatOnField(gen);
+        if (U.isNotNull(format)) {
+            String pattern = format.getPattern();
+            Locale locale = format.hasLocale() ? format.getLocale() : provider.getLocale();
+            DateTimeFormatter formatter = FORMAT_CACHE.computeIfAbsent(pattern, s -> {
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(s);
+                if (U.isNotNull(locale)) {
+                    dateTimeFormatter.withLocale(locale);
+                }
+                return dateTimeFormatter;
+            });
+            return formatter.format(value);
+        }
+        return null;
     }
 
 
@@ -86,18 +117,10 @@ public final class JsonModule {
             }
 
             // 标了 JsonFormat 则以注解为主
-            Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
-            if (U.isNotNull(field)) {
-                JsonFormat jsonFormat = getFormatField(field);
-                // noinspection DuplicatedCode
-                if (U.isNotNull(jsonFormat)) {
-                    JsonFormat.Value format = new JsonFormat.Value(jsonFormat);
-                    Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
-                    SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
-                    df.setTimeZone(format.hasTimeZone() ? format.getTimeZone() : provider.getTimeZone());
-                    gen.writeString(df.format(value));
-                    return;
-                }
+            String dateFormat = format(value, gen, provider);
+            if (U.isNotNull(dateFormat)) {
+                gen.writeString(dateFormat);
+                return;
             }
 
             // 默认方式
@@ -117,15 +140,11 @@ public final class JsonModule {
                 return;
             }
 
-            Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
-            if (U.isNotNull(field)) {
-                JsonFormat jsonFormat = getFormatField(field);
-                if (U.isNotNull(jsonFormat)) {
-                    JsonFormat.Value format = new JsonFormat.Value(jsonFormat);
-                    Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
-                    gen.writeString(DateTimeFormatter.ofPattern(format.getPattern()).withLocale(loc).format(value));
-                    return;
-                }
+            // 标了 JsonFormat 则以注解为主
+            String dateFormat = format(value, gen, provider);
+            if (U.isNotNull(dateFormat)) {
+                gen.writeString(dateFormat);
+                return;
             }
 
             // 默认显示成 yyyy-MM-dd
@@ -145,15 +164,11 @@ public final class JsonModule {
                 return;
             }
 
-            Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
-            if (U.isNotNull(field)) {
-                JsonFormat jsonFormat = getFormatField(field);
-                if (U.isNotNull(jsonFormat)) {
-                    JsonFormat.Value format = new JsonFormat.Value(jsonFormat);
-                    Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
-                    gen.writeString(DateTimeFormatter.ofPattern(format.getPattern()).withLocale(loc).format(value));
-                    return;
-                }
+            // 标了 JsonFormat 则以注解为主
+            String dateFormat = format(value, gen, provider);
+            if (U.isNotNull(dateFormat)) {
+                gen.writeString(dateFormat);
+                return;
             }
 
             // 默认显示成 yyyy-MM-dd HH:mm:ss

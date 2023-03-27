@@ -15,22 +15,22 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DateTimeUtil {
 
-    private static final Map<String, DateTimeFormatter> FORMATTER_CACHE_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, DateTimeFormatter> FORMATTER_CACHE = new ConcurrentHashMap<>();
 
     private static DateTimeFormatter getFormatter(String type, String timezone) {
         return getFormatter(type, timezone, null);
     }
     private static DateTimeFormatter getFormatter(String type, String timezone, Locale locale) {
-        return FORMATTER_CACHE_MAP.computeIfAbsent(type + "-" + U.toStr(timezone), s -> {
+        return FORMATTER_CACHE.computeIfAbsent(type + "-" + U.toStr(timezone), s -> {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(s);
             if (U.isNotBlank(timezone)) {
                 TimeZone timeZone = TimeZone.getTimeZone(timezone);
                 if (U.isNotNull(timeZone)) {
                     formatter.withZone(timeZone.toZoneId());
                 }
-                if (U.isNotNull(locale)) {
-                    formatter.withLocale(locale);
-                }
+            }
+            if (U.isNotNull(locale)) {
+                formatter.withLocale(locale);
             }
             return formatter;
         });
