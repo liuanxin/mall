@@ -10,7 +10,7 @@
       "name": "log.sqlLevel",
       "type": "java.lang.String",
       "defaultValue": "debug",
-      "description": "sql 日志级别."
+      "description": "sql 日志级别, 高于 debug 级别的将不输出 sql 语句."
     },
     {
       "name": "log.thirdLevel",

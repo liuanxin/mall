@@ -32,7 +32,7 @@
     <springProperty scope="context" name="logLevel" source="log.level" defaultValue="debug"/>
     <springProperty scope="context" name="sqlLevel" source="log.sqlLevel" defaultValue="debug"/>
     <springProperty scope="context" name="thirdLogLevel" source="log.thirdLevel" defaultValue="warn"/>
-    <springProperty scope="context" name="filePath" source="log.filePath" defaultValue="${user.home}/logs/${applicationName}"/>
+    <springProperty scope="context" name="filePath" source="log.filePath" defaultValue="${user.home}/logs"/>
     <springProperty scope="context" name="fileMaxHistory" source="log.maxHistory" defaultValue="15"/>
 
 
