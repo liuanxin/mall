@@ -11,7 +11,9 @@ import okhttp3.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -232,7 +234,17 @@ public class OkHttpClientUtil {
                         printJsonBody, reqHeaders, statusCode, resHeaders, result), e);
             }
         }
-        return new ResponseData(responseCode, result);
+        return new ResponseData(responseCode, handleResponseHeader(resHeaders), result);
+    }
+    private static Map<String, String> handleResponseHeader(Headers resHeaders) {
+        if (U.isNotNull(resHeaders)) {
+            Map<String, String> returnMap = new HashMap<>();
+            for (String key : resHeaders.names()) {
+                returnMap.put(key, resHeaders.get(key));
+            }
+            return returnMap;
+        }
+        return Collections.emptyMap();
     }
     private static String collectContext(long start, String method, String url, String printParams, String printJsonBody,
                                          Headers reqHeaders, String statusCode, Headers resHeaders, String result) {

@@ -317,7 +317,17 @@ public class ApacheHttpClientUtil {
                         printJsonBody, reqHeaders, resCode, resHeaders, result), e);
             }
         }
-        return new ResponseData(responseCode, result);
+        return new ResponseData(responseCode, handleResponseHeader(resHeaders), result);
+    }
+    private static Map<String, String> handleResponseHeader(Header[] resHeaders) {
+        if (A.isNotEmpty(resHeaders)) {
+            Map<String, String> returnMap = new HashMap<>();
+            for (Header header : resHeaders) {
+                returnMap.put(header.getName(), header.getValue());
+            }
+            return returnMap;
+        }
+        return Collections.emptyMap();
     }
     private static String collectContext(long start, String method, String url, String printParams, String printJsonBody,
                                          Header[] reqHeaders, String statusCode, Header[] resHeaders, String result) {

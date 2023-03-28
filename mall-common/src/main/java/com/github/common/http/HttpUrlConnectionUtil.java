@@ -13,9 +13,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @SuppressWarnings("DuplicatedCode")
 public class HttpUrlConnectionUtil {
@@ -287,7 +285,17 @@ public class HttpUrlConnectionUtil {
                 con.disconnect();
             }
         }
-        return new ResponseData(responseCode, result);
+        return new ResponseData(responseCode, handleResponseHeader(resHeaders), result);
+    }
+    private static Map<String, String> handleResponseHeader(Map<String, List<String>> resHeaders) {
+        if (A.isNotEmpty(resHeaders)) {
+            Map<String, String> returnMap = new HashMap<>();
+            for (Map.Entry<String, List<String>> entry : resHeaders.entrySet()) {
+                returnMap.put(entry.getKey(), String.join(",", entry.getValue()));
+            }
+            return returnMap;
+        }
+        return Collections.emptyMap();
     }
     private static String collectContext(long start, String method, String url, String params,
                                          Map<String, List<String>> reqHeaders, String resCode,
