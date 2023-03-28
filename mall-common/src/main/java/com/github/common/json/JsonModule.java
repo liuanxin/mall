@@ -49,30 +49,18 @@ public final class JsonModule {
             .addSerializer(String.class, GlobalLogSensitiveSerializer.INSTANCE);
 
 
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final Map<String, JsonFormat.Value> FIELD_FORMAT_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, DateTimeFormatter> FORMAT_CACHE = new ConcurrentHashMap<>();
     private static JsonFormat.Value getJsonFormatOnField(JsonGenerator gen) {
         Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
         if (U.isNotNull(field)) {
             String key = field.getType().getName() + "#" + field.getName();
-            JsonFormat.Value format = FIELD_FORMAT_CACHE.get(key);
-            if (U.isNull(format)) {
+            return FIELD_FORMAT_CACHE.computeIfAbsent(key, s -> {
                 JsonFormat jsonFormat = field.getAnnotation(JsonFormat.class);
-                if (U.isNotNull(jsonFormat)) {
-                    FIELD_FORMAT_CACHE.put(key, new JsonFormat.Value(jsonFormat));
-                }
-            }
-            return format;
-        }
-        return null;
-    }
-    private static String format(Date value, JsonGenerator gen, SerializerProvider provider) {
-        JsonFormat.Value format = getJsonFormatOnField(gen);
-        if (U.isNotNull(format)) {
-            Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
-            SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
-            df.setTimeZone(format.hasTimeZone() ? format.getTimeZone() : provider.getTimeZone());
-            return df.format(value);
+                return U.isNotNull(jsonFormat) ? new JsonFormat.Value(jsonFormat) : null;
+            });
         }
         return null;
     }
@@ -117,14 +105,16 @@ public final class JsonModule {
             }
 
             // 标了 JsonFormat 则以注解为主
-            String dateFormat = format(value, gen, provider);
-            if (U.isNotNull(dateFormat)) {
-                gen.writeString(dateFormat);
-                return;
+            JsonFormat.Value format = getJsonFormatOnField(gen);
+            if (U.isNotNull(format)) {
+                Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
+                SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+                df.setTimeZone(format.hasTimeZone() ? format.getTimeZone() : provider.getTimeZone());
+                gen.writeString(df.format(value));
+            } else {
+                // 默认方式: 当 SerializationFeature.WRITE_DATES_AS_TIMESTAMPS 为 true 时序列化成时间戳, 为 false 则以定义的 DateFormat 进行序列化操作
+                provider.defaultSerializeDateValue(value, gen);
             }
-
-            // 默认方式
-            provider.defaultSerializeDateValue(value, gen);
         }
     }
 
@@ -143,11 +133,10 @@ public final class JsonModule {
             String dateFormat = format(value, gen, provider);
             if (U.isNotNull(dateFormat)) {
                 gen.writeString(dateFormat);
-                return;
+            } else {
+                // 默认显示成 yyyy-MM-dd
+                gen.writeString(DATE_FORMAT.format(value));
             }
-
-            // 默认显示成 yyyy-MM-dd
-            gen.writeString(value.toString());
         }
     }
 
@@ -166,11 +155,10 @@ public final class JsonModule {
             String dateFormat = format(value, gen, provider);
             if (U.isNotNull(dateFormat)) {
                 gen.writeString(dateFormat);
-                return;
+            } else {
+                // 默认显示成 yyyy-MM-dd HH:mm:ss
+                gen.writeString(DATE_TIME_FORMAT.format(value));
             }
-
-            // 默认显示成 yyyy-MM-dd HH:mm:ss
-            gen.writeString(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(value));
         }
     }
 
