@@ -69,8 +69,8 @@
     <logger name="reactor" level="${thirdLogLevel}"/>
 
 
-    <!-- 开发: 输出到控制台 -->
-    <springProfile name="dev">
+    <!-- 开发 或 本地: 输出到控制台 -->
+    <springProfile name="dev | local">
         <include resource="org/springframework/boot/logging/logback/defaults.xml" />
         <property name="CONSOLE_LOG_PATTERN" value="%n[%X{RECORD_TIME}%d{yyyy-MM-dd HH:mm:ss.SSS}] [${applicationName}] [%clr(${PID}){magenta} - %clr(%t){blue} - %clr(%logger){cyan} - %clr(%p)]%n%class.%method\\(%file:%line\\)%n%xEx%m%X{TRACE_ID}%n"/>
         <property name="CONSOLE_LOG_CHARSET" value="UTF-8"/>
@@ -87,8 +87,8 @@
     <!-- 输出到文件时的格式 -->
     <property name="LOG_PATTERN" value="[%X{RECORD_TIME}%d{yyyy-MM-dd HH:mm:ss.SSS}] [${applicationName}] [${PID} : %t : %logger{4.22} : %p] [%class{30}#%method\\(%file:%line\\)] %xEx%m%X{TRACE_ID}%n"/>
 
-    <!-- 非开发、非生产: 输出到文件 -->
-    <springProfile name="!(dev | prod)">
+    <!-- 非开发、非本地、非生产: 输出到文件 -->
+    <springProfile name="!dev &amp; !local &amp; !prod">
         <appender name="PROJECT" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <file>${FILE_PATH}.log</file>
             <!-- yyyy-MM-dd_HH 每小时建一个, yyyy-MM-dd_HH-mm 每分钟建一个 -->
