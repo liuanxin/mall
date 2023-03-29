@@ -106,7 +106,7 @@ public class DateUtil {
         if (U.isNotBlank(source)) {
             long ms = U.toLong(source);
             if (ms > 0) {
-                // 时间戳如果只到秒(比如 php)就乘以 1000
+                // 时间戳如果只到秒就乘以 1000
                 return new Date((Long.toString(ms).length() < 13) ? TimeUnit.SECONDS.toMillis(ms) : ms);
             }
 
@@ -124,7 +124,7 @@ public class DateUtil {
             if (type.isCst()) {
                 try {
                     // cst 单独处理
-                    return new SimpleDateFormat(type.getValue(), Locale.ENGLISH).parse(source);
+                    return new SimpleDateFormat(type.getValue(), Locale.ENGLISH).parse(source.trim());
                 } catch (ParseException | IllegalArgumentException ignore) {
                     return null;
                 }
@@ -135,9 +135,8 @@ public class DateUtil {
     }
     public static Date parse(String source, String type) {
         if (U.isNotBlank(source)) {
-            source = source.trim();
             try {
-                Date date = DateTimeFormat.forPattern(type).parseDateTime(source).toDate();
+                Date date = DateTimeFormat.forPattern(type).parseDateTime(source.trim()).toDate();
                 if (date != null) {
                     return date;
                 }
