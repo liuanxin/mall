@@ -37,10 +37,15 @@ public class JsonUtil {
 
     private static final ObjectMapper OBJECT_MAPPER = new RenderObjectMapper();
 
-    private static final ObjectMapper EMPTY_OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper EMPTY_OBJECT_MAPPER = JsonMapper.builder()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
+            .build();
     private static final ObjectMapper IGNORE_OBJECT_MAPPER = JsonMapper.builder()
-                .configure(MapperFeature.USE_ANNOTATIONS, false)
-                .build();
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
+            .configure(MapperFeature.USE_ANNOTATIONS, false)
+            .build();
 
     private static class RenderObjectMapper extends ObjectMapper {
         private RenderObjectMapper() {
