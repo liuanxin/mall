@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAdapter;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -27,7 +26,7 @@ import java.nio.charset.StandardCharsets;
 
 @SuppressWarnings("NullableProblems")
 @RequiredArgsConstructor
-@ConditionalOnClass({ HttpServletRequest.class, RequestBody.class })
+@ConditionalOnClass({ RequestBody.class })
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
 public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
 
@@ -68,7 +67,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                             byte[] bytes = output.toByteArray();
 
                             Object body = JsonUtil.nativeObject(new String(bytes, StandardCharsets.UTF_8));
-                            LogUtil.ROOT_LOG.info("request-body({})", logHandler.toJson(body));
+                            LogUtil.ROOT_LOG.info("[{}] request-body({})", RequestUtil.logBasicInfo(), logHandler.toJson(body));
 
                             // 在 ByteArrayOutputStream 和 ByteArrayInputStream 上调用 close 是无意义的, 它们也都有实现 reset 方法
                             return new ByteArrayInputStream(bytes);

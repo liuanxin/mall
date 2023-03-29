@@ -19,12 +19,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.AbstractMappingJacksonResponseBodyAdvice;
 
-import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
 
 @SuppressWarnings("NullableProblems")
 @RequiredArgsConstructor
-@ConditionalOnClass({ HttpServletResponse.class, ResponseBody.class })
+@ConditionalOnClass({ ResponseBody.class })
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
 public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice {
 
@@ -41,6 +40,7 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
             }
 
             StringBuilder sbd = new StringBuilder();
+            sbd.append("[").append(RequestUtil.logBasicInfo()).append("]");
             long startTime = LogUtil.getStartTime();
             if (U.greater0(startTime)) {
                 sbd.append("time(").append(DateUtil.toHuman(System.currentTimeMillis() - startTime)).append(") ");
