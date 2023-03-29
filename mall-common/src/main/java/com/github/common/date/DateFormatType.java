@@ -16,12 +16,14 @@ public enum DateFormatType {
     YYYY_MM_DD("yyyy-MM-dd"),
     /** yyyy-MM */
     YYYY_MM("yyyy-MM"),
+    /** HH:mm:ss */
+    HH_MM_SS("HH:mm:ss"),
+    /** HH:mm */
+    HH_MM("HH:mm"),
     /** yyyy */
     YYYY("yyyy"),
     /** MM-dd */
     MM_DD("MM-dd"),
-    /** MM */
-    MM("MM"),
 
     /** yyyy-MM-dd HH:mm:ss SSS */
     YYYY_MM_DD_HH_MM_SS_SSS("yyyy-MM-dd HH:mm:ss SSS"),
@@ -31,8 +33,6 @@ public enum DateFormatType {
     YYYY_MM_DD_HH_MM_SSSSSSSS("yyyy-MM-dd HH:mm:ss.SSSSSS"),
     /** yyyy-MM-dd HH:mm:ss.SSSSSSSSS 到纳秒 */
     YYYY_MM_DD_HH_MM_SSSSSSSSSSS("yyyy-MM-dd HH:mm:ss.SSSSSSSSS"),
-    /** yyyy-MM-dd am/pm --> am/pm 会根据时区自动完成, 也就是如果当前时区是北京的话, 会显示成 上午/下午 */
-    YYYY_MM_DD_AP("yyyy-MM-dd a"),
 
     /** 到秒: yyyy-MM-ddTHH:mm:ssZ */
     TZ("yyyy-MM-dd'T'HH:mm:ss'Z'"),
@@ -43,28 +43,23 @@ public enum DateFormatType {
     /** 到毫秒: yyyy-MM-ddTHH:mm:ss.SSS */
     TS("yyyy-MM-dd'T'HH:mm:ss.SSS"),
 
-    // 转换时如果处理了时间戳的情况, 以下的格式就不好再用了, 会有岐义
-//    /** yyyyMMddHHmmssSSS */
-//    YYYYMMDDHHMMSSSSS("yyyyMMddHHmmssSSS"),
-//    /** yyyyMMddHHmmss */
-//    YYYYMMDDHHMMSS("yyyyMMddHHmmss"),
-//    /** yyMMddHHmmss */
-//    YYMMDDHHMMSS("yyMMddHHmmss"),
-//    /** yyyyMMddHHmm */
-//    YYYYMMDDHHMM("yyyyMMddHHmm"),
-//    /** yyMMddHHmm */
-//    YYMMDDHHMM("yyMMddHHmm"),
-//    /** yyyyMMdd */
-//    YYYYMMDD("yyyyMMdd"),
-//    /** yyMMdd */
-//    YYMMDD("yyMMdd"),
-//    /** yyyyMM */
-//    YYYYMM("yyyyMM"),
+    /** yyyyMMddHHmmssSSS */
+    YYYYMMDDHHMMSSSSS("yyyyMMddHHmmssSSS"),
+    /** yyyyMMddHHmmss */
+    YYYYMMDDHHMMSS("yyyyMMddHHmmss"),
+    /** yyMMddHHmmss */
+    YYMMDDHHMMSS("yyMMddHHmmss"),
+    /** yyyyMMddHHmm */
+    YYYYMMDDHHMM("yyyyMMddHHmm"),
+    /** yyMMddHHmm */
+    YYMMDDHHMM("yyMMddHHmm"),
+    /** yyyyMMdd */
+    YYYYMMDD("yyyyMMdd"),
+    /** yyMMdd */
+    YYMMDD("yyMMdd"),
+    /** yyyyMM */
+    YYYYMM("yyyyMM"),
 
-    /** HH:mm:ss */
-    HH_MM_SS("HH:mm:ss"),
-    /** HH:mm */
-    HH_MM("HH:mm"),
     /** yyyy/MM/dd */
     USA_YYYY_MM_DD("yyyy/MM/dd"),
     /** yyyy/MM/dd */
@@ -92,5 +87,29 @@ public enum DateFormatType {
 
     public boolean isCst() {
         return this == CST;
+    }
+
+    public boolean isLocalDateTimeType() {
+        return this == YYYY_MM_DD_HH_MM_SS || this == YYYY_MM_DD_HH_MM
+                || this == YYYY_MM_DD_HH_MM_SS_SSS || this == YYYY_MM_DD_HH_MM_SSSSS
+                || this == YYYY_MM_DD_HH_MM_SSSSSSSS || this == YYYY_MM_DD_HH_MM_SSSSSSSSSSS
+                || this == TZ || this == T || this == TSZ || this == TS
+                || this == YYYYMMDDHHMMSSSSS || this == YYYYMMDDHHMMSS || this == YYMMDDHHMMSS
+                || this == YYYYMMDDHHMM || this == YYMMDDHHMM
+                || this == USA_YYYY_MM_DD_HH_MM || this == USA_YYYY_MM_DD_HH_MM_SS
+                || this == USA_MM_DD_YYYY_HH_MM || this == USA_MM_DD_YYYY_HH_MM_SS
+                || this == CN_YYYY_MM_DD_HH_MM_SS || this == CN_YYYY_MM_DD_HH_MM
+                || this == CN_YYYY_MM_DD_HH;
+    }
+    public boolean isLocalDateType() {
+        return this == YYYY_MM_DD || this == YYYY_MM
+                || this == YYYYMMDD || this == YYMMDD
+                || this == YYYYMM || this == MM_DD || this == USA_YYYY_MM_DD;
+    }
+    public boolean isLocalTimeType() {
+        return this == HH_MM_SS || this == HH_MM;
+    }
+    public boolean isYearType() {
+        return this == YYYY;
     }
 }

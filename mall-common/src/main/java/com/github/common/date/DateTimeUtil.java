@@ -8,28 +8,42 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAdjusters;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DateTimeUtil {
 
     private static final Map<String, DateTimeFormatter> FORMATTER_CACHE = new ConcurrentHashMap<>();
 
+    private static DateTimeFormatter getFormatter(String type) {
+        return getFormatter(type, null, null);
+    }
     private static DateTimeFormatter getFormatter(String type, String timezone) {
         return getFormatter(type, timezone, null);
     }
+    private static DateTimeFormatter getFormatter(String type, Locale locale) {
+        return getFormatter(type, null, locale);
+    }
     private static DateTimeFormatter getFormatter(String type, String timezone, Locale locale) {
-        return FORMATTER_CACHE.computeIfAbsent(type + "-" + U.toStr(timezone), s -> {
+        List<String> keyList = new ArrayList<>();
+        keyList.add(type);
+        boolean hasTimeZone = U.isNotBlank(timezone);
+        if (hasTimeZone) {
+            keyList.add(timezone);
+        }
+        boolean hasLocale = U.isNotNull(locale);
+        if (hasLocale) {
+            keyList.add(U.toStr(locale));
+        }
+        return FORMATTER_CACHE.computeIfAbsent(String.join("-", keyList), s -> {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(s);
-            if (U.isNotBlank(timezone)) {
+            if (hasTimeZone) {
                 TimeZone timeZone = TimeZone.getTimeZone(timezone);
                 if (U.isNotNull(timeZone)) {
                     formatter.withZone(timeZone.toZoneId());
                 }
             }
-            if (U.isNotNull(locale)) {
+            if (hasLocale) {
                 formatter.withLocale(locale);
             }
             return formatter;
@@ -74,10 +88,7 @@ public class DateTimeUtil {
      *   日期时间: yyyy-MM-dd HH:mm:ss
      *   日期:    yyyy-MM-dd
      *   时间:    HH:mm:ss
-     *   年月:    yyyy-MM
      *   年:     yyyy
-     *   月日:   MM-dd
-     *   月:     MM
      */
     public static String format(TemporalAccessor date) {
         if (date instanceof LocalDateTime) {
@@ -86,14 +97,8 @@ public class DateTimeUtil {
             return format(date, DateFormatType.YYYY_MM_DD.getValue());
         } else if (date instanceof LocalTime) {
             return format(date, DateFormatType.HH_MM_SS.getValue());
-        } else if (date instanceof YearMonth) {
-            return format(date, DateFormatType.YYYY_MM.getValue());
         } else if (date instanceof Year) {
             return format(date, DateFormatType.YYYY.getValue());
-        } else if (date instanceof MonthDay) {
-            return format(date, DateFormatType.MM_DD.getValue());
-        } else if (date instanceof Month) {
-            return format(date, DateFormatType.MM.getValue());
         } else {
             return date.toString();
         }
@@ -113,7 +118,7 @@ public class DateTimeUtil {
     }
 
     public static String format(TemporalAccessor date, String type, Locale locale) {
-        return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : getFormatter(type, null, locale).format(date);
+        return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : getFormatter(type, locale).format(date);
     }
 
     public static TemporalAccessor parse(String source) {
@@ -122,9 +127,32 @@ public class DateTimeUtil {
         }
 
         for (DateFormatType type : DateFormatType.values()) {
-            TemporalAccessor accessor = parse(source, type);
-            if (U.isNotNull(accessor)) {
-                return accessor;
+            if (type.isLocalDateTimeType()) {
+                try {
+                    LocalDateTime localDateTime = parseLocalDateTime(source, type.getValue());
+                    if (U.isNotNull(localDateTime)) {
+                        return localDateTime;
+                    }
+                } catch (Exception ignore) {
+                }
+            }
+            if (type.isLocalDateType()) {
+                LocalDate localDate = parseLocalDate(source, type.getValue());
+                if (U.isNotNull(localDate)) {
+                    return localDate;
+                }
+            }
+            if (type.isLocalTimeType()) {
+                LocalTime localTime = parseLocalTime(source, type.getValue());
+                if (U.isNotNull(localTime)) {
+                    return localTime;
+                }
+            }
+            if (type.isYearType()) {
+                Year year = parseYear(source, type.getValue());
+                if (U.isNotNull(year)) {
+                    return year;
+                }
             }
         }
         return null;
@@ -133,37 +161,43 @@ public class DateTimeUtil {
         return U.isNotNull(type) ? parse(source, type.getValue()) : null;
     }
     public static TemporalAccessor parse(String source, String type) {
-        return U.isBlank(source) || U.isBlank(type) ? null : parse(getFormatter(type, null), source);
+        return U.isBlank(source) || U.isBlank(type) ? null : parse(getFormatter(type), source);
+    }
+    public static TemporalAccessor parse(String source, String type, String timezone) {
+        return U.isBlank(source) || U.isBlank(type) ? null : parse(getFormatter(type, timezone), source);
     }
     private static TemporalAccessor parse(DateTimeFormatter formatter, String source) {
-        // 如果格式是 yyyy-MM-dd, 想要转换成 yyyy-MM-dd HH:mm:ss 这种格式, 会异常, 无法转换, 只能转换成 LocalDate, 因此像下面这样处理
+        // 如果格式是 yyyy-MM-dd, 数据是 2022-01-01, parse 成 LocalDateTime 会抛异常
         try {
-            LocalDateTime dateTime = formatter.parse(source, LocalDateTime::from);
-            if (dateTime != null) {
-                return dateTime;
+            LocalDateTime localDateTime = formatter.parse(source, LocalDateTime::from);
+            if (U.isNotNull(localDateTime)) {
+                return localDateTime;
             }
         } catch (Exception ignore) {
         }
 
+        // 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 LocalDate 不会异常
         try {
-            LocalDate date = formatter.parse(source, LocalDate::from);
-            if (date != null) {
-                return date;
+            LocalDate localDate = formatter.parse(source, LocalDate::from);
+            if (U.isNotNull(localDate)) {
+                return localDate;
             }
         } catch (Exception ignore) {
         }
 
+        // 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 LocalTime 不会异常
         try {
             LocalTime time = formatter.parse(source, LocalTime::from);
-            if (time != null) {
+            if (U.isNotNull(time)) {
                 return time;
             }
         } catch (Exception ignore) {
         }
 
+        // 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 Year 不会异常
         try {
             Year year = formatter.parse(source, Year::from);
-            if (year != null) {
+            if (U.isNotNull(year)) {
                 return year;
             }
         } catch (Exception ignore) {
@@ -171,8 +205,21 @@ public class DateTimeUtil {
 
         return null;
     }
-    public static TemporalAccessor parse(String source, String type, String timezone) {
-        return U.isBlank(source) || U.isBlank(type) ? null : parse(getFormatter(type, timezone), source);
+    public static LocalDateTime parseLocalDateTime(String source, String type) {
+        // 如果格式是 yyyy-MM-dd, 数据是 2022-01-01, parse 成 LocalDateTime 会抛异常
+        return getFormatter(type).parse(source, LocalDateTime::from);
+    }
+    public static LocalDate parseLocalDate(String source, String type) {
+        // 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 LocalDate 不会异常
+        return getFormatter(type).parse(source, LocalDate::from);
+    }
+    public static LocalTime parseLocalTime(String source, String type) {
+        // 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 LocalTime 不会异常
+        return getFormatter(type).parse(source, LocalTime::from);
+    }
+    public static Year parseYear(String source, String type) {
+        // 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 Year 不会异常
+        return getFormatter(type).parse(source, Year::from);
     }
 
     /** 获取一个日期所在天的最开始的时间(00:00:00 000), 对日期查询尤其有用 */

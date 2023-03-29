@@ -196,7 +196,7 @@ public final class JsonModule {
 
         @Override
         public LocalDate deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return DateUtil.convertLocalDate(DateUtil.parse(p.getText().trim()));
+            return DateUtil.toLocalDate(DateUtil.parse(p.getText().trim()));
         }
     }
 
@@ -206,7 +206,7 @@ public final class JsonModule {
 
         @Override
         public LocalDateTime deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return DateUtil.convertLocalDateTime(DateUtil.parse(p.getText().trim()));
+            return DateUtil.toLocalDateTime(DateUtil.parse(p.getText().trim()));
         }
     }
 

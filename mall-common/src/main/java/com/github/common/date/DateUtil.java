@@ -13,7 +13,6 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 public class DateUtil {
 
@@ -24,29 +23,34 @@ public class DateUtil {
     private static final long YEAR = 365 * DAY;
 
 
-    public static LocalDateTime convertLocalDateTime(Date date) {
+    public static LocalDateTime toLocalDateTime(Date date) {
         return U.isNull(date) ? null : LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
 
-    public static LocalDateTime convertLocalDateTime(LocalDate date) {
+    public static LocalDateTime toLocalDateTime(LocalDate date) {
         return U.isNull(date) ? null : LocalDateTime.of(date, LocalTime.MIN);
     }
 
-    public static LocalDate convertLocalDate(Date date) {
-        LocalDateTime localDateTime = convertLocalDateTime(date);
+    public static LocalDate toLocalDate(Date date) {
+        LocalDateTime localDateTime = toLocalDateTime(date);
         return U.isNull(localDateTime) ? null : localDateTime.toLocalDate();
     }
 
-    public static LocalDate convertLocalDate(LocalDateTime date) {
+    public static LocalDate toLocalDate(LocalDateTime date) {
         return U.isNull(date) ? null : date.toLocalDate();
     }
 
-    public static Date convertDate(LocalDateTime dateTime) {
+    public static Date toDate(LocalDateTime dateTime) {
         return U.isNull(dateTime) ? null : Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
-    public static Date convertDate(LocalDate date) {
-        return U.isNull(date) ? null : convertDate(convertLocalDateTime(date));
+    public static Date toDate(LocalDate date) {
+        return U.isNull(date) ? null : toDate(toLocalDateTime(date));
+    }
+
+    /** 到秒的时间戳(如 MySQL 的 UNIX_TIMESTAMP() 函数) */
+    public static Date toDate(int timestamp) {
+        return new Date(timestamp * 1000L);
     }
 
 
@@ -104,12 +108,6 @@ public class DateUtil {
      */
     public static Date parse(String source) {
         if (U.isNotBlank(source)) {
-            long ms = U.toLong(source);
-            if (ms > 0) {
-                // 时间戳如果只到秒就乘以 1000
-                return new Date((Long.toString(ms).length() < 13) ? TimeUnit.SECONDS.toMillis(ms) : ms);
-            }
-
             for (DateFormatType type : DateFormatType.values()) {
                 Date date = parse(source, type);
                 if (U.isNotNull(date)) {

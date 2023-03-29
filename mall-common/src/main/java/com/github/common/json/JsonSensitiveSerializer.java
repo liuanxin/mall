@@ -43,10 +43,10 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
             handleDate(d, gen, provider);
         }
         else if (obj instanceof LocalDate d) {
-            handleDate(DateUtil.convertDate(d), gen, provider);
+            handleDate(DateUtil.toDate(d), gen, provider);
         }
         else if (obj instanceof LocalDateTime d) {
-            handleDate(DateUtil.convertDate(d), gen, provider);
+            handleDate(DateUtil.toDate(d), gen, provider);
         }
         else {
             throw new RuntimeException("Annotation @JsonSensitive can not used on types other than String Number Date");
