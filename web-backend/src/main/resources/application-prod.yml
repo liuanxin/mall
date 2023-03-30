@@ -29,5 +29,6 @@ spring:
         prepStmtCacheSqlLimit: 2048
         cachePrepStmts: true
         useServerPrepStmts: true
+  messages.basename: i18n/message
 
 mybatis-plus.global-config.banner: false
