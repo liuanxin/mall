@@ -29,6 +29,9 @@ public class GlobalWebConfig {
     @Bean
     @Order(1)
     public FilterRegistrationBean<CharacterEncodingFilter> characterFilter(CharacterEncodingFilter filter) {
+        // server.servlet.encoding:
+        //   charset: utf-8 # 默认是 UTF_8
+        //   force: true
         FilterRegistrationBean<CharacterEncodingFilter> filterBean = new FilterRegistrationBean<>(filter);
         filterBean.setOrder(Integer.MIN_VALUE + 1);
         return filterBean;
