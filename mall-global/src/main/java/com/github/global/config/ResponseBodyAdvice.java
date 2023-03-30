@@ -43,15 +43,12 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
                 sbd.append("time(").append(DateUtil.toHuman(System.currentTimeMillis() - startTime)).append(") ");
             }
 
-            Class<?> clazz = parameter.getContainingClass();
-            String className = clazz.getName();
-            sbd.append(className);
-
+            sbd.append(parameter.getContainingClass().getName());
             Method method = parameter.getMethod();
-            String methodName = U.isNotNull(method) ? method.getName() : U.EMPTY;
-            if (U.isNotBlank(methodName)) {
-                sbd.append("#").append(methodName);
+            if (U.isNotNull(method)) {
+                sbd.append("#").append(method.getName());
             }
+
             sbd.append(" return(").append(logHandler.toJson(bodyContainer.getValue())).append(")");
             LogUtil.ROOT_LOG.info(sbd.toString());
         }
