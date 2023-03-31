@@ -919,6 +919,23 @@ public final class U {
     }
 
 
+    /**
+     * @param str "xxx {id} yyy {name}"
+     * @param params { id: 123, name: xyz }
+     * @return "xxx 123 yyy xyz"
+     */
+    public static String format(String str, Map<String, ?> params) {
+        if (isBlank(str) || A.isEmpty(params)) {
+            return str;
+        }
+
+        for (Map.Entry<String, ?> entry : params.entrySet()) {
+            str = str.replace("{" + entry.getKey() + "}", toStr(entry.getValue()));
+        }
+        return str;
+    }
+
+
     /** 将参数 转换成 id=123&name=xyz&name=opq, 将值进行脱敏(如 password=***&phone=130****) */
     public static String formatParam(Map<String, ?> params) {
         return formatParam(true, false, params);
