@@ -23,7 +23,7 @@
 //public class ShowSql5Interceptor implements StatementInterceptor {
 //
 //    private static final String TIME_SPLIT = "~";
-//    private static final AtomicLong COUNTER = new AtomicLong(0L);
+//    private static final AtomicLong ID = new AtomicLong(0L);
 //    /** 每条 sql 执行前记录时间戳, 如果使用 ThreadLocal 会有 pre 了但运行时异常不去 post 的情况 */
 //    private static final Cache<Thread, String> TIME_CACHE = CacheBuilder.newBuilder()
 //            .expireAfterWrite(30, TimeUnit.MINUTES).maximumSize(50000L).build();
@@ -37,13 +37,11 @@
 //        if (LogUtil.SQL_LOG.isDebugEnabled()) {
 //            String realSql = getRealSql(sql, statement);
 //            if (U.isNotBlank(realSql)) {
-//                long counter = COUNTER.addAndGet(1);
-//                long start = System.currentTimeMillis();
-//
-//                TIME_CACHE.put(Thread.currentThread(), counter + TIME_SPLIT + start);
+//                long id = ID.addAndGet(1);
+//                TIME_CACHE.put(Thread.currentThread(), id + TIME_SPLIT + System.currentTimeMillis());
 //                String url = connection.getMetaData().getURL();
 //                // connection.getHost() + ":" + connection.getSocksProxyPort();
-//                LogUtil.SQL_LOG.debug("counter: {}, data-source: {}, sql: {}", counter,
+//                LogUtil.SQL_LOG.debug("id: {}, data-source: {}, sql: {}", id,
 //                        url.substring(url.indexOf("//") + 2, url.indexOf("?")), realSql);
 //            }
 //        }
@@ -78,17 +76,17 @@
 //            String realSql = getRealSql(sql, statement);
 //            if (U.isNotBlank(realSql)) {
 //                Thread currentThread = Thread.currentThread();
-//                String counterAndTime = TIME_CACHE.getIfPresent(currentThread);
-//                if (U.isNotBlank(counterAndTime)) {
+//                String idAndTime = TIME_CACHE.getIfPresent(currentThread);
+//                if (U.isNotBlank(idAndTime)) {
 //                    try {
-//                        String[] split = counterAndTime.split(TIME_SPLIT);
+//                        String[] split = idAndTime.split(TIME_SPLIT);
 //                        if (split.length == 2) {
-//                            long counter = U.toLong(split[0]);
+//                            long id = U.toLong(split[0]);
 //                            long start = U.toLong(split[1]);
 //
 //                            StringBuilder sbd = new StringBuilder();
-//                            if (U.greater0(counter)) {
-//                                sbd.append("counter: ").append(counter);
+//                            if (U.greater0(id)) {
+//                                sbd.append("id: ").append(id);
 //                            }
 //                            if (U.greater0(start)) {
 //                                sbd.append(", use-time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start));
