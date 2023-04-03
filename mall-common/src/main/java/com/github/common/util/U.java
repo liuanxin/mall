@@ -101,28 +101,28 @@ public final class U {
      *
      * 现实的情况通常是: 少量 CPU 密集型 + 大量 IO 密集型(网络, 磁盘)
      *     如果一个任务 CPU 耗时 10ms, IO 耗时 190ms, 则单个 CPU 的利用率是 10 / (10 + 190),
-     *     想要每个 CPU 的使用率达到 90%, 且有 4 个 CPU 核心, 最终: 4 * 0.9 * (10 + 190) / 10 = 72
+     *     想要每个 CPU 的使用率达到 90%, 且有 4 个 CPU 核心, 最终 core-pool-size 是: 4 * 0.9 * (10 + 190) / 10 = 72
      *
      *
-     * CPU 利用率  0.7, CPU 时间:   10, IO 时间:  190 ==> 56
-     * CPU 利用率  0.7, CPU 时间:   20, IO 时间:  180 ==> 28
-     * CPU 利用率  0.7, CPU 时间:  100, IO 时间:    1 ==>  3
-     * CPU 利用率  0.7, CPU 时间: 1000, IO 时间:    1 ==>  3
+     * 假如有 4 个 CPU 核心, CPU 利用率想到达到  0.7, CPU 时间:   10, IO 时间:  190 ==> 56
+     * 假如有 4 个 CPU 核心, CPU 利用率想到达到  0.7, CPU 时间:   20, IO 时间:  180 ==> 28
+     * 假如有 4 个 CPU 核心, CPU 利用率想到达到  0.7, CPU 时间:  100, IO 时间:    1 ==>  3
+     * 假如有 4 个 CPU 核心, CPU 利用率想到达到  0.7, CPU 时间: 1000, IO 时间:    1 ==>  3
      *
-     * CPU 利用率 0.75, CPU 时间:   10, IO 时间:  190 ==> 60
-     * CPU 利用率 0.75, CPU 时间:   20, IO 时间:  180 ==> 30
-     * CPU 利用率 0.75, CPU 时间:  100, IO 时间:    1 ==>  5
-     * CPU 利用率 0.75, CPU 时间: 1000, IO 时间:    1 ==>  5
+     * 假如有 4 个 CPU 核心, CPU 利用率想到达到 0.75, CPU 时间:   10, IO 时间:  190 ==> 60
+     * 假如有 4 个 CPU 核心, CPU 利用率想到达到 0.75, CPU 时间:   20, IO 时间:  180 ==> 30
+     * 假如有 4 个 CPU 核心, CPU 利用率想到达到 0.75, CPU 时间:  100, IO 时间:    1 ==>  4
+     * 假如有 4 个 CPU 核心, CPU 利用率想到达到 0.75, CPU 时间: 1000, IO 时间:    1 ==>  4
      *
-     * CPU 利用率  0.8, CPU 时间:   10, IO 时间:  190 ==> 64
-     * CPU 利用率  0.8, CPU 时间:   20, IO 时间:  180 ==> 32
-     * CPU 利用率  0.8, CPU 时间:  100, IO 时间:    1 ==>  5
-     * CPU 利用率  0.8, CPU 时间: 1000, IO 时间:    1 ==>  5
+     * 假如有 4 个 CPU 核心, CPU 利用率想到达到  0.8, CPU 时间:   10, IO 时间:  190 ==> 64
+     * 假如有 4 个 CPU 核心, CPU 利用率想到达到  0.8, CPU 时间:   20, IO 时间:  180 ==> 32
+     * 假如有 4 个 CPU 核心, CPU 利用率想到达到  0.8, CPU 时间:  100, IO 时间:    1 ==>  4
+     * 假如有 4 个 CPU 核心, CPU 利用率想到达到  0.8, CPU 时间: 1000, IO 时间:    1 ==>  4
      *
-     * CPU 利用率 0.85, CPU 时间:   10, IO 时间:  190 ==> 68
-     * CPU 利用率 0.85, CPU 时间:   20, IO 时间:  180 ==> 34
-     * CPU 利用率 0.85, CPU 时间:  100, IO 时间:    1 ==>  5
-     * CPU 利用率 0.85, CPU 时间: 1000, IO 时间:    1 ==>  5
+     * 假如有 4 个 CPU 核心, CPU 利用率想到达到 0.85, CPU 时间:   10, IO 时间:  190 ==> 68
+     * 假如有 4 个 CPU 核心, CPU 利用率想到达到 0.85, CPU 时间:   20, IO 时间:  180 ==> 34
+     * 假如有 4 个 CPU 核心, CPU 利用率想到达到 0.85, CPU 时间:  100, IO 时间:    1 ==>  4
+     * 假如有 4 个 CPU 核心, CPU 利用率想到达到 0.85, CPU 时间: 1000, IO 时间:    1 ==>  4
      * </pre>
      *
      * @param cpuRate cpu 占用率, 0 ~ 1 之间的小数
@@ -133,10 +133,9 @@ public final class U {
         double realRate = (cpuRate > 0 && cpuRate < 1) ? cpuRate : 1;
         int realCpuTime = (cpuTime <= 0) ? 1 : Math.min(cpuTime, 999);
         int realIoTime = (ioTime <= 0) ? 1 : Math.min(ioTime, 999);
-        double num = CPU_SIZE * realRate * (realCpuTime + realIoTime) / realCpuTime;
+        double num = 4 * realRate * (realCpuTime + realIoTime) / realCpuTime;
         int calcNum = (int) num;
-        int returnNum = (num == calcNum) ? calcNum : (calcNum + 1);
-        return (returnNum == CPU_SIZE) ? (returnNum + 1) : returnNum;
+        return (num == calcNum) ? calcNum : (calcNum + 1);
     }
 
     /** 生成指定位数的随机数: 纯数字 */

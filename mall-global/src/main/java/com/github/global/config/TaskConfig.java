@@ -25,12 +25,15 @@ import java.util.concurrent.Executor;
 @EnableAsync
 public class TaskConfig implements AsyncConfigurer {
 
+    /** @see org.springframework.boot.autoconfigure.task.TaskExecutionProperties.Pool#coreSize */
     @Value("${asyncTask.corePoolSize:0}")
     private int corePoolSize;
 
+    /** @see org.springframework.boot.autoconfigure.task.TaskExecutionProperties.Pool#maxSize */
     @Value("${asyncTask.maxPoolSize:0}")
     private int maxPoolSize;
 
+    /** @see org.springframework.boot.autoconfigure.task.TaskExecutionProperties.Pool#queueCapacity */
     @Value("${asyncTask.queueCapacity:0}")
     private int queueCapacity;
 
