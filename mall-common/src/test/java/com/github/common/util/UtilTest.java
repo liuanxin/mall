@@ -3,7 +3,6 @@ package com.github.common.util;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -11,33 +10,42 @@ public class UtilTest {
 
     @Test
     public void calcExecutorCount() {
-        List<List<Object>> list = Arrays.asList(
-                Arrays.asList(0.7, 10, 190),
-                Arrays.asList(0.7, 20, 180),
-                Arrays.asList(0.7, 100, 1),
-                Arrays.asList(0.7, 1000, 1),
-
-                Arrays.asList(0.75, 10, 190),
-                Arrays.asList(0.75, 20, 180),
-                Arrays.asList(0.75, 100, 1),
-                Arrays.asList(0.75, 1000, 1),
-
-                Arrays.asList(0.8, 10, 190),
-                Arrays.asList(0.8, 20, 180),
-                Arrays.asList(0.8, 100, 1),
-                Arrays.asList(0.8, 1000, 1),
-
-                Arrays.asList(0.85, 10, 190),
-                Arrays.asList(0.85, 20, 180),
-                Arrays.asList(0.85, 100, 1),
-                Arrays.asList(0.85, 1000, 1)
+        List<List<List<Object>>> list = List.of(
+                List.of(
+                        List.of(0.7, 10, 190),
+                        List.of(0.7, 20, 180),
+                        List.of(0.7, 100, 1),
+                        List.of(0.7, 1000, 1)
+                ),
+                List.of(
+                        List.of(0.75, 10, 190),
+                        List.of(0.75, 20, 180),
+                        List.of(0.75, 100, 1),
+                        List.of(0.75, 1000, 1)
+                ),
+                List.of(
+                        List.of(0.8, 10, 190),
+                        List.of(0.8, 20, 180),
+                        List.of(0.8, 100, 1),
+                        List.of(0.8, 1000, 1)
+                ),
+                List.of(
+                        List.of(0.85, 10, 190),
+                        List.of(0.85, 20, 180),
+                        List.of(0.85, 100, 1),
+                        List.of(0.85, 1000, 1)
+                )
         );
-        for (List<Object> lt : list) {
-            double rate = U.toDouble(lt.get(0));
-            int cpu = U.toInt(lt.get(1));
-            int io = U.toInt(lt.get(2));
-            int num = U.calcPoolSize(rate, cpu, io);
-            System.out.printf("CPU 利用率 %4s, CPU 时间: %4s, IO 时间: %4s ==> %s\n", rate, cpu, io, num);
+        for (List<List<Object>> arr : list) {
+            for (List<Object> lt : arr) {
+                double rate = U.toDouble(lt.get(0));
+                int cpu = U.toInt(lt.get(1));
+                int io = U.toInt(lt.get(2));
+                int num = U.calcPoolSize(rate, cpu, io);
+                System.out.printf("有 %s 个 CPU 核心, CPU 利用率 %4s, CPU 时间: %4s, IO 时间: %4s ==> %s\n",
+                        U.CPU_SIZE, rate, cpu, io, num);
+            }
+            System.out.println();
         }
     }
 
