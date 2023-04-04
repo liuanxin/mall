@@ -133,7 +133,7 @@ public final class U {
         double realRate = (cpuRate > 0 && cpuRate < 1) ? cpuRate : 1;
         int realCpuTime = (cpuTime <= 0) ? 1 : Math.min(cpuTime, 999);
         int realIoTime = (ioTime <= 0) ? 1 : Math.min(ioTime, 999);
-        double num = 4 * realRate * (realCpuTime + realIoTime) / realCpuTime;
+        double num = CPU_SIZE * realRate * (realCpuTime + realIoTime) / realCpuTime;
         int calcNum = (int) num;
         return (num == calcNum) ? calcNum : (calcNum + 1);
     }
