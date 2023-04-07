@@ -95,7 +95,6 @@
             <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
                 <fileNamePattern>${FILE_PATH}-%d{yyyy-MM-dd}.log</fileNamePattern>
                 <maxHistory>${fileMaxHistory}</maxHistory>
-                <totalSizeCap>5GB</totalSizeCap>
             </rollingPolicy>
             <encoder>
                 <pattern>${LOG_PATTERN}</pattern>
@@ -124,7 +123,6 @@
             <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
                 <fileNamePattern>${FILE_PATH}-%d{yyyy-MM-dd}.log</fileNamePattern>
                 <maxHistory>${fileMaxHistory}</maxHistory>
-                <totalSizeCap>5GB</totalSizeCap>
             </rollingPolicy>
             <encoder>
                 <pattern>${LOG_PATTERN}</pattern>
@@ -147,7 +145,6 @@
             <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
                 <fileNamePattern>${FILE_PATH}-error-%d{yyyy-MM-dd}.log</fileNamePattern>
                 <maxHistory>${fileMaxHistory}</maxHistory>
-                <totalSizeCap>5GB</totalSizeCap>
             </rollingPolicy>
             <encoder>
                 <pattern>${LOG_PATTERN}</pattern>
