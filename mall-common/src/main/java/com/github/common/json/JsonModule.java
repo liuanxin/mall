@@ -38,6 +38,8 @@ public final class JsonModule {
             .addSerializer(LocalDate.class, LocalDateSerializer.INSTANCE)
             .addSerializer(LocalDateTime.class, LocalDateTimeSerializer.INSTANCE)
 
+            .addDeserializer(boolean.class, BoolDeserializer.INSTANCE)
+            .addDeserializer(Boolean.class, BooleanDeserializer.INSTANCE)
             .addDeserializer(BigDecimal.class, BigDecimalDeserializer.INSTANCE)
             .addDeserializer(Date.class, DateDeserializer.INSTANCE)
             .addDeserializer(LocalDate.class, LocalDateDeserializer.INSTANCE)
@@ -218,6 +220,25 @@ public final class JsonModule {
         public BigDecimal deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             String text = p.getText();
             return U.isBlank(text) ? null : new BigDecimal(text.trim());
+        }
+    }
+
+    /** 反序列化 boolean */
+    public static class BoolDeserializer extends JsonDeserializer<Boolean> {
+        public static final BoolDeserializer INSTANCE = new BoolDeserializer();
+
+        @Override
+        public Boolean deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+            return U.getBool(p.getText());
+        }
+    }
+    /** 反序列化 Boolean */
+    public static class BooleanDeserializer extends JsonDeserializer<Boolean> {
+        public static final BooleanDeserializer INSTANCE = new BooleanDeserializer();
+
+        @Override
+        public Boolean deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+            return U.getBoolean(p.getText());
         }
     }
 }

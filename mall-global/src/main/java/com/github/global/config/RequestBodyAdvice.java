@@ -66,8 +66,8 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                             U.inputToOutput(input, output);
                             byte[] bytes = output.toByteArray();
 
-                            Object body = JsonUtil.nativeObject(new String(bytes, StandardCharsets.UTF_8));
-                            LogUtil.ROOT_LOG.info("[{}] request-body({})", RequestUtil.logBasicInfo(), logHandler.toJson(body));
+                            String body = logHandler.toJson(JsonUtil.nativeObject(new String(bytes, StandardCharsets.UTF_8)));
+                            LogUtil.ROOT_LOG.info("[{}] request-body({})", RequestUtil.logBasicInfo(), body);
 
                             // 在 ByteArrayOutputStream 和 ByteArrayInputStream 上调用 close 是无意义的, 它们也都有实现 reset 方法
                             return new ByteArrayInputStream(bytes);
