@@ -23,7 +23,7 @@ import java.util.List;
  */
 @SuppressWarnings("NullableProblems")
 @Configuration
-public class GlobalWebConfig  implements WebMvcConfigurer {
+public class GlobalWebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
