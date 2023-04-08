@@ -5,6 +5,8 @@ import com.github.common.annotation.NotNeedPermission;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
 import com.github.util.ManagerSessionUtil;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -16,13 +18,13 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
 
+@Configuration
 @SuppressWarnings("NullableProblems")
 public class ManagerInterceptor implements HandlerInterceptor {
 
-    private final boolean printHeader;
-    public ManagerInterceptor(boolean printHeader) {
-        this.printHeader = printHeader;
-    }
+    /** 打印请求日志时, 是否输出头信息 */
+    @Value("${req.logPrintHeader:true}")
+    private boolean printHeader;
 
     private static final List<String> LET_IT_GO = Arrays.asList(
             "/error", "/api/project", "/api/info", "/api/example/*"

@@ -1,66 +1,97 @@
 package com.github.global.config;
 
-import com.github.common.mvc.CorsFilter;
-import com.github.common.mvc.LanguageFilter;
-import com.github.common.mvc.LogTraceFilter;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
+import com.github.common.converter.*;
+import com.github.common.page.PageParam;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.core.MethodParameter;
+import org.springframework.format.FormatterRegistry;
+import org.springframework.web.bind.support.WebDataBinderFactory;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.ModelAndViewContainer;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.servlet.Filter;
+import java.util.List;
 
+/**
+ * 不要使用继承 WebMvcConfigurationSupport 或 DelegatingWebMvcConfiguration 的方式, 会覆盖掉原有的默认配置
+ *
+ * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+ * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport
+ * @see org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
+ */
+@SuppressWarnings("NullableProblems")
 @Configuration
-@ConditionalOnClass({ Filter.class })
-public class GlobalWebConfig {
+public class GlobalWebConfig  implements WebMvcConfigurer {
 
-    @Value("${http.cors.allow-headers:}")
-    private String allowHeaders;
-
-    @Value("${http.language.param-name:lang}")
-    private String languageParam;
-
-    @Value("${spring.messages.basename:}")
-    private String i18nBaseNames;
-
-    @Bean
-    @Order(1)
-    public FilterRegistrationBean<CharacterEncodingFilter> characterFilter(CharacterEncodingFilter filter) {
-        // server.servlet.encoding:
-        //   charset: utf-8 # 默认是 UTF_8
-        //   force: true
-        FilterRegistrationBean<CharacterEncodingFilter> filterBean = new FilterRegistrationBean<>(filter);
-        filterBean.setOrder(Integer.MIN_VALUE + 1);
-        return filterBean;
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
     }
 
-    @Bean
-    @Order(2)
-    public FilterRegistrationBean<CorsFilter> corsFilter() {
-        CorsFilter filter = new CorsFilter(allowHeaders);
-        FilterRegistrationBean<CorsFilter> filterBean = new FilterRegistrationBean<>(filter);
-        filterBean.setOrder(Integer.MIN_VALUE + 2);
-        return filterBean;
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        registry.addConverter(new String2BooleanConverter());
+        registry.addConverterFactory(new StringToNumberConverter());
+        registry.addConverterFactory(new StringToEnumConverter());
+        registry.addConverter(new StringToDateConverter());
+        registry.addConverter(new StringToMoneyConverter());
     }
 
-    @Bean
-    @Order(3)
-    public FilterRegistrationBean<LanguageFilter> languageFilter() {
-        LanguageFilter filter = new LanguageFilter(languageParam, i18nBaseNames);
-        FilterRegistrationBean<LanguageFilter> filterBean = new FilterRegistrationBean<>(filter);
-        filterBean.setOrder(Integer.MIN_VALUE + 3);
-        return filterBean;
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+        // 参数是 Page 对象时
+        argumentResolvers.add(new HandlerMethodArgumentResolver() {
+            @Override
+            public boolean supportsParameter(MethodParameter parameter) {
+                return PageParam.class.isAssignableFrom(parameter.getParameterType());
+            }
+
+            @Override
+            public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+                                          NativeWebRequest request, WebDataBinderFactory factory) throws Exception {
+                // PageParam page = new PageParam(request.getParameter(PageParam.GLOBAL_PAGE), request.getParameter(PageParam.GLOBAL_LIMIT));
+                // page.setWasMobile(RequestUtils.isMobileRequest());
+                return new PageParam(request.getParameter(PageParam.GLOBAL_PAGE), request.getParameter(PageParam.GLOBAL_LIMIT));
+            }
+        });
+        // 参数是 page 名称时
+        argumentResolvers.add(new HandlerMethodArgumentResolver() {
+            @Override
+            public boolean supportsParameter(MethodParameter parameter) {
+                return PageParam.GLOBAL_PAGE.equals(parameter.getParameterName());
+            }
+
+            @Override
+            public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+                                          NativeWebRequest request, WebDataBinderFactory factory) throws Exception {
+                return PageParam.handlerPage(request.getParameter(PageParam.GLOBAL_PAGE));
+            }
+        });
+        // 参数是 limit 名称时
+        argumentResolvers.add(new HandlerMethodArgumentResolver() {
+            @Override
+            public boolean supportsParameter(MethodParameter parameter) {
+                return PageParam.GLOBAL_LIMIT.equals(parameter.getParameterName());
+            }
+
+            @Override
+            public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+                                          NativeWebRequest request, WebDataBinderFactory factory) throws Exception {
+                return PageParam.handlerLimit(request.getParameter(PageParam.GLOBAL_LIMIT));
+            }
+        });
     }
 
-    @Bean
-    @Order(4)
-    public FilterRegistrationBean<LogTraceFilter> traceFilter() {
-        LogTraceFilter filter = new LogTraceFilter();
-        FilterRegistrationBean<LogTraceFilter> filterBean = new FilterRegistrationBean<>(filter);
-        filterBean.setOrder(Integer.MIN_VALUE + 4);
-        return filterBean;
-    }
+//    /**
+//     * see : http://www.ruanyifeng.com/blog/2016/04/cors.html
+//     *
+//     * {@link org.springframework.web.servlet.config.annotation.CorsRegistration#CorsRegistration(String)}
+//     * {@link GlobalWebConfig#corsFilter}
+//     */
+//    @Override
+//    public void addCorsMappings(CorsRegistry registry) {
+//        registry.addMapping("/**").allowedMethods(Const.SUPPORT_METHODS);
+//    }
 }

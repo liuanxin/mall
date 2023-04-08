@@ -1,4 +1,4 @@
-package com.github.global.config;
+package com.github.global.aop;
 
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;

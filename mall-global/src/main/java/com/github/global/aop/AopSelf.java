@@ -1,4 +1,4 @@
-package com.github.global.config;
+package com.github.global.aop;
 
 import java.lang.annotation.*;
 

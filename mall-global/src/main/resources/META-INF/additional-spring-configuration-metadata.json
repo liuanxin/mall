@@ -52,14 +52,14 @@
       "name": "http.cors.allow-headers",
       "type": "java.lang.String",
       "defaultValue": "",
-      "sourceType": "com.github.global.config.GlobalWebConfig",
+      "sourceType": "com.github.global.config.GlobalFilter",
       "description": "支持 cors 的 ip 地址列表."
     },
     {
       "name": "http.language.param-name",
       "type": "java.lang.String",
       "defaultValue": "lang",
-      "sourceType": "com.github.global.config.GlobalWebConfig",
+      "sourceType": "com.github.global.config.GlobalFilter",
       "description": "处理语言时的参数名(/path?lang=zh-CN)."
     }
   ]

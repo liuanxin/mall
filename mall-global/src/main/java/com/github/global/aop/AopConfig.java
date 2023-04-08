@@ -1,4 +1,4 @@
-package com.github.global.config;
+package com.github.global.aop;
 
 import org.aspectj.lang.Aspects;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
