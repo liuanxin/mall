@@ -21,7 +21,7 @@
       filePath: /path      # 文件存放目录, 默认是 ~/logs, 生成的文件名为 ${spring.application.name}-${spring.profiles.active}
       maxHistory: 30       # 文件最大保存天数, 默认是 15
 
-    当下的日志策略是:
+    分环境:
       本地环境(dev 或 local): 项目的 debug 及以上、第三方包的 warn 及以上 和 项目运行的 sql 输出到控制台
       非本地也非生产环境:      项目的 debug 及以上、第三方包的 warn 及以上 和 项目运行的 sql 输出到文件
       生产环境(prod):        项目的 info 及以上、第三方包的 error 及以上 异步输出到文件
