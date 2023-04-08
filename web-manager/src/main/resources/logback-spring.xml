@@ -26,7 +26,7 @@
       非本地也非生产环境:      项目的 debug 及以上、第三方包的 warn 及以上 和 项目运行的 sql 输出到文件
       生产环境(prod):        项目的 info 及以上、第三方包的 error 及以上 异步输出到文件
     -->
-    <springProperty scope="context" name="applicationProfile" source="spring.profiles.active" defaultValue="dev"/>
+    <springProperty scope="context" name="applicationProfile" source="spring.profiles.active"/>
     <springProperty scope="context" name="applicationName" source="spring.application.name"/>
 
     <springProperty scope="context" name="logLevel" source="log.level" defaultValue="debug"/>
