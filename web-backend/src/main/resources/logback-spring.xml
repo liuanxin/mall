@@ -22,9 +22,9 @@
       maxHistory: 30       # 文件最大保存天数, 默认是 15
 
     当下的日志策略是:
-      本地(dev)环境:        项目的 debug、第三方包的 warn 和 项目运行的 sql 输出到控制台
-      非本地也非生产环境:    项目的 debug、第三方包的 warn 和 项目运行的 sql 输出到文件
-      生产(prod)环境:       项目的 info、warn 异步输出到一个文件, 项目的 error 和 第三方包的 error 异步输出到另一个文件
+      本地(dev)环境:        项目的 debug 及以上、第三方包的 warn 及以上 和 项目运行的 sql 输出到控制台
+      非本地也非生产环境:     项目的 debug 及以上、第三方包的 warn 及以上 和 项目运行的 sql 输出到文件
+      生产(prod)环境:       项目的 info 及以上、第三方包的 error 及以上 异步输出到文件
     -->
     <springProperty scope="context" name="applicationProfile" source="spring.profiles.active" defaultValue="dev"/>
     <springProperty scope="context" name="applicationName" source="spring.application.name"/>
@@ -109,16 +109,9 @@
         </root>
     </springProfile>
 
-    <!-- 生产: 普通日志 和 异常日志 异步输出 在不同的文件 -->
+    <!-- 生产: 异步输出到文件 -->
     <springProfile name="prod">
         <appender name="PROJECT" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <!-- 不输出 error 级别 -->
-            <filter class="ch.qos.logback.classic.filter.LevelFilter">
-                <level>ERROR</level>
-                <onMatch>DENY</onMatch>
-                <onMismatch>ACCEPT</onMismatch>
-            </filter>
-
             <file>${FILE_PATH}.log</file>
             <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
                 <fileNamePattern>${FILE_PATH}-%d{yyyy-MM-dd}.log</fileNamePattern>
@@ -135,31 +128,8 @@
             <appender-ref ref ="PROJECT"/>
         </appender>
 
-        <appender name="PROJECT-ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <!-- 只输出 error 级别 -->
-            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-                <level>ERROR</level>
-            </filter>
-
-            <file>${FILE_PATH}-error.log</file>
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>${FILE_PATH}-error-%d{yyyy-MM-dd}.log</fileNamePattern>
-                <maxHistory>${fileMaxHistory}</maxHistory>
-            </rollingPolicy>
-            <encoder>
-                <pattern>${LOG_PATTERN}</pattern>
-                <charset>utf8</charset>
-            </encoder>
-        </appender>
-        <appender name="ASYNC-ERROR" class="ch.qos.logback.classic.AsyncAppender">
-            <discardingThreshold>0</discardingThreshold>
-            <includeCallerData>true</includeCallerData>
-            <appender-ref ref ="PROJECT-ERROR"/>
-        </appender>
-
         <root level="${logLevel}">
             <appender-ref ref="ASYNC"/>
-            <appender-ref ref="ASYNC-ERROR"/>
         </root>
     </springProfile>
 </configuration>
