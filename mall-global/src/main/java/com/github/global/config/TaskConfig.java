@@ -6,6 +6,7 @@ import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -23,6 +24,7 @@ import java.util.concurrent.Executor;
  */
 @Configuration
 @EnableAsync
+@ConditionalOnClass(AsyncConfigurer.class)
 public class TaskConfig implements AsyncConfigurer {
 
     /** @see org.springframework.boot.autoconfigure.task.TaskExecutionProperties.Pool#coreSize */

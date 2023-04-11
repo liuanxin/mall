@@ -14,7 +14,7 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 import javax.servlet.Filter;
 
 @Configuration
-@ConditionalOnClass({ Filter.class })
+@ConditionalOnClass({ Filter.class, FilterRegistrationBean.class })
 public class GlobalFilter {
 
     @Value("${http.cors.allow-headers:}")

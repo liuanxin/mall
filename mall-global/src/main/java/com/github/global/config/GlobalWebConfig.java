@@ -2,6 +2,7 @@ package com.github.global.config;
 
 import com.github.common.converter.*;
 import com.github.common.page.PageParam;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.MethodParameter;
 import org.springframework.format.FormatterRegistry;
@@ -23,6 +24,7 @@ import java.util.List;
  */
 @SuppressWarnings("NullableProblems")
 @Configuration
+@ConditionalOnClass(WebMvcConfigurer.class)
 public class GlobalWebConfig implements WebMvcConfigurer {
 
     @Override
