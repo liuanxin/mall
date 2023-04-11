@@ -3,12 +3,12 @@ package com.github.global.service;
 import com.github.common.exception.ParamException;
 import com.github.common.util.A;
 import com.github.common.util.U;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
 import java.util.*;
 
 /** 需要引入 jakarta.validation-api 包, 因此按需装载 */
@@ -30,15 +30,15 @@ public class ValidatorService {
      * </pre>
      *
      * @see com.github.global.config.GlobalExceptionAdvice#paramValidException
-     * @see javax.validation.constraints.Null
-     * @see javax.validation.constraints.NotNull
-     * @see javax.validation.constraints.NotEmpty
-     * @see javax.validation.constraints.NotBlank
-     * @see javax.validation.constraints.Email
-     * @see javax.validation.constraints.Min
-     * @see javax.validation.constraints.Max
-     * @see javax.validation.constraints.Pattern
-     * @param groups 校验时用到的组, 见 {@link javax.validation.groups.Default}, 用任意类都行, 只要确保跟 @Null 等注解里的一致即可
+     * @see jakarta.validation.constraints.Null
+     * @see jakarta.validation.constraints.NotNull
+     * @see jakarta.validation.constraints.NotEmpty
+     * @see jakarta.validation.constraints.NotBlank
+     * @see jakarta.validation.constraints.Email
+     * @see jakarta.validation.constraints.Min
+     * @see jakarta.validation.constraints.Max
+     * @see jakarta.validation.constraints.Pattern
+     * @param groups 校验时用到的组, 见 {@link jakarta.validation.groups.Default}, 用任意类都行, 只要确保跟 @Null 等注解里的一致即可
      */
     public <T> void handleValidate(T obj, Class<?>... groups) {
         if (U.isNull(obj)) {
