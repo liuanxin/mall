@@ -278,6 +278,16 @@ public final class A {
         return new ArrayList(new LinkedHashSet<>(list));
     }
 
+    public static <T> List<T> emptyIfNull(List<T> list) {
+        return list == null ? Collections.emptyList() : list;
+    }
+    public static <T> Set<T> emptyIfNull(Set<T> set) {
+        return set == null ? Collections.emptySet() : set;
+    }
+    public static <K, V> Map<K, V> emptyIfNull(Map<K, V> map) {
+        return map == null ? Collections.emptyMap() : map;
+    }
+
     /** 构造 HashMap, 必须保证每两个参数的类型是一致的! 当参数是奇数时, 最后一个 key 将会被忽略 */
     public static <K, V> HashMap<K, V> maps(Object... keysAndValues) {
         return (HashMap<K, V>) maps(new HashMap<K, V>(), keysAndValues);
