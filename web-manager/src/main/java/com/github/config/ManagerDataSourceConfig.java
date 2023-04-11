@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @MapperScan(basePackages = { CommonConst.SCAN, UserConst.SCAN, ProductConst.SCAN, OrderConst.SCAN, ManagerConst.SCAN })
-public class ManagerDataSourceInit {
+public class ManagerDataSourceConfig {
 
     // 3.4.0 开始 PaginationInterceptor 不再建议使用. 见: https://mybatis.plus/guide/interceptor.html
 

@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @MapperScan(basePackages = { CommonConst.SCAN, UserConst.SCAN, ProductConst.SCAN, OrderConst.SCAN })
-public class BackendDataSourceInit {
+public class BackendDataSourceConfig {
 
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
