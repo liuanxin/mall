@@ -6,8 +6,6 @@ log:
   level: debug
   sqlLevel: debug
   thirdLevel: warn
-  # filePath: /path/  # 日志存放目录, 默认是 ~/logs
-  # maxHistory: 7     # 日志保留天数, 默认是 15
 
 spring:
   profiles.active: dev
@@ -16,7 +14,7 @@ spring:
   web.resources.add-mappings: false
 #  session:
 #    store-type: redis
-  redis:
+  data.redis:
     host: 127.0.0.1
     port: 6379
 #  jackson:

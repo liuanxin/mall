@@ -8,7 +8,7 @@ log:
 spring:
   profiles.active: dev
   application.name: task
-  redis:
+  data.redis:
     host: dev-redis
     port: 6379
     timeout: 5000
