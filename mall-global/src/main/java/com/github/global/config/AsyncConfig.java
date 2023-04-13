@@ -22,10 +22,11 @@ import java.util.concurrent.Executor;
  *
  * 如果想异步处理后返回结果, 在 @Async 注解的方法返回上使用 Future<>, 方法体里面的返回使用 new AsyncResult<>()
  */
+@SuppressWarnings("JavadocReference")
 @Configuration
 @EnableAsync
 @ConditionalOnClass(AsyncConfigurer.class)
-public class TaskConfig implements AsyncConfigurer {
+public class AsyncConfig implements AsyncConfigurer {
 
     /** @see org.springframework.boot.autoconfigure.task.TaskExecutionProperties.Pool#coreSize */
     @Value("${asyncTask.corePoolSize:0}")
