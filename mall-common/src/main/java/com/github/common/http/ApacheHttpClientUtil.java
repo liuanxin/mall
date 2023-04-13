@@ -329,6 +329,15 @@ public class ApacheHttpClientUtil {
         }
         return Collections.emptyMap();
     }
+    private static String headerInfo(Header[] headers) {
+        List<String> list = new ArrayList<>();
+        for (Header header : headers) {
+            String key = header.getName();
+            String value = header.getValue();
+            list.add("<" + key + " : " + DesensitizationUtil.desByKey(key, value) + ">");
+        }
+        return String.join("", list);
+    }
     private static String collectContext(long start, String method, String url, String printParams, String printJsonBody,
                                          Header[] reqHeaders, String statusCode, Header[] resHeaders, String result) {
         StringBuilder sbd = new StringBuilder();
@@ -340,13 +349,7 @@ public class ApacheHttpClientUtil {
                 .append("] (").append(method).append(" ").append(url).append(")");
         sbd.append(" req[");
         if (A.isNotEmpty(reqHeaders)) {
-            sbd.append("header(");
-            for (Header header : reqHeaders) {
-                String key = header.getName();
-                String value = header.getValue();
-                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
-            }
-            sbd.append(")");
+            sbd.append("header(").append(headerInfo(reqHeaders)).append(")");
         }
         if (U.isNotBlank(printParams)) {
             if (!sbd.toString().endsWith("[")) {
@@ -363,13 +366,7 @@ public class ApacheHttpClientUtil {
         sbd.append("], res[").append(statusCode);
         boolean hasResHeader = A.isNotEmpty(resHeaders);
         if (hasResHeader) {
-            sbd.append("header(");
-            for (Header header : resHeaders) {
-                String key = header.getName();
-                String value = header.getValue();
-                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
-            }
-            sbd.append(")");
+            sbd.append("header(").append(headerInfo(reqHeaders)).append(")");
         }
         boolean hasResult = U.isNotBlank(result);
         if (hasResHeader && hasResult) {

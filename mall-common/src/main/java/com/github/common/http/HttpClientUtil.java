@@ -257,6 +257,15 @@ public class HttpClientUtil {
         }
         return Collections.emptyMap();
     }
+    private static String headerInfo(Map<String, List<String>> headers) {
+        List<String> list = new ArrayList<>();
+        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+            String key = entry.getKey();
+            String value = String.join(",", entry.getValue());
+            list.add("<" + key + " : " + DesensitizationUtil.desByKey(key, value) + ">");
+        }
+        return String.join("", list);
+    }
     private static String collectContext(long start, String method, String url, String params,
                                          Map<String, List<String>> reqHeaders, String resCode,
                                          Map<String, List<String>> resHeaders, String result) {
@@ -270,13 +279,7 @@ public class HttpClientUtil {
         sbd.append(" req[");
         boolean hasReqHeader = A.isNotEmpty(reqHeaders);
         if (hasReqHeader) {
-            sbd.append("header(");
-            for (Map.Entry<String, List<String>> entry : reqHeaders.entrySet()) {
-                String key = entry.getKey();
-                String value = String.join(",", entry.getValue());
-                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
-            }
-            sbd.append(")");
+            sbd.append("header(").append(headerInfo(reqHeaders)).append(")");
         }
         boolean hasParam = U.isNotBlank(params);
         if (hasParam) {
@@ -288,13 +291,7 @@ public class HttpClientUtil {
         sbd.append("], res[").append(resCode);
         boolean hasResHeader = A.isNotEmpty(resHeaders);
         if (hasResHeader) {
-            sbd.append("header(");
-            for (Map.Entry<String, List<String>> entry : resHeaders.entrySet()) {
-                String key = entry.getKey();
-                String value = String.join(",", entry.getValue());
-                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
-            }
-            sbd.append(")");
+            sbd.append("header(").append(headerInfo(resHeaders)).append(")");
         }
         boolean hasResult = U.isNotBlank(result);
         if (hasResHeader && hasResult) {

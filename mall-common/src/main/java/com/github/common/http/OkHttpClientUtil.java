@@ -11,10 +11,7 @@ import okhttp3.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("DuplicatedCode")
@@ -246,6 +243,14 @@ public class OkHttpClientUtil {
         }
         return Collections.emptyMap();
     }
+    private static String headerInfo(Headers headers) {
+        List<String> list = new ArrayList<>();
+        for (String key : headers.names()) {
+            String value = headers.get(key);
+            list.add("<" + key + " : " + DesensitizationUtil.desByKey(key, value) + ">");
+        }
+        return String.join("", list);
+    }
     private static String collectContext(long start, String method, String url, String printParams, String printJsonBody,
                                          Headers reqHeaders, String statusCode, Headers resHeaders, String result) {
         StringBuilder sbd = new StringBuilder();
@@ -257,12 +262,7 @@ public class OkHttpClientUtil {
                 .append("] (").append(method).append(" ").append(url).append(")");
         sbd.append(" req[");
         if (U.isNotNull(reqHeaders)) {
-            sbd.append("header(");
-            for (String key : reqHeaders.names()) {
-                String value = reqHeaders.get(key);
-                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
-            }
-            sbd.append(")");
+            sbd.append("header(").append(headerInfo(reqHeaders)).append(")");
         }
         if (U.isNotBlank(printParams)) {
             if (!sbd.toString().endsWith("[")) {
@@ -279,12 +279,7 @@ public class OkHttpClientUtil {
         sbd.append("], res[").append(statusCode);
         boolean hasResHeader = U.isNotNull(resHeaders);
         if (hasResHeader) {
-            sbd.append(" header(");
-            for (String key : resHeaders.names()) {
-                String value = resHeaders.get(key);
-                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
-            }
-            sbd.append(")");
+            sbd.append(" header(").append(headerInfo(resHeaders)).append(")");
         }
         boolean hasResult = U.isNotBlank(result);
         if (hasResHeader && hasResult) {
