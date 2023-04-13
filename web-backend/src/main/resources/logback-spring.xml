@@ -93,7 +93,7 @@
             <file>${FILE_PATH}.log</file>
             <!-- yyyy-MM-dd_HH 每小时建一个, yyyy-MM-dd_HH-mm 每分钟建一个 -->
             <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>${FILE_PATH}-%d{yyyy-MM-dd}.log</fileNamePattern>
+                <fileNamePattern>${FILE_PATH}-%d{yyyy-MM-dd}.log.zip</fileNamePattern>
                 <maxHistory>${fileMaxHistory}</maxHistory>
             </rollingPolicy>
             <encoder>
@@ -114,7 +114,7 @@
         <appender name="PROJECT" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <file>${FILE_PATH}.log</file>
             <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>${FILE_PATH}-%d{yyyy-MM-dd}.log</fileNamePattern>
+                <fileNamePattern>${FILE_PATH}-%d{yyyy-MM-dd}.log.zip</fileNamePattern>
                 <maxHistory>${fileMaxHistory}</maxHistory>
             </rollingPolicy>
             <encoder>
