@@ -22,7 +22,7 @@ public class ValidationService {
 
     /**
      * <pre>
-     * 字段标下面的注解 @NotNull、@Email(groups = Xx.class) 等注解, 嵌套字段上标 @Valid(Xx.class) 注解
+     * 字段标 @NotNull、@Email(groups = Xx.class) 等注解, 嵌套字段上标 @Valid(Xx.class) 注解
      *
      * 1. 自动: 在入参上标 @Validated 注解, 将抛出 MethodArgumentNotValidException 或 BindException 异常
      * 2. 半自动: 在入参上标 @Validated 注解, 用 BindingResult 做为入参, 按需调用此方法, 抛出 ParamException 异常
@@ -30,14 +30,14 @@ public class ValidationService {
      * </pre>
      *
      * @see com.github.global.config.GlobalExceptionAdvice#paramValidException
-     * @see javax.validation.constraints.Null
-     * @see javax.validation.constraints.NotNull
-     * @see javax.validation.constraints.NotEmpty
-     * @see javax.validation.constraints.NotBlank
-     * @see javax.validation.constraints.Email
-     * @see javax.validation.constraints.Min
-     * @see javax.validation.constraints.Max
-     * @see javax.validation.constraints.Pattern
+     * @see jakarta.validation.constraints.Null
+     * @see jakarta.validation.constraints.NotNull
+     * @see jakarta.validation.constraints.NotEmpty
+     * @see jakarta.validation.constraints.NotBlank
+     * @see jakarta.validation.constraints.Email
+     * @see jakarta.validation.constraints.Min
+     * @see jakarta.validation.constraints.Max
+     * @see jakarta.validation.constraints.Pattern
      */
     public void validateBinding(BindingResult result) {
         Map<String, String> fieldErrorMap = validate(result);

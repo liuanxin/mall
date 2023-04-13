@@ -22,7 +22,7 @@ public class ValidatorService {
 
     /**
      * <pre>
-     * 字段标下面的注解 @NotNull、@Email(groups = Xx.class) 等注解, 嵌套字段上标 @Valid(Xx.class) 注解
+     * 字段标 @NotNull、@Email(groups = Xx.class) 等注解, 嵌套字段上标 @Valid(Xx.class) 注解
      *
      * 1. 自动: 在入参上标 @Validated 注解, 将抛出 MethodArgumentNotValidException 或 BindException 异常
      * 2. 半自动: 在入参上标 @Validated 注解, 用 BindingResult 做为入参, 按需调用 {@link ValidationService#validateBinding}, 抛出 ParamException 异常
