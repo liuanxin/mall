@@ -2,6 +2,7 @@
 server.port: 8787
 
 online: true
+
 log:
   level: info
   sqlLevel: info

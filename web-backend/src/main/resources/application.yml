@@ -2,6 +2,7 @@
 server.port: 8686
 
 online: false
+
 log:
   level: debug
   sqlLevel: debug
@@ -12,14 +13,12 @@ spring:
   application.name: web-backend
   mvc.throw-exception-if-no-handler-found: true
   web.resources.add-mappings: false
+  messages.basename: i18n/message
 #  session:
 #    store-type: redis
   data.redis:
     host: 127.0.0.1
     port: 6379
-#  jackson:
-#    # 将驼峰转成下划线返回(userName --> user_name)
-#    property-naming-strategy: com.fasterxml.jackson.databind.PropertyNamingStrategy.SnakeCaseStrategy
   datasource:
     url: jdbc:mysql://127.0.0.1:3306/test?useAffectedRows=true&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&autoReconnect=true&failOverReadOnly=false&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&queryInterceptors=com.github.common.sql.ShowSqlInterceptor
     username: root
@@ -27,7 +26,6 @@ spring:
     hikari:
       minimumIdle: 1
       maximumPoolSize: 1
-  messages.basename: i18n/message
 
 # 连接池数量见: https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing
 

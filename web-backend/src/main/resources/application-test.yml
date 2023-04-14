@@ -2,6 +2,7 @@
 server.port: 8686
 
 online: false
+
 log:
   level: debug
   sqlLevel: debug
@@ -13,12 +14,11 @@ spring:
   application.name: web-backend
   mvc.throw-exception-if-no-handler-found: true
   web.resources.add-mappings: false
+  messages.basename: i18n/message
   data.redis:
     host: test-redis
     port: 6379
     password: redis-test-pass
-  jackson:
-    property-naming-strategy: com.fasterxml.jackson.databind.PropertyNamingStrategy.SnakeCaseStrategy
   datasource:
     url: jdbc:mysql://test-db:3306/mall?useAffectedRows=true&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&autoReconnect=true&failOverReadOnly=false&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&queryInterceptors=com.github.common.sql.ShowSqlInterceptor
     username: root
@@ -31,6 +31,5 @@ spring:
         prepStmtCacheSqlLimit: 128
         cachePrepStmts: true
         useServerPrepStmts: false
-  messages.basename: i18n/message
 
 mybatis-plus.global-config.banner: false

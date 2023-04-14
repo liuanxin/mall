@@ -1,5 +1,6 @@
 
 online: false
+
 log:
   level: debug
   sqlLevel: debug

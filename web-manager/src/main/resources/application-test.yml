@@ -2,6 +2,7 @@
 server.port: 8787
 
 online: false
+
 log:
   level: debug
   sqlLevel: debug
