@@ -26,7 +26,7 @@ public class JsonUtil {
     // xml to object
     Parent<Child> parent = RENDER.readValue(xml, new TypeReference<Parent<Child>>() {});
 
-    但是需要引入一个包
+    但是需要引入一个包.  !!注意, 这会导致所有的接口返回时都返回成 xml 格式!!
     <dependency>
         <groupId>com.fasterxml.jackson.dataformat</groupId>
         <artifactId>jackson-dataformat-xml</artifactId>
