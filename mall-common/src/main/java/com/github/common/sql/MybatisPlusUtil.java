@@ -66,7 +66,7 @@ import java.util.Map;
 public class MybatisPlusUtil {
 
     /**
-     * java 字段转换成数据库列名, 如: columnToString(User::getUserName) 返回 user_name
+     * java 字段转换成数据库列名, 如: fieldToColumn(User::getUserName) 返回 user_name
      *
      * @param column lambda 表达式对应的字段, 如 User::getId
      * @param <T> 数据库表对应的实体
@@ -108,7 +108,7 @@ public class MybatisPlusUtil {
     /**
      * java 字段转换成数据库列名<br><br>
      *
-     * 使用 columnsToString(User::getUserName, User::getPassword, User::getNickName)<br>
+     * 使用 fieldsToColumnList(User::getUserName, User::getPassword, User::getNickName)<br>
      * 返回 [user_name, password, nick_name]
      *
      * @param columns lambda 表达式对应的字段数组, 如 [User::getId, User::getUserName]
@@ -127,7 +127,7 @@ public class MybatisPlusUtil {
     /**
      * java 字段转换成数据库列名<br><br>
      *
-     * 使用 columnsToString(User::getUserName, User::getPassword, User::getNickName)<br>
+     * 使用 fieldsToColumnArray(User::getUserName, User::getPassword, User::getNickName)<br>
      * 返回 [user_name, password, nick_name]
      *
      * @param columns lambda 表达式对应的字段数组, 如 [User::getId, User::getUserName]
