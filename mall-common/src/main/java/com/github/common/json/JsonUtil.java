@@ -107,7 +107,7 @@ public class JsonUtil {
             return json;
         }
         try {
-            return EMPTY_OBJECT_MAPPER.writeValueAsString(nativeObject(json));
+            return EMPTY_OBJECT_MAPPER.writeValueAsString(EMPTY_OBJECT_MAPPER.readValue(json, Object.class));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("handle json({}) white exception", U.compress(json), e);
@@ -126,7 +126,7 @@ public class JsonUtil {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("json({}) to Object exception", U.compress(json), e);
             }
-            return null;
+            return json;
         }
     }
 
