@@ -49,6 +49,12 @@ final class HttpConst {
         return headerMap;
     }
 
+    static Map<String, Object> handleXml(Map<String, Object> headers) {
+        Map<String, Object> headerMap = handleContentType(headers);
+        headerMap.put(CONTENT_TYPE, "application/xml");
+        return headerMap;
+    }
+
     static Map<String, Object> handleContentType(Map<String, Object> headers) {
         Map<String, Object> headerMap = new LinkedHashMap<>();
         if (A.isNotEmpty(headers)) {

@@ -72,6 +72,25 @@ public class HttpClientUtil {
         return handleRequest("POST", useUrl, content, content, headerMap);
     }
 
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static ResponseData postWithXmlBody(String url, String xml) {
+        return postWithXmlBody(url, null, xml, null);
+    }
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static ResponseData postWithXmlBody(String url, Map<String, Object> params, String xml) {
+        return postWithXmlBody(url, params, xml, null);
+    }
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static ResponseData postWithXmlBody(String url, String xml, Map<String, Object> headers) {
+        return postWithXmlBody(url, null, xml, headers);
+    }
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static ResponseData postWithXmlBody(String url, Map<String, Object> params, String xml, Map<String, Object> headers) {
+        String content = U.toStr(xml);
+        String useUrl = HttpConst.appendParamsToUrl(url, params);
+        return handleRequest("POST", useUrl, content, content, HttpConst.handleXml(headers));
+    }
+
 
     /** 向指定的 url 基于 put 发起 request-body 请求 */
     public static ResponseData put(String url, String json) {

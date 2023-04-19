@@ -161,6 +161,28 @@ public class ApacheHttpClientUtil {
         return handleRequest(request, null, content);
     }
 
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static ResponseData postWithXmlBody(String url, String xml) {
+        return postWithXmlBody(url, null, xml, null);
+    }
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static ResponseData postWithXmlBody(String url, Map<String, Object> params, String xml) {
+        return postWithXmlBody(url, params, xml, null);
+    }
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static ResponseData postWithXmlBody(String url, String xml, Map<String, Object> headers) {
+        return postWithXmlBody(url, null, xml, headers);
+    }
+    /** 向指定的 url 基于 post 发起 request-body 请求 */
+    public static ResponseData postWithXmlBody(String url, Map<String, Object> params, String xml, Map<String, Object> headers) {
+        String useUrl = HttpConst.appendParamsToUrl(HttpConst.handleEmptyScheme(url), params);
+        HttpPost request = new HttpPost(useUrl);
+        String content = U.toStr(xml);
+        request.setEntity(new ByteArrayEntity(content.getBytes(StandardCharsets.UTF_8)));
+        handleHeader(request, HttpConst.handleXml(headers));
+        return handleRequest(request, null, content);
+    }
+
 
     /** 向指定的 url 基于 put 发起 request-body 请求 */
     public static ResponseData put(String url, String json) {
