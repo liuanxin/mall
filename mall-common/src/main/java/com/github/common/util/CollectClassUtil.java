@@ -50,13 +50,13 @@ public final class CollectClassUtil {
                     List<Map<String, Object>> returnList = new ArrayList<>();
                     for (Object en : anEnum.getEnumConstants()) {
                         // 没有 getCode 方法就使用枚举的 ordinal
-                        Object k = U.invokeMethod(anEnum, CODE_METHOD);
+                        Object k = U.invokeMethod(en, CODE_METHOD);
                         if (U.isNull(k)) {
                             k = ((Enum) en).ordinal();
                         }
 
                         // 没有 getValue 方法就使用枚举的 name
-                        Object value = U.invokeMethod(anEnum, VALUE_METHOD);
+                        Object value = U.invokeMethod(en, VALUE_METHOD);
                         if (U.isNull(value)) {
                             value = ((Enum) en).name();
                         }

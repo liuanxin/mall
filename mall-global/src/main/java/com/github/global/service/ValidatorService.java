@@ -3,12 +3,12 @@ package com.github.global.service;
 import com.github.common.exception.ParamException;
 import com.github.common.util.A;
 import com.github.common.util.U;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 import java.util.*;
 
 /** 需要引入 jakarta.validation-api 包, 因此按需装载 */

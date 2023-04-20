@@ -3,7 +3,6 @@ package com.github.global.config;
 import com.github.common.mvc.CorsFilter;
 import com.github.common.mvc.LanguageFilter;
 import com.github.common.mvc.LogTraceFilter;
-import jakarta.servlet.Filter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -11,6 +10,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.CharacterEncodingFilter;
+
+import javax.servlet.Filter;
 
 @Configuration
 @ConditionalOnClass({ Filter.class, FilterRegistrationBean.class })

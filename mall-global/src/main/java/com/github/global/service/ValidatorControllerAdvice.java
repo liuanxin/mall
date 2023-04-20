@@ -4,8 +4,6 @@ import com.github.common.json.JsonCode;
 import com.github.common.json.JsonResult;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.LogUtil;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -13,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 import java.util.Map;
 
 /**

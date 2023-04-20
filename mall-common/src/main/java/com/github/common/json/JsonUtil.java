@@ -21,16 +21,15 @@ public class JsonUtil {
     ObjectMapper RENDER = new XmlMapper();
 
     // object to xml
-    String xml = RENDER.writeValueAsString(request);
+    String xml = RENDER.writeValueAsString(obj);
 
     // xml to object
-    Parent<Child> parent = RENDER.readValue(xml, new TypeReference<Parent<Child>>() {});
+    Parent<Child> obj = RENDER.readValue(xml, new TypeReference<Parent<Child>>() {});
 
-    但是需要引入一个包.  !!注意, 这会导致所有的接口返回时都返回成 xml 格式!!
+    但是需要引入一个包.  !!注意, xml 的适配在 json 前面, 这会导致所有的接口都返回成 xml 格式!!
     <dependency>
         <groupId>com.fasterxml.jackson.dataformat</groupId>
         <artifactId>jackson-dataformat-xml</artifactId>
-        <version>???</version>
     </dependency>
     */
     private static final Map<String, JavaType> TYPE_CACHE = new ConcurrentHashMap<>();

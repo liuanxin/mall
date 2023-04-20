@@ -2,8 +2,6 @@ package com.github.global.service;
 
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
-import jakarta.mail.Message;
-import jakarta.mail.internet.InternetAddress;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +11,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
+import javax.mail.Message;
+import javax.mail.internet.InternetAddress;
 import java.io.File;
 import java.util.List;
 

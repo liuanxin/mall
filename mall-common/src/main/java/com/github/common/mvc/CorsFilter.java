@@ -3,10 +3,10 @@ package com.github.common.mvc;
 import com.github.common.Const;
 import com.github.common.util.A;
 import com.github.common.util.U;
-import jakarta.servlet.*;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
