@@ -17,7 +17,7 @@ public class BackendInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) {
-        printParam();
+        printUser();
         checkLoginAndPermission(handler);
         return true;
     }
@@ -35,7 +35,7 @@ public class BackendInterceptor implements HandlerInterceptor {
         }
     }
 
-    private void printParam() {
+    private void printUser() {
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
             LogUtil.ROOT_LOG.info("[user: {}]", BackendSessionUtil.getUserInfo());
         }

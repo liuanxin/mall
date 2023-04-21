@@ -26,7 +26,7 @@ public class ManagerInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) {
-        printParam();
+        printUser();
         checkLoginAndPermission(req.getRequestURI(), handler);
         return true;
     }
@@ -44,7 +44,7 @@ public class ManagerInterceptor implements HandlerInterceptor {
         }
     }
 
-    private void printParam() {
+    private void printUser() {
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
             LogUtil.ROOT_LOG.info("[user: {}]", ManagerSessionUtil.getUserInfo());
         }
