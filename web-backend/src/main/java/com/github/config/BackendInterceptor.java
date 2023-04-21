@@ -2,11 +2,9 @@ package com.github.config;
 
 import com.github.common.annotation.NeedLogin;
 import com.github.common.util.LogUtil;
-import com.github.common.util.RequestUtil;
 import com.github.util.BackendSessionUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.method.HandlerMethod;
@@ -16,10 +14,6 @@ import org.springframework.web.servlet.ModelAndView;
 @Configuration
 @SuppressWarnings("NullableProblems")
 public class BackendInterceptor implements HandlerInterceptor {
-
-    /** 打印请求日志时, 是否输出头信息 */
-    @Value("${req.logPrintHeader:true}")
-    private boolean printHeader;
 
     @Override
     public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) {
@@ -43,10 +37,7 @@ public class BackendInterceptor implements HandlerInterceptor {
 
     private void printParam() {
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-            String userInfo = BackendSessionUtil.getUserInfo();
-            String basicInfo = RequestUtil.logBasicInfo();
-            String requestInfo = RequestUtil.logRequestInfo(printHeader);
-            LogUtil.ROOT_LOG.info("[{}] [{}] [{}]", userInfo, basicInfo, requestInfo);
+            LogUtil.ROOT_LOG.info("[user: {}]", BackendSessionUtil.getUserInfo());
         }
     }
 

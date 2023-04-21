@@ -6,7 +6,6 @@ import com.github.common.json.JsonResult;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
-import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
 import com.github.global.service.I18nService;
 import com.github.global.service.ValidationService;
@@ -18,6 +17,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -56,10 +56,6 @@ public class GlobalExceptionAdvice {
      */
     @Value("${res.returnStatusCode:false}")
     private boolean returnStatusCode;
-
-    /** 打印请求日志时, 是否输出头信息 */
-    @Value("${req.logPrintHeader:true}")
-    private boolean printHeader;
 
     private final I18nService i18nService;
     private final ValidationService validationService;
@@ -130,6 +126,14 @@ public class GlobalExceptionAdvice {
         String msg = String.join("; ", errorMap.values());
         return handle(true, "valid fail", status, handleErrorResult(JsonResult.badRequest(msg, errorMap)), e);
     }
+
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity<JsonResult<String>> mediaTypeNotAcceptableException(HttpMediaTypeNotAcceptableException e) {
+        int status = e.getStatusCode().value();
+        String msg = "media type not acceptable";
+        return handle(true, msg, status, handleErrorResult(JsonResult.badRequest(msg, null)), e);
+    }
+
 
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<JsonResult<String>> noHandler(NoHandlerFoundException e) {
@@ -229,10 +233,6 @@ public class GlobalExceptionAdvice {
         }
 
         StringBuilder sbd = new StringBuilder();
-
-        String basicInfo = RequestUtil.logBasicInfo();
-        String requestInfo = RequestUtil.logRequestInfo(printHeader);
-        sbd.append(String.format("[%s] [%s] ", basicInfo, requestInfo));
         if (U.isNotBlank(msg)) {
             sbd.append(msg).append(", ");
         }

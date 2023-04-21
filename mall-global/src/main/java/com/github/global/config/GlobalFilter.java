@@ -25,6 +25,10 @@ public class GlobalFilter {
     @Value("${spring.messages.basename:}")
     private String i18nBaseNames;
 
+    /** 打印请求日志时, 是否输出头信息 */
+    @Value("${req.logPrintHeader:true}")
+    private boolean printHeader;
+
     @Bean
     @Order(1)
     public FilterRegistrationBean<CharacterEncodingFilter> characterFilter(CharacterEncodingFilter filter) {
@@ -57,7 +61,7 @@ public class GlobalFilter {
     @Bean
     @Order(4)
     public FilterRegistrationBean<LogTraceFilter> traceFilter() {
-        LogTraceFilter filter = new LogTraceFilter();
+        LogTraceFilter filter = new LogTraceFilter(printHeader);
         FilterRegistrationBean<LogTraceFilter> filterBean = new FilterRegistrationBean<>(filter);
         filterBean.setOrder(Integer.MIN_VALUE + 4);
         return filterBean;

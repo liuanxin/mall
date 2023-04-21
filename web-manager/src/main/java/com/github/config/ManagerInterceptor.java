@@ -3,11 +3,9 @@ package com.github.config;
 import com.github.common.annotation.NotNeedLogin;
 import com.github.common.annotation.NotNeedPermission;
 import com.github.common.util.LogUtil;
-import com.github.common.util.RequestUtil;
 import com.github.util.ManagerSessionUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.method.HandlerMethod;
@@ -21,10 +19,6 @@ import java.util.List;
 @Configuration
 @SuppressWarnings("NullableProblems")
 public class ManagerInterceptor implements HandlerInterceptor {
-
-    /** 打印请求日志时, 是否输出头信息 */
-    @Value("${req.logPrintHeader:true}")
-    private boolean printHeader;
 
     private static final List<String> LET_IT_GO = Arrays.asList(
             "/error", "/api/project", "/api/info", "/api/example/*"
@@ -52,10 +46,7 @@ public class ManagerInterceptor implements HandlerInterceptor {
 
     private void printParam() {
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-            String userInfo = ManagerSessionUtil.getUserInfo();
-            String basicInfo = RequestUtil.logBasicInfo();
-            String requestInfo = RequestUtil.logRequestInfo(printHeader);
-            LogUtil.ROOT_LOG.info("[{}] [{}] [{}]", userInfo, basicInfo, requestInfo);
+            LogUtil.ROOT_LOG.info("[user: {}]", ManagerSessionUtil.getUserInfo());
         }
     }
 
