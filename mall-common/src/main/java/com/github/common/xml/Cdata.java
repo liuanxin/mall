@@ -1,6 +1,7 @@
 package com.github.common.xml;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
+
 import javax.xml.stream.XMLStreamWriter;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

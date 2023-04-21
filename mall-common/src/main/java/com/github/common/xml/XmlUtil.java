@@ -2,9 +2,9 @@ package com.github.common.xml;
 
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.StringReader;

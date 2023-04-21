@@ -73,10 +73,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson-spring-boot-starter</artifactId>
-        </dependency>
+        </dependency>-->
         <!-- 将 session 存到 redis 中, 这样应用重启后 session 也还有效 -->
         <!--<dependency>
             <groupId>org.springframework.session</groupId>

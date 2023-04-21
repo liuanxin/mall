@@ -1,10 +1,9 @@
 package com.github.common.util;
 
 import com.github.common.xml.XmlUtil;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.Data;
 import org.junit.Test;
-
-import javax.xml.bind.annotation.XmlRootElement;
 
 public class XmlTest {
 

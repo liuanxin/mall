@@ -6,8 +6,7 @@ import com.github.common.mvc.AppTokenHandler;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
-
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 /** !!! 操作 session 都基于此, 其他地方不允许操作! 避免 session 被滥用 !!! */
 public class BackendSessionUtil {
