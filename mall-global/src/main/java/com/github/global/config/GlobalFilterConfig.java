@@ -50,21 +50,21 @@ public class GlobalFilterConfig {
         return filterBean;
     }
 
-    @Bean
-    @Order(3)
-    public FilterRegistrationBean<LogTraceFilter> traceFilter() {
-        LogTraceFilter filter = new LogTraceFilter(printHeader);
-        FilterRegistrationBean<LogTraceFilter> filterBean = new FilterRegistrationBean<>(filter);
-        filterBean.setOrder(Integer.MIN_VALUE + 3);
-        return filterBean;
-    }
-
 //    @Bean
-//    @Order(4)
+//    @Order(3)
 //    public FilterRegistrationBean<LanguageFilter> languageFilter() {
 //        LanguageFilter filter = new LanguageFilter(languageParam, i18nBaseNames);
 //        FilterRegistrationBean<LanguageFilter> filterBean = new FilterRegistrationBean<>(filter);
-//        filterBean.setOrder(Integer.MIN_VALUE + 4);
+//        filterBean.setOrder(Integer.MIN_VALUE + 3);
 //        return filterBean;
 //    }
+
+    @Bean
+    @Order(4)
+    public FilterRegistrationBean<LogTraceFilter> traceFilter() {
+        LogTraceFilter filter = new LogTraceFilter(printHeader);
+        FilterRegistrationBean<LogTraceFilter> filterBean = new FilterRegistrationBean<>(filter);
+        filterBean.setOrder(Integer.MIN_VALUE + 4);
+        return filterBean;
+    }
 }

@@ -1,6 +1,5 @@
 package com.github.common.util;
 
-import com.github.common.Const;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -50,10 +49,9 @@ public final class RequestUtil {
      */
     public static String getRealIp() {
         HttpServletRequest request = getRequest();
-        if (U.isNull(request)) {
-            return U.EMPTY;
-        }
-
+        return U.isNull(request) ? U.EMPTY : getRealIp(request);
+    }
+    public static String getRealIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         if (U.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
             return ip.split(",")[0].trim();
@@ -268,15 +266,6 @@ public final class RequestUtil {
             sbd.append(">");
         }
         return sbd.toString();
-    }
-
-    public static String getTraceId() {
-        return getCookieOrHeaderOrParam(Const.TRACE);
-    }
-
-    /** 从 cookie 中获取值, 为空就从请求头中取, 为空再从参数中取 */
-    public static String getCookieOrHeaderOrParam(String name) {
-        return U.defaultIfBlank(getCookieValue(name), getHeaderOrParam(name));
     }
 
     /** 先从请求头中查, 为空再从参数中查 */

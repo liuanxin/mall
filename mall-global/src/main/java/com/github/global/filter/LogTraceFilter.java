@@ -1,5 +1,6 @@
 package com.github.global.filter;
 
+import com.github.common.Const;
 import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
@@ -22,13 +23,15 @@ public class LogTraceFilter implements Filter {
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         try {
-            LogUtil.putTraceAndIp(RequestUtil.getTraceId(), RequestUtil.getRealIp(), LocaleContextHolder.getLocale());
+            HttpServletRequest request = (HttpServletRequest) req;
+            String traceId = request.getHeader(Const.TRACE);
+            String ip = RequestUtil.getRealIp(request);
+            LogUtil.putTraceAndIp(traceId, ip, LocaleContextHolder.getLocale());
 
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 try (ServletInputStream inputStream = req.getInputStream()) {
                     byte[] bytes = (inputStream == null) ? new byte[0] : inputStream.readAllBytes();
-                    HttpServletRequest request = (HttpServletRequest) req;
-                    printRequestContext(request, bytes);
+                    printRequestContext(request, ip, bytes);
                     chain.doFilter(new SelfHttpServletRequest(request, bytes), res);
                 }
             } else {
@@ -39,7 +42,7 @@ public class LogTraceFilter implements Filter {
         }
     }
 
-    private void printRequestContext(HttpServletRequest request, final byte[] bytes) {
+    private void printRequestContext(HttpServletRequest request, String ip, final byte[] bytes) {
         StringBuilder sbd = new StringBuilder();
         if (printHeader) {
             StringBuilder headerSbd = new StringBuilder();
@@ -65,7 +68,7 @@ public class LogTraceFilter implements Filter {
 
         String method = request.getMethod();
         String url = request.getRequestURL().toString();
-        LogUtil.ROOT_LOG.info("[{} {}] [{}]", method, url, sbd.toString().trim());
+        LogUtil.ROOT_LOG.info("[{}] [{} {}] [{}]", ip, method, url, sbd.toString().trim());
     }
 
     public static class SelfHttpServletRequest extends HttpServletRequestWrapper {
