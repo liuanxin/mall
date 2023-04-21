@@ -29,7 +29,7 @@ public class ValidationService {
      * 3. 手动: 不标 @Validated 或 @Valid 注解, 按需调用 {@link ValidatorService#handleValidate}, 抛出 ParamException 异常
      * </pre>
      *
-     * @see com.github.global.config.GlobalExceptionAdvice#paramValidException
+     * @see com.github.global.config.GlobalException#paramValidException
      * @see jakarta.validation.constraints.Null
      * @see jakarta.validation.constraints.NotNull
      * @see jakarta.validation.constraints.NotEmpty

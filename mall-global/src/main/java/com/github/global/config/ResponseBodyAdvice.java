@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -37,10 +38,11 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
             }
 
             StringBuilder sbd = new StringBuilder();
-            sbd.append("[").append(RequestUtil.logBasicInfo()).append("]");
+            ServletServerHttpRequest req = (ServletServerHttpRequest) request;
+            sbd.append("[").append(req.getMethod()).append(" ").append(req.getURI()).append("]");
             long startTime = LogUtil.getStartTime();
             if (U.greater0(startTime)) {
-                sbd.append("time(").append(DateUtil.toHuman(System.currentTimeMillis() - startTime)).append(") ");
+                sbd.append(" time(").append(DateUtil.toHuman(System.currentTimeMillis() - startTime)).append(") ");
             }
 
             sbd.append(parameter.getContainingClass().getName());

@@ -1,8 +1,8 @@
 package com.github.global.config;
 
-import com.github.common.mvc.CorsFilter;
-import com.github.common.mvc.LanguageFilter;
-import com.github.common.mvc.LogTraceFilter;
+import com.github.global.filter.CorsFilter;
+import com.github.global.filter.LanguageFilter;
+import com.github.global.filter.LogTraceFilter;
 import jakarta.servlet.Filter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -14,20 +14,22 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 
 @Configuration
 @ConditionalOnClass({ Filter.class, FilterRegistrationBean.class })
-public class GlobalFilter {
+public class GlobalFilterConfig {
 
+    /** 打印请求日志时, 是否输出头信息 */
+    @Value("${req.logPrintHeader:true}")
+    private boolean printHeader;
+
+    /** 支持 cors 的 ip 地址列表 */
     @Value("${http.cors.allow-headers:}")
     private String allowHeaders;
 
+    /** 处理语言时的参数名(/path?lang=zh-CN) */
     @Value("${http.language.param-name:lang}")
     private String languageParam;
 
     @Value("${spring.messages.basename:}")
     private String i18nBaseNames;
-
-    /** 打印请求日志时, 是否输出头信息 */
-    @Value("${req.logPrintHeader:true}")
-    private boolean printHeader;
 
     @Bean
     @Order(1)
@@ -42,27 +44,27 @@ public class GlobalFilter {
 
     @Bean
     @Order(2)
-    public FilterRegistrationBean<CorsFilter> corsFilter() {
-        CorsFilter filter = new CorsFilter(allowHeaders);
-        FilterRegistrationBean<CorsFilter> filterBean = new FilterRegistrationBean<>(filter);
+    public FilterRegistrationBean<LogTraceFilter> traceFilter() {
+        LogTraceFilter filter = new LogTraceFilter(printHeader);
+        FilterRegistrationBean<LogTraceFilter> filterBean = new FilterRegistrationBean<>(filter);
         filterBean.setOrder(Integer.MIN_VALUE + 2);
         return filterBean;
     }
 
     @Bean
     @Order(3)
-    public FilterRegistrationBean<LanguageFilter> languageFilter() {
-        LanguageFilter filter = new LanguageFilter(languageParam, i18nBaseNames);
-        FilterRegistrationBean<LanguageFilter> filterBean = new FilterRegistrationBean<>(filter);
+    public FilterRegistrationBean<CorsFilter> corsFilter() {
+        CorsFilter filter = new CorsFilter(allowHeaders);
+        FilterRegistrationBean<CorsFilter> filterBean = new FilterRegistrationBean<>(filter);
         filterBean.setOrder(Integer.MIN_VALUE + 3);
         return filterBean;
     }
 
     @Bean
     @Order(4)
-    public FilterRegistrationBean<LogTraceFilter> traceFilter() {
-        LogTraceFilter filter = new LogTraceFilter(printHeader);
-        FilterRegistrationBean<LogTraceFilter> filterBean = new FilterRegistrationBean<>(filter);
+    public FilterRegistrationBean<LanguageFilter> languageFilter() {
+        LanguageFilter filter = new LanguageFilter(languageParam, i18nBaseNames);
+        FilterRegistrationBean<LanguageFilter> filterBean = new FilterRegistrationBean<>(filter);
         filterBean.setOrder(Integer.MIN_VALUE + 4);
         return filterBean;
     }

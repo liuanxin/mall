@@ -5,14 +5,11 @@ import com.github.common.json.JsonModule;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ConditionalOnClass(ObjectMapper.class)
-@AutoConfigureAfter(JacksonAutoConfiguration.class)
 public class GlobalLogHandler {
 
     /** 是否进行脱敏 */

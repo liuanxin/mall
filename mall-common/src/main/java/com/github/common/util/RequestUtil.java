@@ -240,14 +240,34 @@ public final class RequestUtil {
      * 请求是一个二进制流, 用 request.getParameterMap() 获取到的是一个空数据,
      * 想要获取得基于 request.getInputStream() 或 request.getReader() 或 request.getParts() 操作流,
      * 而获取流后, 当后续要再次获取时将会报 getXX can't be called after getXXX 异常(数据流的偏移指针没有指到最开头),
-     * 要解决得包装一层 request 并复制一遍字节码, 这多少就有点得不偿失了
+     * 要解决得包装一层 request 并复制一遍字节码
      * </pre>
      *
+     * @param des true 表示脱敏
      * @return 示例: id=xxx&name=yyy
      */
     public static String formatParam(boolean des) {
         HttpServletRequest request = getRequest();
-        return U.isNull(request) ? U.EMPTY : U.formatParam(des, false, request.getParameterMap());
+        return U.isNull(request) ? U.EMPTY : U.formatParam(des, true, request.getParameterMap());
+    }
+
+    /** 格式化头里的参数: 键值以冒号分隔 */
+    public static String formatHeader(boolean des) {
+        HttpServletRequest request = getRequest();
+        if (U.isNull(request)) {
+            return U.EMPTY;
+        }
+
+        StringBuilder sbd = new StringBuilder();
+        Enumeration<String> headers = request.getHeaderNames();
+        while (headers.hasMoreElements()) {
+            String headName = headers.nextElement();
+            String value = request.getHeader(headName);
+            sbd.append("<").append(headName).append(" : ");
+            sbd.append(des ? DesensitizationUtil.desByKey(headName, value) : value);
+            sbd.append(">");
+        }
+        return sbd.toString();
     }
 
     public static String getTraceId() {
@@ -313,25 +333,6 @@ public final class RequestUtil {
         }
     }
 
-    /** 格式化头里的参数: 键值以冒号分隔 */
-    public static String formatHeader(boolean des) {
-        HttpServletRequest request = getRequest();
-        if (U.isNull(request)) {
-            return U.EMPTY;
-        }
-
-        StringBuilder sbd = new StringBuilder();
-        Enumeration<String> headers = request.getHeaderNames();
-        while (headers.hasMoreElements()) {
-            String headName = headers.nextElement();
-            String value = request.getHeader(headName);
-            sbd.append("<").append(headName).append(" : ");
-            sbd.append(des ? DesensitizationUtil.desByKey(headName, value) : value);
-            sbd.append(">");
-        }
-        return sbd.toString();
-    }
-
 
     /** 将「json 字符」以 json 格式输出 */
     public static void toJson(String data) {
@@ -364,30 +365,6 @@ public final class RequestUtil {
     /** 将「json 字符」以 html 格式输出. 不常见! 这种只会在一些特殊的场景用到 */
     public static void toHtml(String data) {
         render("text/html", data);
-    }
-
-    public static String logBasicInfo() {
-        HttpServletRequest request = getRequest();
-        String method = U.isNull(request) ? U.EMPTY : request.getMethod();
-        String url = getRequestUrl();
-        return (method + " " + url).trim();
-    }
-    public static String logRequestInfo(boolean printHeader) {
-        boolean des = true;
-
-        StringBuilder sbd = new StringBuilder();
-        if (printHeader) {
-            String heads = formatHeader(des);
-            if (U.isNotBlank(heads)) {
-                sbd.append(" headers(").append(heads).append(")");
-            }
-        }
-
-        String params = formatParam(des);
-        if (U.isNotBlank(params)) {
-            sbd.append(" params(").append(params).append(")");
-        }
-        return sbd.toString().trim();
     }
 
 

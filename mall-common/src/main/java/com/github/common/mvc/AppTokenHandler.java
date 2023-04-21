@@ -14,8 +14,6 @@ import java.util.concurrent.TimeUnit;
 /** 专门针对 app 操作的 token 处理器, 登录时生成 token, 每次请求都刷新过期时间, 删除由客户端处理 */
 public final class AppTokenHandler {
 
-    private static final String TOKEN_PREFIX = "Auth-Key ";
-
     /** 生成 token 的过期时间 */
     private static final Long TOKEN_EXPIRE_TIME = 7L;
     /** 生成 token 的过期时间单位 */
@@ -59,14 +57,14 @@ public final class AppTokenHandler {
     }
 
     private static String genToken(Map<String, Object> session, long expireDay) {
-        return TOKEN_PREFIX + Encrypt.jwtEncode(session, expireDay, TOKEN_EXPIRE_TIME_UNIT);
+        return Const.TOKEN_PREFIX + Encrypt.jwtEncode(session, expireDay, TOKEN_EXPIRE_TIME_UNIT);
     }
     /** 从请求中获取 token 数据 */
     private static String getToken() {
         String token = RequestUtil.getHeaderOrParam(Const.TOKEN);
         if (U.isNotBlank(token)) {
-            if (token.startsWith(TOKEN_PREFIX)) {
-                return token.substring(TOKEN_PREFIX.length());
+            if (token.startsWith(Const.TOKEN_PREFIX)) {
+                return token.substring(Const.TOKEN_PREFIX.length());
             }
         }
         return token;

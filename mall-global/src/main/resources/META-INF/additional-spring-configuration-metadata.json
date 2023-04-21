@@ -45,21 +45,28 @@
       "name": "res.returnStatusCode",
       "type": "java.lang.Boolean",
       "defaultValue": false,
-      "sourceType": "com.github.global.config.GlobalExceptionAdvice",
+      "sourceType": "com.github.global.config.GlobalException",
       "description": "响应错误时, 错误码是否以 ResponseStatus 返回."
+    },
+    {
+      "name": "req.logPrintHeader",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "sourceType": "com.github.global.config.GlobalFilterConfig",
+      "description": "打印请求日志时, 是否输出头信息."
     },
     {
       "name": "http.cors.allow-headers",
       "type": "java.lang.String",
       "defaultValue": "",
-      "sourceType": "com.github.global.config.GlobalFilter",
+      "sourceType": "com.github.global.config.GlobalFilterConfig",
       "description": "支持 cors 的 ip 地址列表."
     },
     {
       "name": "http.language.param-name",
       "type": "java.lang.String",
       "defaultValue": "lang",
-      "sourceType": "com.github.global.config.GlobalFilter",
+      "sourceType": "com.github.global.config.GlobalFilterConfig",
       "description": "处理语言时的参数名(/path?lang=zh-CN)."
     }
   ]

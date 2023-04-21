@@ -1,4 +1,4 @@
-package com.github.common.mvc;
+package com.github.global.filter;
 
 import com.github.common.Const;
 import com.github.common.util.A;

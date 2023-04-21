@@ -1,4 +1,4 @@
-package com.github.common.mvc;
+package com.github.global.filter;
 
 import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.LogUtil;

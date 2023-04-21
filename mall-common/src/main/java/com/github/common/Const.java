@@ -52,6 +52,7 @@ public final class Const {
 
     /** pc 端传过来的 token 的 key */
     public static final String TOKEN = "Authorization";
+    public static final String TOKEN_PREFIX = "Bearer ";
     /** pc 端放在 header 中的跟踪号 */
     public static final String TRACE = "X-Trace";
     /** pc 端传过来的 version 的 key */
