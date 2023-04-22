@@ -32,15 +32,15 @@ public class LogTraceFilter implements Filter {
 
             ServletRequest useRequest = req;
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                if (RequestUtil.hasUploadFile(request)) {
-                    printRequestContext(request, ip, true, EMPTY);
-                } else {
+                boolean upload = RequestUtil.hasUploadFile(request);
+                byte[] bytes = EMPTY;
+                if (!upload) {
                     try (ServletInputStream inputStream = req.getInputStream()) {
-                        byte[] bytes = U.isNull(inputStream) ? EMPTY : inputStream.readAllBytes();
-                        printRequestContext(request, ip, false, bytes);
+                        bytes = U.isNull(inputStream) ? EMPTY : inputStream.readAllBytes();
                         useRequest = new SelfHttpServletRequest(request, bytes);
                     }
                 }
+                printRequestContext((HttpServletRequest) useRequest, ip, upload, bytes);
             }
             chain.doFilter(useRequest, res);
         } finally {
@@ -113,7 +113,8 @@ public class LogTraceFilter implements Filter {
         public boolean isFinished() {
             try {
                 return input.available() == 0;
-            } catch (IOException e) {
+            } catch (Exception e) {
+                LogUtil.ROOT_LOG.error(e.getMessage());
                 return false;
             }
         }
@@ -122,6 +123,8 @@ public class LogTraceFilter implements Filter {
             return true;
         }
         @Override
-        public void setReadListener(ReadListener readListener) {}
+        public void setReadListener(ReadListener readListener) {
+            throw new UnsupportedOperationException();
+        }
     }
 }

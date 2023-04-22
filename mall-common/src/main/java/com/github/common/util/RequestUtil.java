@@ -255,7 +255,7 @@ public final class RequestUtil {
     }
 
     public static boolean hasUploadFile(HttpServletRequest request) {
-        return U.toStr(request.getHeader("Content-Type")).toLowerCase().startsWith("multipart/form-data");
+        return U.toStr(request.getHeader("Content-Type")).toLowerCase().startsWith("multipart/");
     }
 
     /** 格式化头里的参数: 键值以冒号分隔 */
