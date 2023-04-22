@@ -29,14 +29,15 @@ public class LogTraceFilter implements Filter {
             String traceId = request.getHeader(Const.TRACE);
             String ip = RequestUtil.getRealIp(request);
             LogUtil.putTraceAndIp(traceId, ip, LocaleContextHolder.getLocale());
-
-            HttpServletRequest useRequest = request;
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                String method = request.getMethod();
+                String url = RequestUtil.getRequestUrl(request);
+
+                ServletRequest useRequest = request;
                 // 如果用 form + application/x-www-form-urlencoded 的方式请求, getParameterMap 在 getInputStream 后面调用,
                 // 会将 form 表单中的数据打印成 body, 且后面的 getParameterMap 为空会导致 web 接口上的参数注入不进去
                 // 因此, 保证在 getInputStream 之前先调一下 getParameterMap 就可以避免这个问题
-                // https://www.javai.net/post/202207/http-parameter-missing/
-                String params = U.formatParam(true, true, request.getParameterMap());
+                String params = U.formatParam(request.getParameterMap());
                 boolean upload = RequestUtil.hasUploadFile(request);
                 byte[] bytes = EMPTY;
                 if (!upload) {
@@ -50,32 +51,43 @@ public class LogTraceFilter implements Filter {
                     // 所以像下面这样操作: 先将流读取成 byte[], 再用字节数组构造一个新的输入流返回
                     try (ServletInputStream inputStream = request.getInputStream()) {
                         bytes = U.isNull(inputStream) ? EMPTY : inputStream.readAllBytes();
-                        useRequest = new SelfHttpServletRequest(request, bytes);
+                        useRequest = new SelfHttpServletRequest(request, inputStream, bytes);
                     }
                 }
-                printRequestContext(useRequest, ip, upload, params, bytes);
+                // 处理之前打印请求
+                printRequest(ip, method, url, headers(request), params, upload, bytes);
+                // 处理后续的动作
+                chain.doFilter(useRequest, res);
+            } else {
+                chain.doFilter(req, res);
             }
-            chain.doFilter(useRequest, res);
         } finally {
             LogUtil.unbind();
         }
     }
 
-    private void printRequestContext(HttpServletRequest request, String ip, boolean upload, String params, final byte[] bytes) {
-        StringBuilder sbd = new StringBuilder();
+    private String headers(HttpServletRequest request) {
         if (printHeader) {
-            StringBuilder headerSbd = new StringBuilder();
+            StringBuilder sbd = new StringBuilder();
             Enumeration<String> headers = request.getHeaderNames();
             while (headers.hasMoreElements()) {
                 String headName = headers.nextElement();
                 String value = request.getHeader(headName);
-                headerSbd.append("<").append(headName).append(" : ");
-                headerSbd.append(DesensitizationUtil.desByKey(headName, value));
-                headerSbd.append(">");
+                sbd.append("<").append(headName).append(" : ");
+                sbd.append(DesensitizationUtil.desByKey(headName, value));
+                sbd.append(">");
             }
-            if (!headerSbd.isEmpty()) {
-                sbd.append(" headers(").append(headerSbd).append(")");
-            }
+            return sbd.toString();
+        } else {
+            return null;
+        }
+    }
+
+    private void printRequest(String ip, String method, String url, String headers,
+                              String params, boolean upload, final byte[] bytes) {
+        StringBuilder sbd = new StringBuilder();
+        if (U.isNotBlank(headers)) {
+            sbd.append(" headers(").append(headers).append(")");
         }
         if (U.isNotBlank(params)) {
             sbd.append(" params(").append(params).append(")");
@@ -86,35 +98,33 @@ public class LogTraceFilter implements Filter {
         if (bytes.length > 0) {
             sbd.append(" body(").append(U.compress(new String(bytes))).append(")");
         }
-
-        String method = request.getMethod();
-        String url = RequestUtil.getRequestUrl(request);
         LogUtil.ROOT_LOG.info("[{}] [{} {}] [{}]", ip, method, url, sbd.toString().trim());
     }
 
     public static class SelfHttpServletRequest extends HttpServletRequestWrapper {
-
         private final byte[] bytes;
-        public SelfHttpServletRequest(HttpServletRequest request, byte[] bytes) {
+        private final ServletInputStream is;
+        public SelfHttpServletRequest(HttpServletRequest request, ServletInputStream input, byte[] bytes) {
             super(request);
+            this.is = input;
             this.bytes = bytes;
         }
 
         @Override
         public ServletInputStream getInputStream() {
-            return new SelfServletInputStream(bytes);
+            return new SelfServletInputStream(bytes, is);
         }
         @Override
-        public BufferedReader getReader() {
-            return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes)));
+        public BufferedReader getReader() throws IOException {
+            return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes), getCharacterEncoding()));
         }
     }
-
     public static class SelfServletInputStream extends ServletInputStream {
-
         private final InputStream input;
-        public SelfServletInputStream(byte[] bytes) {
+        private final ServletInputStream is;
+        public SelfServletInputStream(byte[] bytes, ServletInputStream is) {
             this.input = new ByteArrayInputStream(bytes);
+            this.is = is;
         }
 
         @Override
@@ -123,20 +133,15 @@ public class LogTraceFilter implements Filter {
         }
         @Override
         public boolean isFinished() {
-            try {
-                return input.available() == 0;
-            } catch (Exception e) {
-                LogUtil.ROOT_LOG.error(e.getMessage());
-                return false;
-            }
+            return is.isFinished();
         }
         @Override
         public boolean isReady() {
-            return true;
+            return is.isReady();
         }
         @Override
         public void setReadListener(ReadListener readListener) {
-            throw new UnsupportedOperationException();
+            is.setReadListener(readListener);
         }
     }
 }
