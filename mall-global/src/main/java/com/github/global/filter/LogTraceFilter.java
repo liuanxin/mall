@@ -15,6 +15,8 @@ import java.util.Enumeration;
 
 public class LogTraceFilter implements Filter {
 
+    private static final byte[] EMPTY = new byte[0];
+
     private final boolean printHeader;
     public LogTraceFilter(boolean printHeader) {
         this.printHeader = printHeader;
@@ -28,21 +30,25 @@ public class LogTraceFilter implements Filter {
             String ip = RequestUtil.getRealIp(request);
             LogUtil.putTraceAndIp(traceId, ip, LocaleContextHolder.getLocale());
 
+            ServletRequest useRequest = req;
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                try (ServletInputStream inputStream = req.getInputStream()) {
-                    byte[] bytes = (inputStream == null) ? new byte[0] : inputStream.readAllBytes();
-                    printRequestContext(request, ip, bytes);
-                    chain.doFilter(new SelfHttpServletRequest(request, bytes), res);
+                if (RequestUtil.hasUploadFile(request)) {
+                    printRequestContext(request, ip, true, EMPTY);
+                } else {
+                    try (ServletInputStream inputStream = req.getInputStream()) {
+                        byte[] bytes = U.isNull(inputStream) ? EMPTY : inputStream.readAllBytes();
+                        printRequestContext(request, ip, false, bytes);
+                        useRequest = new SelfHttpServletRequest(request, bytes);
+                    }
                 }
-            } else {
-                chain.doFilter(req, res);
             }
+            chain.doFilter(useRequest, res);
         } finally {
             LogUtil.unbind();
         }
     }
 
-    private void printRequestContext(HttpServletRequest request, String ip, final byte[] bytes) {
+    private void printRequestContext(HttpServletRequest request, String ip, boolean upload, final byte[] bytes) {
         StringBuilder sbd = new StringBuilder();
         if (printHeader) {
             StringBuilder headerSbd = new StringBuilder();
@@ -54,7 +60,7 @@ public class LogTraceFilter implements Filter {
                 headerSbd.append(DesensitizationUtil.desByKey(headName, value));
                 headerSbd.append(">");
             }
-            if (!headerSbd.toString().isEmpty()) {
+            if (!headerSbd.isEmpty()) {
                 sbd.append(" headers(").append(headerSbd).append(")");
             }
         }
@@ -62,8 +68,11 @@ public class LogTraceFilter implements Filter {
         if (U.isNotBlank(params)) {
             sbd.append(" params(").append(params).append(")");
         }
+        if (upload) {
+            sbd.append(" upload-file");
+        }
         if (bytes.length > 0) {
-            sbd.append(" body(").append(new String(bytes)).append(")");
+            sbd.append(" body(").append(U.compress(new String(bytes))).append(")");
         }
 
         String method = request.getMethod();

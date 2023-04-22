@@ -249,6 +249,15 @@ public final class RequestUtil {
         return U.isNull(request) ? U.EMPTY : U.formatParam(des, true, request.getParameterMap());
     }
 
+    public static boolean hasUploadFile() {
+        HttpServletRequest request = getRequest();
+        return U.isNotNull(request) && hasUploadFile(request);
+    }
+
+    public static boolean hasUploadFile(HttpServletRequest request) {
+        return U.toStr(request.getHeader("Content-Type")).toLowerCase().startsWith("multipart/form-data");
+    }
+
     /** 格式化头里的参数: 键值以冒号分隔 */
     public static String formatHeader(boolean des) {
         HttpServletRequest request = getRequest();

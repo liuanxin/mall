@@ -406,6 +406,23 @@ public final class U {
         return isNull(obj) ? EMPTY : obj.toString();
     }
 
+    /** 如果字符长度大于指定长度, 则只输出头尾的固定字符 */
+    public static String toStr(Object obj, int maxLen, int leftRightLen) {
+        String str = toStr(obj);
+        if (isBlank(str)) {
+            return EMPTY;
+        }
+
+        int length = str.length();
+        if (length > maxLen) {
+            int returnLength = leftRightLen * 2 + 5;
+            if (maxLen > returnLength) {
+                return str.substring(0, leftRightLen) + " ... " + str.substring(length - leftRightLen, length);
+            }
+        }
+        return str;
+    }
+
     /** 如果字符小于指定的位数, 就在前面补全指定的字符 */
     public static String toStr(Object obj, int minLen, String completion) {
         String str = toStr(obj);
