@@ -30,11 +30,12 @@ public class LogTraceFilter implements Filter {
             String ip = RequestUtil.getRealIp(request);
             LogUtil.putTraceAndIp(traceId, ip, LocaleContextHolder.getLocale());
 
-            ServletRequest useRequest = req;
+            HttpServletRequest useRequest = request;
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 // 如果用 form + application/x-www-form-urlencoded 的方式请求, getParameterMap 在 getInputStream 后面调用,
                 // 会将 form 表单中的数据打印成 body, 且后面的 getParameterMap 为空会导致 web 接口上的参数注入不进去
                 // 因此, 保证在 getInputStream 之前先调一下 getParameterMap 就可以避免这个问题
+                // https://www.javai.net/post/202207/http-parameter-missing/
                 String params = U.formatParam(true, true, request.getParameterMap());
                 boolean upload = RequestUtil.hasUploadFile(request);
                 byte[] bytes = EMPTY;
@@ -47,12 +48,12 @@ public class LogTraceFilter implements Filter {
                     //     jetty 的 org.eclipse.jetty.server.HttpInputOverHTTP
                     //   这导致当想要重复读取时会报 getXX can't be called after getXXX 异常
                     // 所以像下面这样操作: 先将流读取成 byte[], 再用字节数组构造一个新的输入流返回
-                    try (ServletInputStream inputStream = req.getInputStream()) {
+                    try (ServletInputStream inputStream = request.getInputStream()) {
                         bytes = U.isNull(inputStream) ? EMPTY : inputStream.readAllBytes();
                         useRequest = new SelfHttpServletRequest(request, bytes);
                     }
                 }
-                printRequestContext((HttpServletRequest) useRequest, ip, upload, params, bytes);
+                printRequestContext(useRequest, ip, upload, params, bytes);
             }
             chain.doFilter(useRequest, res);
         } finally {
