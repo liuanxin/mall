@@ -32,6 +32,10 @@ public class LogTraceFilter implements Filter {
 
             ServletRequest useRequest = req;
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                // 如果用 form + application/x-www-form-urlencoded 的方式请求, getParameterMap 在 getInputStream 后面调用,
+                // 会将 form 表单中的数据打印成 body, 且后面的 getParameterMap 为空会导致 web 接口上的参数注入不进去
+                // 因此, 保证在 getInputStream 之前先调一下 getParameterMap 就可以避免这个问题
+                String params = U.formatParam(true, true, request.getParameterMap());
                 boolean upload = RequestUtil.hasUploadFile(request);
                 byte[] bytes = EMPTY;
                 if (!upload) {
@@ -40,7 +44,7 @@ public class LogTraceFilter implements Filter {
                         useRequest = new SelfHttpServletRequest(request, bytes);
                     }
                 }
-                printRequestContext((HttpServletRequest) useRequest, ip, upload, bytes);
+                printRequestContext((HttpServletRequest) useRequest, ip, upload, params, bytes);
             }
             chain.doFilter(useRequest, res);
         } finally {
@@ -48,7 +52,7 @@ public class LogTraceFilter implements Filter {
         }
     }
 
-    private void printRequestContext(HttpServletRequest request, String ip, boolean upload, final byte[] bytes) {
+    private void printRequestContext(HttpServletRequest request, String ip, boolean upload, String params, final byte[] bytes) {
         StringBuilder sbd = new StringBuilder();
         if (printHeader) {
             StringBuilder headerSbd = new StringBuilder();
@@ -64,7 +68,6 @@ public class LogTraceFilter implements Filter {
                 sbd.append(" headers(").append(headerSbd).append(")");
             }
         }
-        String params = U.formatParam(true, false, request.getParameterMap());
         if (U.isNotBlank(params)) {
             sbd.append(" params(").append(params).append(")");
         }
@@ -76,7 +79,7 @@ public class LogTraceFilter implements Filter {
         }
 
         String method = request.getMethod();
-        String url = request.getRequestURL().toString();
+        String url = RequestUtil.getRequestUrl(request);
         LogUtil.ROOT_LOG.info("[{}] [{} {}] [{}]", ip, method, url, sbd.toString().trim());
     }
 

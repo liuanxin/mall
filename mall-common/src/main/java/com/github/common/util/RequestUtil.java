@@ -155,17 +155,24 @@ public final class RequestUtil {
 
     /** 获取请求地址, 比如请求的是 http://www.abc.com/x/y 将返回 /x/y */
     public static String getRequestUri() {
-        HttpServletRequest request = getRequest();
+        return getRequestUri(getRequest());
+    }
+    public static String getRequestUri(HttpServletRequest request) {
         return U.isNull(request) ? U.EMPTY : request.getRequestURI();
     }
     /** 获取请求地址, 如 http://www.abc.com/x/y */
     public static String getRequestUrl() {
         return getDomain() + getRequestUri();
     }
+    public static String getRequestUrl(HttpServletRequest request) {
+        return getDomain(request) + getRequestUri(request);
+    }
 
     /** 返回当前访问的域. 是 request.getRequestURL().toString() 中域的部分, 默认的 scheme 不会返回 https */
     public static String getDomain() {
-        HttpServletRequest request = getRequest();
+        return getDomain(getRequest());
+    }
+    public static String getDomain(HttpServletRequest request) {
         if (U.isNull(request)) {
             return U.EMPTY;
         }
