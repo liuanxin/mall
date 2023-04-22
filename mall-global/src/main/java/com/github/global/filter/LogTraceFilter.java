@@ -39,6 +39,14 @@ public class LogTraceFilter implements Filter {
                 boolean upload = RequestUtil.hasUploadFile(request);
                 byte[] bytes = EMPTY;
                 if (!upload) {
+                    // getInputStream 会将 body 中的内容都获取出来(还会将 urlencoded 时的 getParameterMap 值置空)
+                    //   其通过内部偏移来读取, 读到末尾后没有指回来, 一些实现流没有实现 reset 方法,
+                    //   因此在重复读取的时候将会报 inputStream 默认的实现 mark/reset not supported 异常, 比如
+                    //     tomcat 的 org.apache.catalina.connector.CoyoteInputStream
+                    //     undertow 的 io.undertow.servlet.spec.ServletInputStreamImpl
+                    //     jetty 的 org.eclipse.jetty.server.HttpInputOverHTTP
+                    //   这导致当想要重复读取时会报 getXX can't be called after getXXX 异常
+                    // 所以像下面这样操作: 先将流读取成 byte[], 再用字节数组构造一个新的输入流返回
                     try (ServletInputStream inputStream = req.getInputStream()) {
                         bytes = U.isNull(inputStream) ? EMPTY : inputStream.readAllBytes();
                         useRequest = new SelfHttpServletRequest(request, bytes);
