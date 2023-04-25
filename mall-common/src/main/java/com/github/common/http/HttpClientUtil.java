@@ -22,7 +22,7 @@ public class HttpClientUtil {
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_2)
             .executor(AsyncUtil.ioExecutor())
-            .followRedirects(HttpClient.Redirect.NORMAL)
+            .followRedirects(HttpClient.Redirect.ALWAYS)
             .connectTimeout(Duration.ofMillis(HttpConst.CONNECT_TIME_OUT))
             .build();
 

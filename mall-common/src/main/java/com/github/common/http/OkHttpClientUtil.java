@@ -35,6 +35,8 @@ public class OkHttpClientUtil {
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient().newBuilder()
             .connectTimeout(HttpConst.CONNECT_TIME_OUT, TimeUnit.MILLISECONDS)
             .readTimeout(HttpConst.READ_TIME_OUT, TimeUnit.MILLISECONDS)
+            // .followRedirects(true) // 默认就会处理重定向
+            // .followSslRedirects(true) // 默认就会处理 ssl 的重定向
             .connectionPool(new ConnectionPool(HttpConst.POOL_MAX_TOTAL, CONNECTION_KEEP_ALIVE_TIME, TimeUnit.MINUTES))
             .build();
 

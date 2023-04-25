@@ -96,6 +96,7 @@ public class ApacheHttpClientUtil {
                 .setConnectionRequestTimeout(CONNECTION_REQUEST_TIME_OUT)
                 .setConnectTimeout(HttpConst.CONNECT_TIME_OUT)
                 .setSocketTimeout(HttpConst.READ_TIME_OUT)
+                // .setRedirectsEnabled(true) // 默认就会处理重定向
                 .build();
     }
 

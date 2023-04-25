@@ -272,13 +272,11 @@ public class HttpUrlConnectionUtil {
                 con.connect();
 
                 responseCode = con.getResponseCode();
-                switch (responseCode) {
-                    // 301 和 302 自动进行重定向
-                    case HttpURLConnection.HTTP_MOVED_PERM, HttpURLConnection.HTTP_MOVED_TEMP -> {
-                        connectionUrl = URLDecoder.decode(con.getHeaderField("Location"), StandardCharsets.UTF_8);
-                        count++;
-                        continue;
-                    }
+                if (String.valueOf(responseCode).startsWith("30")) {
+                    // 30x 自动进行重定向
+                    connectionUrl = URLDecoder.decode(con.getHeaderField("Location"), StandardCharsets.UTF_8);
+                    count++;
+                    continue;
                 }
                 break;
             }
