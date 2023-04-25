@@ -726,7 +726,7 @@ public final class U {
     }
     /**
      * 字符转义. 主要针对 url 传递给后台前的操作. 如 ? 转换为 %3F, = 转换为 %3D, & 转换为 %26 等
-     * @param lower true 表示转义字符使用小写, java 默认使用大写, 其他语言
+     * @param lower true 表示转义字符使用小写, java 默认使用大写
      */
     public static String urlEncode(String src, boolean lower) {
         if (isBlank(src)) {
