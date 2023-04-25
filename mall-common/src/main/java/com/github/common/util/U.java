@@ -722,17 +722,36 @@ public final class U {
 
     /** 字符转义. 主要针对 url 传递给后台前的操作. 如 ? 转换为 %3F, = 转换为 %3D, & 转换为 %26 等 */
     public static String urlEncode(String src) {
+        return urlEncode(src, false);
+    }
+    /**
+     * 字符转义. 主要针对 url 传递给后台前的操作. 如 ? 转换为 %3F, = 转换为 %3D, & 转换为 %26 等
+     * @param lower true 表示转义字符使用小写, java 默认使用大写, 其他语言
+     */
+    public static String urlEncode(String src, boolean lower) {
         if (isBlank(src)) {
             return EMPTY;
         }
         try {
             // java 中的 encode 是把空格变成 +, 转义后需要将 + 替换成 %2B
-            return URLEncoder.encode(src, StandardCharsets.UTF_8.displayName());//.replaceAll("\\+", "%2B");
+            String str = URLEncoder.encode(src, StandardCharsets.UTF_8.displayName());//.replaceAll("\\+", "%2B");
+            if (lower) {
+                // 转义有 %00 ~ %FF 共 256 个字符
+                for (int i = 0; i <= 256; i++) {
+                    String l = "%" + String.format("%02x", i);
+                    if (l.contains("a") || l.contains("b") || l.contains("c") || l.contains("d") || l.contains("e") || l.contains("f")) {
+                        if (str.contains(l.toUpperCase())) {
+                            str = str.replace(l.toUpperCase(), l);
+                        }
+                    }
+                }
+            }
+            return str;
         } catch (Exception e) {
             return src;
         }
     }
-    /** 字符反转义, 主要针对 url 传递到后台后的操作 */
+    /** 字符反转义(大小写都能处理), 主要针对 url 传递到后台后的操作 */
     public static String urlDecode(String src) {
         if (isBlank(src)) {
             return EMPTY;
