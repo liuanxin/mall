@@ -15,9 +15,9 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 @ConditionalOnClass({ Filter.class, FilterRegistrationBean.class })
 public class GlobalFilterConfig {
 
-    /** 打印请求日志时, 是否输出头信息 */
-    @Value("${req.logPrintHeader:true}")
-    private boolean printHeader;
+//    /** 打印请求日志时, 是否输出头信息 */
+//    @Value("${req.logPrintHeader:true}")
+//    private boolean printHeader;
 
     /** 支持 cors 的 ip 地址列表 */
     @Value("${http.cors.allow-headers:}")
@@ -62,7 +62,8 @@ public class GlobalFilterConfig {
     @Bean
     @Order(4)
     public FilterRegistrationBean<LogTraceFilter> traceFilter() {
-        LogTraceFilter filter = new LogTraceFilter(printHeader);
+        LogTraceFilter filter = new LogTraceFilter();
+//        LogTraceFilter filter = new LogTraceFilter(printHeader);
         FilterRegistrationBean<LogTraceFilter> filterBean = new FilterRegistrationBean<>(filter);
         filterBean.setOrder(Integer.MIN_VALUE + 4);
         return filterBean;

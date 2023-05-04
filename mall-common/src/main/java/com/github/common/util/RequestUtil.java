@@ -153,6 +153,11 @@ public final class RequestUtil {
         return U.isNull(request) ? U.EMPTY : request.getHeader(REFERRER);
     }
 
+    public static String getMethod() {
+        HttpServletRequest request = getRequest();
+        return U.isNull(request) ? U.EMPTY : request.getMethod();
+    }
+
     /** 获取请求地址, 比如请求的是 http://www.abc.com/x/y 将返回 /x/y */
     public static String getRequestUri() {
         return getRequestUri(getRequest());
