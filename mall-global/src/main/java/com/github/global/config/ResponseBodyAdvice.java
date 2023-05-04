@@ -39,7 +39,6 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
                                            ServerHttpRequest request, ServerHttpResponse response) {
         if (A.isEmpty(excludePathSet) || !excludePathSet.contains(RequestUtil.getRequestUri())) {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-
                 StringBuilder sbd = new StringBuilder();
                 ServletServerHttpRequest req = (ServletServerHttpRequest) request;
                 sbd.append("[").append(req.getMethod()).append(" ").append(req.getURI()).append("]");
