@@ -1,11 +1,12 @@
 package com.github.global.config;
 
 import com.github.common.json.JsonUtil;
+import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
-import com.github.global.constant.GlobalConst;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpHeaders;
@@ -23,12 +24,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 
 @SuppressWarnings("NullableProblems")
 @RequiredArgsConstructor
 @ConditionalOnClass({ RequestBody.class })
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
 public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
+
+    @Value("${log.exclude-path:}")
+    private Set<String> excludePathSet;
 
     private final GlobalLogHandler logHandler;
 
@@ -40,7 +45,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override
     public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
                                            Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
-        if (!GlobalConst.EXCLUDE_PATH_SET.contains(RequestUtil.getRequestUri())) {
+        if (A.isEmpty(excludePathSet) || !excludePathSet.contains(RequestUtil.getRequestUri())) {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 return new HttpInputMessage() {
                     @Override

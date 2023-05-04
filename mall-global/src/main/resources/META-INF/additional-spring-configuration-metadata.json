@@ -68,6 +68,13 @@
       "defaultValue": "lang",
       "sourceType": "com.github.global.config.GlobalFilterConfig",
       "description": "处理语言时的参数名(/path?lang=zh-CN)."
+    },
+    {
+      "name": "log.exclude-path",
+      "type": "java.util.Set",
+      "defaultValue": "",
+      "sourceType": "com.github.global.config.RequestBodyAdvice",
+      "description": "输出日志时, 忽略打印出入参的接口."
     }
   ]
 }
