@@ -29,7 +29,7 @@ import java.util.Set;
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
 public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice {
 
-    @Value("${log.exclude-path:}")
+    @Value("${req.log-exclude-path:}")
     private Set<String> excludePathSet;
 
     private final GlobalLogHandler logHandler;

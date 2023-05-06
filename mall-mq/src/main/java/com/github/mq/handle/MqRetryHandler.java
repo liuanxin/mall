@@ -20,10 +20,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MqRetryHandler {
 
-    @Value("${mq.retryLimit:20}")
+    @Value("${mq.retry-limit:20}")
     private int mqRetryLimit;
 
-    @Value("${mq.maxRetryCount:5}")
+    @Value("${mq.max-retry-count:5}")
     private int maxRetryCount;
 
     private final RedissonService redissonService;

@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.Set;
+import java.util.List;
 
 @SuppressWarnings("NullableProblems")
 @RequiredArgsConstructor
@@ -32,8 +32,8 @@ import java.util.Set;
 @ControllerAdvice(annotations = { Controller.class, RestController.class })
 public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
 
-    @Value("${log.exclude-path:}")
-    private Set<String> excludePathSet;
+    @Value("${req.log-exclude-path:}")
+    private List<String> excludePathList;
 
     private final GlobalLogHandler logHandler;
 
@@ -45,7 +45,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override
     public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
                                            Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
-        if (A.isEmpty(excludePathSet) || !excludePathSet.contains(RequestUtil.getRequestUri())) {
+        if (A.isEmpty(excludePathList) || !excludePathList.contains(RequestUtil.getRequestUri())) {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 return new HttpInputMessage() {
                     @Override

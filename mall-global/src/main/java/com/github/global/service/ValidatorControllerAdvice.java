@@ -27,7 +27,7 @@ import java.util.Map;
 @ConditionalOnClass({ Validator.class })
 public class ValidatorControllerAdvice {
 
-    @Value("${res.returnStatusCode:false}")
+    @Value("${res.return-status-code:false}")
     private boolean returnStatusCode;
 
     private final ValidatorService validatorService;

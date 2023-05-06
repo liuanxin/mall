@@ -7,49 +7,49 @@
       "description": "是否是生产环境."
     },
     {
-      "name": "json.hasDesensitization",
+      "name": "json.has-desensitization",
       "type": "java.lang.Boolean",
       "defaultValue": false,
       "sourceType": "com.github.global.config.GlobalLogHandler",
       "description": "json 是否脱敏( { password: 123 } 将输出成 { password: *** } )."
     },
     {
-      "name": "json.hasCompress",
+      "name": "json.has-compress",
       "type": "java.lang.Boolean",
       "defaultValue": false,
       "sourceType": "com.github.global.config.GlobalLogHandler",
       "description": "json 是否数据压缩."
     },
     {
-      "name": "json.cutJson",
+      "name": "json.cut-json",
       "type": "java.lang.Boolean",
       "defaultValue": false,
       "sourceType": "com.github.global.config.GlobalLogHandler",
       "description": "json 是否进行截断."
     },
     {
-      "name": "json.cutJsonMax",
+      "name": "json.cut-json-max",
       "type": "java.lang.Integer",
       "defaultValue": "10000",
       "sourceType": "com.github.global.config.GlobalLogHandler",
       "description": "json 长度大于这个值才进行截断."
     },
     {
-      "name": "json.cutJsonLeftRightLen",
+      "name": "json.cut-json-left-right-len",
       "type": "java.lang.Integer",
       "defaultValue": "1000",
       "sourceType": "com.github.global.config.GlobalLogHandler",
       "description": "json 截断时只取这个值左右的位数."
     },
     {
-      "name": "res.returnStatusCode",
+      "name": "res.return-status-code",
       "type": "java.lang.Boolean",
       "defaultValue": false,
       "sourceType": "com.github.global.config.GlobalException",
       "description": "响应错误时, 错误码是否以 ResponseStatus 返回."
     },
     {
-      "name": "req.logPrintHeader",
+      "name": "req.log-print-header",
       "type": "java.lang.Boolean",
       "defaultValue": true,
       "sourceType": "com.github.global.config.GlobalFilterConfig",
@@ -70,8 +70,8 @@
       "description": "处理语言时的参数名(/path?lang=zh-CN)."
     },
     {
-      "name": "log.exclude-path",
-      "type": "java.util.Set",
+      "name": "req.log-exclude-path",
+      "type": "java.util.List",
       "defaultValue": "",
       "sourceType": "com.github.global.config.RequestBodyAdvice",
       "description": "输出日志时, 忽略打印出入参的接口."

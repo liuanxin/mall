@@ -13,23 +13,23 @@ import org.springframework.context.annotation.Configuration;
 public class GlobalLogHandler {
 
     /** 是否进行脱敏 */
-    @Value("${json.hasDesensitization:false}")
+    @Value("${json.has-desensitization:false}")
     private boolean hasDesensitization;
 
     /** 是否进行数据压缩 */
-    @Value("${json.hasCompress:false}")
+    @Value("${json.has-compress:false}")
     private boolean hasCompress;
 
     /** json 是否进行截断 */
-    @Value("${json.cutJson:false}")
+    @Value("${json.cut-json:false}")
     private boolean cutJson;
 
     /** json 长度大于这个值才进行截断 */
-    @Value("${json.cutJsonMax:10000}")
+    @Value("${json.cut-json-max:10000}")
     private int cutJsonMax;
 
     /** json 截断时只取这个值左右的位数 */
-    @Value("${json.cutJsonLeftRightLen:1000}")
+    @Value("${json.cut-json-left-right-len:1000}")
     private int cutJsonLeftRightLen;
 
 

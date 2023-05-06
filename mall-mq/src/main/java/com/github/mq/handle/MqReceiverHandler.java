@@ -49,7 +49,7 @@ public class MqReceiverHandler {
     @Value("${spring.rabbitmq.listener.simple.retry.max-attempts:3}")
     private int consumerRetryCount;
 
-    @Value("${mq.consumerMsgIdKey:msgId,messageId,msg_id,message_id}")
+    @Value("${mq.consumer-msg-id-key:msgId,messageId,msg_id,message_id}")
     private String msgIdKey;
 
     private final MqReceiveService mqReceiveService;

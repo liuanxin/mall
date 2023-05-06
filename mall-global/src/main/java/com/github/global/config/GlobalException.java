@@ -54,7 +54,7 @@ public class GlobalException {
      * false: ResponseStatus 返回 200,       返回 json 是 { "code": 400 | 500, "data": xxx ... }
      * </pre>
      */
-    @Value("${res.returnStatusCode:false}")
+    @Value("${res.return-status-code:false}")
     private boolean returnStatusCode;
 
     private final I18nService i18nService;

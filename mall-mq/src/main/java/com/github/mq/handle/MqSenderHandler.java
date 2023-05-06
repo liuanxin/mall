@@ -36,7 +36,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
     private static final Cache<String, Consumer<Exception>> CONSUMER_CACHE_MAP = CacheBuilder.newBuilder()
             .expireAfterWrite(5, TimeUnit.MINUTES).build();
 
-    @Value("${mq.providerRetryCount:2}")
+    @Value("${mq.provider-retry-count:2}")
     private int providerRetryCount;
 
     private final RabbitTemplate rabbitTemplate;

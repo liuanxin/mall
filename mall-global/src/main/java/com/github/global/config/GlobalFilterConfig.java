@@ -11,13 +11,19 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
+import java.util.List;
+
 @Configuration
 @ConditionalOnClass({ Filter.class, FilterRegistrationBean.class })
 public class GlobalFilterConfig {
 
-//    /** 打印请求日志时, 是否输出头信息 */
-//    @Value("${req.logPrintHeader:true}")
-//    private boolean printHeader;
+    /** 不输出日志的请求 */
+    @Value("${req.log-exclude-path:}")
+    private List<String> excludePathList;
+
+    /** 打印请求日志时, 是否输出头信息 */
+    @Value("${req.log-print-header:true}")
+    private boolean printHeader;
 
     /** 支持 cors 的 ip 地址列表 */
     @Value("${http.cors.allow-headers:}")
@@ -62,8 +68,8 @@ public class GlobalFilterConfig {
     @Bean
     @Order(4)
     public FilterRegistrationBean<LogTraceFilter> traceFilter() {
-        LogTraceFilter filter = new LogTraceFilter();
-//        LogTraceFilter filter = new LogTraceFilter(printHeader);
+//        LogTraceFilter filter = new LogTraceFilter();
+        LogTraceFilter filter = new LogTraceFilter(excludePathList, printHeader);
         FilterRegistrationBean<LogTraceFilter> filterBean = new FilterRegistrationBean<>(filter);
         filterBean.setOrder(Integer.MIN_VALUE + 4);
         return filterBean;
