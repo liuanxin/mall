@@ -3,15 +3,11 @@ package com.github.common.util;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /** 脱敏工具类 */
 public final class DesensitizationUtil {
-
-    private static final List<String> SENSITIVE_LIST = Arrays.asList("*", "**", "****", "*****");
 
     private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
