@@ -2,7 +2,6 @@ package com.github.global.config;
 
 import com.github.global.filter.CorsFilter;
 import com.github.global.filter.LogTraceFilter;
-import jakarta.servlet.Filter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -11,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
+import javax.servlet.Filter;
 import java.util.List;
 
 @Configuration

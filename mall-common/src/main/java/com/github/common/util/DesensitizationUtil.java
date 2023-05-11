@@ -3,22 +3,18 @@ package com.github.common.util;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /** 脱敏工具类 */
 public final class DesensitizationUtil {
-
-    private static final List<String> SENSITIVE_LIST = Arrays.asList("*", "**", "****", "*****");
 
     private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
     /** 基于 key 脱敏 */
     public static String desByKey(String key, String value) {
         if (U.isBlank(key) || U.isBlank(value)) {
-            return A.rand(SENSITIVE_LIST);
+            return value;
         }
 
         String lower = key.toLowerCase();
