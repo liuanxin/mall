@@ -1,7 +1,6 @@
 package com.github.manager.model;
 
 import com.github.common.util.A;
-import com.github.common.util.MapMultiUtil;
 import com.github.common.util.U;
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
@@ -57,7 +56,7 @@ public class ManagerMenu {
             return Collections.emptyMap();
         }
 
-        Map<Long, List<ManagerPermission>> mpMap = MapMultiUtil.listToMapList(permissions, ManagerPermission::getMenuId);
+        Map<Long, List<ManagerPermission>> mpMap = A.listToMapList(permissions, ManagerPermission::getMenuId);
 
         List<ManagerMenu> firstMenuList = new ArrayList<>();
         Map<String, List<ManagerMenu>> relationMap = new HashMap<>();

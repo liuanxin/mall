@@ -6,7 +6,6 @@ import com.github.common.enums.Gender;
 import com.github.common.json.JsonUtil;
 import com.github.common.page.PageReturn;
 import com.github.common.util.A;
-import com.github.common.util.MapMultiUtil;
 import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiReturn;
 import com.github.product.enums.ProductTestType;
@@ -64,7 +63,7 @@ public class ExampleRes {
         PageReturn<ExampleRes> returnRes = PageReturn.convertJustTotal(userPageInfo);
         if (U.isNotNull(userPageInfo)) {
             // 把商品数据整理成  userId: List<商品>
-            Map<Long, List<ProductTest>> userIdMap = MapMultiUtil.listToMapList(testList, ProductTest::getUserId);
+            Map<Long, List<ProductTest>> userIdMap = A.listToMapList(testList, ProductTest::getUserId);
 
             List<ExampleRes> exampleVoList = new ArrayList<>();
             for (UserTest userExample : userPageInfo.getList()) {
