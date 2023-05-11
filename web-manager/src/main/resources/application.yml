@@ -24,5 +24,3 @@ spring:
     hikari:
       minimumIdle: 1
       maximumPoolSize: 1
-
-mybatis-plus.global-config.banner: false

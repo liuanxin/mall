@@ -18,7 +18,7 @@ public final class DesensitizationUtil {
     /** 基于 key 脱敏 */
     public static String desByKey(String key, String value) {
         if (U.isBlank(key) || U.isBlank(value)) {
-            return A.rand(SENSITIVE_LIST);
+            return value;
         }
 
         String lower = key.toLowerCase();

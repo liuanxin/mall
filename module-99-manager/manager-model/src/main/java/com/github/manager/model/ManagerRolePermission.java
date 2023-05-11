@@ -1,6 +1,6 @@
 package com.github.manager.model;
 
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -9,7 +9,7 @@ import java.io.Serializable;
 /** 角色 和 权限 的 中间表 --> t_manager_role_permission */
 @Data
 @Accessors(chain = true)
-@TableName("t_manager_role_permission")
+@Table("t_manager_role_permission")
 public class ManagerRolePermission implements Serializable {
     private static final long serialVersionUID = 1L;
 

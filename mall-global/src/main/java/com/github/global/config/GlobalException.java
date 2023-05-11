@@ -9,7 +9,6 @@ import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.github.global.service.I18nService;
 import com.github.global.service.ValidationService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -17,7 +16,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
-import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,6 +23,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -125,13 +124,6 @@ public class GlobalException {
         int status = (returnStatusCode ? JsonCode.BAD_REQUEST : JsonCode.SUCCESS).getCode();
         String msg = String.join("; ", errorMap.values());
         return handle(true, "valid fail", status, handleErrorResult(JsonResult.badRequest(msg, errorMap)), e);
-    }
-
-    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
-    public ResponseEntity<JsonResult<String>> mediaTypeNotAcceptableException(HttpMediaTypeNotAcceptableException e) {
-        int status = e.getStatusCode().value();
-        String msg = "media type not acceptable";
-        return handle(true, msg, status, handleErrorResult(JsonResult.badRequest(msg, null)), e);
     }
 
 

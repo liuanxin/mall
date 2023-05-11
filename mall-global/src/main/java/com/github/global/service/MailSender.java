@@ -11,8 +11,8 @@
 //import org.springframework.mail.javamail.JavaMailSenderImpl;
 //import org.springframework.mail.javamail.MimeMessageHelper;
 //
-//import jakarta.mail.Message;
-//import jakarta.mail.internet.InternetAddress;
+//import javax.mail.Message;
+//import javax.mail.internet.InternetAddress;
 //import java.io.File;
 //import java.util.List;
 //

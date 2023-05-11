@@ -1,6 +1,5 @@
 package com.github.user.enums;
 
-import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.common.util.U;
@@ -14,7 +13,6 @@ public enum UserTestLevel {
 
     Nil(0, ""), Normal(1, "普通用户"), Vip(2, "vip 用户");
 
-    @EnumValue
     private final int code;
     private final String value;
 

@@ -26,4 +26,3 @@ spring:
         cachePrepStmts: true
         useServerPrepStmts: true
 
-mybatis-plus.global-config.banner: false

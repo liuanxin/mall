@@ -1,14 +1,14 @@
 package com.github.user.model;
 
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.github.common.enums.Gender;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
 import java.io.Serializable;
 
 /** 用户扩展 --> t_user_test_extend */
 @Data
-@TableName("t_user_test_extend")
+@Table("t_user_test_extend")
 public class UserTestExtend implements Serializable {
     private static final long serialVersionUID = 1L;
 

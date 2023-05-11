@@ -6,8 +6,8 @@ import com.github.common.json.JsonUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
 import com.github.common.util.U;
-import jakarta.servlet.http.HttpServletRequest;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /** 操作 session 都基于此, 其他地方不允许操作! 避免 session 被滥用 */

@@ -1,14 +1,14 @@
 package com.github.product.model;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.github.product.enums.ProductTestType;
+import com.mybatisflex.annotation.Column;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
 import java.util.Date;
 
 /** 商品示例 --> t_product_test */
 @Data
-@TableName("t_product_test")
+@Table("t_product_test")
 public class ProductTest {
 
     private Long id;
@@ -20,7 +20,7 @@ public class ProductTest {
     private String name;
 
     /** 商品类型 --> type */
-    private ProductTestType type;
+    private Integer type;
 
     /** 创建时间 --> create_time */
     private Date createTime;
@@ -29,5 +29,6 @@ public class ProductTest {
     private Date updateTime;
 
     /** 1 表示已删除 --> is_delete */
+    @Column(isLogicDelete = true)
     private Boolean isDelete;
 }

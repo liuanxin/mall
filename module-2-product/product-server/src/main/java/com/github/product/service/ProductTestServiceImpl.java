@@ -1,11 +1,11 @@
 package com.github.product.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.github.common.util.A;
 import com.github.common.util.U;
 import com.github.product.model.ProductTest;
+import com.github.product.model.table.Tables;
 import com.github.product.repository.ProductTestMapper;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,17 +19,18 @@ public class ProductTestServiceImpl implements ProductTestService {
 
     @Override
     public List<ProductTest> example(List<Long> userIdList, ProductTest param) {
-        LambdaQueryWrapper<ProductTest> query = Wrappers.lambdaQuery(ProductTest.class);
-
-        query.in(A.isNotEmpty(userIdList), ProductTest::getUserId, userIdList);
+        QueryWrapper query = QueryWrapper.create();
+        if (A.isNotEmpty(userIdList)) {
+            query.and(Tables.PRODUCT_TEST.USER_ID.in(userIdList));
+        }
         if (U.isNotNull(param)) {
             if (U.isNotNull(param.getType())) {
-                query.eq(ProductTest::getType, param.getType().getCode());
+                query.and(Tables.PRODUCT_TEST.TYPE.eq(param.getType()));
             }
             if (U.isNotBlank(param.getName())) {
-                query.likeRight(ProductTest::getName, param.getName());
+                query.and(Tables.PRODUCT_TEST.NAME.likeRight(param.getName()));
             }
         }
-        return productTestMapper.selectList(query);
+        return productTestMapper.selectListByQuery(query);
     }
 }

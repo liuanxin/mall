@@ -1,17 +1,14 @@
 package com.github.user.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.github.common.json.JsonUtil;
 import com.github.common.page.PageParam;
 import com.github.common.page.PageReturn;
 import com.github.common.page.Pages;
-import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.github.user.model.UserTest;
 import com.github.user.model.UserTestExtend;
+import com.github.user.model.table.Tables;
 import com.github.user.repository.UserTestMapper;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,20 +23,19 @@ public class UserTestServiceImpl implements UserTestService {
 
     @Override
     public PageReturn<UserTest> example(UserTest userTest, UserTestExtend userTestExtend, PageParam page) {
-        Page<UserTest> testPage = userTestMapper.selectUserTestJoin(userTestExtend, Pages.param(page));
-        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("test page: " + JsonUtil.toJson(testPage));
-        }
-
-        LambdaQueryWrapper<UserTest> query = Wrappers.lambdaQuery(UserTest.class)
-                .select(UserTest::getId, UserTest::getUserName, UserTest::getLevel);
+        QueryWrapper query = QueryWrapper.create()
+                .select(Tables.USER_TEST.ID, Tables.USER_TEST.USER_NAME, Tables.USER_TEST.LEVEL);
         if (U.isNotNull(userTest)) {
-            query.eq(U.isNotBlank(userTest.getUserName()), UserTest::getUserName, userTest.getUserName());
-            query.eq(U.isNotBlank(userTest.getPassword()), UserTest::getPassword, userTest.getPassword());
+            if (U.isNotBlank(userTest.getUserName())) {
+                query.and(Tables.USER_TEST.USER_NAME.eq(userTest.getUserName()));
+            }
+            if (U.isNotBlank(userTest.getPassword())) {
+                query.and(Tables.USER_TEST.PASSWORD.eq(userTest.getPassword()));
+            }
             if (U.isNotNull(userTest.getLevel())) {
-                query.eq(UserTest::getLevel, userTest.getLevel().getCode());
+                query.and(Tables.USER_TEST.LEVEL.eq(userTest.getLevel()));
             }
         }
-        return Pages.returnPage(userTestMapper.selectPage(Pages.param(page), query));
+        return Pages.returnPage(userTestMapper.paginate(Pages.param(page), query));
     }
 }

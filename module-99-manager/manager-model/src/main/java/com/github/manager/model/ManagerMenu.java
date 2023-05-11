@@ -1,17 +1,17 @@
 package com.github.manager.model;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.github.common.util.A;
 import com.github.common.util.MapMultiUtil;
 import com.github.common.util.U;
+import com.mybatisflex.annotation.Column;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
 import java.util.*;
 
 /** 菜单, 需要跟前端对应, 前端每增加一个菜单就需要添加一条记录, 与角色是 多对多 的关系 --> t_manager_menu */
 @Data
-@TableName("t_manager_menu")
+@Table("t_manager_menu")
 public class ManagerMenu {
 
     /** 根 id */
@@ -33,11 +33,11 @@ public class ManagerMenu {
     // 下面的字段不与数据库关联, 只做为数据载体进行传输
 
     /** 子菜单 */
-    @TableField(exist = false)
+    @Column(ignore = true)
     private List<ManagerMenu> children;
 
     /** 菜单下的权限 */
-    @TableField(exist = false)
+    @Column(ignore = true)
     private List<ManagerPermission> permissionList;
 
     private static void handle(ManagerMenu menu, Map<String, List<ManagerMenu>> menuMap, int depth) {

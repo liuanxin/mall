@@ -1,14 +1,14 @@
 package com.github.common.util;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
@@ -92,7 +92,9 @@ public final class RequestUtil {
 
     /** 获取请求协议, 通常是 http 和 https 两种. https 需要在 nginx 配置中添加 proxy_set_header X-Forwarded-Proto $scheme; 配置 */
     public static String getScheme() {
-        HttpServletRequest request = getRequest();
+        return getScheme(getRequest());
+    }
+    public static String getScheme(HttpServletRequest request) {
         if (U.isNull(request)) {
             return U.EMPTY;
         }
@@ -103,58 +105,31 @@ public final class RequestUtil {
 
     /** 获取请求的语言信息 */
     public static Locale getLocale() {
-        HttpServletRequest request = getRequest();
-        return U.isNull(request) ? LocaleContextHolder.getLocale() : RequestContextUtils.getLocale(request);
+        return getLocale(getRequest());
     }
-
-    /** 本机就返回 true */
-    public static boolean hasLocalRequest() {
-        return U.hasLocalRequest(getRealIp());
+    public static Locale getLocale(HttpServletRequest request) {
+        return U.isNull(request) ? LocaleContextHolder.getLocale() : RequestContextUtils.getLocale(request);
     }
 
     /** 获取 ua 信息 */
     public static String userAgent() {
-        HttpServletRequest request = getRequest();
+        return userAgent(getRequest());
+    }
+    public static String userAgent(HttpServletRequest request) {
         return U.isNull(request) ? U.EMPTY : request.getHeader(USER_AGENT);
     }
 
-    /** 如果是 ie 请求就返回 true */
-    public static boolean isIeRequest() {
-        String userAgent = userAgent();
-        return U.isNotBlank(userAgent) && userAgent.toUpperCase().contains("MSIE");
-    }
-
-    /** 判断当前请求是否来自移动端, 来自移动端则返回 true */
-    public static boolean isMobileRequest() {
-        return U.hasMobile(userAgent());
-    }
-
-    /** 判断当前请求是否是 ajax 请求, 是 ajax 则返回 true */
-    public static boolean isAjaxRequest() {
-        HttpServletRequest request = getRequest();
-        if (U.isNull(request)) {
-            return false;
-        }
-
-        String requestedWith = request.getHeader(AJAX_KEY);
-        if (U.isNotBlank(requestedWith) && AJAX_VALUE.equalsIgnoreCase(requestedWith)) {
-            return true;
-        }
-
-        String contentType = request.getHeader(CONTENT_TYPE);
-        return (U.isNotBlank(contentType) && APPLICATION_JSON.startsWith(contentType.toLowerCase()))
-                || U.isNotBlank(request.getParameter("_ajax"))
-                || U.isNotBlank(request.getParameter("_json"));
-    }
-
-    /** 请求头里的 referer 这个单词拼写是错误的, 应该是 referrer, 历史遗留问题 */
     public static String getReferrer() {
-        HttpServletRequest request = getRequest();
+        return getReferrer(getRequest());
+    }
+    public static String getReferrer(HttpServletRequest request) {
         return U.isNull(request) ? U.EMPTY : request.getHeader(REFERRER);
     }
 
     public static String getMethod() {
-        HttpServletRequest request = getRequest();
+        return getMethod(getRequest());
+    }
+    public static String getMethod(HttpServletRequest request) {
         return U.isNull(request) ? U.EMPTY : request.getMethod();
     }
 
@@ -182,7 +157,7 @@ public final class RequestUtil {
             return U.EMPTY;
         }
 
-        String scheme = getScheme();
+        String scheme = getScheme(request);
         int port = request.getServerPort();
         boolean http = ("http".equals(scheme) && port != 80);
         boolean https = ("https".equals(scheme) && port != 80 && port != 443);
@@ -257,7 +232,9 @@ public final class RequestUtil {
      * @return 示例: id=xxx&name=yyy
      */
     public static String formatParam(boolean des) {
-        HttpServletRequest request = getRequest();
+        return formatParam(des, getRequest());
+    }
+    public static String formatParam(boolean des, HttpServletRequest request) {
         return U.isNull(request) ? U.EMPTY : U.formatParam(des, true, request.getParameterMap());
     }
 
@@ -265,14 +242,15 @@ public final class RequestUtil {
         HttpServletRequest request = getRequest();
         return U.isNotNull(request) && hasUploadFile(request);
     }
-
     public static boolean hasUploadFile(HttpServletRequest request) {
         return U.toStr(request.getHeader("Content-Type")).toLowerCase().startsWith("multipart/");
     }
 
     /** 格式化头里的参数: 键值以冒号分隔 */
     public static String formatHeader(boolean des) {
-        HttpServletRequest request = getRequest();
+        return formatHeader(des, getRequest());
+    }
+    public static String formatHeader(boolean des, HttpServletRequest request) {
         if (U.isNull(request)) {
             return U.EMPTY;
         }
@@ -291,7 +269,9 @@ public final class RequestUtil {
 
     /** 先从请求头中查, 为空再从参数中查 */
     public static String getHeaderOrParam(String param) {
-        HttpServletRequest request = getRequest();
+        return getHeaderOrParam(param, getRequest());
+    }
+    public static String getHeaderOrParam(String param, HttpServletRequest request) {
         if (U.isNull(request)) {
             return U.EMPTY;
         }
@@ -300,11 +280,14 @@ public final class RequestUtil {
 
     /** 从 cookie 中获取值 */
     public static String getCookieValue(String name) {
-        Cookie cookie = getCookie(name);
+        Cookie cookie = getCookie(name, getRequest());
         return U.isNull(cookie) ? U.EMPTY : cookie.getValue();
     }
-    private static Cookie getCookie(String name) {
-        HttpServletRequest request = getRequest();
+    public static String getCookieValue(String name, HttpServletRequest request) {
+        Cookie cookie = getCookie(name, request);
+        return U.isNull(cookie) ? U.EMPTY : cookie.getValue();
+    }
+    private static Cookie getCookie(String name, HttpServletRequest request) {
         if (U.isNull(request)) {
             return null;
         }
@@ -319,37 +302,16 @@ public final class RequestUtil {
         }
         return null;
     }
-    /** 添加一个 http-only 的 cookie(浏览器环境中 js 用 document.cookie 获取时将会忽略) */
-    public static void addHttpOnlyCookie(String name, String value, int second, int extendSecond) {
-        HttpServletResponse response = getResponse();
-        if (U.isNull(response)) {
-            return;
-        }
-
-        Cookie cookie = getCookie(name);
-        if (U.isNull(cookie)) {
-            Cookie add = new Cookie(name, value);
-            add.setPath("/");
-            add.setHttpOnly(true);
-            add.setMaxAge(second);
-            response.addCookie(add);
-        } else {
-            int maxAge = cookie.getMaxAge();
-            // 如果 cookie 中已经有值且过期时间在延长时间以内了, 则把 cookie 的过期时间延长到指定时间
-            if (maxAge > 0 && maxAge < extendSecond && second > extendSecond) {
-                cookie.setMaxAge(second);
-                response.addCookie(cookie);
-            }
-        }
-    }
 
 
     /** 将「json 字符」以 json 格式输出 */
     public static void toJson(String data) {
-        render(APPLICATION_JSON, data);
+        render(APPLICATION_JSON, data, getResponse());
     }
-    private static void render(String type, String data) {
-        HttpServletResponse response = getResponse();
+    public static void toJson(String data, HttpServletResponse response) {
+        render(APPLICATION_JSON, data, response);
+    }
+    private static void render(String type, String data, HttpServletResponse response) {
         if (U.isNull(response)) {
             return;
         }
@@ -374,7 +336,10 @@ public final class RequestUtil {
     }
     /** 将「json 字符」以 html 格式输出. 不常见! 这种只会在一些特殊的场景用到 */
     public static void toHtml(String data) {
-        render("text/html", data);
+        render("text/html", data, getResponse());
+    }
+    public static void toHtml(String data, HttpServletResponse response) {
+        render("text/html", data, response);
     }
 
 

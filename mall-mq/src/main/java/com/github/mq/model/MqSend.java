@@ -1,7 +1,7 @@
 package com.github.mq.model;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.mybatisflex.annotation.Column;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
 import java.io.Serial;
@@ -10,7 +10,7 @@ import java.util.Date;
 
 /** mq 生产记录 --> t_mq_send */
 @Data
-@TableName("t_mq_send")
+@Table("t_mq_send")
 public class MqSend implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -24,7 +24,7 @@ public class MqSend implements Serializable {
     private String searchKey;
 
     /** 业务场景 --> type */
-    @TableField("`type`")
+    @Column("`type`")
     private String type;
 
     /** 0.初始, 1.失败, 2.成功(需要重试则改为 1) --> status */

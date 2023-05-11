@@ -80,8 +80,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <groupId>com.mybatis-flex</groupId>
+            <artifactId>mybatis-flex-spring-boot-starter</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -90,16 +90,16 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
+        <!--<dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>javax.xml.bind-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
             <scope>runtime</scope>
-        </dependency>
+        </dependency>-->
         <!--<dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>

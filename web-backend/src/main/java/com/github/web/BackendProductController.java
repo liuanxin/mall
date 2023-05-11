@@ -9,7 +9,6 @@ import com.github.liuanxin.api.annotation.ApiGroup;
 import com.github.liuanxin.api.annotation.ApiMethod;
 import com.github.product.constant.ProductConst;
 import com.github.product.model.ProductTest;
-import com.github.product.service.ProductTestService;
 import com.github.req.ExampleReq;
 import com.github.res.ExampleRes;
 import com.github.user.model.UserTest;
@@ -28,7 +27,6 @@ import java.util.List;
 public class BackendProductController {
 
     private final UserTestService userExampleService;
-    private final ProductTestService productExampleService;
 
     @ApiMethod(value = "分页查询", develop = Develop.PRODUCT)
     @GetMapping

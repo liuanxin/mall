@@ -1,7 +1,7 @@
 package com.github.manager.repository;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.github.manager.model.ManagerRoleMenu;
+import com.mybatisflex.core.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 

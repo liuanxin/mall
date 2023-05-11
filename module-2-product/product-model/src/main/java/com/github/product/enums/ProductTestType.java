@@ -1,6 +1,5 @@
 package com.github.product.enums;
 
-import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.common.util.U;
@@ -14,7 +13,6 @@ public enum ProductTestType {
 
     Nil(0, ""), Normal(1, "普通商品"), Price(2, "特价商品"), Stock(3, "特销商品");
 
-    @EnumValue
     private final int code;
     private final String value;
 

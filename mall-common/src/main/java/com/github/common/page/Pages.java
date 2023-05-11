@@ -1,9 +1,9 @@
 package com.github.common.page;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.U;
+import com.mybatisflex.core.paginate.Page;
 
 import java.util.Collections;
 import java.util.List;
@@ -12,8 +12,8 @@ import java.util.List;
 public final class Pages {
 
     /** 在 service 的实现类中调用 --> 当不想查 select count(*) 时用这个 */
-    public static <T> Page<T> paramOnlyLimit(long limit) {
-        return new Page<>(1, limit, false);
+    public static <T> Page<T> paramOnlyLimit(int limit) {
+        return new Page<>(1, limit, 1);
     }
 
     public static <T> List<T> returnList(Page<T> pageInfo) {
@@ -46,7 +46,7 @@ public final class Pages {
         if (U.isNull(pageInfo)) {
             return PageReturn.emptyReturn();
         } else {
-            return PageReturn.returnPage(pageInfo.getTotal(), pageInfo.getRecords());
+            return PageReturn.returnPage(pageInfo.getTotalRow(), pageInfo.getRecords());
         }
     }
 
@@ -55,7 +55,7 @@ public final class Pages {
             return PageReturn.emptyReturn();
         }
 
-        long total = page.getTotal();
+        long total = page.getTotalRow();
         if (U.less0(total)) {
             return PageReturn.emptyReturn();
         }

@@ -30,14 +30,14 @@ public class ValidationService {
      * </pre>
      *
      * @see com.github.global.config.GlobalException#paramValidException
-     * @see jakarta.validation.constraints.Null
-     * @see jakarta.validation.constraints.NotNull
-     * @see jakarta.validation.constraints.NotEmpty
-     * @see jakarta.validation.constraints.NotBlank
-     * @see jakarta.validation.constraints.Email
-     * @see jakarta.validation.constraints.Min
-     * @see jakarta.validation.constraints.Max
-     * @see jakarta.validation.constraints.Pattern
+     * @see javax.validation.constraints.Null
+     * @see javax.validation.constraints.NotNull
+     * @see javax.validation.constraints.NotEmpty
+     * @see javax.validation.constraints.NotBlank
+     * @see javax.validation.constraints.Email
+     * @see javax.validation.constraints.Min
+     * @see javax.validation.constraints.Max
+     * @see javax.validation.constraints.Pattern
      */
     public void validateBinding(BindingResult result) {
         Map<String, String> fieldErrorMap = validate(result);
