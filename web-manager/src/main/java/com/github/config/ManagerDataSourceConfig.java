@@ -5,6 +5,7 @@ import com.github.manager.constant.ManagerConst;
 import com.github.order.constant.OrderConst;
 import com.github.product.constant.ProductConst;
 import com.github.user.constant.UserConst;
+import com.mybatisflex.core.FlexGlobalConfig;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,12 +13,10 @@ import org.springframework.context.annotation.Configuration;
 @MapperScan(basePackages = { CommonConst.SCAN, UserConst.SCAN, ProductConst.SCAN, OrderConst.SCAN, ManagerConst.SCAN })
 public class ManagerDataSourceConfig {
 
-    // 3.4.0 开始 PaginationInterceptor 不再建议使用. 见: https://mybatis.plus/guide/interceptor.html
-
-//    @Bean
-//    public MybatisPlusInterceptor mybatisPlusInterceptor() {
-//        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
-//        interceptor.addInnerInterceptor(new PaginationInnerInterceptor());
-//        return interceptor;
-//    }
+    static {
+        FlexGlobalConfig globalConfig = FlexGlobalConfig.getDefaultConfig();
+        globalConfig.setPrintBanner(false);
+        globalConfig.setNormalValueOfLogicDelete("0");
+        globalConfig.setDeletedValueOfLogicDelete("id");
+    }
 }
