@@ -13,7 +13,7 @@ public final class Pages {
 
     /** 在 service 的实现类中调用 --> 当不想查 select count(*) 时用这个 */
     public static <T> Page<T> paramOnlyLimit(int limit) {
-        return new Page<>(1, limit, 1);
+        return new Page<>(1, Math.max(limit, 1), 1);
     }
 
     public static <T> List<T> returnList(Page<T> pageInfo) {
@@ -28,15 +28,15 @@ public final class Pages {
         return U.isNotNull(pageInfo) && U.isNotNull(A.first(pageInfo.getRecords()));
     }
 
-    public static <T> boolean notExists(Page<T> pageInfo) {
-        return U.isNull(pageInfo) || U.isNull(A.first(pageInfo.getRecords()));
+    public static <T> boolean hasNotExists(Page<T> pageInfo) {
+        return !hasExists(pageInfo);
     }
 
     /** 在 service 的实现类中调用 --> 在 repository 方法上的参数是 mbp 的 Page 对象, service 上的参数是 PageParam, 使用此方法进行转换 */
     public static <T> Page<T> param(PageParam page) {
         // 移动端与 pc 端的分页不同, 前者的用户习惯是一直刷, 一边刷一边加载, 它是不需要查询 select count(*) 的
         // 移动端也不需要有当前页的概念, 如果数据是按时间倒序(时间越后越排在前), 从下往上刷时, 它只需要加载比最下面的时间小的数据即可
-        return page.isWasMobile()
+        return U.isTrue(page.getWasMobile())
                 ? paramOnlyLimit(page.getLimit())
                 : new Page<>(page.getPage(), page.getLimit());
     }

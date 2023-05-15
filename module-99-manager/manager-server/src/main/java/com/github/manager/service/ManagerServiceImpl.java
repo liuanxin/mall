@@ -214,8 +214,8 @@ public class ManagerServiceImpl implements ManagerService {
         if (U.greater0(rid)) {
             QueryWrapper existsQuery = QueryWrapper.create()
                     .select(Tables.MANAGER_ROLE.ID).and(Tables.MANAGER_ROLE.ID.eq(rid));
-            boolean noExists = Pages.notExists(roleMapper.paginate(Pages.paramOnlyLimit(1), existsQuery));
-            U.assertException(noExists, "没有这个角色, 无法修改");
+            boolean hasNotExists = Pages.hasNotExists(roleMapper.paginate(Pages.paramOnlyLimit(1), existsQuery));
+            U.assertException(hasNotExists, "没有这个角色, 无法修改");
 
             roleMapper.update(role);
         } else {
