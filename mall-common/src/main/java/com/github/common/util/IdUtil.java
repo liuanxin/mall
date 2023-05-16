@@ -98,11 +98,10 @@ public class IdUtil {
         return timestamp;
     }
 
-    public static long getId() {
-        long timestamp;
+    public synchronized static long getId() {
         LOCK.lock();
         try {
-            timestamp = getMs();
+            long timestamp = getMs();
             if (timestamp < lastTimestamp) {
                 long offset = lastTimestamp - timestamp;
                 if (offset <= 5) {
@@ -132,14 +131,14 @@ public class IdUtil {
             }
             // 上次的时间截
             lastTimestamp = timestamp;
+            // 移位 及 或运算 组成 64 位 id
+            return ((timestamp - START_MS) << TIMESTAMP_LEFT_SHIFT)
+                    | (DATACENTER_ID << DATACENTER_ID_SHIFT)
+                    | (WORKER_ID << WORKER_ID_SHIFT)
+                    | sequence;
         } finally {
             LOCK.unlock();
         }
-        // 移位 及 或运算 组成 64 位 id
-        return ((timestamp - START_MS) << TIMESTAMP_LEFT_SHIFT)
-                | (DATACENTER_ID << DATACENTER_ID_SHIFT)
-                | (WORKER_ID << WORKER_ID_SHIFT)
-                | sequence;
     }
 
     private static long getMs() {
