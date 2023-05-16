@@ -13,7 +13,7 @@ import java.util.concurrent.*;
 
 public class IdTest {
 
-    private static final int COUNT = 100000;
+    private static final int COUNT = 1_000_000;
     private static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(
             U.CPU_SIZE,
             U.CPU_SIZE + 1,
