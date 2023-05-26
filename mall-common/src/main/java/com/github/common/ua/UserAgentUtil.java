@@ -46,14 +46,14 @@ public class UserAgentUtil {
         SCRIPT_ENGINE = U.isNull (engine) ? null : (Invocable) engine;
     }
 
-    public static UserAgentInfo parse(String ua) {
+    public static UserAgent parse(String ua) {
         if (U.isNull(SCRIPT_ENGINE) || U.isBlank(ua)) {
             return null;
         }
 
         try {
             Object obj = SCRIPT_ENGINE.invokeFunction(PARSE_METHOD, ua);
-            return JsonUtil.toObjectNil(U.toStr(obj), UserAgentInfo.class);
+            return JsonUtil.toObjectNil(U.toStr(obj), UserAgent.class);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("parse ua({}) exception", ua, e);

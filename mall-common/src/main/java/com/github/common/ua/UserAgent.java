@@ -8,13 +8,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class UserAgentInfo {
+public class UserAgent {
 
     private UserAgentBrowser browser;
     private UserAgentCpu cpu;
     private UserAgentDevice device;
     private UserAgentModel engine;
     private UserAgentModel os;
+
+    @Override
+    public String toString() {
+        List<String> list = new ArrayList<>();
+        String br = browser.toString();
+        if (U.isNotBlank(br)) {
+            list.add("browser=" + br);
+        }
+        String cp = cpu.toString();
+        if (U.isNotBlank(cp)) {
+            list.add("cpu=" + cp);
+        }
+        String de = device.toString();
+        if (U.isNotBlank(de)) {
+            list.add("device=" + de);
+        }
+        String en = engine.toString();
+        if (U.isNotBlank(en)) {
+            list.add("engine=" + en);
+        }
+        String o = os.toString();
+        if (U.isNotBlank(o)) {
+            list.add("os=" + o);
+        }
+        return "UserAgentInfo(" + String.join(", ", list) + ")";
+    }
 
     @Data
     public static class UserAgentModel {
