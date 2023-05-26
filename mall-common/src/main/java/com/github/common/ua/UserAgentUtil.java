@@ -1,4 +1,8 @@
-package com.github.common.util;
+package com.github.common.ua;
+
+import com.github.common.json.JsonUtil;
+import com.github.common.util.LogUtil;
+import com.github.common.util.U;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -42,9 +46,14 @@ public class UserAgentUtil {
         SCRIPT_ENGINE = U.isNull (engine) ? null : (Invocable) engine;
     }
 
-    public static String parse(String ua) {
+    public static UserAgentInfo parse(String ua) {
+        if (U.isNull(SCRIPT_ENGINE) || U.isBlank(ua)) {
+            return null;
+        }
+
         try {
-            return U.isNull(SCRIPT_ENGINE) ? null : U.toStr(SCRIPT_ENGINE.invokeFunction(PARSE_METHOD, ua));
+            Object obj = SCRIPT_ENGINE.invokeFunction(PARSE_METHOD, ua);
+            return JsonUtil.toObjectNil(U.toStr(obj), UserAgentInfo.class);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("parse ua({}) exception", ua, e);

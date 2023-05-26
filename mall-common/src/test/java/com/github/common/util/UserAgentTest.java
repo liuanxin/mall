@@ -1,5 +1,7 @@
 package com.github.common.util;
 
+import com.github.common.ua.UserAgentUtil;
+
 import java.util.Arrays;
 import java.util.List;
 
