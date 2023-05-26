@@ -53,6 +53,7 @@
         <okhttp.version>4.10.0</okhttp.version>
         <poi-ooxml.version>5.2.3</poi-ooxml.version>
         <easyexcel.version>3.2.1</easyexcel.version>
+        <js.version>22.3.2</js.version>
 
         <itextpdf.version>5.5.13.3</itextpdf.version>
         <itext-asian.version>5.2.0</itext-asian.version>
@@ -219,6 +220,16 @@
                         <artifactId>graphics2d</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.graalvm.js</groupId>
+                <artifactId>js</artifactId>
+                <version>${js.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.graalvm.js</groupId>
+                <artifactId>js-scriptengine</artifactId>
+                <version>${js.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.alibaba</groupId>
