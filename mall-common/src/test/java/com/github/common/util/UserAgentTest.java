@@ -25,8 +25,7 @@ public class UserAgentTest {
         );
         for (String str : list) {
             UserAgent ua = UserAgentUtil.parse(str);
-            System.out.println(ua);
-            System.out.println(JsonUtil.toJson(ua));
+            System.out.println(ua + "\n" + JsonUtil.toJson(ua) + "\n");
         }
     }
 }
