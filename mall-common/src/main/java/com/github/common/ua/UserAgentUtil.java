@@ -13,34 +13,35 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 
+/** 解析 user-agent 值, 使用 javascript 的 ua parser 库 */
 public class UserAgentUtil {
 
-    /** https://cdnjs.com/libraries/UAParser.js */
+    /**  https://cdnjs.com/libraries/UAParser.js */
     private static final String UA_PARSE_JS_file = "ua-parser.min.js";
 
     private static final String PARSE_METHOD = "parseInfo";
 
-    /** https://stackoverflow.com/questions/71481562/use-javascript-scripting-engine-in-java-17 */
+    /** 需要引入额外的包 https://stackoverflow.com/questions/71481562/use-javascript-scripting-engine-in-java-17 */
     private static final Invocable SCRIPT_ENGINE;
     static {
         System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
-        ScriptEngine engine = null;
-        try {
-            engine = new ScriptEngineManager().getEngineByName("js");
-            URL url = UserAgentUtil.class.getClassLoader().getResource(UA_PARSE_JS_file);
-            if (U.isNotNull(url)) {
+        ScriptEngine engine = new ScriptEngineManager().getEngineByName("JavaScript"); // js nashorn 都可以
+        URL url = UserAgentUtil.class.getClassLoader().getResource(UA_PARSE_JS_file);
+        if (U.isNotNull(url)) {
+            try {
                 String uaParserJs = Files.readString(new File(url.getPath()).toPath());
+                // java 运行 js 库不支持下面的正则, 需要处理一下才行
                 String parser = uaParserJs.replace("(?=lg)?", "(?=lg)");
                 String js = ";function " + PARSE_METHOD + "(ua){return JSON.stringify(new UAParser(ua).getResult());}";
                 engine.eval(parser + js);
-            }
-        } catch (IOException e) {
-            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("file read exception", e);
-            }
-        } catch (ScriptException e) {
-            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("js file eval exception", e);
+            } catch (IOException e) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error("file read exception", e);
+                }
+            } catch (ScriptException e) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error("js file eval exception", e);
+                }
             }
         }
         SCRIPT_ENGINE = U.isNull (engine) ? null : (Invocable) engine;
