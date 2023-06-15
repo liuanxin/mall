@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
@@ -158,6 +159,14 @@ public class GlobalException {
     public ResponseEntity<JsonResult<String>> convertJsonException(HttpMessageNotReadableException e) {
         int status = (returnStatusCode ? JsonCode.BAD_REQUEST : JsonCode.SUCCESS).getCode();
         return handle(true, "data convert fail", status, handleErrorResult(JsonResult.badRequest("bad request-body", null)), e);
+    }
+
+    @ConditionalOnClass(DuplicateKeyException.class)
+    @ExceptionHandler(DuplicateKeyException.class)
+    public ResponseEntity<JsonResult<String>> duplicateKey(DuplicateKeyException e) {
+        String msg = "duplicate key";
+        int status = (returnStatusCode ? JsonCode.FAIL : JsonCode.SUCCESS).getCode();
+        return handle(false, msg, status, handleErrorResult(JsonResult.fail(msg)), e);
     }
 
     // 以上是 spring 的内部异常

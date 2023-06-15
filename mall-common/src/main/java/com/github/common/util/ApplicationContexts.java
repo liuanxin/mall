@@ -13,7 +13,6 @@ public class ApplicationContexts implements ApplicationContextAware {
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        // 注入上下文对象
         context = applicationContext;
     }
 
