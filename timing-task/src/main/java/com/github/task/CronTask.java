@@ -16,6 +16,10 @@ public class CronTask {
     private static final String CRON = "0/30 * * * * *";
 
 
+    /**
+     * @see org.springframework.boot.autoconfigure.task.TaskExecutionProperties
+     * @see org.springframework.boot.autoconfigure.task.TaskSchedulingProperties
+     */
     @Scheduled(cron = CRON)
     public void cancelOrder() {
         CronUtil.runTask(DESC, this::handlerBusiness);
