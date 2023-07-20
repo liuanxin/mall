@@ -20,7 +20,7 @@ spring:
     host: 127.0.0.1
     port: 6379
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/test?useAffectedRows=true&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&autoReconnect=true&failOverReadOnly=false&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&queryInterceptors=com.github.common.sql.ShowSqlInterceptor
+    url: jdbc:mysql://127.0.0.1:3306/test?useAffectedRows=true&useSSL=false&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&autoReconnect=true&failOverReadOnly=false&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&queryInterceptors=com.github.common.sql.ShowSqlInterceptor
     username: root
     password: root
     hikari:
