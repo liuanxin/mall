@@ -44,6 +44,7 @@ public class ApacheHttpClientUtil {
 
     private static final PoolingHttpClientConnectionManager CONNECTION_MANAGER;
     private static final HttpRequestRetryHandler HTTP_REQUEST_RETRY_HANDLER;
+    private static final DefaultRedirectStrategy REDIRECT_STRATEGY;
     static {
         CONNECTION_MANAGER = new PoolingHttpClientConnectionManager();
         CONNECTION_MANAGER.setDefaultMaxPerRoute(MAX_CONNECTIONS_PER_ROUTE);
@@ -82,6 +83,13 @@ public class ApacheHttpClientUtil {
             // 如果请求是幂等的就重试
             return !(request instanceof HttpEntityEnclosingRequest);
         };
+
+        REDIRECT_STRATEGY = new DefaultRedirectStrategy() {
+            @Override
+            protected boolean isRedirectable(String method) {
+                return true;
+            }
+        };
     }
 
     private static CloseableHttpClient createHttpClient() {
@@ -89,6 +97,7 @@ public class ApacheHttpClientUtil {
                 .setConnectionManager(CONNECTION_MANAGER)
                 .setConnectionManagerShared(true) // 连接池共享
                 .setRetryHandler(HTTP_REQUEST_RETRY_HANDLER)
+                .setRedirectStrategy(REDIRECT_STRATEGY)
                 .build();
     }
     private static RequestConfig config() {
