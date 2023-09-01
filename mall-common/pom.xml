@@ -116,6 +116,5 @@
             <artifactId>js-scriptengine</artifactId>
             <scope>provided</scope>
         </dependency>
-
     </dependencies>
 </project>

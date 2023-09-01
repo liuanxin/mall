@@ -129,11 +129,11 @@ public class ApacheHttpClientUtil {
 
 
     /** 向指定的 url 进行 post 请求(普通表单方式) */
-    public static ResponseData postWithForm(String url, Map<String, Object> params) {
-        return postWithForm(url, params, null);
+    public static ResponseData postWithFormUrlEncode(String url, Map<String, Object> params) {
+        return postWithFormUrlEncode(url, params, null);
     }
     /** 向指定的 url 进行 post 请求(普通表单方式) */
-    public static ResponseData postWithForm(String url, Map<String, Object> params, Map<String, Object> headers) {
+    public static ResponseData postWithFormUrlEncode(String url, Map<String, Object> params, Map<String, Object> headers) {
         HttpPost request = new HttpPost(HttpConst.handleEmptyScheme(url));
         List<NameValuePair> nameValuePairs = new ArrayList<>();
         if (A.isNotEmpty(params)) {

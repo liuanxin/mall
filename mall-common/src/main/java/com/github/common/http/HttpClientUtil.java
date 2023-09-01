@@ -43,11 +43,11 @@ public class HttpClientUtil {
 
 
     /** 向指定的 url 进行 post 请求(表单) */
-    public static ResponseData postWithForm(String url, Map<String, Object> params) {
-        return postWithForm(url, params, null);
+    public static ResponseData postWithFormUrlEncode(String url, Map<String, Object> params) {
+        return postWithFormUrlEncode(url, params, null);
     }
     /** 向指定的 url 进行 post 请求(表单) */
-    public static ResponseData postWithForm(String url, Map<String, Object> params, Map<String, Object> headers) {
+    public static ResponseData postWithFormUrlEncode(String url, Map<String, Object> params, Map<String, Object> headers) {
         Map<String, Object> headerMap = HttpConst.handleContentType(headers, false);
         return handleRequest("POST", url, U.formatParam(false, true, params), U.formatParam(params), headerMap);
     }
