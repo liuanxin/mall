@@ -71,7 +71,7 @@ public final class U {
 
     private static final Pattern THOUSANDS_REGEX = Pattern.compile("(\\d)(?=(?:\\d{3})+$)");
 
-    public static final Set<String> TRUES = new HashSet<>(4, 1);
+    private static final Set<String> TRUES = new HashSet<>(4, 1);
     static {
         TRUES.add("true");
         TRUES.add("1");
@@ -575,12 +575,12 @@ public final class U {
         return !equalsIgnoreCase(str1, str2);
     }
 
-    /** 空则是 null, 如果是 true、1、on、yes 中的任意一种则是 Boolean 的 True, 否则是 Boolean 的 False */
-    public static Boolean getBoolean(Object obj) {
-        return isNull(obj) ? null : TRUES.contains(obj.toString().toLowerCase());
+    /** 空则是 null, 如果是 true、1、on、yes 中的任意一种(无视大小写)则是 Boolean.True, 否则是 Boolean.False */
+    public static Boolean toBoolean(Object obj) {
+        return isNull(obj) ? null : TRUES.contains(obj.toString().toLowerCase()) ? Boolean.TRUE : Boolean.FALSE;
     }
-    /** 是 true、1、on、yes 中的任意一种则是 boolean 的 true, 否则是 boolean 的 false */
-    public static boolean getBool(Object obj) {
+    /** 是 true、1、on、yes 中的任意一种(无视大小写)则是 true, 否则是 false */
+    public static boolean toBool(Object obj) {
         return isNotNull(obj) && TRUES.contains(obj.toString().toLowerCase());
     }
 

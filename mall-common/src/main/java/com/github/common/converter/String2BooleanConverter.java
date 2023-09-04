@@ -14,6 +14,6 @@ public class String2BooleanConverter implements Converter<String, Boolean> {
 
     @Override
     public Boolean convert(String source) {
-        return U.getBoolean(source);
+        return U.toBoolean(source);
     }
 }

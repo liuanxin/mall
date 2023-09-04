@@ -223,22 +223,22 @@ public final class JsonModule {
         }
     }
 
-    /** 反序列化 boolean */
+    /** 反序列化 boolean(true 或 false) */
     public static class BoolDeserializer extends JsonDeserializer<Boolean> {
         public static final BoolDeserializer INSTANCE = new BoolDeserializer();
 
         @Override
         public Boolean deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return U.getBool(p.getText());
+            return U.toBool(p.getText());
         }
     }
-    /** 反序列化 Boolean */
+    /** 反序列化 Boolean(null 或 true 或 false) */
     public static class BooleanDeserializer extends JsonDeserializer<Boolean> {
         public static final BooleanDeserializer INSTANCE = new BooleanDeserializer();
 
         @Override
         public Boolean deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return U.getBoolean(p.getText());
+            return U.toBoolean(p.getText());
         }
     }
 }
