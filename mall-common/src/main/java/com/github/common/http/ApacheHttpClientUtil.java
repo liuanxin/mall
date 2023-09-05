@@ -129,11 +129,11 @@ public class ApacheHttpClientUtil {
 
 
     /** 向指定的 url 进行 post 请求(普通表单方式) */
-    public static ResponseData postWithFormUrlEncode(String url, Map<String, Object> params) {
-        return postWithFormUrlEncode(url, params, null);
+    public static ResponseData postWithUrlEncodeInBody(String url, Map<String, Object> params) {
+        return postWithUrlEncodeInBody(url, params, null);
     }
     /** 向指定的 url 进行 post 请求(普通表单方式) */
-    public static ResponseData postWithFormUrlEncode(String url, Map<String, Object> params, Map<String, Object> headers) {
+    public static ResponseData postWithUrlEncodeInBody(String url, Map<String, Object> params, Map<String, Object> headers) {
         HttpPost request = new HttpPost(HttpConst.handleEmptyScheme(url));
         List<NameValuePair> nameValuePairs = new ArrayList<>();
         if (A.isNotEmpty(params)) {
@@ -150,20 +150,20 @@ public class ApacheHttpClientUtil {
         return handleRequest(request, U.formatParam(params), null);
     }
 
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithBody(String url, String json) {
-        return postWithBody(url, null, json, null);
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithJsonInBody(String url, String json) {
+        return postWithJsonInBody(url, null, json, null);
     }
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithBody(String url, Map<String, Object> params, String json) {
-        return postWithBody(url, params, json, null);
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithJsonInBody(String url, Map<String, Object> params, String json) {
+        return postWithJsonInBody(url, params, json, null);
     }
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithBody(String url, String json, Map<String, Object> headers) {
-        return postWithBody(url, null, json, headers);
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithJsonInBody(String url, String json, Map<String, Object> headers) {
+        return postWithJsonInBody(url, null, json, headers);
     }
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithBody(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithJsonInBody(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
         String useUrl = HttpConst.appendParamsToUrl(HttpConst.handleEmptyScheme(url), params);
         HttpPost request = new HttpPost(useUrl);
         String content = U.toStr(json);
@@ -172,20 +172,20 @@ public class ApacheHttpClientUtil {
         return handleRequest(request, null, content);
     }
 
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithXmlBody(String url, String xml) {
-        return postWithXmlBody(url, null, xml, null);
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithXmlInBody(String url, String xml) {
+        return postWithXmlInBody(url, null, xml, null);
     }
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithXmlBody(String url, Map<String, Object> params, String xml) {
-        return postWithXmlBody(url, params, xml, null);
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithXmlInBody(String url, Map<String, Object> params, String xml) {
+        return postWithXmlInBody(url, params, xml, null);
     }
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithXmlBody(String url, String xml, Map<String, Object> headers) {
-        return postWithXmlBody(url, null, xml, headers);
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithXmlInBody(String url, String xml, Map<String, Object> headers) {
+        return postWithXmlInBody(url, null, xml, headers);
     }
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithXmlBody(String url, Map<String, Object> params, String xml, Map<String, Object> headers) {
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithXmlInBody(String url, Map<String, Object> params, String xml, Map<String, Object> headers) {
         String useUrl = HttpConst.appendParamsToUrl(HttpConst.handleEmptyScheme(url), params);
         HttpPost request = new HttpPost(useUrl);
         String content = U.toStr(xml);
@@ -195,19 +195,19 @@ public class ApacheHttpClientUtil {
     }
 
 
-    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    /** 向指定的 url 基于 put 发起请求 */
     public static ResponseData put(String url, String json) {
         return put(url, null, json, null);
     }
-    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    /** 向指定的 url 基于 put 发起请求 */
     public static ResponseData put(String url, Map<String, Object> params, String json) {
         return put(url, params, json, null);
     }
-    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    /** 向指定的 url 基于 put 发起请求 */
     public static ResponseData put(String url, String json, Map<String, Object> headers) {
         return put(url, null, json, headers);
     }
-    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    /** 向指定的 url 基于 put 发起请求 */
     public static ResponseData put(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
         String useUrl = HttpConst.appendParamsToUrl(HttpConst.handleEmptyScheme(url), params);
         HttpPut request = new HttpPut(useUrl);
@@ -218,11 +218,11 @@ public class ApacheHttpClientUtil {
     }
 
 
-    /** 向指定的 url 基于 delete 发起 request-body 请求 */
+    /** 向指定的 url 基于 delete 发起请求 */
     public static ResponseData delete(String url, String json) {
         return delete(url, json, null);
     }
-    /** 向指定的 url 基于 delete 发起 request-body 请求 */
+    /** 向指定的 url 基于 delete 发起请求 */
     public static ResponseData delete(String url, String json, Map<String, Object> headers) {
         HttpEntityEnclosingRequestBase request = new HttpEntityEnclosingRequestBase() {
             @Override

@@ -59,31 +59,31 @@ public class OkHttpClientUtil {
 
 
     /** 向指定的 url 进行 post 请求(普通表单方式) */
-    public static ResponseData postWithFormUrlEncode(String url, Map<String, Object> params) {
-        return postWithFormUrlEncode(url, params, null);
+    public static ResponseData postWithUrlEncodeInBody(String url, Map<String, Object> params) {
+        return postWithUrlEncodeInBody(url, params, null);
     }
     /** 向指定的 url 进行 post 请求(普通表单方式) */
-    public static ResponseData postWithFormUrlEncode(String url, Map<String, Object> params, Map<String, Object> headers) {
+    public static ResponseData postWithUrlEncodeInBody(String url, Map<String, Object> params, Map<String, Object> headers) {
         RequestBody requestBody = RequestBody.create(U.formatParam(false, true, params), FORM);
         Request.Builder builder = new Request.Builder().post(requestBody);
         handleHeader(builder, HttpConst.handleContentType(headers, false));
         return handleRequest(url, builder, U.formatParam(params), null);
     }
 
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithBody(String url, String json) {
-        return postWithBody(url, null, json, null);
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithJsonInBody(String url, String json) {
+        return postWithJsonInBody(url, null, json, null);
     }
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithBody(String url, Map<String, Object> params, String json) {
-        return postWithBody(url, params, json, null);
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithJsonInBody(String url, Map<String, Object> params, String json) {
+        return postWithJsonInBody(url, params, json, null);
     }
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithBody(String url, String json, Map<String, Object> headers) {
-        return postWithBody(url, null, json, headers);
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithJsonInBody(String url, String json, Map<String, Object> headers) {
+        return postWithJsonInBody(url, null, json, headers);
     }
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithBody(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithJsonInBody(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
         String content = U.toStr(json);
         String useUrl = HttpConst.appendParamsToUrl(url, params);
         Request.Builder builder = new Request.Builder().post(RequestBody.create(content, JSON));
@@ -91,20 +91,20 @@ public class OkHttpClientUtil {
         return handleRequest(useUrl, builder, null, content);
     }
 
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithXmlBody(String url, String xml) {
-        return postWithXmlBody(url, null, xml, null);
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithXmlInBody(String url, String xml) {
+        return postWithXmlInBody(url, null, xml, null);
     }
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithXmlBody(String url, Map<String, Object> params, String xml) {
-        return postWithXmlBody(url, params, xml, null);
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithXmlInBody(String url, Map<String, Object> params, String xml) {
+        return postWithXmlInBody(url, params, xml, null);
     }
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithXmlBody(String url, String xml, Map<String, Object> headers) {
-        return postWithXmlBody(url, null, xml, headers);
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithXmlInBody(String url, String xml, Map<String, Object> headers) {
+        return postWithXmlInBody(url, null, xml, headers);
     }
-    /** 向指定的 url 基于 post 发起 request-body 请求 */
-    public static ResponseData postWithXmlBody(String url, Map<String, Object> params, String xml, Map<String, Object> headers) {
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithXmlInBody(String url, Map<String, Object> params, String xml, Map<String, Object> headers) {
         String content = U.toStr(xml);
         String useUrl = HttpConst.appendParamsToUrl(url, params);
         Request.Builder builder = new Request.Builder().post(RequestBody.create(content, JSON));
@@ -113,19 +113,19 @@ public class OkHttpClientUtil {
     }
 
 
-    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    /** 向指定的 url 基于 put 发起请求 */
     public static ResponseData put(String url, String json) {
         return put(url, null, json, null);
     }
-    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    /** 向指定的 url 基于 put 发起请求 */
     public static ResponseData put(String url, Map<String, Object> params, String json) {
         return put(url, params, json, null);
     }
-    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    /** 向指定的 url 基于 put 发起请求 */
     public static ResponseData put(String url, String json, Map<String, Object> headers) {
         return put(url, null, json, headers);
     }
-    /** 向指定的 url 基于 put 发起 request-body 请求 */
+    /** 向指定的 url 基于 put 发起请求 */
     public static ResponseData put(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
         String content = U.toStr(json);
         String useUrl = HttpConst.appendParamsToUrl(url, params);
@@ -136,11 +136,11 @@ public class OkHttpClientUtil {
     }
 
 
-    /** 向指定的 url 基于 delete 发起 request-body 请求 */
+    /** 向指定的 url 基于 delete 发起请求 */
     public static ResponseData delete(String url, String json) {
         return deleteWithHeader(url, json, null);
     }
-    /** 向指定的 url 基于 delete 发起 request-body 请求 */
+    /** 向指定的 url 基于 delete 发起请求 */
     public static ResponseData deleteWithHeader(String url, String json, Map<String, Object> headers) {
         String content = U.toStr(json);
         RequestBody requestBody = RequestBody.create(content, JSON);
