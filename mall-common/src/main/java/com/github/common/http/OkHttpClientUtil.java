@@ -32,13 +32,19 @@ public class OkHttpClientUtil {
     private static final MediaType FORM_DATA = MediaType.get("multipart/form-data");
     private static final MediaType JSON = MediaType.get("application/json");
 
-    private static final OkHttpClient HTTP_CLIENT = new OkHttpClient().newBuilder()
-            .connectTimeout(HttpConst.CONNECT_TIME_OUT, TimeUnit.MILLISECONDS)
-            .readTimeout(HttpConst.READ_TIME_OUT, TimeUnit.MILLISECONDS)
-            // .followRedirects(true) // 默认就会处理重定向
-            // .followSslRedirects(true) // 默认就会处理 ssl 的重定向
-            .connectionPool(new ConnectionPool(HttpConst.POOL_MAX_TOTAL, CONNECTION_KEEP_ALIVE_TIME, TimeUnit.MINUTES))
-            .build();
+    private static final OkHttpClient HTTP_CLIENT;
+    static {
+        OkHttpClient.Builder builder = new OkHttpClient().newBuilder()
+                .connectTimeout(HttpConst.CONNECT_TIME_OUT, TimeUnit.MILLISECONDS)
+                .readTimeout(HttpConst.READ_TIME_OUT, TimeUnit.MILLISECONDS)
+                // .followRedirects(true) // 默认就会处理重定向
+                // .followSslRedirects(true) // 默认就会处理 ssl 的重定向
+                .connectionPool(new ConnectionPool(HttpConst.POOL_MAX_TOTAL, CONNECTION_KEEP_ALIVE_TIME, TimeUnit.MINUTES));
+        if (TrustCerts.IGNORE_SSL && U.isNotNull(TrustCerts.IGNORE_SSL_FACTORY)) {
+            builder.sslSocketFactory(TrustCerts.IGNORE_SSL_FACTORY, TrustCerts.TRUST_MANAGER);
+        }
+        HTTP_CLIENT = builder.build();
+    }
 
 
     /** 向指定 url 进行 get 请求(普通表单方式) */

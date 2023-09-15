@@ -7,6 +7,7 @@ import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -135,6 +136,13 @@ public class HttpUrlConnectionUtil {
         String resCode = "";
         url = HttpConst.handleEmptyScheme(url);
         try {
+            if (url.startsWith("https://")) {
+                if (TrustCerts.IGNORE_SSL && U.isNotNull(TrustCerts.IGNORE_SSL_FACTORY)) {
+                    HttpsURLConnection.setDefaultSSLSocketFactory(TrustCerts.IGNORE_SSL_FACTORY);
+                } else {
+                    HttpsURLConnection.setDefaultSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                }
+            }
             con = (HttpURLConnection) new URL(url).openConnection();
             String useMethod = "PUT".equalsIgnoreCase(method) ? "PUT" : "POST";
             con.setRequestMethod(useMethod);
@@ -243,6 +251,13 @@ public class HttpUrlConnectionUtil {
         String useUrl = HttpConst.handleEmptyScheme(url);
         int count = 0;
         try {
+            if (url.startsWith("https://")) {
+                if (TrustCerts.IGNORE_SSL && U.isNotNull(TrustCerts.IGNORE_SSL_FACTORY)) {
+                    HttpsURLConnection.setDefaultSSLSocketFactory(TrustCerts.IGNORE_SSL_FACTORY);
+                } else {
+                    HttpsURLConnection.setDefaultSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                }
+            }
             String connectionUrl = useUrl;
             while (true) {
                 con = (HttpURLConnection) new URL(connectionUrl).openConnection();

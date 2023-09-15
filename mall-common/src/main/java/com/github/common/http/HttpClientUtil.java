@@ -25,6 +25,19 @@ public class HttpClientUtil {
             .followRedirects(HttpClient.Redirect.ALWAYS)
             .connectTimeout(Duration.ofMillis(HttpConst.CONNECT_TIME_OUT))
             .build();
+    static {
+        HttpClient.Builder builder = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_2)
+                .executor(AsyncUtil.ioExecutor())
+                .followRedirects(HttpClient.Redirect.ALWAYS)
+                .connectTimeout(Duration.ofMillis(HttpConst.CONNECT_TIME_OUT));
+
+        if (TrustCerts.IGNORE_SSL && U.isNotNull(TrustCerts.IGNORE_SSL_CONTEXT)) {
+            builder.sslContext(TrustCerts.IGNORE_SSL_CONTEXT);
+        }
+        builder
+                .build();
+    }
 
 
     /** 向指定 url 进行 get 请求(普通表单方式) */

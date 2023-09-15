@@ -12,6 +12,11 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -21,6 +26,7 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +53,21 @@ public class ApacheHttpClientUtil {
     private static final HttpRequestRetryHandler HTTP_REQUEST_RETRY_HANDLER;
     private static final DefaultRedirectStrategy REDIRECT_STRATEGY;
     static {
-        CONNECTION_MANAGER = new PoolingHttpClientConnectionManager();
+        // 忽略 ssl 证书
+        if (TrustCerts.IGNORE_SSL) {
+            SSLContext sslContext = TrustCerts.IGNORE_SSL_CONTEXT;
+            if (U.isNotNull(sslContext)) {
+                Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                        .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                        .register("https", new SSLConnectionSocketFactory(sslContext))
+                        .build();
+                CONNECTION_MANAGER = new PoolingHttpClientConnectionManager(registry);
+            } else {
+                CONNECTION_MANAGER = new PoolingHttpClientConnectionManager();
+            }
+        } else {
+            CONNECTION_MANAGER = new PoolingHttpClientConnectionManager();
+        }
         CONNECTION_MANAGER.setDefaultMaxPerRoute(MAX_CONNECTIONS_PER_ROUTE);
         CONNECTION_MANAGER.setMaxTotal(HttpConst.POOL_MAX_TOTAL);
 
