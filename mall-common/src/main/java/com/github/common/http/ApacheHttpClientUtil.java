@@ -54,17 +54,13 @@ public class ApacheHttpClientUtil {
     private static final DefaultRedirectStrategy REDIRECT_STRATEGY;
     static {
         // 忽略 ssl 证书
-        if (TrustCerts.IGNORE_SSL) {
-            SSLContext sslContext = TrustCerts.IGNORE_SSL_CONTEXT;
-            if (U.isNotNull(sslContext)) {
-                Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                        .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                        .register("https", new SSLConnectionSocketFactory(sslContext))
-                        .build();
-                CONNECTION_MANAGER = new PoolingHttpClientConnectionManager(registry);
-            } else {
-                CONNECTION_MANAGER = new PoolingHttpClientConnectionManager();
-            }
+        SSLContext sslContext = TrustCerts.IGNORE_SSL_CONTEXT;
+        if (TrustCerts.IGNORE_SSL && U.isNotNull(sslContext)) {
+            Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                    .register("https", new SSLConnectionSocketFactory(sslContext))
+                    .build();
+            CONNECTION_MANAGER = new PoolingHttpClientConnectionManager(registry);
         } else {
             CONNECTION_MANAGER = new PoolingHttpClientConnectionManager();
         }

@@ -4,6 +4,7 @@ import com.github.common.Const;
 import com.github.common.date.DateUtil;
 import com.github.common.util.*;
 
+import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -19,24 +20,18 @@ public class HttpClientUtil {
 
     private static final String USER_AGENT = HttpConst.getUserAgent("http_client");
 
-    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
-            .version(HttpClient.Version.HTTP_2)
-            .executor(AsyncUtil.ioExecutor())
-            .followRedirects(HttpClient.Redirect.ALWAYS)
-            .connectTimeout(Duration.ofMillis(HttpConst.CONNECT_TIME_OUT))
-            .build();
+    private static final HttpClient HTTP_CLIENT;
     static {
         HttpClient.Builder builder = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
                 .executor(AsyncUtil.ioExecutor())
                 .followRedirects(HttpClient.Redirect.ALWAYS)
                 .connectTimeout(Duration.ofMillis(HttpConst.CONNECT_TIME_OUT));
-
-        if (TrustCerts.IGNORE_SSL && U.isNotNull(TrustCerts.IGNORE_SSL_CONTEXT)) {
-            builder.sslContext(TrustCerts.IGNORE_SSL_CONTEXT);
+        SSLContext sslContext = TrustCerts.IGNORE_SSL_CONTEXT;
+        if (TrustCerts.IGNORE_SSL && U.isNotNull(sslContext)) {
+            builder.sslContext(sslContext);
         }
-        builder
-                .build();
+        HTTP_CLIENT = builder.build();
     }
 
 

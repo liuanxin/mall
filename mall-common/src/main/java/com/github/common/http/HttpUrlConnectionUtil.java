@@ -8,6 +8,7 @@ import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -251,9 +252,10 @@ public class HttpUrlConnectionUtil {
         String useUrl = HttpConst.handleEmptyScheme(url);
         int count = 0;
         try {
-            if (url.startsWith("https://")) {
-                if (TrustCerts.IGNORE_SSL && U.isNotNull(TrustCerts.IGNORE_SSL_FACTORY)) {
-                    HttpsURLConnection.setDefaultSSLSocketFactory(TrustCerts.IGNORE_SSL_FACTORY);
+            if (url.toLowerCase().startsWith("https://")) {
+                SSLSocketFactory socketFactory = TrustCerts.IGNORE_SSL_FACTORY;
+                if (TrustCerts.IGNORE_SSL && U.isNotNull(socketFactory)) {
+                    HttpsURLConnection.setDefaultSSLSocketFactory(socketFactory);
                 } else {
                     HttpsURLConnection.setDefaultSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
                 }
