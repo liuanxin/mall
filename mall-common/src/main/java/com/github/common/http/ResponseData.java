@@ -1,6 +1,8 @@
 package com.github.common.http;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ResponseData {
@@ -116,5 +118,19 @@ public class ResponseData {
     }
     public String getData() {
         return data;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sbd = new StringBuilder();
+        sbd.append("<").append(status).append(",").append(data).append(",");
+        if (headers != null && !headers.isEmpty()) {
+            List<String> list = new ArrayList<>();
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                list.add(entry.getKey() + ":\"" + entry.getValue() + "\"");
+            }
+            sbd.append("[").append(String.join(", ", list)).append("]");
+        }
+        return sbd.toString();
     }
 }
