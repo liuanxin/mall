@@ -31,12 +31,12 @@ public class BackendTest {
     @Test
     public void test() {
         ResponseEntity<String> res = restTemplate.getForEntity("/", String.class);
-        System.out.println("test1: " + res);
+        System.out.println("rest test1: " + res);
 
         System.out.println("\n=================");
 
         ResponseEntity<String> response = restTemplate.getForEntity(prefixUrl + "/", String.class);
-        System.out.println("test2: " + response);
+        System.out.println("rest test2: " + response);
 
         System.out.println("\n-----------------");
 
