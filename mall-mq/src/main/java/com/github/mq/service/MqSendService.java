@@ -40,20 +40,20 @@ public class MqSendService {
             return null;
         }
 
-        QueryWrapper query = QueryWrapper.create()
-                .select(MqSendTableDef.MQ_SEND.ID, MqSendTableDef.MQ_SEND.RETRY_COUNT)
-                .and(MqSendTableDef.MQ_SEND.MSG_ID.eq(msgId));
+        MqSendTableDef msDef = MqSendTableDef.MQ_SEND;
+        QueryWrapper query = QueryWrapper.create().select(msDef.ID, msDef.RETRY_COUNT).and(msDef.MSG_ID.eq(msgId));
         return Pages.returnOne(mqSendMapper.paginate(Pages.paramOnlyLimit(1), query));
     }
 
     public List<MqSend> queryRetryMsg(int maxRetryCount, int limit) {
         // select id ... where ( status = .. and create < .. ) or ( status = .. and retry < .. ) order by update
         // ( 状态是初始 且 创建时间是在 2 分钟之前 ) 或 ( 状态是失败 且 重试次数小于指定数量 )
+        MqSendTableDef msDef = MqSendTableDef.MQ_SEND;
         QueryWrapper query = QueryWrapper.create()
-                .select(MqSendTableDef.MQ_SEND.ID)
-                .or(MqSendTableDef.MQ_SEND.STATUS.eq(MqConst.INIT).and(MqSendTableDef.MQ_SEND.CREATE_TIME.lt(DateUtil.addMinute(DateUtil.now(), -2))))
-                .or(MqSendTableDef.MQ_SEND.STATUS.eq(MqConst.FAIL).and(MqSendTableDef.MQ_SEND.RETRY_COUNT.lt(maxRetryCount)))
-                .orderBy(MqSendTableDef.MQ_SEND.UPDATE_TIME.asc());
+                .select(msDef.ID)
+                .or(msDef.STATUS.eq(MqConst.INIT).and(msDef.CREATE_TIME.lt(DateUtil.addMinute(DateUtil.now(), -2))))
+                .or(msDef.STATUS.eq(MqConst.FAIL).and(msDef.RETRY_COUNT.lt(maxRetryCount)))
+                .orderBy(msDef.UPDATE_TIME.asc());
         // 表中有 text 字段, 因此先只查出 id, 再用 id 查具体的数据
         List<MqSend> sendList = Pages.returnList(mqSendMapper.paginate(Pages.paramOnlyLimit(limit), query));
         return A.isEmpty(sendList) ? Collections.emptyList() : mqSendMapper.selectListByIds(A.collect(sendList, MqSend::getId));

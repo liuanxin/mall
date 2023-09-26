@@ -23,17 +23,17 @@ public class UserTestServiceImpl implements UserTestService {
 
     @Override
     public PageReturn<UserTest> example(UserTest userTest, UserTestExtend userTestExtend, PageParam page) {
-        QueryWrapper query = QueryWrapper.create()
-                .select(UserTestTableDef.USER_TEST.ID, UserTestTableDef.USER_TEST.USER_NAME, UserTestTableDef.USER_TEST.LEVEL);
+        UserTestTableDef utDef = UserTestTableDef.USER_TEST;
+        QueryWrapper query = QueryWrapper.create().select(utDef.ID, utDef.USER_NAME, utDef.LEVEL);
         if (U.isNotNull(userTest)) {
             if (U.isNotBlank(userTest.getUserName())) {
-                query.and(UserTestTableDef.USER_TEST.USER_NAME.eq(userTest.getUserName()));
+                query.and(utDef.USER_NAME.eq(userTest.getUserName()));
             }
             if (U.isNotBlank(userTest.getPassword())) {
-                query.and(UserTestTableDef.USER_TEST.PASSWORD.eq(userTest.getPassword()));
+                query.and(utDef.PASSWORD.eq(userTest.getPassword()));
             }
             if (U.isNotNull(userTest.getLevel())) {
-                query.and(UserTestTableDef.USER_TEST.LEVEL.eq(userTest.getLevel()));
+                query.and(utDef.LEVEL.eq(userTest.getLevel()));
             }
         }
         return Pages.returnPage(userTestMapper.paginate(Pages.param(page), query));

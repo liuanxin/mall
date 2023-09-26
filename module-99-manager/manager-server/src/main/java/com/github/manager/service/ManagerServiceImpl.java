@@ -218,7 +218,7 @@ public class ManagerServiceImpl implements ManagerService {
             QueryWrapper existsQuery = QueryWrapper.create()
                     .select(mrDef.ID).and(mrDef.ID.eq(rid));
             boolean hasNotExists = Pages.hasNotExists(roleMapper.paginate(Pages.paramOnlyLimit(1), existsQuery));
-            U.assertException(hasNotExists, "没有这个角色, 无法修改");
+            U.assertException(hasNotExists, "无需修改");
 
             roleMapper.update(role);
         } else {
@@ -293,7 +293,7 @@ public class ManagerServiceImpl implements ManagerService {
         Long mid = menu.getId();
         if (U.greater0(mid)) {
             ManagerMenu m = menuMapper.selectOneById(mid);
-            U.assertNil(m, "没有这个菜单, 无法修改");
+            U.assertNil(m, "无需修改");
 
             menuMapper.update(menu);
         } else {
@@ -301,7 +301,7 @@ public class ManagerServiceImpl implements ManagerService {
             QueryWrapper existsQuery = QueryWrapper.create().select(mmDef.ID)
                     .where(mmDef.NAME.eq(menu.getName()));
             boolean exists = Pages.hasExists(menuMapper.paginate(Pages.paramOnlyLimit(1), existsQuery));
-            U.assertException(exists, "已经有同名菜单, 不能再次添加");
+            U.assertException(exists, "已有同名菜单");
 
             menu.setId(null);
             menuMapper.insert(menu);
@@ -316,7 +316,7 @@ public class ManagerServiceImpl implements ManagerService {
         QueryWrapper existsQuery = QueryWrapper.create()
                 .select(mpDef.ID).and(mpDef.MENU_ID.eq(menuId));
         boolean exists = Pages.hasExists(permissionMapper.paginate(Pages.paramOnlyLimit(1), existsQuery));
-        U.assertException(exists, "此菜单下已经有权限了, 请先将权限删除再来删除菜单");
+        U.assertException(exists, "菜单已有权限, 请先将权限删除再删除菜单");
 
         menuMapper.deleteById(menuId);
     }
@@ -329,7 +329,7 @@ public class ManagerServiceImpl implements ManagerService {
                     .select(mpDef.ID)
                     .and(mpDef.MENU_ID.in(mids));
             boolean exists = Pages.hasExists(permissionMapper.paginate(Pages.paramOnlyLimit(1), existsQuery));
-            U.assertException(exists, "传入的菜单下已经有权限了, 请先将权限删除再来删除菜单");
+            U.assertException(exists, "菜单已有权限, 请先删除权限再删除菜单");
 
             menuMapper.deleteByQuery(QueryWrapper.create().and(ManagerMenuTableDef.MANAGER_MENU.ID.in(mids)));
         }
@@ -350,7 +350,7 @@ public class ManagerServiceImpl implements ManagerService {
         Long pid = permission.getId();
         if (U.greater0(pid)) {
             ManagerPermission p = permissionMapper.selectOneById(pid);
-            U.assertNil(p, "没有这个权限, 无法修改");
+            U.assertNil(p, "无需修改");
 
             permissionMapper.update(permission);
         } else {
@@ -360,7 +360,7 @@ public class ManagerServiceImpl implements ManagerService {
                     .and(mpDef.METHOD.eq(permission.getMethod()))
                     .and(mpDef.URL.eq(permission.getUrl()));
             boolean exists = Pages.hasExists(permissionMapper.paginate(Pages.paramOnlyLimit(1), existsQuery));
-            U.assertException(exists, "已经有同样规则的权限, 不能再次添加");
+            U.assertException(exists, "已经有同样规则的权限");
 
             permission.setId(null);
             permissionMapper.insert(permission);
