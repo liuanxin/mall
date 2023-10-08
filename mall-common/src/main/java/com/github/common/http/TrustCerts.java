@@ -27,25 +27,28 @@ class TrustCerts {
     static final SSLContext IGNORE_SSL_CONTEXT;
     static final SSLSocketFactory IGNORE_SSL_FACTORY;
 
+
+    static class IgnoreSslManager implements X509TrustManager {
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) {}
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) {}
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
+    }
+
     static {
-        X509TrustManager tm = new X509TrustManager() {
-            @Override
-            public void checkClientTrusted(X509Certificate[] chain, String authType) {}
-
-            @Override
-            public void checkServerTrusted(X509Certificate[] chain, String authType) {}
-
-            @Override
-            public X509Certificate[] getAcceptedIssuers() {
-                return new X509Certificate[0];
-            }
-        };
+        X509TrustManager ignoreSsl = new IgnoreSslManager();
 
         SSLContext sc;
         SSLSocketFactory sf;
         try {
-            sc = SSLContext.getInstance("SSLv3");
-            sc.init(null, new TrustManager[] { tm }, null);
+            sc = SSLContext.getInstance("SSL");
+            sc.init(null, new TrustManager[] { ignoreSsl }, null);
             sf = sc.getSocketFactory();
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
@@ -54,7 +57,7 @@ class TrustCerts {
             sc = null;
             sf = null;
         }
-        TRUST_MANAGER = tm;
+        TRUST_MANAGER = ignoreSsl;
         IGNORE_SSL_CONTEXT = sc;
         IGNORE_SSL_FACTORY = sf;
     }

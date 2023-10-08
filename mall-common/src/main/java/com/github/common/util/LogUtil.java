@@ -37,18 +37,18 @@ public final class LogUtil {
         }
         if (hasNotTraceId()) {
             // 跟踪号放在最后, 因此在最前加一个空格
-            MDC.put(TRACE_ID_CONTEXT, " " + U.defaultIfBlank(traceId, U.uuid16()));
+            MDC.put(TRACE_ID_CONTEXT, " " + U.defaultIfBlank(traceId.trim(), U.uuid16()));
         }
     }
     /** 将 跟踪号 和 接收到请求的时间 和 ip 放进日志上下文, 主要用在有 web 环境的地方 */
     public static void putTraceAndIp(String traceId, String ip, Locale locale) {
         putTraceId(traceId);
         if (U.isNotBlank(ip)) {
-            MDC.put(REAL_IP, ip);
+            MDC.put(REAL_IP, ip.trim());
         }
         if (U.isNotNull(locale)) {
             // 请求头中用的是中横线(en-US、zh-CN), 但是 locale 时却是下划线, 写进上下文的时候用中横线
-            MDC.put(LANGUAGE, locale.toString().replace("_", "-"));
+            MDC.put(LANGUAGE, locale.toString().replace("_", "-").trim());
         }
     }
 
@@ -63,7 +63,7 @@ public final class LogUtil {
         return U.toStr(MDC.get(TRACE_ID_CONTEXT)).trim();
     }
     public static String getIp() {
-        return U.toStr(MDC.get(REAL_IP)).trim();
+        return U.toStr(MDC.get(REAL_IP));
     }
     public static String getLanguage() {
         return MDC.get(LANGUAGE);
