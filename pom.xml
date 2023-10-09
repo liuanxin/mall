@@ -20,8 +20,6 @@
         <module>mall-common</module>
         <!-- 放到 spring 上下文的服务包 -->
         <module>mall-global</module>
-        <!-- 用在 rabbit-mq 的包 -->
-        <module>mall-mq</module>
 
         <!-- 公共模块 -->
         <module>module-0-common</module>
@@ -31,6 +29,8 @@
         <module>module-2-product</module>
         <!-- 订单模块 -->
         <module>module-3-order</module>
+        <!-- 用在 rabbit-mq 的包 -->
+        <module>module-10-mq</module>
         <!-- 管理模块 -->
         <module>module-99-manager</module>
 
@@ -88,7 +88,7 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>mall-mq</artifactId>
+                <artifactId>module-10-mq</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

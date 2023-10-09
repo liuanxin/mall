@@ -42,7 +42,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>mall-mq</artifactId>
+            <artifactId>module-10-mq</artifactId>
         </dependency>
 
         <dependency>

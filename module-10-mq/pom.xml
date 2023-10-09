@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>mall-mq</artifactId>
+    <artifactId>module-10-mq</artifactId>
     <description>用在 rabbit-mq 的包</description>
 
     <dependencies>
