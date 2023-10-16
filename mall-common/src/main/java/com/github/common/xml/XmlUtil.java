@@ -11,6 +11,15 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Proxy;
 
+/**
+ * <pre>
+ * 当某个 String 类型的值是 a>b&lt;c 时, 默认会显示成 a&#064;gt;b&#064;lt;c, 大于小于转义了.
+ * 如果想要输出成 &lt;![CDATA[ a>b&lt;c ]]> 如下操作即可
+ *
+ * 1. 在类上标 @XmlAccessorType(XmlAccessType.FIELD)
+ * 2. 在 String 类型上标 @XmlJavaTypeAdapter(Cdata.Adapter.class)
+ * </pre>
+ */
 public class XmlUtil {
 
     public static <T> String toXml(T obj) {
@@ -25,16 +34,14 @@ public class XmlUtil {
             return null;
         }
         try (StringWriter writer = new StringWriter()) {
-            // 在属性上标 @XmlJavaTypeAdapter(Cdata.Adapter.class) 在值的前后包值
-            // 利用动态代理, 避免想输出成 <![CDATA[ abc ]]> 时却显示成了 &lt;![CDATA[ abc ]]&gt; 的问题
             XMLStreamWriter streamWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(writer);
             Class<? extends XMLStreamWriter> writerClass = streamWriter.getClass();
             XMLStreamWriter stream = (XMLStreamWriter) Proxy.newProxyInstance(
                     writerClass.getClassLoader(), writerClass.getInterfaces(), new Cdata.Handler(streamWriter)
             );
             Marshaller marshaller = JAXBContext.newInstance(obj.getClass()).createMarshaller();
-            // marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-            // 不输出 <?xml version="1.0" encoding="UTF-8" standalone="yes"?> 头
+            marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+            // 不输出 <?xml version="1.0" encoding="UTF-8" standalone="yes"?> 头(false 将会输出)
             marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
             marshaller.marshal(obj, stream);
             return writer.toString();

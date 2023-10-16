@@ -5,15 +5,20 @@ import javax.xml.stream.XMLStreamWriter;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
+/**
+ * <pre>
+ * 当某个 String 类型的值是 a>b&lt;c 时, 默认会显示成 a&#064;gt;b&#064;lt;c, 大于小于转义了.
+ * 如果想要输出成 &lt;![CDATA[ a>b&lt;c ]]> 如下操作即可
+ *
+ * 1. 在类上标 @XmlAccessorType(XmlAccessType.FIELD)
+ * 2. 在 String 类型上标 @XmlJavaTypeAdapter(Cdata.Adapter.class)
+ * </pre>
+ */
 public class Cdata {
 
     private static final String START = "<![CDATA[";
     private static final String END = "]]>";
 
-    /**
-     * 在属性上标 @XmlJavaTypeAdapter(Cdata.Adapter.class), 注意, 类上要标 @XmlAccessorType(XmlAccessType.FIELD),
-     * 避免想输出成 <![CDATA[ abc ]]> 时却显示成了 &lt;![CDATA[ abc ]]&gt; 的问题
-     */
     public static class Adapter extends XmlAdapter<String, String> {
         @Override
         public String marshal(String arg0) {
@@ -27,7 +32,7 @@ public class Cdata {
     }
 
 
-    public static class Handler implements InvocationHandler {
+    static class Handler implements InvocationHandler {
         private final XMLStreamWriter writer;
         Handler(XMLStreamWriter writer) {
             this.writer = writer;
