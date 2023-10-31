@@ -7,10 +7,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.Locale;
 
@@ -22,37 +18,10 @@ public class DateUtil {
     private static final long DAY = 24 * HOUR;
     private static final long YEAR = 365 * DAY;
 
-
-    public static LocalDateTime toLocalDateTime(Date date) {
-        return U.isNull(date) ? null : LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
-    }
-
-    public static LocalDateTime toLocalDateTime(LocalDate date) {
-        return U.isNull(date) ? null : LocalDateTime.of(date, LocalTime.MIN);
-    }
-
-    public static LocalDate toLocalDate(Date date) {
-        LocalDateTime localDateTime = toLocalDateTime(date);
-        return U.isNull(localDateTime) ? null : localDateTime.toLocalDate();
-    }
-
-    public static LocalDate toLocalDate(LocalDateTime date) {
-        return U.isNull(date) ? null : date.toLocalDate();
-    }
-
-    public static Date toDate(LocalDateTime dateTime) {
-        return U.isNull(dateTime) ? null : Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
-    }
-
-    public static Date toDate(LocalDate date) {
-        return U.isNull(date) ? null : toDate(toLocalDateTime(date));
-    }
-
     /** 到秒的时间戳(如 MySQL 的 UNIX_TIMESTAMP() 函数) */
     public static Date toDate(int timestamp) {
         return new Date(timestamp * 1000L);
     }
-
 
     /** 当前时间 */
     public static Date now() {

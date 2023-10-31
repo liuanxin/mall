@@ -261,7 +261,7 @@ public final class RequestUtil {
             String headName = headers.nextElement();
             String value = request.getHeader(headName);
             sbd.append("<").append(headName).append(" : ");
-            sbd.append(des ? DesensitizationUtil.desByKey(headName, value) : value);
+            sbd.append(des ? DesensitizationUtil.desWithKey(headName, value) : value);
             sbd.append(">");
         }
         return sbd.toString();

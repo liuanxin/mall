@@ -167,7 +167,7 @@ public class HttpClientUtil {
                         arr.add(handleBytes(String.format(paramInfo, key)));
                         arr.add(handleBytes(value + "\r\n"));
 
-                        sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
+                        sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desWithKey(key, value)).append(">");
                     }
                     sbd.append(")");
                 }
@@ -289,7 +289,7 @@ public class HttpClientUtil {
         for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
             String key = entry.getKey();
             String value = String.join(",", entry.getValue());
-            list.add("<" + key + " : " + DesensitizationUtil.desByKey(key, value) + ">");
+            list.add("<" + key + " : " + DesensitizationUtil.desWithKey(key, value) + ">");
         }
         return String.join("", list);
     }

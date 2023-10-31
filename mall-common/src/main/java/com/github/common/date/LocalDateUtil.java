@@ -11,9 +11,45 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DateTimeUtil {
+public class LocalDateUtil {
 
     private static final Map<String, DateTimeFormatter> FORMATTER_CACHE = new ConcurrentHashMap<>();
+
+    public static LocalDateTime toLocalDateTime(TemporalAccessor date) {
+        return U.isNull(date) ? null : LocalDateTime.from(date);
+    }
+    public static LocalDateTime toLocalDateTime(Date date) {
+        return U.isNull(date) ? null : LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+    }
+    public static LocalDateTime toLocalDateTime(LocalDate date) {
+        return U.isNull(date) ? null : LocalDateTime.of(date, LocalTime.MIN);
+    }
+
+    public static LocalDate toLocalDate(TemporalAccessor date) {
+        return U.isNull(date) ? null : LocalDate.from(date);
+    }
+    public static LocalDate toLocalDate(Date date) {
+        LocalDateTime localDateTime = toLocalDateTime(date);
+        return U.isNull(localDateTime) ? null : localDateTime.toLocalDate();
+    }
+    public static LocalDate toLocalDate(LocalDateTime date) {
+        return U.isNull(date) ? null : date.toLocalDate();
+    }
+
+    public static Date toDate(TemporalAccessor date) {
+        return U.isNull(date) ? null : toDate(toLocalDateTime(date));
+    }
+    public static Date toDate(LocalDateTime dateTime) {
+        return U.isNull(dateTime) ? null : Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
+    }
+    public static Date toDate(LocalDate date) {
+        return U.isNull(date) ? null : toDate(toLocalDateTime(date));
+    }
+
+    /** 到秒的时间戳(如 MySQL 的 UNIX_TIMESTAMP() 函数) */
+    public static Date toDate(int timestamp) {
+        return new Date(timestamp * 1000L);
+    }
 
     private static DateTimeFormatter getFormatter(String type) {
         return getFormatter(type, null, null);
@@ -70,6 +106,14 @@ public class DateTimeUtil {
     public static String formatDate(LocalDateTime date) {
         return format(date, DateFormatType.YYYY_MM_DD);
     }
+    /** 格式化日期 yyyy-MM-dd */
+    public static String formatDate(LocalDate date) {
+        return format(date, DateFormatType.YYYY_MM_DD);
+    }
+    /** 格式化日期 yyyy-MM-dd */
+    public static String formatDate(Date date) {
+        return format(date, DateFormatType.YYYY_MM_DD);
+    }
     /** 格式化时间 HH:mm:ss */
     public static String formatTime(LocalDateTime date) {
         return format(date, DateFormatType.HH_MM_SS);
@@ -97,8 +141,6 @@ public class DateTimeUtil {
             return format(date, DateFormatType.YYYY_MM_DD.getValue());
         } else if (date instanceof LocalTime) {
             return format(date, DateFormatType.HH_MM_SS.getValue());
-        } else if (date instanceof Year) {
-            return format(date, DateFormatType.YYYY.getValue());
         } else {
             return date.toString();
         }
@@ -107,6 +149,14 @@ public class DateTimeUtil {
     /** 格式化日期对象成字符串 */
     public static String format(TemporalAccessor date, DateFormatType type) {
         return (U.isNull(date) || U.isNull(type)) ? U.EMPTY : format(date, type.getValue());
+    }
+
+    public static String format(Date date, DateFormatType type) {
+        return (U.isNull(date) || U.isNull(type)) ? U.EMPTY : format(toLocalDateTime(date), type.getValue());
+    }
+
+    public static String format(Date date, String type) {
+        return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : format(toLocalDateTime(date), type);
     }
 
     public static String format(TemporalAccessor date, String type) {
@@ -146,12 +196,6 @@ public class DateTimeUtil {
                 LocalTime localTime = parseLocalTime(source, type.getValue());
                 if (U.isNotNull(localTime)) {
                     return localTime;
-                }
-            }
-            if (type.isYearType()) {
-                Year year = parseYear(source, type.getValue());
-                if (U.isNotNull(year)) {
-                    return year;
                 }
             }
         }
@@ -194,15 +238,6 @@ public class DateTimeUtil {
         } catch (Exception ignore) {
         }
 
-        // 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 Year 不会异常
-        try {
-            Year year = formatter.parse(source, Year::from);
-            if (U.isNotNull(year)) {
-                return year;
-            }
-        } catch (Exception ignore) {
-        }
-
         return null;
     }
     public static LocalDateTime parseLocalDateTime(String source, String type) {
@@ -217,9 +252,18 @@ public class DateTimeUtil {
         // 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 LocalTime 不会异常
         return getFormatter(type).parse(source, LocalTime::from);
     }
-    public static Year parseYear(String source, String type) {
-        // 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 Year 不会异常
-        return getFormatter(type).parse(source, Year::from);
+    public static Date parseDate(String source, String type) {
+        try {
+            // 如果格式是 yyyy-MM-dd, 数据是 2022-01-01, parse 成 LocalDateTime 会抛异常
+            LocalDateTime localDateTime = parseLocalDateTime(source, type);
+            if (U.isNotNull(localDateTime)) {
+                return toDate(localDateTime);
+            }
+        } catch (Exception ignore) {
+        }
+        // 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 LocalDate 不会异常
+        LocalTime localTime = parseLocalTime(source, type);
+        return U.isNotNull(localTime) ? toDate(localTime) : null;
     }
 
     /** 获取一个日期所在天的最开始的时间(00:00:00 000), 对日期查询尤其有用 */
@@ -260,11 +304,13 @@ public class DateTimeUtil {
 
     /** 获取一个日期所在季度的第一毫秒(00:00:00 000) */
     public static LocalDateTime getQuarterStart(LocalDateTime date) {
-        return U.isNull(date) ? null : date.withMonth(date.get(IsoFields.QUARTER_OF_YEAR) * 3 - 2).withDayOfMonth(1).with(LocalTime.MIN);
+        return U.isNull(date) ? null : date.withMonth(date.get(IsoFields.QUARTER_OF_YEAR) * 3 - 2)
+                .withDayOfMonth(1).with(LocalTime.MIN);
     }
     /** 获取一个日期所在季度的最后一毫秒(23:59:59 999) */
     public static LocalDateTime getQuarterEnd(LocalDateTime date) {
-        return U.isNull(date) ? null : date.withMonth(date.get(IsoFields.QUARTER_OF_YEAR) * 3).with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX);
+        return U.isNull(date) ? null : date.withMonth(date.get(IsoFields.QUARTER_OF_YEAR) * 3)
+                .with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX);
     }
 
     /** 获取一个日期所在年的第一毫秒(23:59:59 999) */

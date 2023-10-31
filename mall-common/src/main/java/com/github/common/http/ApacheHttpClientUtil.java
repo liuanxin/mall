@@ -281,7 +281,7 @@ public class ApacheHttpClientUtil {
                 String key = entry.getKey();
                 String value = U.toStr(entry.getValue());
                 entityBuilder.addTextBody(key, value);
-                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
+                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desWithKey(key, value)).append(">");
             }
             sbd.append(")");
         }
@@ -383,7 +383,7 @@ public class ApacheHttpClientUtil {
         for (Header header : headers) {
             String key = header.getName();
             String value = header.getValue();
-            list.add("<" + key + " : " + DesensitizationUtil.desByKey(key, value) + ">");
+            list.add("<" + key + " : " + DesensitizationUtil.desWithKey(key, value) + ">");
         }
         return String.join("", list);
     }

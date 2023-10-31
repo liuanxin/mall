@@ -1010,7 +1010,7 @@ public final class U {
             } else {
                 value = obj.toString();
             }
-            String content = des ? DesensitizationUtil.desByKey(key, value) : value;
+            String content = des ? DesensitizationUtil.desWithKey(key, value) : value;
             joiner.add(key + "=" + (encode ? U.urlEncode(content) : content));
         }
         return joiner.toString();

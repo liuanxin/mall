@@ -12,7 +12,7 @@ public final class DesensitizationUtil {
     private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
     /** 基于 key 脱敏 */
-    public static String desByKey(String key, String value) {
+    public static String desWithKey(String key, String value) {
         if (U.isBlank(key) || U.isBlank(value)) {
             return value;
         }
@@ -41,17 +41,17 @@ public final class DesensitizationUtil {
 
         StringBuilder sbd = new StringBuilder();
         if (start < length) {
-            sbd.append(value, 0, start).append(" ");
+            sbd.append(value, 0, start);
         }
         sbd.append("***");
         if (end > 0 && length > (start + end + 3)) {
-            sbd.append(" ").append(value, length - end, length);
+            sbd.append(value, length - end, length);
         }
         return sbd.toString().trim();
     }
 
-    /** 数字脱敏, 浮点数随机且指定小数位并输出成字符串, 大数随机并输出成字符串, 小数随机 */
-    public static Object descNumber(Number value, double randomNumber, int digitsNumber) {
+    /** 数字脱敏, 浮点数(BigDecimal 或 double 或 float)随机且指定小数位并输出成字符串, 大数(bitInteger 或 long)随机并输出成字符串, 小数随机 */
+    public static Object desNumber(Number value, double randomNumber, int digitsNumber) {
         double random = Math.abs(randomNumber);
         if (value instanceof BigDecimal || value instanceof Double || value instanceof Float) {
             double d = (random != 0) ? RANDOM.nextDouble(random) : value.doubleValue();
@@ -70,10 +70,15 @@ public final class DesensitizationUtil {
         }
     }
 
-    public static void descDate(Date value, long randomDateTimeMillis) {
+    /** 时间脱敏, 返回比指定时间大或者小的时间戳, 随机范围在 1 ~ 指定值 之间, 大还是小也是随机 */
+    public static long desDate(Date value, long randomDateTimeMillis) {
+        long ms = value.getTime();
         long random = Math.abs(randomDateTimeMillis);
         if (random != 0) {
-            value.setTime(Math.abs(value.getTime() - Math.max(1L, RANDOM.nextLong(random))));
+            long r = RANDOM.nextLong(1L, random);
+            return Math.abs(RANDOM.nextBoolean() ? (ms + r) : (ms - r));
+        } else {
+            return ms;
         }
     }
 }

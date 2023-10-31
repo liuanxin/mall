@@ -175,7 +175,7 @@ public class OkHttpClientUtil {
                 String value = U.toStr(entry.getValue());
 
                 builder.addFormDataPart(key, value);
-                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
+                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desWithKey(key, value)).append(">");
             }
             sbd.append(")");
         }
@@ -278,7 +278,7 @@ public class OkHttpClientUtil {
         List<String> list = new ArrayList<>();
         for (String key : headers.names()) {
             String value = headers.get(key);
-            list.add("<" + key + " : " + DesensitizationUtil.desByKey(key, value) + ">");
+            list.add("<" + key + " : " + DesensitizationUtil.desWithKey(key, value) + ">");
         }
         return String.join("", list);
     }

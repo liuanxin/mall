@@ -49,7 +49,7 @@ public class LogTraceFilter implements Filter {
                 String headName = headers.nextElement();
                 String value = request.getHeader(headName);
                 sbd.append("<").append(headName).append(" : ");
-                sbd.append(DesensitizationUtil.desByKey(headName, value));
+                sbd.append(DesensitizationUtil.desWithKey(headName, value));
                 sbd.append(">");
             }
             return sbd.toString();

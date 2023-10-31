@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.github.common.date.DateUtil;
 import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.U;
 
@@ -14,6 +13,8 @@ import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
@@ -43,10 +44,12 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
             handleDate(d, gen, provider);
         }
         else if (obj instanceof LocalDate d) {
-            handleDate(DateUtil.toDate(d), gen, provider);
+            Date date = Date.from(LocalDateTime.of(d, LocalTime.MIN).atZone(ZoneId.systemDefault()).toInstant());
+            handleDate(date, gen, provider);
         }
         else if (obj instanceof LocalDateTime d) {
-            handleDate(DateUtil.toDate(d), gen, provider);
+            Date date = Date.from(d.atZone(ZoneId.systemDefault()).toInstant());
+            handleDate(date, gen, provider);
         }
         else {
             throw new RuntimeException("Annotation @JsonSensitive can not used on types other than String Number Date");
@@ -78,12 +81,13 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
         if (U.isNotNull(field)) {
             JsonSensitive sensitive = getFieldAnnotation(field, JsonSensitive.class);
             if (U.isNotNull(sensitive)) {
-                gen.writeObject(DesensitizationUtil.descNumber(value, sensitive.randomNumber(), sensitive.digitsNumber()));
+                gen.writeObject(DesensitizationUtil.desNumber(value, sensitive.randomNumber(), sensitive.digitsNumber()));
             }
         }
         gen.writeString(value.toString());
     }
 
+    /** @see com.fasterxml.jackson.databind.ser.std.DateSerializer */
     private void handleDate(Date value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
         if (U.isNotNull(field)) {
@@ -92,14 +96,12 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
                 long randomDateTimeMillis = sensitive.randomDateTimeMillis();
                 if (randomDateTimeMillis != 0) {
                     // 修改时间
-                    DesensitizationUtil.descDate(value, randomDateTimeMillis);
+                    value.setTime(DesensitizationUtil.desDate(value, randomDateTimeMillis));
                 }
             }
 
             JsonFormat jsonFormat = getFieldAnnotation(field, JsonFormat.class);
-            // noinspection DuplicatedCode
             if (U.isNotNull(jsonFormat)) {
-                // @see com.fasterxml.jackson.databind.ser.std.DateSerializer
                 JsonFormat.Value format = new JsonFormat.Value(jsonFormat);
                 Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
                 SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
@@ -114,19 +116,15 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
     @SuppressWarnings("unchecked")
     private <T extends Annotation> T getFieldAnnotation(Field field, Class<T> clazz) {
         String key = field.getType().getName() + "#" + field.getName() + "." + clazz.getName();
-        try {
-            T sen = (T) FIELD_MAP.get(key);
-            if (U.isNotNull(sen)) {
-                return sen;
-            } else {
-                T s = field.getAnnotation(clazz);
-                if (U.isNotNull(s)) {
-                    FIELD_MAP.put(key, s);
-                }
-                return s;
-            }
-        } catch (Exception e) {
-            return null;
+        T sen = (T) FIELD_MAP.get(key);
+        if (U.isNotNull(sen)) {
+            return sen;
         }
+
+        T s = field.getAnnotation(clazz);
+        if (U.isNotNull(s)) {
+            FIELD_MAP.put(key, s);
+        }
+        return s;
     }
 }

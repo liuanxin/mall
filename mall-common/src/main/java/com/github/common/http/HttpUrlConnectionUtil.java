@@ -185,7 +185,7 @@ public class HttpUrlConnectionUtil {
                             data.writeBytes(String.format(paramInfo, key));
                             data.writeBytes(value + "\r\n");
 
-                            sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desByKey(key, value)).append(">");
+                            sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desWithKey(key, value)).append(">");
                         }
                         sbd.append(")");
                     }
@@ -336,7 +336,7 @@ public class HttpUrlConnectionUtil {
         for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
             String key = entry.getKey();
             String value = String.join(",", entry.getValue());
-            list.add("<" + key + " : " + DesensitizationUtil.desByKey(key, value) + ">");
+            list.add("<" + key + " : " + DesensitizationUtil.desWithKey(key, value) + ">");
         }
         return String.join("", list);
     }

@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.github.common.date.DateUtil;
+import com.github.common.date.LocalDateUtil;
 import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.U;
 
@@ -90,7 +91,7 @@ public final class JsonModule {
 
         @Override
         public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-            gen.writeString(DesensitizationUtil.desByKey(gen.getOutputContext().getCurrentName(), value));
+            gen.writeString(DesensitizationUtil.desWithKey(gen.getOutputContext().getCurrentName(), value));
         }
     }
 
@@ -198,7 +199,7 @@ public final class JsonModule {
 
         @Override
         public LocalDate deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return DateUtil.toLocalDate(DateUtil.parse(p.getText().trim()));
+            return LocalDateUtil.toLocalDate(DateUtil.parse(p.getText().trim()));
         }
     }
 
@@ -208,7 +209,7 @@ public final class JsonModule {
 
         @Override
         public LocalDateTime deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return DateUtil.toLocalDateTime(DateUtil.parse(p.getText().trim()));
+            return LocalDateUtil.toLocalDateTime(DateUtil.parse(p.getText().trim()));
         }
     }
 
