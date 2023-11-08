@@ -54,6 +54,7 @@ public final class JsonModule {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     private static final Map<String, JsonFormat.Value> FIELD_FORMAT_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, DateTimeFormatter> FORMAT_CACHE = new ConcurrentHashMap<>();
     private static JsonFormat.Value getJsonFormatOnField(JsonGenerator gen) {
@@ -70,10 +71,9 @@ public final class JsonModule {
     private static String format(TemporalAccessor value, JsonGenerator gen, SerializerProvider provider) {
         JsonFormat.Value format = getJsonFormatOnField(gen);
         if (U.isNotNull(format)) {
-            String pattern = format.getPattern();
-            Locale locale = format.hasLocale() ? format.getLocale() : provider.getLocale();
-            DateTimeFormatter formatter = FORMAT_CACHE.computeIfAbsent(pattern, s -> {
+            DateTimeFormatter formatter = FORMAT_CACHE.computeIfAbsent(format.getPattern(), s -> {
                 DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(s);
+                Locale locale = format.hasLocale() ? format.getLocale() : provider.getLocale();
                 if (U.isNotNull(locale)) {
                     dateTimeFormatter.withLocale(locale);
                 }
