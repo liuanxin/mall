@@ -22,16 +22,16 @@ public class MqReceiveService {
     private final MqReceiveMapper mqReceiveMapper;
 
     @Transactional
-    public void add(MqReceive record) {
-        if (record != null) {
-            mqReceiveMapper.insert(record);
+    public void add(MqReceive data) {
+        if (data != null) {
+            mqReceiveMapper.insert(data);
         }
     }
 
     @Transactional
-    public void updateById(MqReceive record) {
-        if (record != null) {
-            mqReceiveMapper.update(record);
+    public void updateById(MqReceive data) {
+        if (data != null) {
+            mqReceiveMapper.update(data);
         }
     }
 

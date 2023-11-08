@@ -15,7 +15,7 @@ public @interface CollectProperty {
 
     /**
      * 值映射. 可以转换成 Map&lt;String, String&gt; 的 json 串, 大写的 OTHER 表示其他
-     *
+     * <br>
      * 如: { "1":"支付宝", "2":"微信", "OTHER":"其他" }, 当标注的属性值是 1 时收集的时候会显示成 支付宝
      */
     String valueMapping() default "";

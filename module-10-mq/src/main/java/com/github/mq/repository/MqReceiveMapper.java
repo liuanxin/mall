@@ -8,5 +8,5 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface MqReceiveMapper extends BaseMapper<MqReceive> {
 
-    int insertOrUpdate(MqReceive record);
+    int insertOrUpdate(MqReceive data);
 }

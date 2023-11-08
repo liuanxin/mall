@@ -22,16 +22,16 @@ public class MqSendService {
     private final MqSendMapper mqSendMapper;
 
     @Transactional
-    public void add(MqSend record) {
-        if (record != null) {
-            mqSendMapper.insert(record);
+    public void add(MqSend data) {
+        if (data != null) {
+            mqSendMapper.insert(data);
         }
     }
 
     @Transactional
-    public void updateById(MqSend record) {
-        if (record != null) {
-            mqSendMapper.update(record);
+    public void updateById(MqSend data) {
+        if (data != null) {
+            mqSendMapper.update(data);
         }
     }
 

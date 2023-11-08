@@ -1,19 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.user.repository.UserTestMapper">
-
-    <select id="selectUserTestJoin" resultType="com.github.user.model.UserTest">
-        SELECT ut.id, ute.`nick_name` "extend.nickName", ute.`gender` "extend.gender", ute.`birthday` "extend.birthday"
-        FROM `t_user_test` ut INNER JOIN `t_user_test_extend` ute ON ut.id = ute.user_id
-        <if test="record != null">
-            <where>
-                <if test="record.gender != null">
-                    ute.`gender` = #{record.gender.code}
-                </if>
-                <if test="record.birthday != null and record.birthday != ''">
-                    ute.`birthday` = #{record.birthday}
-                </if>
-            </where>
-        </if>
-    </select>
 </mapper>

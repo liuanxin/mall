@@ -2,6 +2,7 @@ package com.github.common.bean;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.github.common.Multi;
 import com.github.common.date.DateUtil;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
@@ -39,7 +40,7 @@ public final class BeanChange {
             return DEL;
         }
 
-        List<BeanField> fieldList = new ArrayList<>();
+        List<Multi.Two<Integer, String>> fieldList = new ArrayList<>();
         CollectProperty.Group all = CollectProperty.Group.ALL;
         for (Field field : U.getFields(oldObj)) {
             String fieldName = field.getName();
@@ -71,16 +72,16 @@ public final class BeanChange {
                 if (U.notEquals(oldValue, newValue)) {
                     String value = compareValue(getValue(oldValue, dateFormat), getValue(newValue, dateFormat), name, map);
                     if (U.isNotBlank(value)) {
-                        fieldList.add(new BeanField(order, value));
+                        fieldList.add(new Multi.Two<>(order, value));
                     }
                 }
             }
         }
         if (A.isNotEmpty(fieldList)) {
-            fieldList.sort(Comparator.comparingInt(BeanField::order));
+            fieldList.sort(Comparator.comparingInt(Multi.Two::one));
             List<String> values = new ArrayList<>();
-            for (BeanField field : fieldList) {
-                values.add(U.toStr(field.value()));
+            for (Multi.Two<Integer, String> field : fieldList) {
+                values.add(U.toStr(field.two()));
             }
             return "<" + String.join(">,<", values) + ">";
         }
