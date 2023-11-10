@@ -337,7 +337,6 @@ public class ApacheHttpClientUtil {
         Header[] reqHeaders = request.getAllHeaders();
         Header[] resHeaders = null;
         Integer responseCode = null;
-        String resCode = "";
         String result = null;
         long start = System.currentTimeMillis();
         try (
@@ -350,11 +349,10 @@ public class ApacheHttpClientUtil {
                     resHeaders = response.getAllHeaders();
                     StatusLine status = response.getStatusLine();
                     responseCode = status.getStatusCode();
-                    resCode = responseCode + " ";
                     result = EntityUtils.toString(entity, StandardCharsets.UTF_8);
                     if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                         LogUtil.ROOT_LOG.info(collectContext(start, method, url, printParams,
-                                printJsonBody, reqHeaders, resCode, resHeaders, result));
+                                printJsonBody, reqHeaders, responseCode, resHeaders, result));
                     }
                 } finally {
                     EntityUtils.consume(entity);
@@ -363,7 +361,7 @@ public class ApacheHttpClientUtil {
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error(collectContext(start, method, url, printParams,
-                        printJsonBody, reqHeaders, resCode, resHeaders, result), e);
+                        printJsonBody, reqHeaders, responseCode, resHeaders, result), e);
             }
         }
         return new ResponseData(responseCode, handleResponseHeader(resHeaders), result);
@@ -388,7 +386,7 @@ public class ApacheHttpClientUtil {
         return String.join("", list);
     }
     private static String collectContext(long start, String method, String url, String printParams, String printJsonBody,
-                                         Header[] reqHeaders, String statusCode, Header[] resHeaders, String result) {
+                                         Header[] reqHeaders, Integer statusCode, Header[] resHeaders, String result) {
         StringBuilder sbd = new StringBuilder();
         long now = System.currentTimeMillis();
         sbd.append("Apache-HttpClient4 => [")
@@ -412,16 +410,20 @@ public class ApacheHttpClientUtil {
             }
             sbd.append("body(").append(U.compress(printJsonBody)).append(")");
         }
-        sbd.append("], res[").append(statusCode);
-        boolean hasResHeader = A.isNotEmpty(resHeaders);
-        if (hasResHeader) {
-            sbd.append("header(").append(headerInfo(reqHeaders)).append(")");
+        sbd.append("], res[");
+        if (U.isNotNull(statusCode)) {
+            sbd.append(statusCode);
         }
-        boolean hasResult = U.isNotBlank(result);
-        if (hasResHeader && hasResult) {
-            sbd.append(" ");
+        if (A.isNotEmpty(resHeaders)) {
+            if (!sbd.toString().endsWith("[")) {
+                sbd.append(" ");
+            }
+            sbd.append(" header(").append(headerInfo(reqHeaders)).append(")");
         }
-        if (hasResult) {
+        if (U.isNotBlank(result)) {
+            if (!sbd.toString().endsWith("[")) {
+                sbd.append(" ");
+            }
             sbd.append("return(").append(U.compress(result)).append(")");
         }
         sbd.append("]");

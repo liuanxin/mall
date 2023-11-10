@@ -143,7 +143,6 @@ public class HttpClientUtil {
         Map<String, List<String>> reqHeaders = null;
         StringBuilder sbd = new StringBuilder();
         Integer responseCode = null;
-        String resCode = "";
         Map<String, List<String>> resHeaders = null;
         String result = null;
 
@@ -209,17 +208,16 @@ public class HttpClientUtil {
             reqHeaders = request.headers().map();
             HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             responseCode = response.statusCode();
-            resCode = responseCode + " ";
             resHeaders = response.headers().map();
             result = response.body();
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 String print = String.format("upload file[%s]", sbd);
-                LogUtil.ROOT_LOG.info(collectContext(start, useMethod, url, print, reqHeaders, resCode, resHeaders, result));
+                LogUtil.ROOT_LOG.info(collectContext(start, useMethod, url, print, reqHeaders, responseCode, resHeaders, result));
             }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 String print = String.format("upload file[%s]", sbd);
-                LogUtil.ROOT_LOG.error(collectContext(start, useMethod, url, print, reqHeaders, resCode, resHeaders, result), e);
+                LogUtil.ROOT_LOG.error(collectContext(start, useMethod, url, print, reqHeaders, responseCode, resHeaders, result), e);
             }
         }
         return new ResponseData(responseCode, handleResponseHeader(resHeaders), result);
@@ -234,7 +232,6 @@ public class HttpClientUtil {
         printData = U.defaultIfBlank(printData, data);
         Map<String, List<String>> reqHeaders = null;
         Integer responseCode = null;
-        String resCode = "";
         Map<String, List<String>> resHeaders = null;
         String result = null;
         try {
@@ -261,15 +258,14 @@ public class HttpClientUtil {
             reqHeaders = request.headers().map();
             HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             responseCode = response.statusCode();
-            resCode = responseCode + " ";
             resHeaders = response.headers().map();
             result = response.body();
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info(collectContext(start, method, url, printData, reqHeaders, resCode, resHeaders, result));
+                LogUtil.ROOT_LOG.info(collectContext(start, method, url, printData, reqHeaders, responseCode, resHeaders, result));
             }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(collectContext(start, method, url, printData, reqHeaders, resCode, resHeaders, result), e);
+                LogUtil.ROOT_LOG.error(collectContext(start, method, url, printData, reqHeaders, responseCode, resHeaders, result), e);
             }
         }
         return new ResponseData(responseCode, handleResponseHeader(resHeaders), result);
@@ -294,7 +290,7 @@ public class HttpClientUtil {
         return String.join("", list);
     }
     private static String collectContext(long start, String method, String url, String params,
-                                         Map<String, List<String>> reqHeaders, String resCode,
+                                         Map<String, List<String>> reqHeaders, Integer resCode,
                                          Map<String, List<String>> resHeaders, String result) {
         StringBuilder sbd = new StringBuilder();
         long now = System.currentTimeMillis();
@@ -310,21 +306,25 @@ public class HttpClientUtil {
         }
         boolean hasParam = U.isNotBlank(params);
         if (hasParam) {
-            if (hasReqHeader) {
+            if (!sbd.toString().endsWith("[")) {
                 sbd.append(" ");
             }
             sbd.append("param|body(").append(U.compress(params)).append(")");
         }
-        sbd.append("], res[").append(resCode);
-        boolean hasResHeader = A.isNotEmpty(resHeaders);
-        if (hasResHeader) {
+        sbd.append("], res[");
+        if (U.isNotNull(resCode)) {
+            sbd.append(resCode);
+        }
+        if (A.isNotEmpty(resHeaders)) {
+            if (!sbd.toString().endsWith("[")) {
+                sbd.append(" ");
+            }
             sbd.append("header(").append(headerInfo(resHeaders)).append(")");
         }
-        boolean hasResult = U.isNotBlank(result);
-        if (hasResHeader && hasResult) {
-            sbd.append(" ");
-        }
-        if (hasResult) {
+        if (U.isNotBlank(result)) {
+            if (!sbd.toString().endsWith("[")) {
+                sbd.append(" ");
+            }
             sbd.append("return(").append(U.compress(result)).append(")");
         }
         sbd.append("]");

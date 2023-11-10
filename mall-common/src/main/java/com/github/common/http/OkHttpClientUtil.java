@@ -241,7 +241,6 @@ public class OkHttpClientUtil {
         Headers reqHeaders = request.headers();
         Headers resHeaders = null;
         Integer responseCode = null;
-        String statusCode = "";
         String result = "";
         long start = System.currentTimeMillis();
         try (
@@ -250,16 +249,15 @@ public class OkHttpClientUtil {
         ) {
             resHeaders = response.headers();
             responseCode = response.code();
-            statusCode = responseCode + " ";
             result = U.isNotNull(body) ? body.string() : null;
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info(collectContext(start, method, url, printParams,
-                        printJsonBody, reqHeaders, statusCode, resHeaders, result));
+                        printJsonBody, reqHeaders, responseCode, resHeaders, result));
             }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error(collectContext(start, method, url, printParams,
-                        printJsonBody, reqHeaders, statusCode, resHeaders, result), e);
+                        printJsonBody, reqHeaders, responseCode, resHeaders, result), e);
             }
         }
         return new ResponseData(responseCode, handleResponseHeader(resHeaders), result);
@@ -283,7 +281,7 @@ public class OkHttpClientUtil {
         return String.join("", list);
     }
     private static String collectContext(long start, String method, String url, String printParams, String printJsonBody,
-                                         Headers reqHeaders, String statusCode, Headers resHeaders, String result) {
+                                         Headers reqHeaders, Integer statusCode, Headers resHeaders, String result) {
         StringBuilder sbd = new StringBuilder();
         long now = System.currentTimeMillis();
         sbd.append("OkHttp3 => [")
@@ -307,16 +305,20 @@ public class OkHttpClientUtil {
             }
             sbd.append("body(").append(U.compress(printJsonBody)).append(")");
         }
-        sbd.append("], res[").append(statusCode);
-        boolean hasResHeader = U.isNotNull(resHeaders);
-        if (hasResHeader) {
+        sbd.append("], res[");
+        if (U.isNotNull(statusCode)) {
+            sbd.append(statusCode);
+        }
+        if (U.isNotNull(resHeaders)) {
+            if (!sbd.toString().endsWith("[")) {
+                sbd.append(" ");
+            }
             sbd.append(" header(").append(headerInfo(resHeaders)).append(")");
         }
-        boolean hasResult = U.isNotBlank(result);
-        if (hasResHeader && hasResult) {
-            sbd.append(" ");
-        }
-        if (hasResult) {
+        if (U.isNotBlank(result)) {
+            if (!sbd.toString().endsWith("[")) {
+                sbd.append(" ");
+            }
             sbd.append("return(").append(U.compress(result)).append(")");
         }
         sbd.append("]");

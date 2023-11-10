@@ -134,7 +134,7 @@ public class HttpUrlConnectionUtil {
         StringBuilder sbd = new StringBuilder();
         String result = null;
         Map<String, List<String>> resHeaders = null;
-        String resCode = "";
+        Integer resCode = null;
         url = HttpConst.handleEmptyScheme(url);
         try {
             if (url.startsWith("https://")) {
@@ -216,7 +216,7 @@ public class HttpUrlConnectionUtil {
             con.connect();
 
             resHeaders = con.getHeaderFields();
-            resCode = con.getResponseCode() + " ";
+            resCode = con.getResponseCode();
             try (
                     InputStream input = con.getInputStream();
                     ByteArrayOutputStream output = new ByteArrayOutputStream()
@@ -246,7 +246,6 @@ public class HttpUrlConnectionUtil {
         HttpURLConnection con = null;
         Map<String, List<String>> reqHeaders = null;
         Map<String, List<String>> resHeaders = null;
-        String resCode = "";
         Integer responseCode = null;
         String result = "";
         String useUrl = HttpConst.handleEmptyScheme(url);
@@ -298,7 +297,6 @@ public class HttpUrlConnectionUtil {
                 break;
             }
 
-            resCode = responseCode + " ";
             try (
                     InputStream input = con.getInputStream();
                     ByteArrayOutputStream output = new ByteArrayOutputStream()
@@ -308,11 +306,11 @@ public class HttpUrlConnectionUtil {
             }
             resHeaders = con.getHeaderFields();
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info(collectContext(start, method, url, data, reqHeaders, resCode, resHeaders, count, result));
+                LogUtil.ROOT_LOG.info(collectContext(start, method, url, data, reqHeaders, responseCode, resHeaders, count, result));
             }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(collectContext(start, method, url, data, reqHeaders, resCode, resHeaders, count, result), e);
+                LogUtil.ROOT_LOG.error(collectContext(start, method, url, data, reqHeaders, responseCode, resHeaders, count, result), e);
             }
         } finally {
             if (con != null) {
@@ -341,7 +339,7 @@ public class HttpUrlConnectionUtil {
         return String.join("", list);
     }
     private static String collectContext(long start, String method, String url, String params,
-                                         Map<String, List<String>> reqHeaders, String resCode,
+                                         Map<String, List<String>> reqHeaders, Integer resCode,
                                          Map<String, List<String>> resHeaders, int redirectCount, String result) {
         StringBuilder sbd = new StringBuilder();
         long now = System.currentTimeMillis();
@@ -365,16 +363,20 @@ public class HttpUrlConnectionUtil {
             }
             sbd.append("param|body(").append(U.compress(params)).append(")");
         }
-        sbd.append("], res[").append(resCode);
-        boolean hasResHeader = A.isNotEmpty(resHeaders);
-        if (hasResHeader) {
+        sbd.append("], res[");
+        if (U.isNotNull(resCode)) {
+            sbd.append(resCode);
+        }
+        if (A.isNotEmpty(resHeaders)) {
+            if (!sbd.toString().endsWith("[")) {
+                sbd.append(" ");
+            }
             sbd.append("header(").append(headerInfo(resHeaders)).append(")");
         }
-        boolean hasResult = U.isNotBlank(result);
-        if (hasResHeader && hasResult) {
-            sbd.append(" ");
-        }
-        if (hasResult) {
+        if (U.isNotBlank(result)) {
+            if (!sbd.toString().endsWith("[")) {
+                sbd.append(" ");
+            }
             sbd.append("return(").append(U.compress(result)).append(")");
         }
         sbd.append("]");
