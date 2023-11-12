@@ -299,12 +299,21 @@ public class HttpUrlConnectionUtil {
 
             try (
                     InputStream input = con.getInputStream();
-                    ByteArrayOutputStream output = new ByteArrayOutputStream()
+                    InputStreamReader in = new InputStreamReader(input);
+                    BufferedReader reader = new BufferedReader(in)
             ) {
-                U.inputToOutput(input, output);
-                result = output.toString(StandardCharsets.UTF_8);
+                StringBuilder sbd = new StringBuilder();
+                for (String line; (line = reader.readLine()) != null;) {
+                    sbd.append(line);
+                }
+                result = sbd.toString();
             }
             resHeaders = con.getHeaderFields();
+            // ??? null -> HTTP/1.1 200 OK
+            String nilInfo = A.first(resHeaders.get(null));
+            if (U.isNotBlank(result) && U.isNotBlank(nilInfo) && result.endsWith(nilInfo)) {
+                result = result.substring(0, result.length() - nilInfo.length());
+            }
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info(collectContext(start, method, url, data, reqHeaders, responseCode, resHeaders, count, result));
             }
