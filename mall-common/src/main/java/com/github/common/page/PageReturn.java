@@ -33,7 +33,7 @@ public class PageReturn<T> {
         this.total = total;
     }
 
-    public static <T> PageReturn<T> emptyReturn() {
+    public static <T> PageReturn<T> returnEmpty() {
         return EMPTY;
     }
     public static <T> PageReturn<T> returnTotal(long total) {

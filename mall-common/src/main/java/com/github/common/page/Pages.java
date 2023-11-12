@@ -44,7 +44,7 @@ public final class Pages {
     /** 在 service 的实现类中调用 --> 在 repository 方法上的返回类型是 mbp 的 Page 对象, service 上的返回类型是 PageReturn, 使用此方法进行转换 */
     public static <T> PageReturn<T> returnPage(Page<T> pageInfo) {
         if (U.isNull(pageInfo)) {
-            return PageReturn.emptyReturn();
+            return PageReturn.returnEmpty();
         } else {
             return PageReturn.returnPage(pageInfo.getTotalRow(), pageInfo.getRecords());
         }
@@ -52,12 +52,12 @@ public final class Pages {
 
     public static <T,S> PageReturn<T> returnPage(Page<S> page, Class<T> clazz) {
         if (U.isNull(page)) {
-            return PageReturn.emptyReturn();
+            return PageReturn.returnEmpty();
         }
 
         long total = page.getTotalRow();
         if (U.less0(total)) {
-            return PageReturn.emptyReturn();
+            return PageReturn.returnEmpty();
         }
 
         List<S> objList = page.getRecords();
