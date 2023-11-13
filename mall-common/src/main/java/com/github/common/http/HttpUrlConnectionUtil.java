@@ -311,8 +311,12 @@ public class HttpUrlConnectionUtil {
             resHeaders = con.getHeaderFields();
             // ??? null -> HTTP/1.1 200 OK
             String nilInfo = A.first(resHeaders.get(null));
-            if (U.isNotBlank(result) && U.isNotBlank(nilInfo) && result.endsWith(nilInfo)) {
-                result = result.substring(0, result.length() - nilInfo.length());
+            if (U.isNotBlank(result) && U.isNotBlank(nilInfo)) {
+                if (result.endsWith(nilInfo)) {
+                    result = result.substring(0, result.length() - nilInfo.length());
+                } else if (result.startsWith(nilInfo)) {
+                    result = result.substring(nilInfo.length());
+                }
             }
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info(collectContext(start, method, url, data, reqHeaders, responseCode, resHeaders, count, result));
