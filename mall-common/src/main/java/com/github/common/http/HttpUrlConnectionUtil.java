@@ -224,6 +224,15 @@ public class HttpUrlConnectionUtil {
                 U.inputToOutput(input, output);
                 result = output.toString(StandardCharsets.UTF_8);
             }
+            // ??? null -> HTTP/1.1 200 OK
+            String nilInfo = A.first(resHeaders.get(null));
+            if (U.isNotBlank(result) && U.isNotBlank(nilInfo)) {
+                if (result.endsWith(nilInfo)) {
+                    result = result.substring(0, result.length() - nilInfo.length());
+                } else if (result.startsWith(nilInfo)) {
+                    result = result.substring(nilInfo.length());
+                }
+            }
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 String print = String.format("upload file[%s]", sbd);
                 LogUtil.ROOT_LOG.info(collectContext(start, "POST", url, print, reqHeaders, resCode, resHeaders, 0, result));
