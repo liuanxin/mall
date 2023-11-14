@@ -137,10 +137,14 @@ public class ApacheHttpClientUtil {
     }
     /** 向指定 url 进行 get 请求(普通表单方式) */
     public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers) {
+        return get(url, params, headers, true);
+    }
+    /** 向指定 url 进行 get 请求(普通表单方式) */
+    public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
         String useUrl = HttpConst.appendParamsToUrl(HttpConst.handleEmptyScheme(url), params);
         HttpGet request = new HttpGet(useUrl);
         handleHeader(request, HttpConst.handleContentType(headers, false));
-        return handleRequest(request, null, null);
+        return handleRequest(request, null, null, printLog);
     }
 
 
@@ -150,6 +154,10 @@ public class ApacheHttpClientUtil {
     }
     /** 向指定的 url 进行 post 请求(普通表单方式) */
     public static ResponseData postWithUrlEncodeInBody(String url, Map<String, Object> params, Map<String, Object> headers) {
+        return postWithUrlEncodeInBody(url, params, headers, true);
+    }
+    /** 向指定的 url 进行 post 请求(普通表单方式) */
+    public static ResponseData postWithUrlEncodeInBody(String url, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
         HttpPost request = new HttpPost(HttpConst.handleEmptyScheme(url));
         List<NameValuePair> nameValuePairs = new ArrayList<>();
         if (A.isNotEmpty(params)) {
@@ -163,7 +171,7 @@ public class ApacheHttpClientUtil {
             request.setEntity(new UrlEncodedFormEntity(nameValuePairs, StandardCharsets.UTF_8));
         }
         handleHeader(request, HttpConst.handleContentType(headers, false));
-        return handleRequest(request, U.formatParam(params), null);
+        return handleRequest(request, U.formatParam(params), null, printLog);
     }
 
     /** 向指定的 url 基于 post 发起请求 */
@@ -180,12 +188,16 @@ public class ApacheHttpClientUtil {
     }
     /** 向指定的 url 基于 post 发起请求 */
     public static ResponseData postWithJsonInBody(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
+        return postWithJsonInBody(url, params, json, headers, true);
+    }
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithJsonInBody(String url, Map<String, Object> params, String json, Map<String, Object> headers, boolean printLog) {
         String useUrl = HttpConst.appendParamsToUrl(HttpConst.handleEmptyScheme(url), params);
         HttpPost request = new HttpPost(useUrl);
         String content = U.toStr(json);
         request.setEntity(new ByteArrayEntity(content.getBytes(StandardCharsets.UTF_8)));
         handleHeader(request, HttpConst.handleContentType(headers, true));
-        return handleRequest(request, null, content);
+        return handleRequest(request, null, content, printLog);
     }
 
     /** 向指定的 url 基于 post 发起请求 */
@@ -202,12 +214,16 @@ public class ApacheHttpClientUtil {
     }
     /** 向指定的 url 基于 post 发起请求 */
     public static ResponseData postWithXmlInBody(String url, Map<String, Object> params, String xml, Map<String, Object> headers) {
+        return postWithXmlInBody(url, params, xml, headers, true);
+    }
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithXmlInBody(String url, Map<String, Object> params, String xml, Map<String, Object> headers, boolean printLog) {
         String useUrl = HttpConst.appendParamsToUrl(HttpConst.handleEmptyScheme(url), params);
         HttpPost request = new HttpPost(useUrl);
         String content = U.toStr(xml);
         request.setEntity(new ByteArrayEntity(content.getBytes(StandardCharsets.UTF_8)));
         handleHeader(request, HttpConst.handleXml(headers));
-        return handleRequest(request, null, content);
+        return handleRequest(request, null, content, printLog);
     }
 
 
@@ -225,12 +241,16 @@ public class ApacheHttpClientUtil {
     }
     /** 向指定的 url 基于 put 发起请求 */
     public static ResponseData put(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
+        return put(url, params, json, headers, true);
+    }
+    /** 向指定的 url 基于 put 发起请求 */
+    public static ResponseData put(String url, Map<String, Object> params, String json, Map<String, Object> headers, boolean printLog) {
         String useUrl = HttpConst.appendParamsToUrl(HttpConst.handleEmptyScheme(url), params);
         HttpPut request = new HttpPut(useUrl);
         String content = U.toStr(json);
         request.setEntity(new ByteArrayEntity(content.getBytes(StandardCharsets.UTF_8)));
         handleHeader(request, HttpConst.handleContentType(headers, true));
-        return handleRequest(request, null, content);
+        return handleRequest(request, null, content, printLog);
     }
 
 
@@ -240,6 +260,10 @@ public class ApacheHttpClientUtil {
     }
     /** 向指定的 url 基于 delete 发起请求 */
     public static ResponseData delete(String url, String json, Map<String, Object> headers) {
+        return delete(url, json, headers, true);
+    }
+    /** 向指定的 url 基于 delete 发起请求 */
+    public static ResponseData delete(String url, String json, Map<String, Object> headers, boolean printLog) {
         HttpEntityEnclosingRequestBase request = new HttpEntityEnclosingRequestBase() {
             @Override
             public String getMethod() {
@@ -250,7 +274,7 @@ public class ApacheHttpClientUtil {
         request.setURI(URI.create(HttpConst.handleEmptyScheme(url)));
         request.setEntity(new ByteArrayEntity(content.getBytes(StandardCharsets.UTF_8)));
         handleHeader(request, HttpConst.handleContentType(headers, true));
-        return handleRequest(request, null, content);
+        return handleRequest(request, null, content, printLog);
     }
 
 
@@ -261,6 +285,11 @@ public class ApacheHttpClientUtil {
     /** 向指定 url 上传文件, 只支持 POST|PUT(默认是 POST) + form-data 的方式 */
     public static ResponseData uploadFile(String url, String method, Map<String, Object> headers,
                                           Map<String, Object> params, Map<String, File> files) {
+        return uploadFile(url, method, headers, params, files, true);
+    }
+    /** 向指定 url 上传文件, 只支持 POST|PUT(默认是 POST) + form-data 的方式 */
+    public static ResponseData uploadFile(String url, String method, Map<String, Object> headers,
+                                          Map<String, Object> params, Map<String, File> files, boolean printLog) {
         if (A.isEmpty(params)) {
             params = new HashMap<>();
         }
@@ -304,7 +333,7 @@ public class ApacheHttpClientUtil {
         if (hasParam || hasFile) {
             request.setEntity(entityBuilder.build());
         }
-        return handleRequest(request, String.format("upload file[%s]", sbd), null);
+        return handleRequest(request, String.format("upload file[%s]", sbd), null, printLog);
     }
 
 
@@ -319,7 +348,7 @@ public class ApacheHttpClientUtil {
             }
         }
     }
-    private static ResponseData handleRequest(HttpRequestBase request, String printParams, String printJsonBody) {
+    private static ResponseData handleRequest(HttpRequestBase request, String printParams, String printJsonBody, boolean printLog) {
         request.setConfig(config());
 
         request.setHeader("User-Agent", USER_AGENT);
@@ -350,7 +379,7 @@ public class ApacheHttpClientUtil {
                     StatusLine status = response.getStatusLine();
                     responseCode = status.getStatusCode();
                     result = EntityUtils.toString(entity, StandardCharsets.UTF_8);
-                    if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+                    if (printLog && LogUtil.ROOT_LOG.isInfoEnabled()) {
                         LogUtil.ROOT_LOG.info(collectContext(start, method, url, printParams,
                                 printJsonBody, reqHeaders, responseCode, resHeaders, result));
                     }

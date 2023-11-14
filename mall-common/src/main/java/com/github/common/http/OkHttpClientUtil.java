@@ -22,7 +22,9 @@ public class OkHttpClientUtil {
 
     private static final String USER_AGENT = HttpConst.getUserAgent("okhttp3");
 
-    /** 连接保持时间, 单位: 分, 默认是 5. 见: {@link okhttp3.ConnectionPool} */
+    /**
+     * 连接保持时间, 单位: 分, 默认是 5. 见: {@link okhttp3.ConnectionPool}
+     */
     private static final int CONNECTION_KEEP_ALIVE_TIME = 5;
 
     // 请求有三种方式:
@@ -34,6 +36,7 @@ public class OkHttpClientUtil {
     private static final MediaType JSON = MediaType.get("application/json");
 
     private static final OkHttpClient HTTP_CLIENT;
+
     static {
         OkHttpClient.Builder builder = new OkHttpClient().newBuilder()
                 .connectTimeout(HttpConst.CONNECT_TIME_OUT, TimeUnit.MILLISECONDS)
@@ -59,12 +62,15 @@ public class OkHttpClientUtil {
     }
     /** 向指定 url 进行 get 请求(普通表单方式) */
     public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers) {
+        return get(url, params, headers, true);
+    }
+    /** 向指定 url 进行 get 请求(普通表单方式) */
+    public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
         String useUrl = HttpConst.appendParamsToUrl(url, params);
         Request.Builder builder = new Request.Builder();
         handleHeader(builder, HttpConst.handleContentType(headers, false));
-        return handleRequest(useUrl, builder, null, null);
+        return handleRequest(useUrl, builder, null, null, printLog);
     }
-
 
     /** 向指定的 url 进行 post 请求(普通表单方式) */
     public static ResponseData postWithUrlEncodeInBody(String url, Map<String, Object> params) {
@@ -72,10 +78,14 @@ public class OkHttpClientUtil {
     }
     /** 向指定的 url 进行 post 请求(普通表单方式) */
     public static ResponseData postWithUrlEncodeInBody(String url, Map<String, Object> params, Map<String, Object> headers) {
+        return postWithUrlEncodeInBody(url, params, headers, true);
+    }
+    /** 向指定的 url 进行 post 请求(普通表单方式) */
+    public static ResponseData postWithUrlEncodeInBody(String url, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
         RequestBody requestBody = RequestBody.create(U.formatParam(false, true, params), FORM);
         Request.Builder builder = new Request.Builder().post(requestBody);
         handleHeader(builder, HttpConst.handleContentType(headers, false));
-        return handleRequest(url, builder, U.formatParam(params), null);
+        return handleRequest(url, builder, U.formatParam(params), null, printLog);
     }
 
     /** 向指定的 url 基于 post 发起请求 */
@@ -92,14 +102,21 @@ public class OkHttpClientUtil {
     }
     /** 向指定的 url 基于 post 发起请求 */
     public static ResponseData postWithJsonInBody(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
+        return postWithJsonInBody(url, params, json, headers, true);
+    }
+
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithJsonInBody(String url, Map<String, Object> params, String json, Map<String, Object> headers, boolean printLog) {
         String content = U.toStr(json);
         String useUrl = HttpConst.appendParamsToUrl(url, params);
         Request.Builder builder = new Request.Builder().post(RequestBody.create(content, JSON));
         handleHeader(builder, HttpConst.handleContentType(headers, true));
-        return handleRequest(useUrl, builder, null, content);
+        return handleRequest(useUrl, builder, null, content, printLog);
     }
 
-    /** 向指定的 url 基于 post 发起请求 */
+    /**
+     * 向指定的 url 基于 post 发起请求
+     */
     public static ResponseData postWithXmlInBody(String url, String xml) {
         return postWithXmlInBody(url, null, xml, null);
     }
@@ -113,13 +130,16 @@ public class OkHttpClientUtil {
     }
     /** 向指定的 url 基于 post 发起请求 */
     public static ResponseData postWithXmlInBody(String url, Map<String, Object> params, String xml, Map<String, Object> headers) {
+        return postWithXmlInBody(url, params, xml, headers, true);
+    }
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithXmlInBody(String url, Map<String, Object> params, String xml, Map<String, Object> headers, boolean printLog) {
         String content = U.toStr(xml);
         String useUrl = HttpConst.appendParamsToUrl(url, params);
         Request.Builder builder = new Request.Builder().post(RequestBody.create(content, JSON));
         handleHeader(builder, HttpConst.handleXml(headers));
-        return handleRequest(useUrl, builder, null, content);
+        return handleRequest(useUrl, builder, null, content, printLog);
     }
-
 
     /** 向指定的 url 基于 put 发起请求 */
     public static ResponseData put(String url, String json) {
@@ -135,12 +155,17 @@ public class OkHttpClientUtil {
     }
     /** 向指定的 url 基于 put 发起请求 */
     public static ResponseData put(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
+        return put(url, params, json, headers, true);
+    }
+
+    /** 向指定的 url 基于 put 发起请求 */
+    public static ResponseData put(String url, Map<String, Object> params, String json, Map<String, Object> headers, boolean printLog) {
         String content = U.toStr(json);
         String useUrl = HttpConst.appendParamsToUrl(url, params);
         RequestBody requestBody = RequestBody.create(content, JSON);
         Request.Builder builder = new Request.Builder().put(requestBody);
         handleHeader(builder, HttpConst.handleContentType(headers, true));
-        return handleRequest(useUrl, builder, null, content);
+        return handleRequest(useUrl, builder, null, content, printLog);
     }
 
 
@@ -148,13 +173,19 @@ public class OkHttpClientUtil {
     public static ResponseData delete(String url, String json) {
         return deleteWithHeader(url, json, null);
     }
+
     /** 向指定的 url 基于 delete 发起请求 */
     public static ResponseData deleteWithHeader(String url, String json, Map<String, Object> headers) {
+        return deleteWithHeader(url, json, headers, true);
+    }
+
+    /** 向指定的 url 基于 delete 发起请求 */
+    public static ResponseData deleteWithHeader(String url, String json, Map<String, Object> headers, boolean printLog) {
         String content = U.toStr(json);
         RequestBody requestBody = RequestBody.create(content, JSON);
         Request.Builder builder = new Request.Builder().delete(requestBody);
         handleHeader(builder, HttpConst.handleContentType(headers, true));
-        return handleRequest(url, builder, null, content);
+        return handleRequest(url, builder, null, content, printLog);
     }
 
 
@@ -165,6 +196,11 @@ public class OkHttpClientUtil {
     /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
     public static ResponseData uploadFile(String url, String method, Map<String, Object> headers,
                                           Map<String, Object> params, Map<String, File> files) {
+        return uploadFile(url, method, headers, params, files, true);
+    }
+    /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
+    public static ResponseData uploadFile(String url, String method, Map<String, Object> headers,
+                                          Map<String, Object> params, Map<String, File> files, boolean printLog) {
         MultipartBody.Builder builder = new MultipartBody.Builder().setType(FORM_DATA);
         StringBuilder sbd = new StringBuilder();
         boolean hasParam = A.isNotEmpty(params);
@@ -209,7 +245,7 @@ public class OkHttpClientUtil {
             request = new Request.Builder().post(builder.build());
         }
         handleHeader(request, HttpConst.handleContentType(headers));
-        return handleRequest(url, request, String.format("upload file[%s]", sbd), null);
+        return handleRequest(url, request, String.format("upload file[%s]", sbd), null, printLog);
     }
 
 
@@ -226,7 +262,7 @@ public class OkHttpClientUtil {
         }
     }
     /** 发起 http 请求 */
-    private static ResponseData handleRequest(String url, Request.Builder builder, String printParams, String printJsonBody) {
+    private static ResponseData handleRequest(String url, Request.Builder builder, String printParams, String printJsonBody, boolean printLog) {
         String traceId = LogUtil.getTraceId();
         if (U.isNotBlank(traceId)) {
             builder.header(Const.TRACE, traceId);
@@ -250,7 +286,7 @@ public class OkHttpClientUtil {
             resHeaders = response.headers();
             responseCode = response.code();
             result = U.isNotNull(body) ? body.string() : null;
-            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
+            if (printLog && LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info(collectContext(start, method, url, printParams,
                         printJsonBody, reqHeaders, responseCode, resHeaders, result));
             }
