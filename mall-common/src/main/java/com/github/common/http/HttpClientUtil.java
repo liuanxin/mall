@@ -49,8 +49,12 @@ public class HttpClientUtil {
     }
     /** 向指定 url 进行 get 请求(普通表单方式) */
     public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
+        return get(url, 0, params, headers, printLog);
+    }
+    /** 向指定 url 进行 get 请求(普通表单方式) */
+    public static ResponseData get(String url, int timeoutSecond, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
         Map<String, Object> headerMap = HttpConst.handleContentType(headers, false);
-        return handleRequest("GET", HttpConst.appendParamsToUrl(url, params), null, null, headerMap, printLog);
+        return handleRequest("GET", HttpConst.appendParamsToUrl(url, params), timeoutSecond, null, null, headerMap, printLog);
     }
 
 
@@ -64,8 +68,12 @@ public class HttpClientUtil {
     }
     /** 向指定的 url 进行 post 请求(表单) */
     public static ResponseData postWithUrlEncodeInBody(String url, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
+        return postWithUrlEncodeInBody(url, 0, params, headers, printLog);
+    }
+    /** 向指定的 url 进行 post 请求(表单) */
+    public static ResponseData postWithUrlEncodeInBody(String url, int timeoutSecond, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
         Map<String, Object> headerMap = HttpConst.handleContentType(headers, false);
-        return handleRequest("POST", url, U.formatParam(false, true, params), U.formatParam(params), headerMap, printLog);
+        return handleRequest("POST", url, timeoutSecond, U.formatParam(false, true, params), U.formatParam(params), headerMap, printLog);
     }
 
     /** 向指定的 url 基于 post 发起请求 */
@@ -86,10 +94,14 @@ public class HttpClientUtil {
     }
     /** 向指定的 url 基于 post 发起请求 */
     public static ResponseData postWithJsonInBody(String url, Map<String, Object> params, String json, Map<String, Object> headers, boolean printLog) {
+        return postWithJsonInBody(url, 0, params, json, headers, printLog);
+    }
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithJsonInBody(String url, int timeoutSecond, Map<String, Object> params, String json, Map<String, Object> headers, boolean printLog) {
         String content = U.toStr(json);
         String useUrl = HttpConst.appendParamsToUrl(url, params);
         Map<String, Object> headerMap = HttpConst.handleContentType(headers, true);
-        return handleRequest("POST", useUrl, content, content, headerMap, printLog);
+        return handleRequest("POST", useUrl, timeoutSecond, content, content, headerMap, printLog);
     }
 
     /** 向指定的 url 基于 post 发起请求 */
@@ -110,9 +122,13 @@ public class HttpClientUtil {
     }
     /** 向指定的 url 基于 post 发起请求 */
     public static ResponseData postWithXmlInBody(String url, Map<String, Object> params, String xml, Map<String, Object> headers, boolean printLog) {
+        return postWithXmlInBody(url, 0, params, xml, headers, printLog);
+    }
+    /** 向指定的 url 基于 post 发起请求 */
+    public static ResponseData postWithXmlInBody(String url, int timeoutSecond, Map<String, Object> params, String xml, Map<String, Object> headers, boolean printLog) {
         String content = U.toStr(xml);
         String useUrl = HttpConst.appendParamsToUrl(url, params);
-        return handleRequest("POST", useUrl, content, content, HttpConst.handleXml(headers), printLog);
+        return handleRequest("POST", useUrl, timeoutSecond,  content, content, HttpConst.handleXml(headers), printLog);
     }
 
 
@@ -134,10 +150,14 @@ public class HttpClientUtil {
     }
     /** 向指定的 url 基于 put 发起请求 */
     public static ResponseData put(String url, Map<String, Object> params, String json, Map<String, Object> headers, boolean printLog) {
+        return put(url, 0, params, json, headers, printLog);
+    }
+    /** 向指定的 url 基于 put 发起请求 */
+    public static ResponseData put(String url, int timeoutSecond, Map<String, Object> params, String json, Map<String, Object> headers, boolean printLog) {
         String content = U.toStr(json);
         String useUrl = HttpConst.appendParamsToUrl(url, params);
         Map<String, Object> headerMap = HttpConst.handleContentType(headers, true);
-        return handleRequest("PUT", useUrl, content, content, headerMap, printLog);
+        return handleRequest("PUT", useUrl, timeoutSecond, content, content, headerMap, printLog);
     }
 
 
@@ -151,8 +171,12 @@ public class HttpClientUtil {
     }
     /** 向指定的 url 基于 delete 发起请求 */
     public static ResponseData deleteWithHeader(String url, String json, Map<String, Object> headers, boolean printLog) {
+        return deleteWithHeader(url, 0, json, headers, printLog);
+    }
+    /** 向指定的 url 基于 delete 发起请求 */
+    public static ResponseData deleteWithHeader(String url, int timeoutSecond, String json, Map<String, Object> headers, boolean printLog) {
         Map<String, Object> headerMap = HttpConst.handleContentType(headers, true);
-        return handleRequest("DELETE", url, U.toStr(json), json, headerMap, printLog);
+        return handleRequest("DELETE", url, timeoutSecond, U.toStr(json), json, headerMap, printLog);
     }
 
     /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
@@ -162,10 +186,10 @@ public class HttpClientUtil {
     /** 向指定 url 上传文件, 只支持 POST|PUT(默认是 POST) + form-data 的方式 */
     public static ResponseData uploadFile(String url, String method, Map<String, Object> headers,
                                           Map<String, Object> params, Map<String, File> files) {
-        return uploadFile(url, method, headers, params, files, true);
+        return uploadFile(url, method, 0, headers, params, files, true);
     }
     /** 向指定 url 上传文件, 只支持 POST|PUT(默认是 POST) + form-data 的方式 */
-    public static ResponseData uploadFile(String url, String method, Map<String, Object> headers,
+    public static ResponseData uploadFile(String url, String method, int timeoutSecond, Map<String, Object> headers,
                                           Map<String, Object> params, Map<String, File> files, boolean printLog) {
         long start = System.currentTimeMillis();
         String useMethod = "PUT".equalsIgnoreCase(method) ? "PUT" : "POST";
@@ -233,6 +257,7 @@ public class HttpClientUtil {
                 }
             }
             builder.setHeader("User-Agent", USER_AGENT);
+            builder.timeout(timeoutSecond > 0 ? Duration.ofSeconds(timeoutSecond) : Duration.ofMillis(HttpConst.READ_TIME_OUT));
             HttpRequest request = builder.build();
             reqHeaders = request.headers().map();
             HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
@@ -256,7 +281,8 @@ public class HttpClientUtil {
         return str.getBytes(StandardCharsets.UTF_8);
     }
 
-    private static ResponseData handleRequest(String method, String url, String data, String printData, Map<String, Object> headers, boolean printLog) {
+    private static ResponseData handleRequest(String method, String url, int timeoutSecond, String data,
+                                              String printData, Map<String, Object> headers, boolean printLog) {
         long start = System.currentTimeMillis();
         printData = U.defaultIfBlank(printData, data);
         Map<String, List<String>> reqHeaders = null;
@@ -268,7 +294,7 @@ public class HttpClientUtil {
             builder.method(method, U.isBlank(data) ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(data));
             url = HttpConst.handleEmptyScheme(url);
             builder.uri(URI.create(url));
-            builder.timeout(Duration.ofMillis(HttpConst.READ_TIME_OUT));
+            builder.timeout(timeoutSecond > 0 ? Duration.ofSeconds(timeoutSecond) : Duration.ofMillis(HttpConst.READ_TIME_OUT));
             if (A.isNotEmpty(headers)) {
                 for (Map.Entry<String, Object> entry : headers.entrySet()) {
                     builder.setHeader(entry.getKey(), U.toStr(entry.getValue()));
