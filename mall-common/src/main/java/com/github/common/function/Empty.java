@@ -1,4 +1,4 @@
-package com.github.common;
+package com.github.common.function;
 
 /**
  * <pre>
@@ -14,10 +14,7 @@ package com.github.common;
  * 两个入参 + 返回 boolean 用 {@link java.util.function.BiPredicate}
  * </pre>
  */
-public class Function {
+public interface Empty {
 
-    /** 无入参 + 无返回 */
-    public interface Empty {
-        void run();
-    }
+    void run();
 }

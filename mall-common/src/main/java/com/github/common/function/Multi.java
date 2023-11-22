@@ -1,4 +1,4 @@
-package com.github.common;
+package com.github.common.function;
 
 /**
  * <pre>
