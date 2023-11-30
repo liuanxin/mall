@@ -44,28 +44,28 @@ public final class Pages {
     /** 在 service 的实现类中调用 --> 在 repository 方法上的返回类型是 mbp 的 Page 对象, service 上的返回类型是 PageReturn, 使用此方法进行转换 */
     public static <T> PageReturn<T> returnPage(Page<T> pageInfo) {
         if (U.isNull(pageInfo)) {
-            return PageReturn.returnEmpty();
+            return PageReturn.empty();
         } else {
-            return PageReturn.returnPage(pageInfo.getTotalRow(), pageInfo.getRecords());
+            return PageReturn.page(pageInfo.getTotalRow(), pageInfo.getRecords());
         }
     }
 
     public static <T,S> PageReturn<T> returnPage(Page<S> page, Class<T> clazz) {
         if (U.isNull(page)) {
-            return PageReturn.returnEmpty();
+            return PageReturn.empty();
         }
 
         long total = page.getTotalRow();
         if (U.less0(total)) {
-            return PageReturn.returnEmpty();
+            return PageReturn.empty();
         }
 
         List<S> objList = page.getRecords();
         if (A.isEmpty(objList)) {
-            return PageReturn.returnPage(total, Collections.emptyList());
+            return PageReturn.page(total, Collections.emptyList());
         }
 
         List<T> list = JsonUtil.convertList(objList, clazz);
-        return PageReturn.returnPage(total, A.isEmpty(list) ? Collections.emptyList() : list);
+        return PageReturn.page(total, A.isEmpty(list) ? Collections.emptyList() : list);
     }
 }
