@@ -44,7 +44,7 @@ public class PageReturn<T> {
     }
 
     /** 在 Controller 中调用 --> 组装不同的 res 时使用此方法 */
-    public static <S,T> PageReturn<T> convertJustTotal(PageReturn<S> pageInfo) {
+    public static <S,T> PageReturn<T> convertTotal(PageReturn<S> pageInfo) {
         if (U.isNull(pageInfo)) {
             return EMPTY;
         } else {
