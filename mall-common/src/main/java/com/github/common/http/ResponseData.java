@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/** @see org.springframework.http.HttpStatus */
 public class ResponseData {
 
     private static final String UNKNOWN_STATUS = "Unknown Status";

@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 public class HttpUrlConnectionUtil {
 
     private static final String USER_AGENT = HttpConst.getUserAgent("http_url_connection");
+    private static final int MAX_REDIRECT_COUNT = 10;
 
 
     /** 向指定 url 进行 get 请求(普通表单方式) */
@@ -312,7 +313,7 @@ public class HttpUrlConnectionUtil {
         Integer responseCode = null;
         String result = "";
         String useUrl = HttpConst.handleEmptyScheme(url);
-        int count = 0;
+        int redirectCount = 0;
         try {
             if (url.toLowerCase().startsWith("https://")) {
                 SSLSocketFactory socketFactory = TrustCerts.IGNORE_SSL_FACTORY;
@@ -324,6 +325,10 @@ public class HttpUrlConnectionUtil {
             }
             String connectionUrl = useUrl;
             while (true) {
+                if (redirectCount > MAX_REDIRECT_COUNT) {
+                    return new ResponseData(503, null, "{\"error\":\"too_many_redirects\"}");
+                }
+
                 con = (HttpURLConnection) new URL(connectionUrl).openConnection();
                 con.setRequestMethod(method);
                 con.setConnectTimeout(HttpConst.CONNECT_TIME_OUT);
@@ -354,7 +359,7 @@ public class HttpUrlConnectionUtil {
                 if (String.valueOf(responseCode).startsWith("30")) {
                     // 30x 自动进行重定向
                     connectionUrl = URLDecoder.decode(con.getHeaderField("Location"), StandardCharsets.UTF_8);
-                    count++;
+                    redirectCount++;
                     continue;
                 }
                 break;
@@ -382,11 +387,11 @@ public class HttpUrlConnectionUtil {
                 }
             }
             if (printLog && LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info(collectContext(start, method, url, data, reqHeaders, responseCode, resHeaders, count, result));
+                LogUtil.ROOT_LOG.info(collectContext(start, method, url, data, reqHeaders, responseCode, resHeaders, redirectCount, result));
             }
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(collectContext(start, method, url, data, reqHeaders, responseCode, resHeaders, count, result), e);
+                LogUtil.ROOT_LOG.error(collectContext(start, method, url, data, reqHeaders, responseCode, resHeaders, redirectCount, result), e);
             }
         } finally {
             if (con != null) {

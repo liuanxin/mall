@@ -60,7 +60,7 @@ public class ExampleRes {
 
     /** 组装数据 */
     public static PageReturn<ExampleRes> assemblyData(PageReturn<UserTest> userPageInfo, List<ProductTest> testList) {
-        PageReturn<ExampleRes> returnRes = PageReturn.convertJustTotal(userPageInfo);
+        PageReturn<ExampleRes> returnRes = PageReturn.convertTotal(userPageInfo);
         if (U.isNotNull(userPageInfo)) {
             // 把商品数据整理成  userId: List<商品>
             Map<Long, List<ProductTest>> userIdMap = A.listToMapList(testList, ProductTest::getUserId);
