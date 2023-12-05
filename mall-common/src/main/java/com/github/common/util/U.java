@@ -1035,6 +1035,29 @@ public final class U {
 
     /**
      * <pre>
+     * try (InputStream input = ...) {
+     *     String content = inputStreamToString(input);
+     * }
+     * </pre>
+     */
+    public static String inputStreamToString(InputStream input) {
+        try (
+                InputStreamReader reader = new InputStreamReader(input);
+                BufferedReader buffer = new BufferedReader(reader)
+        ) {
+            String line;
+            StringBuilder response = new StringBuilder();
+            while ((line = buffer.readLine()) != null) {
+                response.append(line);
+            }
+            return response.toString();
+        } catch (IOException e) {
+            throw new RuntimeException("input to string exception", e);
+        }
+    }
+
+    /**
+     * <pre>
      * try (
      *     InputStream input = ...;
      *     OutputStream output = ...;
