@@ -4,7 +4,6 @@ import com.github.common.Const;
 import com.github.common.date.DateUtil;
 import com.github.common.util.*;
 
-import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -27,9 +26,8 @@ public class HttpClientUtil {
                 .executor(AsyncUtil.ioExecutor())
                 .followRedirects(HttpClient.Redirect.ALWAYS)
                 .connectTimeout(Duration.ofMillis(HttpConst.CONNECT_TIME_OUT));
-        SSLContext sslContext = TrustCerts.IGNORE_SSL_CONTEXT;
-        if (TrustCerts.IGNORE_SSL && U.isNotNull(sslContext)) {
-            builder.sslContext(sslContext);
+        if (TrustCerts.IGNORE_SSL) {
+            builder.sslContext(TrustCerts.IGNORE_SSL_CONTEXT);
         }
         HTTP_CLIENT = builder.build();
     }

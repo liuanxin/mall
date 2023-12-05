@@ -8,7 +8,6 @@ import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import okhttp3.*;
 
-import javax.net.ssl.SSLSocketFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -51,9 +50,8 @@ public class OkHttpClientUtil {
                     }
                     return chain.proceed(request);
                 });
-        SSLSocketFactory socketFactory = TrustCerts.IGNORE_SSL_FACTORY;
-        if (TrustCerts.IGNORE_SSL && U.isNotNull(socketFactory)) {
-            builder.sslSocketFactory(socketFactory, TrustCerts.TRUST_MANAGER);
+        if (TrustCerts.IGNORE_SSL) {
+            builder.sslSocketFactory(TrustCerts.IGNORE_SSL_FACTORY, TrustCerts.TRUST_MANAGER);
         }
         HTTP_CLIENT = builder.build();
     }

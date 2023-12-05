@@ -2,13 +2,13 @@ package com.github.common.http;
 
 import com.github.common.Const;
 import com.github.common.date.DateUtil;
+import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -193,7 +193,7 @@ public class HttpUrlConnectionUtil {
         url = HttpConst.handleEmptyScheme(url);
         try {
             if (url.startsWith("https://")) {
-                if (TrustCerts.IGNORE_SSL && U.isNotNull(TrustCerts.IGNORE_SSL_FACTORY)) {
+                if (TrustCerts.IGNORE_SSL) {
                     HttpsURLConnection.setDefaultSSLSocketFactory(TrustCerts.IGNORE_SSL_FACTORY);
                 } else {
                     HttpsURLConnection.setDefaultSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
@@ -316,9 +316,8 @@ public class HttpUrlConnectionUtil {
         int redirectCount = 0;
         try {
             if (url.toLowerCase().startsWith("https://")) {
-                SSLSocketFactory socketFactory = TrustCerts.IGNORE_SSL_FACTORY;
-                if (TrustCerts.IGNORE_SSL && U.isNotNull(socketFactory)) {
-                    HttpsURLConnection.setDefaultSSLSocketFactory(socketFactory);
+                if (TrustCerts.IGNORE_SSL) {
+                    HttpsURLConnection.setDefaultSSLSocketFactory(TrustCerts.IGNORE_SSL_FACTORY);
                 } else {
                     HttpsURLConnection.setDefaultSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
                 }
@@ -326,7 +325,7 @@ public class HttpUrlConnectionUtil {
             String connectionUrl = useUrl;
             while (true) {
                 if (redirectCount > MAX_REDIRECT_COUNT) {
-                    return new ResponseData(503, null, "{\"error\":\"too_many_redirects\"}");
+                    return new ResponseData(503, null, JsonUtil.toJson(A.maps("error", "too_many_redirects")));
                 }
 
                 con = (HttpURLConnection) new URL(connectionUrl).openConnection();

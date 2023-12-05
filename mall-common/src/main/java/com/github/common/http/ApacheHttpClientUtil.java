@@ -26,7 +26,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import java.io.File;
 import java.io.IOException;
@@ -55,11 +54,10 @@ public class ApacheHttpClientUtil {
     private static final DefaultRedirectStrategy REDIRECT_STRATEGY;
     static {
         // 忽略 ssl 证书
-        SSLContext sslContext = TrustCerts.IGNORE_SSL_CONTEXT;
-        if (TrustCerts.IGNORE_SSL && U.isNotNull(sslContext)) {
+        if (TrustCerts.IGNORE_SSL) {
             Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
                     .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                    .register("https", new SSLConnectionSocketFactory(sslContext))
+                    .register("https", new SSLConnectionSocketFactory(TrustCerts.IGNORE_SSL_CONTEXT))
                     .build();
             CONNECTION_MANAGER = new PoolingHttpClientConnectionManager(registry);
         } else {

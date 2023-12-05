@@ -42,24 +42,29 @@ class TrustCerts {
     }
 
     static {
-        X509TrustManager ignoreSsl = new IgnoreSslManager();
-
-        SSLContext sc;
-        SSLSocketFactory sf;
-        try {
-            sc = SSLContext.getInstance("SSL");
-            sc.init(null, new TrustManager[] { ignoreSsl }, null);
-            sf = sc.getSocketFactory();
-        } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("设置忽略 ssl 证书异常", e);
+        if (IGNORE_SSL) {
+            X509TrustManager ignoreSsl = new IgnoreSslManager();
+            SSLContext sc;
+            SSLSocketFactory sf;
+            try {
+                sc = SSLContext.getInstance("SSL");
+                sc.init(null, new TrustManager[] { ignoreSsl }, null);
+                sf = sc.getSocketFactory();
+            } catch (Exception e) {
+                if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                    LogUtil.ROOT_LOG.error("设置忽略 ssl 证书异常", e);
+                }
+                sc = null;
+                sf = null;
             }
-            sc = null;
-            sf = null;
+            TRUST_MANAGER = ignoreSsl;
+            IGNORE_SSL_CONTEXT = sc;
+            IGNORE_SSL_FACTORY = sf;
+        } else {
+            TRUST_MANAGER = null;
+            IGNORE_SSL_CONTEXT = null;
+            IGNORE_SSL_FACTORY = null;
         }
-        TRUST_MANAGER = ignoreSsl;
-        IGNORE_SSL_CONTEXT = sc;
-        IGNORE_SSL_FACTORY = sf;
     }
 
 
