@@ -6,13 +6,14 @@ package com.github.common.function;
  *
  * 返回
  * public Two&lt;Long, String&gt; twoReturn() {
+ *     ...
  *     return new Two&lt;&gt;(123L, "");
  * }
  *
  * 使用
- * Two&lt;Long, String&gt; two = twoReturn();
- * long id = two.one();
- * String no = two.two();
+ * Two&lt;Long, String&gt; middleData = twoReturn();
+ * long id = middleData.one();
+ * String no = middleData.two();
  * </pre>
  */
 public class Multi {
