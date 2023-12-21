@@ -1,5 +1,7 @@
 package com.github.common.http;
 
+import com.github.common.util.U;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -124,7 +126,7 @@ public class ResponseData {
     @Override
     public String toString() {
         StringBuilder sbd = new StringBuilder();
-        sbd.append("<").append(status).append(",").append(data).append(",");
+        sbd.append("<").append(U.toStr(status)).append(",").append(data).append(",");
         if (headers != null && !headers.isEmpty()) {
             List<String> list = new ArrayList<>();
             for (Map.Entry<String, String> entry : headers.entrySet()) {
