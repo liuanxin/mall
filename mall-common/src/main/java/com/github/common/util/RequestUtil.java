@@ -260,7 +260,7 @@ public final class RequestUtil {
         while (headers.hasMoreElements()) {
             String headName = headers.nextElement();
             String value = request.getHeader(headName);
-            sbd.append("<").append(headName).append(" : ");
+            sbd.append("<").append(headName).append(": ");
             sbd.append(des ? DesensitizationUtil.desWithKey(headName, value) : value);
             sbd.append(">");
         }
