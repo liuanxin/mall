@@ -26,6 +26,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /** 工具类 */
+@SuppressWarnings("DuplicatedCode")
 public final class U {
 
     public static final Random RANDOM = new Random();
@@ -974,11 +975,27 @@ public final class U {
     }
 
 
-    /** 将参数 转换成 id=123&name=xyz&name=opq, 将值进行脱敏(如 password=***&phone=130****) */
-    public static String formatParam(Map<String, ?> params) {
+    public static String formatPrintParam(String params) {
+        Map<String, String> map = new LinkedHashMap<>();
+        if (U.isNotBlank(params)) {
+            for (String s : params.split("&")) {
+                String[] kv = s.split("=");
+                if (kv.length == 2) {
+                    map.put(kv[0], kv[1]);
+                }
+            }
+        }
+        return formatPrintParam(map);
+    }
+    /** 将参数 转换成 id=123&name=xyz,opq, 将值进行脱敏(如 password=***&phone=130****) */
+    public static String formatPrintParam(Map<String, ?> params) {
         return formatParam(true, false, params);
     }
-    /** 转换成 id=123&name=xyz&name=opq */
+    /** 将参数 转换成 id=123&name=xyz,opq */
+    public static String formatSendParam(Map<String, ?> params) {
+        return U.formatParam(false, true, params);
+    }
+    /** 转换成 id=123&name=xyz,opq */
     public static String formatParam(boolean des, boolean encode, Map<String, ?> params) {
         if (A.isEmpty(params)) {
             return EMPTY;
@@ -1014,6 +1031,43 @@ public final class U {
             joiner.add(key + "=" + (encode ? U.urlEncode(content) : content));
         }
         return joiner.toString();
+    }
+    /** 转换成 &lt;id: 123&gt;&lt;name: xyz,opq&gt;, 将值进行脱敏(如 password: ***, phone: 130****) */
+    public static String printMap(boolean des, Map<String, ?> params) {
+        if (A.isEmpty(params)) {
+            return EMPTY;
+        }
+
+        StringBuilder sbd = new StringBuilder();
+        for (Map.Entry<String, ?> entry : params.entrySet()) {
+            String key = entry.getKey();
+            Object obj = entry.getValue();
+
+            String value;
+            String split = ",";
+            if (obj == null) {
+                value = EMPTY;
+            } else if (obj.getClass().isArray()) {
+                StringJoiner stringJoiner = new StringJoiner(split);
+                int len = Array.getLength(obj);
+                for (int i = 0; i < len; i++) {
+                    Object o = Array.get(obj, i);
+                    stringJoiner.add(o == null ? EMPTY : o.toString());
+                }
+                value = stringJoiner.toString();
+            } else if (obj instanceof Collection<?> c) {
+                StringJoiner stringJoiner = new StringJoiner(split);
+                for (Object o : c) {
+                    stringJoiner.add(o == null ? EMPTY : o.toString());
+                }
+                value = stringJoiner.toString();
+            } else {
+                value = obj.toString();
+            }
+            String content = des ? DesensitizationUtil.desWithKey(key, value) : value;
+            sbd.append("<").append(key).append(": ").append(content).append(">");
+        }
+        return sbd.toString();
     }
 
     /** 获取指定类所在 jar 包的地址 */

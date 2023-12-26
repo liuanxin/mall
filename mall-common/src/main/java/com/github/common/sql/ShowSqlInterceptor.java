@@ -40,7 +40,7 @@ public class ShowSqlInterceptor implements QueryInterceptor {
 
     @Override
     public <T extends Resultset> T preProcess(Supplier<String> sql, Query query) {
-        if (LogUtil.SQL_LOG.isDebugEnabled()) {
+        if (ShowSqlThreadLocal.hasPrint() && LogUtil.SQL_LOG.isDebugEnabled()) {
             String realSql = getRealSql(sql);
             if (U.isNotBlank(realSql)) {
                 long id = ID.addAndGet(1);
@@ -75,7 +75,7 @@ public class ShowSqlInterceptor implements QueryInterceptor {
 
     @Override
     public <T extends Resultset> T postProcess(Supplier<String> sql, Query query, T rs, ServerSession serverSession) {
-        if (LogUtil.SQL_LOG.isDebugEnabled()) {
+        if (ShowSqlThreadLocal.hasPrint() && LogUtil.SQL_LOG.isDebugEnabled()) {
             String realSql = getRealSql(sql);
             if (U.isNotBlank(realSql)) {
                 Thread currentThread = Thread.currentThread();

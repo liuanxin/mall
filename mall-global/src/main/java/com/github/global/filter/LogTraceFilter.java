@@ -30,45 +30,36 @@ public class LogTraceFilter implements Filter {
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                     String method = request.getMethod();
                     String url = RequestUtil.getRequestUrl(request);
-                    String params = U.formatParam(request.getParameterMap());
+
+                    StringBuilder sbd = new StringBuilder();
+                    if (printHeader) {
+                        sbd.append("header(");
+                        Enumeration<String> headerNames = request.getHeaderNames();
+                        while (headerNames.hasMoreElements()) {
+                            String headName = headerNames.nextElement();
+                            String value = request.getHeader(headName);
+                            sbd.append("<").append(headName).append(" : ");
+                            sbd.append(DesensitizationUtil.desWithKey(headName, value));
+                            sbd.append(">");
+                        }
+                        sbd.append(")");
+                    }
+
+                    String params = U.formatPrintParam(request.getParameterMap());
+                    if (U.isNotBlank(params)) {
+                        sbd.append(" params(").append(params).append(")");
+                    }
+
                     boolean upload = RequestUtil.hasUploadFile(request);
-                    printRequest(ip, method, url, headers(request), params, upload);
+                    if (upload) {
+                        sbd.append(" upload-file");
+                    }
+                    LogUtil.ROOT_LOG.info("[{}] [{} {}] [{}]", ip, method, url, sbd.toString().trim());
                 }
             }
             chain.doFilter(req, res);
         } finally {
             LogUtil.unbind();
         }
-    }
-
-    private String headers(HttpServletRequest request) {
-        if (printHeader) {
-            StringBuilder sbd = new StringBuilder();
-            Enumeration<String> headers = request.getHeaderNames();
-            while (headers.hasMoreElements()) {
-                String headName = headers.nextElement();
-                String value = request.getHeader(headName);
-                sbd.append("<").append(headName).append(" : ");
-                sbd.append(DesensitizationUtil.desWithKey(headName, value));
-                sbd.append(">");
-            }
-            return sbd.toString();
-        } else {
-            return null;
-        }
-    }
-
-    private void printRequest(String ip, String method, String url, String headers, String params, boolean upload) {
-        StringBuilder sbd = new StringBuilder();
-        if (U.isNotBlank(headers)) {
-            sbd.append(" headers(").append(headers).append(")");
-        }
-        if (U.isNotBlank(params)) {
-            sbd.append(" params(").append(params).append(")");
-        }
-        if (upload) {
-            sbd.append(" upload-file");
-        }
-        LogUtil.ROOT_LOG.info("[{}] [{} {}] [{}]", ip, method, url, sbd.toString().trim());
     }
 }

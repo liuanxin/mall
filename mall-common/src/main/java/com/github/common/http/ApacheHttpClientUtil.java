@@ -1,9 +1,8 @@
 package com.github.common.http;
 
 import com.github.common.Const;
-import com.github.common.date.DateUtil;
+import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
-import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import org.apache.http.*;
@@ -127,44 +126,48 @@ public class ApacheHttpClientUtil {
 
 
     /** 向指定 url 进行 get 请求(普通表单方式) */
-    public static ResponseData get(String url) {
+    public static HttpData get(String url) {
         return get(url, null);
     }
     /** 向指定 url 进行 get 请求(普通表单方式) */
-    public static ResponseData get(String url, Map<String, Object> params) {
+    public static HttpData get(String url, Map<String, Object> params) {
         return get(url, params, null);
     }
     /** 向指定 url 进行 get 请求(普通表单方式) */
-    public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers) {
+    public static HttpData get(String url, Map<String, Object> params, Map<String, Object> headers) {
         return get(url, params, headers, true);
     }
     /** 向指定 url 进行 get 请求(普通表单方式) */
-    public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
+    public static HttpData get(String url, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
         return get(url, 0, params, headers, printLog);
     }
     /** 向指定 url 进行 get 请求(普通表单方式) */
-    public static ResponseData get(String url, int timeoutSecond, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
+    public static HttpData get(String url, int timeoutSecond, Map<String, Object> params,
+                               Map<String, Object> headers, boolean printLog) {
         String useUrl = HttpConst.appendParamsToUrl(HttpConst.handleEmptyScheme(url), params);
         HttpGet request = new HttpGet(useUrl);
-        handleHeader(request, HttpConst.handleContentType(headers, false));
+        handleHeader(request, headers);
         return handleRequest(request, timeoutSecond, null, null, printLog);
     }
 
 
     /** 向指定的 url 进行 post 请求(普通表单方式) */
-    public static ResponseData postWithUrlEncodeInBody(String url, Map<String, Object> params) {
-        return postWithUrlEncodeInBody(url, params, null);
+    public static HttpData postUrlEncode(String url, Map<String, Object> params) {
+        return postUrlEncode(url, params, null);
     }
     /** 向指定的 url 进行 post 请求(普通表单方式) */
-    public static ResponseData postWithUrlEncodeInBody(String url, Map<String, Object> params, Map<String, Object> headers) {
-        return postWithUrlEncodeInBody(url, params, headers, true);
+    public static HttpData postUrlEncode(String url, Map<String, Object> params,
+                                         Map<String, Object> headers) {
+        return postUrlEncode(url, params, headers, true);
     }
     /** 向指定的 url 进行 post 请求(普通表单方式) */
-    public static ResponseData postWithUrlEncodeInBody(String url, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
-        return postWithUrlEncodeInBody(url, 0, params, headers, printLog);
+    public static HttpData postUrlEncode(String url, Map<String, Object> params,
+                                         Map<String, Object> headers, boolean printLog) {
+        return postUrlEncode(url, 0, params, headers, printLog);
     }
     /** 向指定的 url 进行 post 请求(普通表单方式) */
-    public static ResponseData postWithUrlEncodeInBody(String url, int timeoutSecond, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
+    public static HttpData postUrlEncode(String url, int timeoutSecond, Map<String, Object> params,
+                                         Map<String, Object> headers, boolean printLog) {
         HttpPost request = new HttpPost(HttpConst.handleEmptyScheme(url));
         List<NameValuePair> nameValuePairs = new ArrayList<>();
         if (A.isNotEmpty(params)) {
@@ -177,146 +180,126 @@ public class ApacheHttpClientUtil {
             }
             request.setEntity(new UrlEncodedFormEntity(nameValuePairs, StandardCharsets.UTF_8));
         }
-        handleHeader(request, HttpConst.handleContentType(headers, false));
-        return handleRequest(request, timeoutSecond, U.formatParam(params), null, printLog);
+        handleHeader(request, headers);
+        return handleRequest(request, timeoutSecond, params, null, printLog);
     }
 
     /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithJsonInBody(String url, String json) {
-        return postWithJsonInBody(url, null, json, null);
+    public static HttpData post(String url, String data) {
+        return post(url, null, data, null);
     }
     /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithJsonInBody(String url, Map<String, Object> params, String json) {
-        return postWithJsonInBody(url, params, json, null);
+    public static HttpData post(String url, Map<String, Object> params, String data) {
+        return post(url, params, data, null);
     }
     /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithJsonInBody(String url, String json, Map<String, Object> headers) {
-        return postWithJsonInBody(url, null, json, headers);
+    public static HttpData post(String url, String data, Map<String, Object> headers) {
+        return post(url, null, data, headers);
     }
     /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithJsonInBody(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
-        return postWithJsonInBody(url, params, json, headers, true);
+    public static HttpData post(String url, Map<String, Object> params, String data,
+                                Map<String, Object> headers) {
+        return post(url, params, data, headers, true);
     }
     /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithJsonInBody(String url, Map<String, Object> params, String json, Map<String, Object> headers, boolean printLog) {
-        return postWithJsonInBody(url, 0, params, json, headers, printLog);
+    public static HttpData post(String url, Map<String, Object> params, String data,
+                                Map<String, Object> headers, boolean printLog) {
+        return post(url, 0, params, data, headers, printLog);
     }
     /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithJsonInBody(String url, int timeoutSecond, Map<String, Object> params, String json, Map<String, Object> headers, boolean printLog) {
+    public static HttpData post(String url, int timeoutSecond, Map<String, Object> params,
+                                String data, Map<String, Object> headers, boolean printLog) {
         String useUrl = HttpConst.appendParamsToUrl(HttpConst.handleEmptyScheme(url), params);
         HttpPost request = new HttpPost(useUrl);
-        String content = U.toStr(json);
-        request.setEntity(new ByteArrayEntity(content.getBytes(StandardCharsets.UTF_8)));
-        handleHeader(request, HttpConst.handleContentType(headers, true));
-        return handleRequest(request, timeoutSecond, null, content, printLog);
-    }
-
-    /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithXmlInBody(String url, String xml) {
-        return postWithXmlInBody(url, null, xml, null);
-    }
-    /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithXmlInBody(String url, Map<String, Object> params, String xml) {
-        return postWithXmlInBody(url, params, xml, null);
-    }
-    /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithXmlInBody(String url, String xml, Map<String, Object> headers) {
-        return postWithXmlInBody(url, null, xml, headers);
-    }
-    /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithXmlInBody(String url, Map<String, Object> params, String xml, Map<String, Object> headers) {
-        return postWithXmlInBody(url, params, xml, headers, true);
-    }
-    /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithXmlInBody(String url, Map<String, Object> params, String xml, Map<String, Object> headers, boolean printLog) {
-        return postWithXmlInBody(url, 0, params, xml, headers, printLog);
-    }
-    /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithXmlInBody(String url, int timeoutSecond, Map<String, Object> params, String xml, Map<String, Object> headers, boolean printLog) {
-        String useUrl = HttpConst.appendParamsToUrl(HttpConst.handleEmptyScheme(url), params);
-        HttpPost request = new HttpPost(useUrl);
-        String content = U.toStr(xml);
-        request.setEntity(new ByteArrayEntity(content.getBytes(StandardCharsets.UTF_8)));
-        handleHeader(request, HttpConst.handleXml(headers));
-        return handleRequest(request, timeoutSecond, null, content, printLog);
+        request.setEntity(new ByteArrayEntity(U.toStr(data).getBytes(StandardCharsets.UTF_8)));
+        handleHeader(request, headers);
+        return handleRequest(request, timeoutSecond, null, data, printLog);
     }
 
 
     /** 向指定的 url 基于 put 发起请求 */
-    public static ResponseData put(String url, String json) {
-        return put(url, null, json, null);
+    public static HttpData put(String url, String data) {
+        return put(url, null, data, null);
     }
     /** 向指定的 url 基于 put 发起请求 */
-    public static ResponseData put(String url, Map<String, Object> params, String json) {
-        return put(url, params, json, null);
+    public static HttpData put(String url, Map<String, Object> params, String data) {
+        return put(url, params, data, null);
     }
     /** 向指定的 url 基于 put 发起请求 */
-    public static ResponseData put(String url, String json, Map<String, Object> headers) {
-        return put(url, null, json, headers);
+    public static HttpData put(String url, String data, Map<String, Object> headers) {
+        return put(url, null, data, headers);
     }
     /** 向指定的 url 基于 put 发起请求 */
-    public static ResponseData put(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
-        return put(url, params, json, headers, true);
+    public static HttpData put(String url, Map<String, Object> params, String data, Map<String, Object> headers) {
+        return put(url, params, data, headers, true);
     }
     /** 向指定的 url 基于 put 发起请求 */
-    public static ResponseData put(String url, Map<String, Object> params, String json, Map<String, Object> headers, boolean printLog) {
-        return put(url, 0, params, json, headers, printLog);
+    public static HttpData put(String url, Map<String, Object> params, String data,
+                               Map<String, Object> headers, boolean printLog) {
+        return put(url, 0, params, data, headers, printLog);
     }
     /** 向指定的 url 基于 put 发起请求 */
-    public static ResponseData put(String url, int timeoutSecond, Map<String, Object> params, String json, Map<String, Object> headers, boolean printLog) {
+    public static HttpData put(String url, int timeoutSecond, Map<String, Object> params, String data,
+                               Map<String, Object> headers, boolean printLog) {
         String useUrl = HttpConst.appendParamsToUrl(HttpConst.handleEmptyScheme(url), params);
         HttpPut request = new HttpPut(useUrl);
-        String content = U.toStr(json);
-        request.setEntity(new ByteArrayEntity(content.getBytes(StandardCharsets.UTF_8)));
-        handleHeader(request, HttpConst.handleContentType(headers, true));
-        return handleRequest(request, timeoutSecond, null, content, printLog);
+        request.setEntity(new ByteArrayEntity(U.toStr(data).getBytes(StandardCharsets.UTF_8)));
+        handleHeader(request, headers);
+        return handleRequest(request, timeoutSecond, null, data, printLog);
     }
 
 
     /** 向指定的 url 基于 delete 发起请求 */
-    public static ResponseData delete(String url, String json) {
-        return delete(url, json, null);
+    public static HttpData delete(String url, String data) {
+        return delete(url, data, null);
     }
     /** 向指定的 url 基于 delete 发起请求 */
-    public static ResponseData delete(String url, String json, Map<String, Object> headers) {
-        return delete(url, json, headers, true);
+    public static HttpData delete(String url, String data, Map<String, Object> headers) {
+        return delete(url, data, headers, true);
     }
     /** 向指定的 url 基于 delete 发起请求 */
-    public static ResponseData delete(String url, String json, Map<String, Object> headers, boolean printLog) {
-        return delete(url, 0, json, headers, printLog);
+    public static HttpData delete(String url, String data, Map<String, Object> headers, boolean printLog) {
+        return delete(url, 0, data, headers, printLog);
     }
     /** 向指定的 url 基于 delete 发起请求 */
-    public static ResponseData delete(String url, int timeoutSecond, String json, Map<String, Object> headers, boolean printLog) {
+    public static HttpData delete(String url, int timeoutSecond, String data, Map<String, Object> headers, boolean printLog) {
         HttpEntityEnclosingRequestBase request = new HttpEntityEnclosingRequestBase() {
             @Override
             public String getMethod() {
                 return "DELETE";
             }
         };
-        String content = U.toStr(json);
         request.setURI(URI.create(HttpConst.handleEmptyScheme(url)));
-        request.setEntity(new ByteArrayEntity(content.getBytes(StandardCharsets.UTF_8)));
-        handleHeader(request, HttpConst.handleContentType(headers, true));
-        return handleRequest(request, timeoutSecond, null, content, printLog);
+        request.setEntity(new ByteArrayEntity(U.toStr(data).getBytes(StandardCharsets.UTF_8)));
+        handleHeader(request, headers);
+        return handleRequest(request, timeoutSecond, null, data, printLog);
     }
 
 
     /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
-    public static ResponseData uploadFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
+    public static HttpData uploadFile(String url, Map<String, File> files) {
+        return uploadFile(url, null, null, null, files);
+    }
+    /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
+    public static HttpData uploadFile(String url, Map<String, Object> params, Map<String, File> files) {
+        return uploadFile(url, null, null, params, files);
+    }
+    /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
+    public static HttpData uploadFile(String url, Map<String, Object> headers,
+                                      Map<String, Object> params, Map<String, File> files) {
         return uploadFile(url, null, headers, params, files);
     }
     /** 向指定 url 上传文件, 只支持 POST|PUT(默认是 POST) + form-data 的方式 */
-    public static ResponseData uploadFile(String url, String method, Map<String, Object> headers,
-                                          Map<String, Object> params, Map<String, File> files) {
+    public static HttpData uploadFile(String url, String method, Map<String, Object> headers,
+                                      Map<String, Object> params, Map<String, File> files) {
         return uploadFile(url, method, 0, headers, params, files, true);
     }
     /** 向指定 url 上传文件, 只支持 POST|PUT(默认是 POST) + form-data 的方式 */
-    public static ResponseData uploadFile(String url, String method, int timeoutSecond, Map<String, Object> headers,
-                                          Map<String, Object> params, Map<String, File> files, boolean printLog) {
+    public static HttpData uploadFile(String url, String method, int timeoutSecond, Map<String, Object> headers,
+                                      Map<String, Object> params, Map<String, File> files, boolean printLog) {
         if (A.isEmpty(params)) {
             params = new HashMap<>();
         }
-        StringBuilder sbd = new StringBuilder();
 
         HttpEntityEnclosingRequestBase request;
         if ("PUT".equalsIgnoreCase(method)) {
@@ -324,39 +307,32 @@ public class ApacheHttpClientUtil {
         } else {
             request = new HttpPost(HttpConst.handleEmptyScheme(url));
         }
-        handleHeader(request, HttpConst.handleContentType(headers));
+        handleHeader(request, headers);
         MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create().setLaxMode();
         boolean hasParam = A.isNotEmpty(params);
         if (hasParam) {
-            sbd.append("param(");
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 String key = entry.getKey();
                 String value = U.toStr(entry.getValue());
                 entityBuilder.addTextBody(key, value);
-                sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desWithKey(key, value)).append(">");
             }
-            sbd.append(")");
         }
+        Map<String, String> fileMap = new LinkedHashMap<>();
         boolean hasFile = A.isNotEmpty(files);
         if (hasFile) {
-            if (hasParam) {
-                sbd.append(" ");
-            }
-            sbd.append("file(");
             for (Map.Entry<String, File> entry : files.entrySet()) {
                 File file = entry.getValue();
                 if (U.isNotNull(file)) {
                     String key = entry.getKey();
                     entityBuilder.addBinaryBody(key, file);
-                    sbd.append("<").append(key).append(" : ").append(file.getPath()).append(">");
+                    fileMap.put(key, file.toString());
                 }
             }
-            sbd.append(")");
         }
         if (hasParam || hasFile) {
             request.setEntity(entityBuilder.build());
         }
-        return handleRequest(request, timeoutSecond, String.format("upload file[%s]", sbd), null, printLog);
+        return handleRequest(request, timeoutSecond, params, JsonUtil.toJsonNil(fileMap), printLog);
     }
 
 
@@ -371,7 +347,18 @@ public class ApacheHttpClientUtil {
             }
         }
     }
-    private static ResponseData handleRequest(HttpRequestBase request, int timeoutSecond, String printParams, String printJsonBody, boolean printLog) {
+    private static Map<String, Object> handleHeader(Header[] headers) {
+        if (A.isNotEmpty(headers)) {
+            Map<String, Object> returnMap = new LinkedHashMap<>();
+            for (Header header : headers) {
+                returnMap.put(header.getName(), header.getValue());
+            }
+            return returnMap;
+        }
+        return Collections.emptyMap();
+    }
+    private static HttpData handleRequest(HttpRequestBase request, int timeoutSecond, Map<String, Object> params,
+                                          String body, boolean printLog) {
         request.setConfig(config(timeoutSecond));
 
         request.setHeader("User-Agent", USER_AGENT);
@@ -386,11 +373,8 @@ public class ApacheHttpClientUtil {
         String method = request.getMethod();
         String url = request.getURI().toString();
 
-        Header[] reqHeaders = request.getAllHeaders();
-        Header[] resHeaders = null;
-        Integer responseCode = null;
-        String result = null;
-        long start = System.currentTimeMillis();
+        HttpData httpData = new HttpData();
+        httpData.fillReq(method, url, handleHeader(request.getAllHeaders()), U.formatPrintParam(params), body);
         try (
                 CloseableHttpClient httpClient = createHttpClient();
                 CloseableHttpResponse response = httpClient.execute(request, HttpClientContext.create())
@@ -398,87 +382,23 @@ public class ApacheHttpClientUtil {
             HttpEntity entity = response.getEntity();
             if (U.isNotNull(entity)) {
                 try {
-                    resHeaders = response.getAllHeaders();
-                    StatusLine status = response.getStatusLine();
-                    responseCode = status.getStatusCode();
-                    result = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    Map<String, Object> resHeader = handleHeader(response.getAllHeaders());
+                    String result = EntityUtils.toString(entity);
+                    httpData.fillRes(statusCode, resHeader, result);
                     if (printLog && LogUtil.ROOT_LOG.isInfoEnabled()) {
-                        LogUtil.ROOT_LOG.info(collectContext(start, method, url, printParams,
-                                printJsonBody, reqHeaders, responseCode, resHeaders, result));
+                        LogUtil.ROOT_LOG.info(httpData.toString());
                     }
                 } finally {
                     EntityUtils.consume(entity);
                 }
             }
         } catch (Exception e) {
+            httpData.fillException(e);
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(collectContext(start, method, url, printParams,
-                        printJsonBody, reqHeaders, responseCode, resHeaders, result), e);
+                LogUtil.ROOT_LOG.error(httpData.toString(), e);
             }
         }
-        return new ResponseData(responseCode, handleResponseHeader(resHeaders), result);
-    }
-    private static Map<String, String> handleResponseHeader(Header[] resHeaders) {
-        if (A.isNotEmpty(resHeaders)) {
-            Map<String, String> returnMap = new HashMap<>();
-            for (Header header : resHeaders) {
-                returnMap.put(header.getName(), header.getValue());
-            }
-            return returnMap;
-        }
-        return Collections.emptyMap();
-    }
-    private static String headerInfo(Header[] headers) {
-        List<String> list = new ArrayList<>();
-        for (Header header : headers) {
-            String key = header.getName();
-            String value = header.getValue();
-            list.add("<" + key + " : " + DesensitizationUtil.desWithKey(key, value) + ">");
-        }
-        return String.join("", list);
-    }
-    private static String collectContext(long start, String method, String url, String printParams, String printJsonBody,
-                                         Header[] reqHeaders, Integer statusCode, Header[] resHeaders, String result) {
-        StringBuilder sbd = new StringBuilder();
-        long now = System.currentTimeMillis();
-        sbd.append("Apache-HttpClient4 => [")
-                .append(DateUtil.formatDateTimeMs(new Date(start))).append(" -> ")
-                .append(DateUtil.formatDateTimeMs(new Date(now)))
-                .append("(").append(DateUtil.toHuman(now - start)).append(")")
-                .append("] (").append(method).append(" ").append(url).append(")");
-        sbd.append(" req[");
-        if (A.isNotEmpty(reqHeaders)) {
-            sbd.append("header(").append(headerInfo(reqHeaders)).append(")");
-        }
-        if (U.isNotBlank(printParams)) {
-            if (!sbd.toString().endsWith("[")) {
-                sbd.append(" ");
-            }
-            sbd.append("param(").append(U.compress(printParams)).append(")");
-        }
-        if (U.isNotBlank(printJsonBody)) {
-            if (!sbd.toString().endsWith("[")) {
-                sbd.append(" ");
-            }
-            sbd.append("body(").append(U.compress(printJsonBody)).append(")");
-        }
-        sbd.append("], res[");
-        if (U.isNotNull(statusCode)) {
-            sbd.append(statusCode);
-        }
-        if (A.isNotEmpty(resHeaders)) {
-            if (!sbd.toString().endsWith("[")) {
-                sbd.append(" ");
-            }
-            sbd.append(" header(").append(headerInfo(reqHeaders)).append(")");
-        }
-        if (U.isNotBlank(result)) {
-            if (!sbd.toString().endsWith("[")) {
-                sbd.append(" ");
-            }
-            sbd.append("return(").append(U.compress(result)).append(")");
-        }
-        sbd.append("]");
-        return sbd.toString();
+        return httpData;
     }
 }

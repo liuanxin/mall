@@ -1,10 +1,8 @@
 package com.github.common.http;
 
 import com.github.common.Const;
-import com.github.common.date.DateUtil;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
-import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 
@@ -26,187 +24,162 @@ public class HttpUrlConnectionUtil {
 
 
     /** 向指定 url 进行 get 请求(普通表单方式) */
-    public static ResponseData get(String url) {
+    public static HttpData get(String url) {
         return get(url, null);
     }
     /** 向指定 url 进行 get 请求(普通表单方式) */
-    public static ResponseData get(String url, Map<String, Object> params) {
+    public static HttpData get(String url, Map<String, Object> params) {
         return get(url, params, null);
     }
     /** 向指定 url 进行 get 请求(普通表单方式) */
-    public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers) {
+    public static HttpData get(String url, Map<String, Object> params, Map<String, Object> headers) {
         return get(url, params, headers, true);
     }
     /** 向指定 url 进行 get 请求(普通表单方式) */
-    public static ResponseData get(String url, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
+    public static HttpData get(String url, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
         return get(url, 0, params, headers, printLog);
     }
     /** 向指定 url 进行 get 请求(普通表单方式) */
-    public static ResponseData get(String url, int timeoutSecond, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
+    public static HttpData get(String url, int timeoutSecond, Map<String, Object> params,
+                               Map<String, Object> headers, boolean printLog) {
         String useUrl = HttpConst.appendParamsToUrl(url, params);
-        Map<String, Object> headerMap = HttpConst.handleContentType(headers, false);
-        return handleRequest("GET", useUrl, timeoutSecond, null, headerMap, printLog);
+        return handleRequest("GET", useUrl, timeoutSecond, null, headers, null, printLog);
     }
 
 
     /** 向指定的 url 进行 post 请求(普通表单方式) */
-    public static ResponseData postWithUrlEncodeInBody(String url, Map<String, Object> params) {
+    public static HttpData postWithUrlEncodeInBody(String url, Map<String, Object> params) {
         return postWithUrlEncodeInBody(url, params, null);
     }
     /** 向指定的 url 进行 post 请求(普通表单方式) */
-    public static ResponseData postWithUrlEncodeInBody(String url, Map<String, Object> params, Map<String, Object> headers) {
+    public static HttpData postWithUrlEncodeInBody(String url, Map<String, Object> params,
+                                                   Map<String, Object> headers) {
         return postWithUrlEncodeInBody(url, params, headers, true);
     }
     /** 向指定的 url 进行 post 请求(普通表单方式) */
-    public static ResponseData postWithUrlEncodeInBody(String url, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
+    public static HttpData postWithUrlEncodeInBody(String url, Map<String, Object> params,
+                                                   Map<String, Object> headers, boolean printLog) {
         return postWithUrlEncodeInBody(url, 0, params, headers, printLog);
     }
     /** 向指定的 url 进行 post 请求(普通表单方式) */
-    public static ResponseData postWithUrlEncodeInBody(String url, int timeoutSecond, Map<String, Object> params, Map<String, Object> headers, boolean printLog) {
-        Map<String, Object> headerMap = HttpConst.handleContentType(headers, false);
-        return handleRequest("POST", url, timeoutSecond, U.formatParam(false, true, params), headerMap, printLog);
+    public static HttpData postWithUrlEncodeInBody(String url, int timeoutSecond, Map<String, Object> params,
+                                                   Map<String, Object> headers, boolean printLog) {
+        return handleRequest("POST", url, timeoutSecond, params, headers, null, printLog);
     }
 
     /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithJsonInBody(String url, String json) {
+    public static HttpData postWithJsonInBody(String url, String json) {
         return postWithJsonInBody(url, null, json, null);
     }
     /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithJsonInBody(String url, Map<String, Object> params, String json) {
+    public static HttpData postWithJsonInBody(String url, Map<String, Object> params, String json) {
         return postWithJsonInBody(url, params, json, null);
     }
     /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithJsonInBody(String url, String json, Map<String, Object> headers) {
+    public static HttpData postWithJsonInBody(String url, String json, Map<String, Object> headers) {
         return postWithJsonInBody(url, null, json, headers);
     }
     /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithJsonInBody(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
+    public static HttpData postWithJsonInBody(String url, Map<String, Object> params, String json,
+                                              Map<String, Object> headers) {
         return postWithJsonInBody(url, params, json, headers, true);
     }
     /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithJsonInBody(String url, Map<String, Object> params, String json, Map<String, Object> headers, boolean printLog) {
+    public static HttpData postWithJsonInBody(String url, Map<String, Object> params, String json,
+                                              Map<String, Object> headers, boolean printLog) {
         return postWithJsonInBody(url, 0, params, json, headers, printLog);
     }
     /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithJsonInBody(String url, int timeoutSecond, Map<String, Object> params, String json, Map<String, Object> headers, boolean printLog) {
+    public static HttpData postWithJsonInBody(String url, int timeoutSecond, Map<String, Object> params,
+                                              String json, Map<String, Object> headers, boolean printLog) {
         String content = U.toStr(json);
         String useUrl = HttpConst.appendParamsToUrl(url, params);
-        Map<String, Object> headerMap = HttpConst.handleContentType(headers, true);
-        return handleRequest("POST", useUrl, timeoutSecond, content, headerMap, printLog);
+        return handleRequest("POST", useUrl, timeoutSecond, null, headers, content, printLog);
     }
 
-    /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithXmlInBody(String url, String xml) {
-        return postWithXmlInBody(url, null, xml, null);
+
+    /** 向指定的 url 基于 put 发起请求 */
+    public static HttpData put(String url, String data) {
+        return put(url, null, null, data);
     }
-    /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithXmlInBody(String url, Map<String, Object> params, String xml) {
-        return postWithXmlInBody(url, params, xml, null);
+    /** 向指定的 url 基于 put 发起请求 */
+    public static HttpData put(String url, Map<String, Object> params, String data) {
+        return put(url, params, null, data);
     }
-    /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithXmlInBody(String url, String xml, Map<String, Object> headers) {
-        return postWithXmlInBody(url, null, xml, headers);
+    /** 向指定的 url 基于 put 发起请求 */
+    public static HttpData put(String url, Map<String, Object> params, Map<String, Object> headers, String data) {
+        return put(url, params, headers, data, true);
     }
-    /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithXmlInBody(String url, Map<String, Object> params, String xml, Map<String, Object> headers) {
-        return postWithXmlInBody(url, params, xml, headers, true);
+    /** 向指定的 url 基于 put 发起请求 */
+    public static HttpData put(String url, Map<String, Object> params, Map<String, Object> headers,
+                               String data, boolean printLog) {
+        return put(url, 0, params, headers, data, printLog);
     }
-    /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithXmlInBody(String url, Map<String, Object> params, String xml, Map<String, Object> headers, boolean printLog) {
-        return postWithXmlInBody(url, 0, params, xml, headers, printLog);
-    }
-    /** 向指定的 url 基于 post 发起请求 */
-    public static ResponseData postWithXmlInBody(String url, int timeoutSecond, Map<String, Object> params, String xml, Map<String, Object> headers, boolean printLog) {
-        String content = U.toStr(xml);
+    /** 向指定的 url 基于 put 发起请求 */
+    public static HttpData put(String url, int timeoutSecond, Map<String, Object> params,
+                               Map<String, Object> headers, String data, boolean printLog) {
+        String content = U.toStr(data);
         String useUrl = HttpConst.appendParamsToUrl(url, params);
-        return handleRequest("POST", useUrl, timeoutSecond, content, HttpConst.handleXml(headers), printLog);
-    }
-
-
-    /** 向指定的 url 基于 put 发起请求 */
-    public static ResponseData put(String url, String json) {
-        return put(url, null, json, null);
-    }
-    /** 向指定的 url 基于 put 发起请求 */
-    public static ResponseData put(String url, Map<String, Object> params, String json) {
-        return put(url, params, json, null);
-    }
-    /** 向指定的 url 基于 put 发起请求 */
-    public static ResponseData put(String url, String json, Map<String, Object> headers) {
-        return put(url, null, json, headers);
-    }
-    /** 向指定的 url 基于 put 发起请求 */
-    public static ResponseData put(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
-        return put(url, params, json, headers, true);
-    }
-    /** 向指定的 url 基于 put 发起请求 */
-    public static ResponseData put(String url, Map<String, Object> params, String json, Map<String, Object> headers, boolean printLog) {
-        return put(url, 0, params, json, headers, printLog);
-    }
-    /** 向指定的 url 基于 put 发起请求 */
-    public static ResponseData put(String url, int timeoutSecond, Map<String, Object> params, String json, Map<String, Object> headers, boolean printLog) {
-        String content = U.toStr(json);
-        String useUrl = HttpConst.appendParamsToUrl(url, params);
-        Map<String, Object> headerMap = HttpConst.handleContentType(headers, true);
-        return handleRequest("PUT", useUrl, timeoutSecond, content, headerMap, printLog);
+        return handleRequest("PUT", useUrl, timeoutSecond, null, headers, content, printLog);
     }
 
 
     /** 向指定的 url 基于 delete 发起请求 */
-    public static ResponseData delete(String url, String json) {
-        return delete(url, json, null);
+    public static HttpData delete(String url, String data) {
+        return delete(url, data, null);
     }
     /** 向指定的 url 基于 delete 发起请求 */
-    public static ResponseData delete(String url, String json, Map<String, Object> headers) {
-        return delete(url, json, headers, true);
+    public static HttpData delete(String url, String data, Map<String, Object> headers) {
+        return delete(url, data, headers, true);
     }
     /** 向指定的 url 基于 delete 发起请求 */
-    public static ResponseData delete(String url, String json, Map<String, Object> headers, boolean printLog) {
-        return delete(url, 0, json, headers, printLog);
+    public static HttpData delete(String url, String data, Map<String, Object> headers, boolean printLog) {
+        return delete(url, 0, data, headers, printLog);
     }
     /** 向指定的 url 基于 delete 发起请求 */
-    public static ResponseData delete(String url, int timeoutSecond, String json, Map<String, Object> headers, boolean printLog) {
-        Map<String, Object> headerMap = HttpConst.handleContentType(headers, true);
-        return handleRequest("DELETE", url, timeoutSecond, U.toStr(json), headerMap, printLog);
+    public static HttpData delete(String url, int timeoutSecond, String data,
+                                  Map<String, Object> headers, boolean printLog) {
+        return handleRequest("DELETE", url, timeoutSecond, null, headers, data, printLog);
     }
 
 
     /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
-    public static String uploadFile(String url, Map<String, Object> headers, Map<String, Object> params, Map<String, File> files) {
+    public static HttpData uploadFile(String url, Map<String, File> files) {
+        return uploadFile(url, null, null, null, files);
+    }
+    /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
+    public static HttpData uploadFile(String url, Map<String, Object> params, Map<String, File> files) {
+        return uploadFile(url, null, null, params, files);
+    }
+    /** 向指定 url 上传文件(基于 POST + form-data 的方式) */
+    public static HttpData uploadFile(String url, Map<String, Object> headers,
+                                      Map<String, Object> params, Map<String, File> files) {
         return uploadFile(url, null, headers, params, files);
     }
     /** 向指定 url 上传文件, 只支持 POST|PUT(默认是 POST) + form-data 的方式 */
-    public static String uploadFile(String url, String method, Map<String, Object> headers,
-                                    Map<String, Object> params, Map<String, File> files) {
+    public static HttpData uploadFile(String url, String method, Map<String, Object> headers,
+                                      Map<String, Object> params, Map<String, File> files) {
         return uploadFile(url, method, 0, headers, params, files, true);
     }
     /** 向指定 url 上传文件, 只支持 POST|PUT(默认是 POST) + form-data 的方式 */
-    public static String uploadFile(String url, String method, int timeoutSecond, Map<String, Object> headers,
-                                    Map<String, Object> params, Map<String, File> files, boolean printLog) {
-        long start = System.currentTimeMillis();
+    public static HttpData uploadFile(String url, String method, int timeoutSecond, Map<String, Object> headers,
+                                      Map<String, Object> params, Map<String, File> files, boolean printLog) {
+        HttpData httpData = new HttpData();
         HttpURLConnection con = null;
-        Map<String, List<String>> reqHeaders = null;
-        StringBuilder sbd = new StringBuilder();
-        String result = null;
-        Map<String, List<String>> resHeaders = null;
-        Integer resCode = null;
-        url = HttpConst.handleEmptyScheme(url);
         try {
+            url = HttpConst.handleEmptyScheme(url);
             if (url.startsWith("https://")) {
-                if (TrustCerts.IGNORE_SSL) {
-                    HttpsURLConnection.setDefaultSSLSocketFactory(TrustCerts.IGNORE_SSL_FACTORY);
-                } else {
-                    HttpsURLConnection.setDefaultSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
-                }
+                HttpsURLConnection.setDefaultSSLSocketFactory(TrustCerts.IGNORE_SSL
+                        ? TrustCerts.IGNORE_SSL_FACTORY
+                        : HttpsURLConnection.getDefaultSSLSocketFactory());
             }
             con = (HttpURLConnection) new URL(url).openConnection();
             String useMethod = "PUT".equalsIgnoreCase(method) ? "PUT" : "POST";
             con.setRequestMethod(useMethod);
             con.setConnectTimeout(HttpConst.CONNECT_TIME_OUT);
             con.setReadTimeout(timeoutSecond > 0 ? ((int) TimeUnit.SECONDS.toMillis(timeoutSecond)) : HttpConst.READ_TIME_OUT);
-            Map<String, Object> headerMap = HttpConst.handleContentType(headers);
-            if (A.isNotEmpty(headerMap)) {
-                for (Map.Entry<String, ?> entry : headerMap.entrySet()) {
+            if (A.isNotEmpty(headers)) {
+                for (Map.Entry<String, ?> entry : headers.entrySet()) {
                     con.setRequestProperty(entry.getKey(), U.toStr(entry.getValue()));
                 }
             }
@@ -219,7 +192,7 @@ public class HttpUrlConnectionUtil {
             if (U.isNotBlank(language)) {
                 con.setRequestProperty("Accept-Language", language);
             }
-            reqHeaders = con.getRequestProperties();
+            Map<String, String> fileMap = new LinkedHashMap<>();
             boolean hasParam = A.isNotEmpty(params);
             boolean hasFile = A.isNotEmpty(files);
             if (hasParam || hasFile) {
@@ -230,7 +203,6 @@ public class HttpUrlConnectionUtil {
                 con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
                 try (DataOutputStream data = new DataOutputStream(con.getOutputStream())) {
                     if (hasParam) {
-                        sbd.append("param(");
                         for (Map.Entry<String, Object> entry : params.entrySet()) {
                             String key = entry.getKey();
                             String value = U.toStr(entry.getValue());
@@ -239,16 +211,9 @@ public class HttpUrlConnectionUtil {
                             String paramInfo = "Content-Disposition: form-data; name=\"%s\"\r\n\r\n";
                             data.writeBytes(String.format(paramInfo, key));
                             data.writeBytes(value + "\r\n");
-
-                            sbd.append("<").append(key).append(" : ").append(DesensitizationUtil.desWithKey(key, value)).append(">");
                         }
-                        sbd.append(")");
-                    }
-                    if (hasParam && hasFile) {
-                        sbd.append(" ");
                     }
                     if (hasFile) {
-                        sbd.append("file(");
                         for (Map.Entry<String, File> entry : files.entrySet()) {
                             String key = entry.getKey();
                             File file = entry.getValue();
@@ -258,112 +223,20 @@ public class HttpUrlConnectionUtil {
                             data.writeBytes(String.format(paramInfo, key, file.getName()));
                             data.write(Files.readAllBytes(file.toPath()));
                             data.writeBytes("\r\n");
-
-                            sbd.append("<").append(key).append(" : ").append(file).append(">");
+                            fileMap.put(key, file.toString());
                         }
-                        sbd.append(")");
                     }
                     data.writeBytes("--" + boundary + "--\r\n");
                     data.flush();
                 }
             }
 
+            Map<String, Object> reqHeader = handleHeader(con.getRequestProperties());
+            httpData.fillReq(method, url, reqHeader, U.formatPrintParam(params), JsonUtil.toJsonNil(fileMap));
             con.connect();
 
-            resHeaders = con.getHeaderFields();
-            resCode = con.getResponseCode();
-            try (
-                    InputStream input = con.getInputStream();
-                    ByteArrayOutputStream output = new ByteArrayOutputStream()
-            ) {
-                U.inputToOutput(input, output);
-                result = output.toString(StandardCharsets.UTF_8);
-            }
-            // ??? null -> HTTP/1.1 200 OK
-            String nilInfo = A.first(resHeaders.get(null));
-            if (U.isNotBlank(result) && U.isNotBlank(nilInfo)) {
-                if (result.endsWith(nilInfo)) {
-                    result = result.substring(0, result.length() - nilInfo.length());
-                } else if (result.startsWith(nilInfo)) {
-                    result = result.substring(nilInfo.length());
-                }
-            }
-            if (printLog && LogUtil.ROOT_LOG.isInfoEnabled()) {
-                String print = String.format("upload file[%s]", sbd);
-                LogUtil.ROOT_LOG.info(collectContext(start, "POST", url, print, reqHeaders, resCode, resHeaders, 0, result));
-            }
-        } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                String print = String.format("upload file[%s]", sbd);
-                LogUtil.ROOT_LOG.error(collectContext(start, "POST", url, print, reqHeaders, resCode, resHeaders, 0, result), e);
-            }
-        } finally {
-            if (con != null) {
-                con.disconnect();
-            }
-        }
-        return result;
-    }
-
-    private static ResponseData handleRequest(String method, String url, int timeoutSecond, String data, Map<String, Object> headers, boolean printLog) {
-        long start = System.currentTimeMillis();
-        HttpURLConnection con = null;
-        Map<String, List<String>> reqHeaders = null;
-        Map<String, List<String>> resHeaders = null;
-        Integer responseCode = null;
-        String result = "";
-        String useUrl = HttpConst.handleEmptyScheme(url);
-        int redirectCount = 0;
-        try {
-            if (url.toLowerCase().startsWith("https://")) {
-                if (TrustCerts.IGNORE_SSL) {
-                    HttpsURLConnection.setDefaultSSLSocketFactory(TrustCerts.IGNORE_SSL_FACTORY);
-                } else {
-                    HttpsURLConnection.setDefaultSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
-                }
-            }
-            String connectionUrl = useUrl;
-            while (true) {
-                if (redirectCount > MAX_REDIRECT_COUNT) {
-                    return new ResponseData(503, null, JsonUtil.toJson(A.maps("error", "too_many_redirects")));
-                }
-
-                con = (HttpURLConnection) new URL(connectionUrl).openConnection();
-                con.setRequestMethod(method);
-                con.setConnectTimeout(HttpConst.CONNECT_TIME_OUT);
-                con.setReadTimeout(timeoutSecond > 0 ? ((int) TimeUnit.SECONDS.toMillis(timeoutSecond)) : HttpConst.READ_TIME_OUT);
-                if (A.isNotEmpty(headers)) {
-                    for (Map.Entry<String, ?> entry : headers.entrySet()) {
-                        con.setRequestProperty(entry.getKey(), U.toStr(entry.getValue()));
-                    }
-                }
-                con.setRequestProperty("User-Agent", USER_AGENT);
-                String traceId = LogUtil.getTraceId();
-                if (U.isNotBlank(traceId)) {
-                    con.setRequestProperty(Const.TRACE, traceId);
-                }
-                reqHeaders = con.getRequestProperties();
-                if (U.isNotBlank(data)) {
-                    // 默认值 false, 当向远程服务器传送数据/写数据时, 需设置为 true
-                    con.setDoOutput(true);
-                    try (OutputStreamWriter output = new OutputStreamWriter(con.getOutputStream())) {
-                        output.write(data);
-                        output.flush();
-                    }
-                }
-
-                con.connect();
-
-                responseCode = con.getResponseCode();
-                if (String.valueOf(responseCode).startsWith("30")) {
-                    // 30x 自动进行重定向
-                    connectionUrl = URLDecoder.decode(con.getHeaderField("Location"), StandardCharsets.UTF_8);
-                    redirectCount++;
-                    continue;
-                }
-                break;
-            }
-
+            int resCode = con.getResponseCode();
+            String result;
             try (
                     InputStream input = con.getInputStream();
                     InputStreamReader in = new InputStreamReader(input);
@@ -375,7 +248,7 @@ public class HttpUrlConnectionUtil {
                 }
                 result = sbd.toString();
             }
-            resHeaders = con.getHeaderFields();
+            Map<String, List<String>> resHeaders = con.getHeaderFields();
             // ??? null -> HTTP/1.1 200 OK
             String nilInfo = A.first(resHeaders.get(null));
             if (U.isNotBlank(result) && U.isNotBlank(nilInfo)) {
@@ -385,81 +258,119 @@ public class HttpUrlConnectionUtil {
                     result = result.substring(nilInfo.length());
                 }
             }
+            httpData.fillRes(resCode, handleHeader(resHeaders), result);
             if (printLog && LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info(collectContext(start, method, url, data, reqHeaders, responseCode, resHeaders, redirectCount, result));
+                LogUtil.ROOT_LOG.info(httpData.toString());
             }
         } catch (Exception e) {
+            httpData.fillException(e);
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error(collectContext(start, method, url, data, reqHeaders, responseCode, resHeaders, redirectCount, result), e);
+                LogUtil.ROOT_LOG.error(httpData.toString(), e);
             }
         } finally {
             if (con != null) {
                 con.disconnect();
             }
         }
-        return new ResponseData(responseCode, handleResponseHeader(resHeaders), result);
+        return httpData;
     }
-    private static Map<String, String> handleResponseHeader(Map<String, List<String>> resHeaders) {
+
+    private static HttpData handleRequest(String method, String url, int timeoutSecond, Map<String, Object> params,
+                                          Map<String, Object> headers, String body, boolean printLog) {
+        HttpData httpData = new HttpData();
+        HttpURLConnection con = null;
+        try {
+            if (url.toLowerCase().startsWith("https://")) {
+                HttpsURLConnection.setDefaultSSLSocketFactory(TrustCerts.IGNORE_SSL
+                        ? TrustCerts.IGNORE_SSL_FACTORY : HttpsURLConnection.getDefaultSSLSocketFactory());
+            }
+            String connectionUrl = HttpConst.handleEmptyScheme(url);
+            for (int i = 0; i < MAX_REDIRECT_COUNT; i++) {
+                try {
+                    con = (HttpURLConnection) new URL(connectionUrl).openConnection();
+                    con.setRequestMethod(method);
+                    con.setConnectTimeout(HttpConst.CONNECT_TIME_OUT);
+                    con.setReadTimeout(timeoutSecond > 0 ? ((int) TimeUnit.SECONDS.toMillis(timeoutSecond)) : HttpConst.READ_TIME_OUT);
+                    if (A.isNotEmpty(headers)) {
+                        for (Map.Entry<String, ?> entry : headers.entrySet()) {
+                            con.setRequestProperty(entry.getKey(), U.toStr(entry.getValue()));
+                        }
+                    }
+                    con.setRequestProperty("User-Agent", USER_AGENT);
+                    String traceId = LogUtil.getTraceId();
+                    if (U.isNotBlank(traceId)) {
+                        con.setRequestProperty(Const.TRACE, traceId);
+                    }
+                    if (A.isNotEmpty(params) || U.isNotBlank(body)) {
+                        // 默认值 false, 当向远程服务器传送数据/写数据时, 需设置为 true
+                        con.setDoOutput(true);
+                        try (OutputStreamWriter output = new OutputStreamWriter(con.getOutputStream())) {
+                            output.write(U.defaultIfBlank(U.formatSendParam(params), body));
+                            output.flush();
+                        }
+                    }
+
+                    Map<String, Object> reqHeader = handleHeader(con.getRequestProperties());
+                    httpData.fillReq(method, url, reqHeader, U.formatPrintParam(params), body);
+                    con.connect();
+
+                    int responseCode = con.getResponseCode();
+                    if (String.valueOf(responseCode).startsWith("30")) {
+                        // 30x 自动进行重定向
+                        connectionUrl = URLDecoder.decode(con.getHeaderField("Location"), StandardCharsets.UTF_8);
+                    } else {
+                        String result;
+                        try (
+                                InputStream input = con.getInputStream();
+                                InputStreamReader in = new InputStreamReader(input);
+                                BufferedReader reader = new BufferedReader(in)
+                        ) {
+                            StringBuilder sbd = new StringBuilder();
+                            for (String line; (line = reader.readLine()) != null;) {
+                                sbd.append(line);
+                            }
+                            result = sbd.toString();
+                        }
+                        Map<String, List<String>> resHeaders = con.getHeaderFields();
+                        // ??? null -> HTTP/1.1 200 OK
+                        String nilInfo = A.first(resHeaders.get(null));
+                        if (U.isNotBlank(result) && U.isNotBlank(nilInfo)) {
+                            if (result.endsWith(nilInfo)) {
+                                result = result.substring(0, result.length() - nilInfo.length());
+                            } else if (result.startsWith(nilInfo)) {
+                                result = result.substring(nilInfo.length());
+                            }
+                        }
+                        httpData.fillRes(responseCode, handleHeader(resHeaders), result);
+                        if (printLog && LogUtil.ROOT_LOG.isInfoEnabled()) {
+                            LogUtil.ROOT_LOG.info(httpData.toString());
+                        }
+                        return httpData;
+                    }
+                } catch (IOException e) {
+                    httpData.fillException(e);
+                    if (LogUtil.ROOT_LOG.isErrorEnabled()) {
+                        LogUtil.ROOT_LOG.error(httpData.toString(), e);
+                    }
+                    return httpData;
+                }
+            }
+            httpData.fillRes(503, null, JsonUtil.toJson(A.maps("error", "too_many_redirects")));
+            return httpData;
+        } finally {
+            if (con != null) {
+                con.disconnect();
+            }
+        }
+    }
+    private static Map<String, Object> handleHeader(Map<String, List<String>> resHeaders) {
         if (A.isNotEmpty(resHeaders)) {
-            Map<String, String> returnMap = new HashMap<>();
+            Map<String, Object> returnMap = new HashMap<>();
             for (Map.Entry<String, List<String>> entry : resHeaders.entrySet()) {
                 returnMap.put(entry.getKey(), String.join(",", entry.getValue()));
             }
             return returnMap;
         }
         return Collections.emptyMap();
-    }
-    private static String headerInfo(Map<String, List<String>> headers) {
-        List<String> list = new ArrayList<>();
-        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-            String key = entry.getKey();
-            String value = String.join(",", entry.getValue());
-            list.add("<" + key + " : " + DesensitizationUtil.desWithKey(key, value) + ">");
-        }
-        return String.join("", list);
-    }
-    private static String collectContext(long start, String method, String url, String params,
-                                         Map<String, List<String>> reqHeaders, Integer resCode,
-                                         Map<String, List<String>> resHeaders, int redirectCount, String result) {
-        StringBuilder sbd = new StringBuilder();
-        long now = System.currentTimeMillis();
-        sbd.append("HttpUrlConnection => [")
-                .append(DateUtil.formatDateTimeMs(new Date(start))).append(" -> ")
-                .append(DateUtil.formatDateTimeMs(new Date(now)))
-                .append("(").append(DateUtil.toHuman(now - start)).append(")")
-                .append("] (").append(method).append(" ").append(url).append(")");
-        if (redirectCount > 0) {
-            sbd.append(" redirect-count(").append(redirectCount).append(")");
-        }
-        sbd.append(" req[");
-        boolean hasReqHeader = A.isNotEmpty(reqHeaders);
-        if (hasReqHeader) {
-            sbd.append("header(").append(headerInfo(reqHeaders)).append(")");
-        }
-        boolean hasParam = U.isNotBlank(params);
-        if (hasParam) {
-            if (hasReqHeader) {
-                sbd.append(" ");
-            }
-            sbd.append("param|body(").append(U.compress(params)).append(")");
-        }
-        sbd.append("], res[");
-        if (U.isNotNull(resCode)) {
-            sbd.append(resCode);
-        }
-        if (A.isNotEmpty(resHeaders)) {
-            if (!sbd.toString().endsWith("[")) {
-                sbd.append(" ");
-            }
-            sbd.append("header(").append(headerInfo(resHeaders)).append(")");
-        }
-        if (U.isNotBlank(result)) {
-            if (!sbd.toString().endsWith("[")) {
-                sbd.append(" ");
-            }
-            sbd.append("return(").append(U.compress(result)).append(")");
-        }
-        sbd.append("]");
-        return sbd.toString();
     }
 }

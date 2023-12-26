@@ -3,7 +3,6 @@ package com.github.common.http;
 import com.github.common.util.A;
 import com.github.common.util.U;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 final class HttpConst {
@@ -15,10 +14,12 @@ final class HttpConst {
     /** 数据交互的时间, 单位: 毫秒 */
     static final int READ_TIME_OUT = 10000;
     /**
+     * <pre>
      * 连接池最大数量.
      *
      * okhttp 默认是 5. 见: {@link okhttp3.ConnectionPool}
      * apache httpClient 默认是 20. 见: {@link org.apache.http.impl.pool.BasicConnPool}
+     * </pre>
      */
     static final int POOL_MAX_TOTAL = 100;
 
@@ -28,9 +29,9 @@ final class HttpConst {
 
     /** url 如果不是以 「http://」 或 「https://」 开头就加上 「http://」 */
     static String handleEmptyScheme(String url) {
-        url = url.trim();
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            url = "http://" + url;
+        String checkUrl = url.trim().toLowerCase();
+        if (!checkUrl.startsWith("http://") && !checkUrl.startsWith("https://")) {
+            url = "http://" + url.trim();
         }
         return url;
     }
@@ -41,29 +42,5 @@ final class HttpConst {
             return U.appendUrl(url) + U.formatParam(false, true, params);
         }
         return url;
-    }
-
-    static Map<String, Object> handleContentType(Map<String, Object> headers, boolean requestBody) {
-        Map<String, Object> headerMap = handleContentType(headers);
-        headerMap.put(CONTENT_TYPE, (requestBody ? "application/json" : "application/x-www-form-urlencoded"));
-        return headerMap;
-    }
-
-    static Map<String, Object> handleXml(Map<String, Object> headers) {
-        Map<String, Object> headerMap = handleContentType(headers);
-        headerMap.put(CONTENT_TYPE, "application/xml");
-        return headerMap;
-    }
-
-    static Map<String, Object> handleContentType(Map<String, Object> headers) {
-        Map<String, Object> headerMap = new LinkedHashMap<>();
-        if (A.isNotEmpty(headers)) {
-            for (Map.Entry<String, Object> entry : headers.entrySet()) {
-                if (!CONTENT_TYPE.equalsIgnoreCase(entry.getKey())) {
-                    headerMap.put(entry.getKey(), entry.getValue());
-                }
-            }
-        }
-        return headerMap;
     }
 }
