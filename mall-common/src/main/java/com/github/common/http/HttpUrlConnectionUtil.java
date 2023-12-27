@@ -284,7 +284,10 @@ public class HttpUrlConnectionUtil {
                 HttpsURLConnection.setDefaultSSLSocketFactory(TrustCerts.IGNORE_SSL
                         ? TrustCerts.IGNORE_SSL_FACTORY : HttpsURLConnection.getDefaultSSLSocketFactory());
             }
+            List<String> redirectUrlList = new ArrayList<>();
             String connectionUrl = HttpConst.handleEmptyScheme(url);
+            redirectUrlList.add(connectionUrl);
+            Map<String, List<String>> resHeaders = null;
             for (int i = 0; i < MAX_REDIRECT_COUNT; i++) {
                 try {
                     con = (HttpURLConnection) new URL(connectionUrl).openConnection();
@@ -311,13 +314,16 @@ public class HttpUrlConnectionUtil {
                     }
 
                     Map<String, Object> reqHeader = handleHeader(con.getRequestProperties());
-                    httpData.fillReq(method, url, reqHeader, U.formatPrintParam(params), body);
+                    // 这里的 url 可能是重定向之后的
+                    httpData.fillReq(method, connectionUrl, reqHeader, U.formatPrintParam(params), body);
                     con.connect();
 
                     int responseCode = con.getResponseCode();
+                    resHeaders = con.getHeaderFields();
                     if (String.valueOf(responseCode).startsWith("30")) {
                         // 30x 自动进行重定向
                         connectionUrl = URLDecoder.decode(con.getHeaderField("Location"), StandardCharsets.UTF_8);
+                        redirectUrlList.add(connectionUrl);
                     } else {
                         String result;
                         try (
@@ -331,8 +337,7 @@ public class HttpUrlConnectionUtil {
                             }
                             result = sbd.toString();
                         }
-                        Map<String, List<String>> resHeaders = con.getHeaderFields();
-                        // ??? null -> HTTP/1.1 200 OK
+                        // null : HTTP/1.1 200 OK
                         String nilInfo = A.first(resHeaders.get(null));
                         if (U.isNotBlank(result) && U.isNotBlank(nilInfo)) {
                             if (result.endsWith(nilInfo)) {
@@ -355,7 +360,10 @@ public class HttpUrlConnectionUtil {
                     return httpData;
                 }
             }
-            httpData.fillRes(503, null, JsonUtil.toJson(A.maps("error", "too_many_redirects")));
+            httpData.fillRes(302, handleHeader(resHeaders), JsonUtil.toJson(A.maps(
+                    "error", "too_many_redirects",
+                    "redirect_chain", redirectUrlList
+            )));
             return httpData;
         } finally {
             if (con != null) {

@@ -12,7 +12,7 @@ public class ShowSqlThreadLocal {
     public static boolean hasPrint() {
         return U.toBool(PRINT_SQL_LOCAL.get());
     }
-    public static void clear() {
+    public static void clean() {
         PRINT_SQL_LOCAL.remove();
     }
 }

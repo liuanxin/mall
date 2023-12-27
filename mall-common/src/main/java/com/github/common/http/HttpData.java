@@ -97,6 +97,7 @@ public class HttpData {
         REASONS.put(511, "Network Authentication Required");
     }
 
+
     private Date reqTime;
     private String method;
     private String url;
@@ -135,7 +136,7 @@ public class HttpData {
 
     /** see: https://stackoverflow.com/questions/67345954/how-do-i-get-the-http-status-message-from-responses-on-java-net-httpclient-reque */
     public String message() {
-        return resStatus != null ? REASONS.getOrDefault(resStatus, UNKNOWN_STATUS) : UNKNOWN_STATUS;
+        return REASONS.getOrDefault(resStatus, UNKNOWN_STATUS);
     }
 
     public Date getReqTime() {
@@ -196,7 +197,7 @@ public class HttpData {
             sbd.append("]");
 
             // method url
-            sbd.append(" (").append(U.toStr(method)).append(" ").append(url).append(")");
+            sbd.append(" [").append(U.toStr(method)).append(" ").append(url).append("]");
 
             // req
             sbd.append(" req[");
@@ -220,7 +221,7 @@ public class HttpData {
 
         // res
         if (U.isNotNull(resTime)) {
-            sbd.append(" res[");
+            sbd.append(", res[");
             sbd.append("(");
             if (U.isNotNull(resStatus)) {
                 sbd.append(resStatus).append(" ");
@@ -237,14 +238,14 @@ public class HttpData {
 
         // exception
         if (U.isNotNull(exception)) {
-            sbd.append(", exception(").append(U.toStr(exception.getMessage()));
+            sbd.append(", exception[").append(U.toStr(exception.getMessage()));
             StackTraceElement[] stackTraceArray = exception.getStackTrace();
             if (A.isNotEmpty(stackTraceArray)) {
                 for (StackTraceElement trace : stackTraceArray) {
                     sbd.append(", ").append(trace.toString().trim());
                 }
             }
-            sbd.append(")");
+            sbd.append("]");
         }
         return sbd.toString();
     }
