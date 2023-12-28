@@ -171,50 +171,36 @@ public class GlobalException {
 
     // 以上是 spring 的内部异常
 
-    public ResponseEntity<JsonResult<String>> unknown(Throwable e) {
-        int status = (returnStatusCode ? JsonCode.FAIL : JsonCode.SUCCESS).getCode();
-        return handle(false, null, status, handleErrorResult(JsonResult.fail(returnMsg(online, e))), e);
-    }
-
     /** 未知的所有其他异常 */
     @ExceptionHandler(Throwable.class)
     public ResponseEntity other(Throwable throwable) {
-        Throwable exception = innerException(1, throwable);
-        if (exception instanceof NotFoundException nfe) {
-            return notFound(nfe);
-        } else if (exception instanceof NotLoginException nle) {
-            return notLogin(nle);
-        } else if (exception instanceof ForbiddenException fe) {
-            return forbidden(fe);
-        } else if (exception instanceof ParamException pe) {
-            return param(pe);
-        } else if (exception instanceof BadRequestException bre) {
-            return badRequest(bre);
-        } else if (exception instanceof ServiceException se) {
-            return service(se);
-        } else if (exception instanceof ServiceI18nException sie) {
-            return serviceI18n(sie);
-        } else if (exception instanceof ForceReturnException fre) {
-            return forceReturn(fre);
-        } else {
-            return unknown(exception);
+        Throwable exception = throwable.getCause();
+        if (U.isNotNull(exception)) {
+            // 异常可能套了很多层, 只要是自定义的异常就用各自的处理
+            for (int i = 0; i < U.MAX_DEPTH; i++) {
+                if (exception instanceof NotFoundException) {
+                    return notFound((NotFoundException) exception);
+                } else if (exception instanceof NotLoginException) {
+                    return notLogin((NotLoginException) exception);
+                } else if (exception instanceof ForbiddenException) {
+                    return forbidden((ForbiddenException) exception);
+                } else if (exception instanceof ParamException) {
+                    return param((ParamException) exception);
+                } else if (exception instanceof BadRequestException) {
+                    return badRequest((BadRequestException) exception);
+                } else if (exception instanceof ServiceException) {
+                    return service((ServiceException) exception);
+                } else if (exception instanceof ServiceI18nException) {
+                    return serviceI18n((ServiceI18nException) exception);
+                } else if (exception instanceof ForceReturnException) {
+                    return forceReturn((ForceReturnException) exception);
+                } else {
+                    exception = exception.getCause();
+                }
+            }
         }
-    }
-
-    private Throwable innerException(int depth, Throwable e) {
-        Throwable cause = e.getCause();
-        if (cause == null || depth > U.MAX_DEPTH
-                || e instanceof NotFoundException
-                || e instanceof NotLoginException
-                || e instanceof ForbiddenException
-                || e instanceof ParamException
-                || e instanceof BadRequestException
-                || e instanceof ServiceException
-                || e instanceof ServiceI18nException
-                || e instanceof ForceReturnException) {
-            return e;
-        }
-        return innerException(depth + 1, cause);
+        int status = (returnStatusCode ? JsonCode.FAIL : JsonCode.SUCCESS).getCode();
+        return handle(false, null, status, handleErrorResult(JsonResult.fail(returnMsg(online, throwable))), throwable);
     }
 
     private ResponseEntity<JsonResult<String>> handle(boolean knowError, String msg, int status,
