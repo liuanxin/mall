@@ -10,7 +10,7 @@ public class ShowSqlThreadLocal {
         PRINT_SQL_LOCAL.set(true);
     }
     public static boolean hasPrint() {
-        return U.toBool(PRINT_SQL_LOCAL.get());
+        return U.defaultIfNull(PRINT_SQL_LOCAL.get(), false);
     }
     public static void clean() {
         PRINT_SQL_LOCAL.remove();
