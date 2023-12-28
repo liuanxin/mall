@@ -19,7 +19,7 @@ public class OkHttpClientUtil {
 
     // MIME 说明: http://www.w3school.com.cn/media/media_mimeref.asp
 
-    private static final String USER_AGENT = HttpConst.getUserAgent("okhttp3");
+    // private static final String USER_AGENT = HttpConst.getUserAgent("okhttp3");
 
     /**
      * 连接保持时间, 单位: 分, 默认是 5. 见: {@link okhttp3.ConnectionPool}
@@ -277,7 +277,8 @@ public class OkHttpClientUtil {
             builder.header("Accept-Language", language);
         }
         url = HttpConst.handleEmptyScheme(url);
-        Request request = builder.header("User-Agent", USER_AGENT).url(url).build();
+        // Request request = builder.header("User-Agent", USER_AGENT).url(url).build();
+        Request request = builder.url(url).build();
         String method = request.method();
 
         HttpData httpData = new HttpData();

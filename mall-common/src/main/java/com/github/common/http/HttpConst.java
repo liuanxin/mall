@@ -7,12 +7,10 @@ import java.util.Map;
 
 final class HttpConst {
 
-    private static final String CONTENT_TYPE = "Content-Type";
-
     /** 建立连接的超时时间, 单位: 毫秒 */
     static final int CONNECT_TIME_OUT = 5000;
     /** 数据交互的时间, 单位: 毫秒 */
-    static final int READ_TIME_OUT = 10000;
+    static final int READ_TIME_OUT = 60000;
     /**
      * <pre>
      * 连接池最大数量.
@@ -23,9 +21,9 @@ final class HttpConst {
      */
     static final int POOL_MAX_TOTAL = 100;
 
-    static String getUserAgent(String client) {
+    /* static String getUserAgent(String client) {
         return String.format("Mozilla/5.0 (%s; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36", client);
-    }
+    } */
 
     /** url 如果不是以 「http://」 或 「https://」 开头就加上 「http://」 */
     static String handleEmptyScheme(String url) {

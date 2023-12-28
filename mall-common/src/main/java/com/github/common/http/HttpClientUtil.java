@@ -25,7 +25,7 @@ import java.util.Map;
 @SuppressWarnings("DuplicatedCode")
 public class HttpClientUtil {
 
-    private static final String USER_AGENT = HttpConst.getUserAgent("http_client");
+    // private static final String USER_AGENT = HttpConst.getUserAgent("http_client");
 
     private static final HttpClient HTTP_CLIENT;
     static {
@@ -234,7 +234,7 @@ public class HttpClientUtil {
                 builder.setHeader(entry.getKey(), U.toStr(entry.getValue()));
             }
         }
-        builder.setHeader("User-Agent", USER_AGENT);
+        // builder.setHeader("User-Agent", USER_AGENT);
         builder.timeout(timeoutSecond > 0 ? Duration.ofSeconds(timeoutSecond) : Duration.ofMillis(HttpConst.READ_TIME_OUT));
         HttpRequest request = builder.build();
 
@@ -276,7 +276,7 @@ public class HttpClientUtil {
                 builder.setHeader(entry.getKey(), U.toStr(entry.getValue()));
             }
         }
-        builder.setHeader("User-Agent", USER_AGENT);
+        // builder.setHeader("User-Agent", USER_AGENT);
         String traceId = LogUtil.getTraceId();
         if (U.isNotBlank(traceId)) {
             builder.header(Const.TRACE, traceId);

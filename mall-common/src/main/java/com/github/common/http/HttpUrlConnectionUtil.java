@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("DuplicatedCode")
 public class HttpUrlConnectionUtil {
 
-    private static final String USER_AGENT = HttpConst.getUserAgent("http_url_connection");
+    // private static final String USER_AGENT = HttpConst.getUserAgent("http_url_connection");
     private static final int MAX_REDIRECT_COUNT = 10;
 
 
@@ -183,7 +183,7 @@ public class HttpUrlConnectionUtil {
                     con.setRequestProperty(entry.getKey(), U.toStr(entry.getValue()));
                 }
             }
-            con.setRequestProperty("User-Agent", USER_AGENT);
+            // con.setRequestProperty("User-Agent", USER_AGENT);
             String traceId = LogUtil.getTraceId();
             if (U.isNotBlank(traceId)) {
                 con.setRequestProperty(Const.TRACE, traceId);
@@ -299,7 +299,7 @@ public class HttpUrlConnectionUtil {
                             con.setRequestProperty(entry.getKey(), U.toStr(entry.getValue()));
                         }
                     }
-                    con.setRequestProperty("User-Agent", USER_AGENT);
+                    // con.setRequestProperty("User-Agent", USER_AGENT);
                     String traceId = LogUtil.getTraceId();
                     if (U.isNotBlank(traceId)) {
                         con.setRequestProperty(Const.TRACE, traceId);

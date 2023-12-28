@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("DuplicatedCode")
 public class ApacheHttpClientUtil {
 
-    private static final String USER_AGENT = HttpConst.getUserAgent("apache_http_client4");
+    // private static final String USER_AGENT = HttpConst.getUserAgent("apache_http_client4");
 
     /** 重试次数 */
     private static final int RETRY_COUNT = 3;
@@ -361,7 +361,7 @@ public class ApacheHttpClientUtil {
                                           String body, boolean printLog) {
         request.setConfig(config(timeoutSecond));
 
-        request.setHeader("User-Agent", USER_AGENT);
+        // request.setHeader("User-Agent", USER_AGENT);
         String traceId = LogUtil.getTraceId();
         if (U.isNotBlank(traceId)) {
             request.setHeader(Const.TRACE, traceId);
