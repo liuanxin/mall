@@ -10,6 +10,7 @@ import okhttp3.*;
 import java.io.File;
 import java.net.URLConnection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -80,7 +81,9 @@ public class OkHttpClientUtil {
                                Map<String, Object> headers, boolean printLog) {
         String useUrl = HttpConst.appendParamsToUrl(url, params);
         Request.Builder builder = new Request.Builder();
-        handleHeader(builder, headers);
+        Map<String, Object> headerMap = U.defaultIfNull(headers, new HashMap<>());
+        headerMap.put("Content-Type", "application/x-www-form-urlencoded");
+        handleHeader(builder, headerMap);
         return handleRequest(useUrl, timeoutSecond, builder, null, null, printLog);
     }
 
@@ -103,33 +106,34 @@ public class OkHttpClientUtil {
                                          Map<String, Object> headers, boolean printLog) {
         RequestBody requestBody = RequestBody.create(U.formatParam(false, true, params), FORM);
         Request.Builder builder = new Request.Builder().post(requestBody);
-        handleHeader(builder, headers);
+        Map<String, Object> headerMap = U.defaultIfNull(headers, new HashMap<>());
+        headerMap.put("Content-Type", "application/x-www-form-urlencoded");
+        handleHeader(builder, headerMap);
         return handleRequest(url, timeoutSecond, builder, params, null, printLog);
     }
 
-    /** 向指定的 url 基于 post 发起请求 */
+    /** 向指定的 url 基于 post 发起请求(body 中是 json) */
     public static HttpData post(String url, String json) {
-        return post(url, null, json, null);
+        return post(url, null, json);
     }
-    /** 向指定的 url 基于 post 发起请求 */
+    /** 向指定的 url 基于 post 发起请求(body 中是 json) */
     public static HttpData post(String url, Map<String, Object> params, String json) {
-        return post(url, params, json, null);
+        return post(url, params, json, A.maps("Content-Type", "application/json"));
     }
-    /** 向指定的 url 基于 post 发起请求 */
-    public static HttpData post(String url, String json, Map<String, Object> headers) {
-        return post(url, null, json, headers);
+    /** 向指定的 url 基于 post 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
+    public static HttpData post(String url, String data, Map<String, Object> headers) {
+        return post(url, null, data, headers);
     }
-    /** 向指定的 url 基于 post 发起请求 */
-    public static HttpData post(String url, Map<String, Object> params, String json,
-                                Map<String, Object> headers) {
+    /** 向指定的 url 基于 post 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
+    public static HttpData post(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
         return post(url, params, json, headers, true);
     }
-    /** 向指定的 url 基于 post 发起请求 */
+    /** 向指定的 url 基于 post 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData post(String url, Map<String, Object> params, String json,
                                 Map<String, Object> headers, boolean printLog) {
         return post(url, 0, params, json, headers, printLog);
     }
-    /** 向指定的 url 基于 post 发起请求 */
+    /** 向指定的 url 基于 post 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData post(String url, int timeoutSecond, Map<String, Object> params,
                                 String json, Map<String, Object> headers, boolean printLog) {
         String content = U.toStr(json);
@@ -140,31 +144,31 @@ public class OkHttpClientUtil {
     }
 
 
-    /** 向指定的 url 基于 put 发起请求 */
+    /** 向指定的 url 基于 put 发起请求(body 中是 json) */
     public static HttpData put(String url, String json) {
-        return put(url, null, json, null);
+        return put(url, null, json);
     }
-    /** 向指定的 url 基于 put 发起请求 */
+    /** 向指定的 url 基于 put 发起请求(body 中是 json) */
     public static HttpData put(String url, Map<String, Object> params, String json) {
-        return put(url, params, json, null);
+        return put(url, params, json, A.maps("Content-Type", "application/json"));
     }
-    /** 向指定的 url 基于 put 发起请求 */
-    public static HttpData put(String url, String json, Map<String, Object> headers) {
-        return put(url, null, json, headers);
+    /** 向指定的 url 基于 put 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
+    public static HttpData put(String url, String data, Map<String, Object> headers) {
+        return put(url, null, data, headers);
     }
-    /** 向指定的 url 基于 put 发起请求 */
-    public static HttpData put(String url, Map<String, Object> params, String json, Map<String, Object> headers) {
-        return put(url, params, json, headers, true);
+    /** 向指定的 url 基于 put 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
+    public static HttpData put(String url, Map<String, Object> params, String data, Map<String, Object> headers) {
+        return put(url, params, data, headers, true);
     }
-    /** 向指定的 url 基于 put 发起请求 */
-    public static HttpData put(String url, Map<String, Object> params, String json,
+    /** 向指定的 url 基于 put 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
+    public static HttpData put(String url, Map<String, Object> params, String data,
                                Map<String, Object> headers, boolean printLog) {
-        return put(url, 0, params, json, headers, printLog);
+        return put(url, 0, params, data, headers, printLog);
     }
-    /** 向指定的 url 基于 put 发起请求 */
+    /** 向指定的 url 基于 put 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData put(String url, int timeoutSecond, Map<String, Object> params,
-                               String json, Map<String, Object> headers, boolean printLog) {
-        String content = U.toStr(json);
+                               String data, Map<String, Object> headers, boolean printLog) {
+        String content = U.toStr(data);
         String useUrl = HttpConst.appendParamsToUrl(url, params);
         RequestBody requestBody = RequestBody.create(content, JSON);
         Request.Builder builder = new Request.Builder().put(requestBody);
@@ -172,22 +176,22 @@ public class OkHttpClientUtil {
         return handleRequest(useUrl, timeoutSecond, builder, null, content, printLog);
     }
 
-    /** 向指定的 url 基于 delete 发起请求 */
-    public static HttpData delete(String url, String data) {
-        return delete(url, data, null);
+    /** 向指定的 url 基于 delete 发起请求(body 中是 json) */
+    public static HttpData delete(String url, String json) {
+        return delete(url, json, A.maps("Content-Type", "application/json"));
     }
-    /** 向指定的 url 基于 delete 发起请求 */
-    public static HttpData delete(String url, String json, Map<String, Object> headers) {
-        return delete(url, json, headers, true);
+    /** 向指定的 url 基于 delete 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
+    public static HttpData delete(String url, String data, Map<String, Object> headers) {
+        return delete(url, data, headers, true);
     }
-    /** 向指定的 url 基于 delete 发起请求 */
-    public static HttpData delete(String url, String json, Map<String, Object> headers, boolean printLog) {
-        return delete(url, 0, json, headers, printLog);
+    /** 向指定的 url 基于 delete 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
+    public static HttpData delete(String url, String data, Map<String, Object> headers, boolean printLog) {
+        return delete(url, 0, data, headers, printLog);
     }
-    /** 向指定的 url 基于 delete 发起请求 */
-    public static HttpData delete(String url, int timeoutSecond, String json,
+    /** 向指定的 url 基于 delete 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
+    public static HttpData delete(String url, int timeoutSecond, String data,
                                   Map<String, Object> headers, boolean printLog) {
-        String content = U.toStr(json);
+        String content = U.toStr(data);
         RequestBody requestBody = RequestBody.create(content, JSON);
         Request.Builder builder = new Request.Builder().delete(requestBody);
         handleHeader(builder, headers);
