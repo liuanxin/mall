@@ -31,7 +31,7 @@ public class I18nService {
             }
 
             Locale defaultLocale = Const.DEFAULT_LOCALE;
-            if (locale != defaultLocale) {
+            if (!locale.equals(defaultLocale)) {
                 try {
                     return messageSource.getMessage(code, args, defaultLocale);
                 } catch (Exception ex) {

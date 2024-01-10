@@ -77,7 +77,7 @@ public class MqReceiverHandler {
         MqData mqData = JsonUtil.toObjectNil(json, MqData.class);
         if (U.isNotNull(mqData)) {
             MqInfo info = MqInfo.from(mqData.getMqInfo());
-            if (U.isNotNull(info) && info != mqInfo) {
+            if (U.isNotNull(info) && !info.equals(mqInfo)) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                     LogUtil.ROOT_LOG.error("消费数据({})信息是({})却在用({})消费, 请检查代码", json, info, mqInfo);
                 }
