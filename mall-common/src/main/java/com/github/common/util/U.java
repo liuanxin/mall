@@ -1051,14 +1051,13 @@ public final class U {
                 StringJoiner stringJoiner = new StringJoiner(split);
                 int len = Array.getLength(obj);
                 for (int i = 0; i < len; i++) {
-                    Object o = Array.get(obj, i);
-                    stringJoiner.add(o == null ? EMPTY : o.toString());
+                    stringJoiner.add(toStr(Array.get(obj, i)));
                 }
                 value = stringJoiner.toString();
             } else if (obj instanceof Collection<?> c) {
                 StringJoiner stringJoiner = new StringJoiner(split);
                 for (Object o : c) {
-                    stringJoiner.add(o == null ? EMPTY : o.toString());
+                    stringJoiner.add(toStr(o));
                 }
                 value = stringJoiner.toString();
             } else {
