@@ -47,6 +47,7 @@
 
         <!-- 所有的版本都在此处统一控制, 不要在其他地方设置! -->
 
+        <hutool.version>5.8.25</hutool.version>
         <guava.version>32.1.2-jre</guava.version>
         <joda.version>2.12.5</joda.version>
         <javassist.version>3.29.2-GA</javassist.version>
@@ -166,6 +167,11 @@
             </dependency>
             <!-- 当前项目相关 -->
 
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.google.guava</groupId>
