@@ -283,6 +283,7 @@ public class HttpUrlConnectionUtil {
             List<String> redirectUrlList = new ArrayList<>();
             String connectionUrl = HttpConst.handleEmptyScheme(url);
             redirectUrlList.add(connectionUrl);
+            int responseCode = 0;
             Map<String, List<String>> resHeaders = null;
             Map<String, Object> headerMap = HttpConst.handleCommonHeader(headers/*, USER_AGENT*/);
             for (int i = 0; i < MAX_REDIRECT_COUNT; i++) {
@@ -310,9 +311,15 @@ public class HttpUrlConnectionUtil {
                     httpData.fillReq(method, connectionUrl, reqHeader, U.formatPrintParam(params), body);
                     con.connect();
 
-                    int responseCode = con.getResponseCode();
+                    responseCode = con.getResponseCode();
                     resHeaders = con.getHeaderFields();
-                    if (String.valueOf(responseCode).startsWith("30")) {
+                    // see : jdk.internal.net.http.RedirectFilter.isRedirecting
+                    if (Arrays.asList(301, 302, 303, 307, 308).contains(responseCode)) {
+                        if (responseCode == 301 || responseCode == 302) {
+                            method = "POST".equals(method) ? "GET" : method;
+                        } else if (responseCode == 303) {
+                            method = "GET";
+                        }
                         // 30x 自动进行重定向
                         connectionUrl = URLDecoder.decode(con.getHeaderField("Location"), StandardCharsets.UTF_8);
                         redirectUrlList.add(connectionUrl);
@@ -352,8 +359,8 @@ public class HttpUrlConnectionUtil {
                     return httpData;
                 }
             }
-            httpData.fillRes(302, handleHeader(resHeaders), JsonUtil.toJson(A.maps(
-                    "error", "too_many_redirects",
+            httpData.fillRes(responseCode, handleHeader(resHeaders), JsonUtil.toJson(A.maps(
+                    "error", "ERR_TOO_MANY_REDIRECTS",
                     "redirect_chain", redirectUrlList
             )));
             return httpData;
