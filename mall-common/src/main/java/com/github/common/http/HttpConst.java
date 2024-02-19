@@ -1,8 +1,12 @@
 package com.github.common.http;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.github.common.Const;
 import com.github.common.util.A;
+import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 
+import java.util.HashMap;
 import java.util.Map;
 
 final class HttpConst {
@@ -40,5 +44,24 @@ final class HttpConst {
             return U.appendUrl(url) + U.formatParam(false, true, params);
         }
         return url;
+    }
+
+    /** 处理公共头 */
+    static Map<String, Object> handleCommonHeader(Map<String, Object> headers /*, String userAgent*/ ) {
+        Map<String, Object> returnMap = ObjectUtil.defaultIfNull(headers, new HashMap<>());
+        /*
+        if (U.isNotBlank(userAgent)) {
+            returnMap.put("User-Agent", userAgent);
+        }
+        */
+        String traceId = LogUtil.getTraceId();
+        if (U.isNotBlank(traceId)) {
+            returnMap.put(Const.TRACE, traceId);
+        }
+        String language = LogUtil.getLanguage();
+        if (U.isNotBlank(language)) {
+            returnMap.put("Accept-Language", language);
+        }
+        return returnMap;
     }
 }

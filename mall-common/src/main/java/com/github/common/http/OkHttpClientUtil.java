@@ -1,6 +1,5 @@
 package com.github.common.http;
 
-import com.github.common.Const;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
@@ -15,7 +14,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-@SuppressWarnings("DuplicatedCode")
 public class OkHttpClientUtil {
 
     // MIME 说明: http://www.w3school.com.cn/media/media_mimeref.asp
@@ -256,8 +254,9 @@ public class OkHttpClientUtil {
 
     /** 处理请求时存到 header 中的数据 */
     private static void handleHeader(Request.Builder request, Map<String, Object> headers) {
-        if (A.isNotEmpty(headers)) {
-            for (Map.Entry<String, Object> entry : headers.entrySet()) {
+        Map<String, Object> headerMap = HttpConst.handleCommonHeader(headers/*, USER_AGENT*/);
+        if (A.isNotEmpty(headerMap)) {
+            for (Map.Entry<String, Object> entry : headerMap.entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
                 if (U.isNotNull(value)) {
@@ -272,16 +271,7 @@ public class OkHttpClientUtil {
         if (timeoutSecond > 0) {
             builder.tag(TimeoutConfig.class, new TimeoutConfig(timeoutSecond));
         }
-        String traceId = LogUtil.getTraceId();
-        if (U.isNotBlank(traceId)) {
-            builder.header(Const.TRACE, traceId);
-        }
-        String language = LogUtil.getLanguage();
-        if (U.isNotBlank(language)) {
-            builder.header("Accept-Language", language);
-        }
         url = HttpConst.handleEmptyScheme(url);
-        // Request request = builder.header("User-Agent", USER_AGENT).url(url).build();
         Request request = builder.url(url).build();
         String method = request.method();
 

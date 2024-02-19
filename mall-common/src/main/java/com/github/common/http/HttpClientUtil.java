@@ -1,6 +1,5 @@
 package com.github.common.http;
 
-import com.github.common.Const;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.AsyncUtil;
@@ -19,7 +18,6 @@ import java.nio.file.Files;
 import java.time.Duration;
 import java.util.*;
 
-@SuppressWarnings("DuplicatedCode")
 public class HttpClientUtil {
 
     // private static final String USER_AGENT = HttpConst.getUserAgent("http_client");
@@ -229,12 +227,12 @@ public class HttpClientUtil {
         }
         builder.method(useMethod, body);
         builder.uri(URI.create(HttpConst.handleEmptyScheme(url)));
-        if (A.isNotEmpty(headers)) {
-            for (Map.Entry<String, Object> entry : headers.entrySet()) {
+        Map<String, Object> headerMap = HttpConst.handleCommonHeader(headers/*, USER_AGENT*/);
+        if (A.isNotEmpty(headerMap)) {
+            for (Map.Entry<String, Object> entry : headerMap.entrySet()) {
                 builder.setHeader(entry.getKey(), U.toStr(entry.getValue()));
             }
         }
-        // builder.setHeader("User-Agent", USER_AGENT);
         builder.timeout(timeoutSecond > 0 ? Duration.ofSeconds(timeoutSecond) : Duration.ofMillis(HttpConst.READ_TIME_OUT));
         HttpRequest request = builder.build();
 
@@ -267,19 +265,11 @@ public class HttpClientUtil {
         builder.method(method, body);
         builder.uri(URI.create(HttpConst.handleEmptyScheme(url)));
         builder.timeout(timeoutSecond > 0 ? Duration.ofSeconds(timeoutSecond) : Duration.ofMillis(HttpConst.READ_TIME_OUT));
-        if (A.isNotEmpty(headers)) {
-            for (Map.Entry<String, Object> entry : headers.entrySet()) {
+        Map<String, Object> headerMap = HttpConst.handleCommonHeader(headers/*, USER_AGENT*/);
+        if (A.isNotEmpty(headerMap)) {
+            for (Map.Entry<String, Object> entry : headerMap.entrySet()) {
                 builder.setHeader(entry.getKey(), U.toStr(entry.getValue()));
             }
-        }
-        // builder.setHeader("User-Agent", USER_AGENT);
-        String traceId = LogUtil.getTraceId();
-        if (U.isNotBlank(traceId)) {
-            builder.header(Const.TRACE, traceId);
-        }
-        String language = LogUtil.getLanguage();
-        if (U.isNotBlank(language)) {
-            builder.header("Accept-Language", language);
         }
         HttpRequest request = builder.build();
         HttpData httpData = new HttpData();

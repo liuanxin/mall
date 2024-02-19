@@ -1,6 +1,5 @@
 package com.github.common.http;
 
-import com.github.common.Const;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
@@ -180,19 +179,11 @@ public class HttpUrlConnectionUtil {
             con.setRequestMethod(useMethod);
             con.setConnectTimeout(HttpConst.CONNECT_TIME_OUT);
             con.setReadTimeout(timeoutSecond > 0 ? ((int) TimeUnit.SECONDS.toMillis(timeoutSecond)) : HttpConst.READ_TIME_OUT);
-            if (A.isNotEmpty(headers)) {
-                for (Map.Entry<String, ?> entry : headers.entrySet()) {
+            Map<String, Object> headerMap = HttpConst.handleCommonHeader(headers/*, USER_AGENT*/);
+            if (A.isNotEmpty(headerMap)) {
+                for (Map.Entry<String, ?> entry : headerMap.entrySet()) {
                     con.setRequestProperty(entry.getKey(), U.toStr(entry.getValue()));
                 }
-            }
-            // con.setRequestProperty("User-Agent", USER_AGENT);
-            String traceId = LogUtil.getTraceId();
-            if (U.isNotBlank(traceId)) {
-                con.setRequestProperty(Const.TRACE, traceId);
-            }
-            String language = LogUtil.getLanguage();
-            if (U.isNotBlank(language)) {
-                con.setRequestProperty("Accept-Language", language);
             }
             Map<String, String> fileMap = new LinkedHashMap<>();
             boolean hasParam = A.isNotEmpty(params);
@@ -290,21 +281,17 @@ public class HttpUrlConnectionUtil {
             String connectionUrl = HttpConst.handleEmptyScheme(url);
             redirectUrlList.add(connectionUrl);
             Map<String, List<String>> resHeaders = null;
+            Map<String, Object> headerMap = HttpConst.handleCommonHeader(headers/*, USER_AGENT*/);
             for (int i = 0; i < MAX_REDIRECT_COUNT; i++) {
                 try {
                     con = (HttpURLConnection) new URL(connectionUrl).openConnection();
                     con.setRequestMethod(method);
                     con.setConnectTimeout(HttpConst.CONNECT_TIME_OUT);
                     con.setReadTimeout(timeoutSecond > 0 ? ((int) TimeUnit.SECONDS.toMillis(timeoutSecond)) : HttpConst.READ_TIME_OUT);
-                    if (A.isNotEmpty(headers)) {
-                        for (Map.Entry<String, ?> entry : headers.entrySet()) {
+                    if (A.isNotEmpty(headerMap)) {
+                        for (Map.Entry<String, ?> entry : headerMap.entrySet()) {
                             con.setRequestProperty(entry.getKey(), U.toStr(entry.getValue()));
                         }
-                    }
-                    // con.setRequestProperty("User-Agent", USER_AGENT);
-                    String traceId = LogUtil.getTraceId();
-                    if (U.isNotBlank(traceId)) {
-                        con.setRequestProperty(Const.TRACE, traceId);
                     }
                     if (A.isNotEmpty(params) || U.isNotBlank(body)) {
                         // 默认值 false, 当向远程服务器传送数据/写数据时, 需设置为 true

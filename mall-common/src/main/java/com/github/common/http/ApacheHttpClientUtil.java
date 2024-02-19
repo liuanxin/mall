@@ -1,6 +1,5 @@
 package com.github.common.http;
 
-import com.github.common.Const;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
@@ -36,7 +35,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-@SuppressWarnings("DuplicatedCode")
 public class ApacheHttpClientUtil {
 
     // private static final String USER_AGENT = HttpConst.getUserAgent("apache_http_client4");
@@ -340,8 +338,9 @@ public class ApacheHttpClientUtil {
 
     /** 处理请求时存到 header 中的数据 */
     private static void handleHeader(HttpRequestBase request, Map<String, Object> headers) {
-        if (A.isNotEmpty(headers)) {
-            for (Map.Entry<String, Object> entry : headers.entrySet()) {
+        Map<String, Object> headerMap = HttpConst.handleCommonHeader(headers/*, USER_AGENT*/);
+        if (A.isNotEmpty(headerMap)) {
+            for (Map.Entry<String, Object> entry : headerMap.entrySet()) {
                 Object value = entry.getValue();
                 if (U.isNotNull(value)) {
                     request.addHeader(entry.getKey(), value.toString());
@@ -362,16 +361,6 @@ public class ApacheHttpClientUtil {
     private static HttpData handleRequest(HttpRequestBase request, int timeoutSecond, Map<String, Object> params,
                                           String body, boolean printLog) {
         request.setConfig(config(timeoutSecond));
-
-        // request.setHeader("User-Agent", USER_AGENT);
-        String traceId = LogUtil.getTraceId();
-        if (U.isNotBlank(traceId)) {
-            request.setHeader(Const.TRACE, traceId);
-        }
-        String language = LogUtil.getLanguage();
-        if (U.isNotBlank(language)) {
-            request.setHeader("Accept-Language", language);
-        }
         String method = request.getMethod();
         String url = request.getURI().toString();
 
