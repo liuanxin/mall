@@ -19,7 +19,10 @@ import java.util.concurrent.TimeUnit;
 public class HttpUrlConnectionUtil {
 
     // private static final String USER_AGENT = HttpConst.getUserAgent("http_url_connection");
-    private static final int MAX_REDIRECT_COUNT = 10;
+
+    /** @see jdk.internal.net.http.RedirectFilter */
+    @SuppressWarnings("JavadocReference")
+    private static final int MAX_REDIRECT_COUNT = U.toInt(System.getProperty("jdk.httpclient.redirects.retrylimit"), 5);
 
 
     /** 向指定 url 进行 get 请求(普通表单方式) */
