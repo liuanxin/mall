@@ -198,10 +198,10 @@ public class HttpClientUtil {
                     String key = entry.getKey();
                     String value = U.toStr(entry.getValue());
 
-                    arr.add(handleBytes("--" + boundary + "\r\n"));
+                    arr.add(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
                     String paramInfo = "Content-Disposition: form-data; name=\"%s\"\r\n\r\n";
-                    arr.add(handleBytes(String.format(paramInfo, key)));
-                    arr.add(handleBytes(value + "\r\n"));
+                    arr.add((String.format(paramInfo, key)).getBytes(StandardCharsets.UTF_8));
+                    arr.add((value + "\r\n").getBytes(StandardCharsets.UTF_8));
                 }
             }
             if (hasFile) {
@@ -209,20 +209,20 @@ public class HttpClientUtil {
                     String key = entry.getKey();
                     File file = entry.getValue();
 
-                    arr.add(handleBytes("--" + boundary + "\r\n"));
+                    arr.add(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
                     String paramInfo = "Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"\r\n\r\n";
-                    arr.add(handleBytes(String.format(paramInfo, key, file.getName())));
+                    arr.add((String.format(paramInfo, key, file.getName())).getBytes(StandardCharsets.UTF_8));
                     try {
                         arr.add(Files.readAllBytes(file.toPath()));
                     } catch (IOException e) {
                         throw new RuntimeException("read file exception", e);
                     }
-                    arr.add(handleBytes("\r\n"));
+                    arr.add(("\r\n").getBytes(StandardCharsets.UTF_8));
 
                     fileMap.put(key, file.toString());
                 }
             }
-            arr.add(handleBytes("--" + boundary + "--"));
+            arr.add(("--" + boundary + "--").getBytes(StandardCharsets.UTF_8));
             body = HttpRequest.BodyPublishers.ofByteArrays(arr);
         } else {
             body = HttpRequest.BodyPublishers.noBody();
@@ -253,10 +253,6 @@ public class HttpClientUtil {
             httpData.fillException(e);
         }
         return httpData;
-    }
-
-    private static byte[] handleBytes(String str) {
-        return str.getBytes(StandardCharsets.UTF_8);
     }
 
     private static HttpData handleRequest(String method, String url, int timeoutSecond, Map<String, Object> params,

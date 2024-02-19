@@ -193,6 +193,7 @@ public class HttpData {
             sbd.append("[").append(DateUtil.formatDateTimeMs(reqTime));
             if (U.isNotNull(resTime)) {
                 sbd.append(" -> ").append(DateUtil.formatDateTimeMs(resTime));
+                sbd.append("(").append(DateUtil.toHuman(resTime.getTime() - reqTime.getTime())).append(")");
             }
             sbd.append("]");
 
