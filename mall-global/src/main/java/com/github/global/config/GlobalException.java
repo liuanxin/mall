@@ -242,7 +242,7 @@ public class GlobalException {
             boolean hasCn = LocaleContextHolder.getLocale() == Locale.CHINA;
             return hasCn ? "出错了, 我们会尽快处理" : "Something went wrong, we'll fix it asap";
         } else {
-            return e.getMessage();
+            return U.isNull(e) ? "exception" : e.getMessage();
         }
     }
 }
