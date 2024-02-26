@@ -583,6 +583,10 @@ public final class U {
     public static Boolean toBoolean(Object obj) {
         return isNull(obj) ? null : TRUES.contains(obj.toString().toLowerCase()) ? Boolean.TRUE : Boolean.FALSE;
     }
+    public static Boolean toBoolean(Object obj, boolean defaultBoolean) {
+        Boolean bool = toBoolean(obj);
+        return isNull(bool) ? defaultBoolean : bool;
+    }
     /** 是 true、1、on、yes 中的任意一种(无视大小写)则是 true, 否则是 false */
     public static boolean toBool(Object obj) {
         return isNotNull(obj) && TRUES.contains(obj.toString().toLowerCase());
