@@ -1,6 +1,5 @@
 package com.github.common.util;
 
-import com.github.common.date.DateUtil;
 import com.github.common.exception.*;
 
 import java.io.*;
@@ -18,6 +17,9 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -848,7 +850,7 @@ public final class U {
             return toStr(defaultIfNull(invokeMethod(value, "getValue"), value));
         } else if (value instanceof Date d) {
             // 如果是日期, 则格式化
-            return toStr(DateUtil.formatDateTime(d));
+            return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.ofInstant(d.toInstant(), ZoneId.systemDefault()));
         } else {
             return toStr(value);
         }
@@ -1238,6 +1240,9 @@ public final class U {
             return trim;
         }
     }
+
+
+    // -----------------------------
 
 
     /** 对象为 null 时抛出异常 */
