@@ -87,6 +87,9 @@ public class UserAgent {
         @Override
         public String toString() {
             List<String> list = new ArrayList<>();
+            if (U.isNotBlank(type)) {
+                list.add(type.toLowerCase());
+            }
             if (U.isNotBlank(vendor)) {
                 list.add(vendor.toLowerCase());
             }
