@@ -31,9 +31,16 @@ public final class JsonModule {
 
     /** 全局序列化反序列化模块 */
     public static final SimpleModule GLOBAL_MODULE = new SimpleModule()
-            // Long 或 long 序列化时用 String 类型, 避免前端处理 long 时精度丢失
+            // long float double 序列化时用 String 类型, 避免前端处理时精度等一些奇怪的问题
+            // .addSerializer(Integer.class, ToStringSerializer.instance)
+            // .addSerializer(int.class, ToStringSerializer.instance)
             .addSerializer(Long.class, ToStringSerializer.instance)
             .addSerializer(long.class, ToStringSerializer.instance)
+            .addSerializer(Float.class, ToStringSerializer.instance)
+            .addSerializer(float.class, ToStringSerializer.instance)
+            .addSerializer(Double.class, ToStringSerializer.instance)
+            .addSerializer(double.class, ToStringSerializer.instance)
+
             .addSerializer(BigDecimal.class, BigDecimalSerializer.INSTANCE)
             .addSerializer(Date.class, DateSerializer.INSTANCE) // com.fasterxml.jackson.databind.ser.std.DateSerializer
             .addSerializer(LocalDate.class, LocalDateSerializer.INSTANCE)
