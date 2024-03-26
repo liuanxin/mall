@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.AbstractMappingJacksonResponseBodyAdvice;
 
 import java.lang.reflect.Method;
-import java.util.Set;
+import java.util.List;
 
 @SuppressWarnings("NullableProblems")
 @RequiredArgsConstructor
@@ -30,14 +30,14 @@ import java.util.Set;
 public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice {
 
     @Value("${req.log-exclude-path:}")
-    private Set<String> excludePathSet;
+    private List<String> excludePathList;
 
     private final GlobalLogHandler logHandler;
 
     @Override
     protected void beforeBodyWriteInternal(MappingJacksonValue bodyContainer, MediaType contentType, MethodParameter parameter,
                                            ServerHttpRequest request, ServerHttpResponse response) {
-        if (A.isEmpty(excludePathSet) || !excludePathSet.contains(RequestUtil.getRequestUri())) {
+        if (A.isEmpty(excludePathList) || !excludePathList.contains(RequestUtil.getRequestUri())) {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 StringBuilder sbd = new StringBuilder();
                 ServletServerHttpRequest req = (ServletServerHttpRequest) request;
