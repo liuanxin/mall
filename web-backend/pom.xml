@@ -129,7 +129,7 @@
                             <arg>/bin/sh</arg>
                             <arg>-c</arg>
                             <arg>
-                                exec java $JAVA_OPTS  -server -Dfile.encoding=UTF-8 \
+                                exec java -server -Dfile.encoding=UTF-8 $JAVA_OPTS \
                                     -Djava.security.egd=file:/dev/./urandom \
                                     -cp $( cat /app/jib-classpath-file ) \
                                     $( cat /app/jib-main-class-file )
@@ -137,10 +137,10 @@
 
                             <!--
                             <arg>
-                                exec java $JAVA_OPTS \
-                                -server -Dfile.encoding=UTF-8 -Djava.security.egd=file:/dev/./urandom \
-                                -cp /app/resources:/app/classes:/app/libs/* \
-                                ${main-class}
+                                exec java -server -Dfile.encoding=UTF-8 $JAVA_OPTS \
+                                    -Djava.security.egd=file:/dev/./urandom \
+                                    -cp /app/resources:/app/classes:/app/libs/* \
+                                    ${main-class}
                             </arg>
                             -->
                         </entrypoint>
