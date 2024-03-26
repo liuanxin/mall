@@ -99,26 +99,32 @@
                     <allowInsecureRegistries>true</allowInsecureRegistries>
                     <from>
                         <image>openjdk:17-alpine</image>
-                        <!--<auth>
+                        <!--
+                        <auth>
                             <username>xx</username>
                             <password>xx</password>
-                        </auth>-->
+                        </auth>
+                        -->
                     </from>
                     <to>
                         <image>${docker-repository}/${project.artifactId}:${project.version}</image>
-                        <!--<auth>
+                        <!--
+                        <auth>
                             <username>xxx</username>
                             <password>xxx</password>
-                        </auth>-->
+                        </auth>
+                        -->
                     </to>
                     <container>
                         <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
-                        <!--<jvmFlags>
+                        <!--
+                        <jvmFlags>
                             <jvmFlag>-server</jvmFlag>
                             <jvmFlag>-Dfile.encoding=UTF-8</jvmFlag>
                             <jvmFlag>-Djava.security.egd=file:/dev/./urandom</jvmFlag>
                             <jvmFlag>-Xlog:gc*=info:file=/var/log/gc.log</jvmFlag>
-                        </jvmFlags>-->
+                        </jvmFlags>
+                        -->
                         <entrypoint>
                             <arg>/bin/sh</arg>
                             <arg>-c</arg>
@@ -129,12 +135,14 @@
                                     $( cat /app/jib-main-class-file )
                             </arg>
 
-                            <!--<arg>
+                            <!--
+                            <arg>
                                 exec java $JAVA_OPTS \
                                 -server -Dfile.encoding=UTF-8 -Djava.security.egd=file:/dev/./urandom \
                                 -cp /app/resources:/app/classes:/app/libs/* \
                                 ${main-class}
-                            </arg>-->
+                            </arg>
+                            -->
                         </entrypoint>
                     </container>
                 </configuration>
@@ -142,12 +150,14 @@
                 编译时上传到 docker 私服: mvn clean compile -DsendCredentialsOverHttp=true jib:build
                 私服支持 https 可以去掉 -DsendCredentialsOverHttp=true 选项, 要去掉 jib:build 选项可以解开下面的配置
                 -->
-                <!--<executions>
+                <!--
+                <executions>
                     <execution>
-                        <phase>package</phase>
+                        <phase>compile</phase>
                         <goals><goal>build</goal></goals>
                     </execution>
-                </executions>-->
+                </executions>
+                -->
             </plugin>
         </plugins>
     </build>
