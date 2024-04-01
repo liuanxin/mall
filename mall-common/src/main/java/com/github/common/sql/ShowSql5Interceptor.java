@@ -34,7 +34,7 @@
 //
 //    @Override
 //    public ResultSetInternalMethods preProcess(String sql, Statement statement, Connection connection) throws SQLException {
-//        if (LogUtil.SQL_LOG.isDebugEnabled()) {
+//        if (ShowSqlThreadLocal.hasPrint() && LogUtil.SQL_LOG.isDebugEnabled()) {
 //            String realSql = getRealSql(sql, statement);
 //            if (U.isNotBlank(realSql)) {
 //                long id = ID.addAndGet(1);
@@ -72,7 +72,7 @@
 //    @Override
 //    public ResultSetInternalMethods postProcess(String sql, Statement statement, ResultSetInternalMethods resultSet,
 //                                                Connection connection) throws SQLException {
-//        if (LogUtil.SQL_LOG.isDebugEnabled()) {
+//        if (ShowSqlThreadLocal.hasPrint() && LogUtil.SQL_LOG.isDebugEnabled()) {
 //            String realSql = getRealSql(sql, statement);
 //            if (U.isNotBlank(realSql)) {
 //                Thread currentThread = Thread.currentThread();
