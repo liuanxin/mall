@@ -97,6 +97,7 @@ public class ApacheHttpClientUtil {
             return !(request instanceof HttpEntityEnclosingRequest);
         };
 
+        // DefaultRedirectStrategy.INSTANCE 是只对 GET 和 HEAD 重定向
         REDIRECT_STRATEGY = new DefaultRedirectStrategy() {
             @Override
             protected boolean isRedirectable(String method) {
