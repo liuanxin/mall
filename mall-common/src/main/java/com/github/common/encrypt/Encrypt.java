@@ -46,6 +46,7 @@ public final class Encrypt {
     private static final JWTSigner JWT_SIGNER = new JWTSigner(JWT_SECRET_KEY);
     private static final JWTVerifier JWT_VERIFIER = new JWTVerifier(JWT_SECRET_KEY);
 
+
     /** 使用 base64 编码 */
     public static String base64Encode(String src) {
         return new String(base64Encode(src.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
@@ -60,6 +61,7 @@ public final class Encrypt {
     public static byte[] base64Decode(byte[] src) {
         return Base64.getDecoder().decode(src);
     }
+
 
     /** 使用 aes 加密(使用默认密钥) */
     public static String aesEncode(String data) {
@@ -101,6 +103,7 @@ public final class Encrypt {
             throw new RuntimeException(String.format("用 %s 解密(%s)密钥(%s)时异常", AES, data, secretKey), e);
         }
     }
+
 
     /** 使用 des 加密(使用默认密钥) */
     public static String desEncode(String data) {
@@ -148,6 +151,7 @@ public final class Encrypt {
             throw new RuntimeException(String.format("用 %s 解密(%s)密钥(%s)时异常", DES, data, secretKey), e);
         }
     }
+
 
     /** 使用 DES/CBC/PKCS5Padding 加密(使用默认密钥) */
     public static String desCbcEncode(String data) {
@@ -295,6 +299,30 @@ public final class Encrypt {
     }
 
 
+    /** 基于 secret 使用 jwt 将 map 进行编码并使用 aes 加密 */
+    public static String jwtEncode(String secret, Map<String, Object> map) {
+        return aesEncode(new JWTSigner(secret).sign(map));
+    }
+    /** 基于 secret 将 map 设置过期时间且进行 jwt 编码并使用 aes 加密 */
+    public static String jwtEncode(String secret, Map<String, Object> map, long time, TimeUnit unit) {
+        map.put(JWTVerifier.EXP, System.currentTimeMillis() + unit.toMillis(time));
+        return aesEncode(new JWTSigner(secret).sign(map));
+    }
+    /** 使用 aes 解密并基于 secret 解码 jwt 及验证过期和数据完整性, 解码异常 或 数据已过期 或 验证失败 则抛出未登录异常 */
+    public static Map<String, Object> jwtDecode(String secret, String data) {
+        if (U.isBlank(data)) {
+            throw new ForbiddenException("数据有误, 请重新登录");
+        }
+
+        try {
+            return new JWTVerifier(secret).verify(aesDecode(data));
+        } catch (JWTExpiredException e) {
+            throw new ForbiddenException("登录已过期, 请重新登录", e);
+        } catch (Exception e) {
+            throw new ForbiddenException(String.format("数据(%s)验证失败, 请重新登录", data), e);
+        }
+    }
+
     /** 使用 jwt 将 map 进行编码并使用 aes 加密 */
     public static String jwtEncode(Map<String, Object> map) {
         return aesEncode(JWT_SIGNER.sign(map));
@@ -302,7 +330,7 @@ public final class Encrypt {
     /** 将 map 设置过期时间且进行 jwt 编码并使用 aes 加密 */
     public static String jwtEncode(Map<String, Object> map, long time, TimeUnit unit) {
         map.put(JWTVerifier.EXP, System.currentTimeMillis() + unit.toMillis(time));
-        return jwtEncode(map);
+        return aesEncode(JWT_SIGNER.sign(map));
     }
     /** 使用 aes 解密并解码 jwt 及验证过期和数据完整性, 解码异常 或 数据已过期 或 验证失败 则抛出未登录异常 */
     public static Map<String, Object> jwtDecode(String data) {
@@ -311,13 +339,46 @@ public final class Encrypt {
         }
 
         try {
-            String jwt = aesDecode(data);
-            return JWT_VERIFIER.verify(jwt);
+            return JWT_VERIFIER.verify(aesDecode(data));
         } catch (JWTExpiredException e) {
             throw new ForbiddenException("登录已过期, 请重新登录", e);
         } catch (Exception e) {
             throw new ForbiddenException(String.format("数据(%s)验证失败, 请重新登录", data), e);
         }
+    }
+
+
+    /**
+     * 生成 google 动态令牌
+     *
+     * @param secret 密钥
+     * @return 生成的 google 验证码(6 位数字), 每过 30 秒变化
+     */
+    public static String getGoogleAuthenticatorCode(String secret) {
+        return getGoogleAuthenticatorCode(secret, 0);
+    }
+
+    /**
+     * 生成 google 动态令牌
+     *
+     * @param secret 密钥
+     * @param offsetSecond 偏移时间(-29 到 29 之间), 正数则往前偏移指定秒, 负数则往后偏移指定秒
+     * @return 生成的 google 验证码(6 位数字), 每过 30 秒变化
+     */
+    public static String getGoogleAuthenticatorCode(String secret, int offsetSecond) {
+        return getGoogleAuthenticatorCode(secret, System.currentTimeMillis(), offsetSecond);
+    }
+
+    /**
+     * 生成 google 动态令牌
+     *
+     * @param secret 密钥
+     * @param ms 时间戳
+     * @param offsetSecond 偏移时间(-29 到 29 之间), 正数则往前偏移指定秒, 负数则往后偏移指定秒
+     * @return 生成的 google 验证码(6 位数字), 每过 30 秒变化
+     */
+    public static String getGoogleAuthenticatorCode(String secret, long ms, int offsetSecond) {
+        return GoogleAuthenticator.getCode(secret, ms, offsetSecond);
     }
 
 
@@ -374,6 +435,7 @@ public final class Encrypt {
         }
         return new String(iOutputChar);
     }
+
 
     /** 生成 md5 值(16 位) */
     public static String to16Md5(String src) {
@@ -514,6 +576,7 @@ public final class Encrypt {
             throw new RuntimeException(String.format("无法基于(%s)给(%s)生成 %s 值", secret, src, algorithm), e);
         }
     }
+
 
     /** 二进制 转换成 十六进制字符串 */
     public static String binary2Hex(byte[] bytes) {
