@@ -17,7 +17,7 @@ final class GoogleAuthenticator {
      * @param offsetSecond 偏移时间(-29 到 29 之间), 正数则往前偏移指定秒, 负数则往后偏移指定秒
      * @return 生成的 google 验证码(6 位数字), 每过 30 秒变化
      */
-    public static String getCode(String secret, long ms, int offsetSecond) {
+    static String getCode(String secret, long ms, int offsetSecond) {
         int offset = (offsetSecond < -29 || offsetSecond > 29) ? 0 : offsetSecond;
         byte[] data = sha1(secret, (ms + offset) / 30000);
         int o = data[19] & 0xf;

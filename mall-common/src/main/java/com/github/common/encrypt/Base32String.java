@@ -139,11 +139,11 @@ final class Base32String {
     }
 
 
-    public static byte[] decode(String encoded) {
+    static byte[] decode(String encoded) {
         return getInstance().decodeInternal(encoded);
     }
 
-    public static String encode(byte[] data) {
+    static String encode(byte[] data) {
         return getInstance().encodeInternal(data);
     }
 }
