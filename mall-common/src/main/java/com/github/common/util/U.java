@@ -363,6 +363,11 @@ public final class U {
         return (int) (System.currentTimeMillis() / 1000);
     }
 
+    /** 返回时间戳(到秒) */
+    public static int unixTimestamp(Date date) {
+        return isNull(date) ? 0 : ((int) (date.getTime() / 1000));
+    }
+
     /** 将数值转换成 ipv4, 类似于 mysql 中 INET_NTOA(134744072) ==> 8.8.8.8 */
     public static String num2ip(long num) {
         return ((num & 0xff000000L) >> 24) + "." + ((num & 0xff0000) >> 16)
