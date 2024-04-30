@@ -4,14 +4,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiReturn;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
 
-@Data
-@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class JsonResult<T> {
 
@@ -37,6 +33,8 @@ public class JsonResult<T> {
     @ApiReturn(value = "错误信息, 只在非生产时返回")
     private List<String> error;
 
+
+    public JsonResult() {}
     private JsonResult(JsonCode code, String msg) {
         this.code = code;
         this.msg = msg;
@@ -50,8 +48,46 @@ public class JsonResult<T> {
         this.data = data;
     }
 
+    public JsonCode getCode() {
+        return code;
+    }
+    public void setCode(JsonCode code) {
+        this.code = code;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public T getData() {
+        return data;
+    }
+    public void setData(T data) {
+        this.data = data;
+    }
+
+    public void setTraceId(String traceId) {
+        this.traceId = traceId;
+    }
     public String getTraceId() {
         return U.defaultIfBlank(traceId, LogUtil.getTraceId());
+    }
+
+    public Map<String, String> getValidate() {
+        return validate;
+    }
+    public void setValidate(Map<String, String> validate) {
+        this.validate = validate;
+    }
+
+    public List<String> getError() {
+        return error;
+    }
+    public void setError(List<String> error) {
+        this.error = error;
     }
 
 

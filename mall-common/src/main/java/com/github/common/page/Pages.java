@@ -36,9 +36,7 @@ public final class Pages {
     public static <T> Page<T> param(PageParam page) {
         // 移动端与 pc 端的分页不同, 前者的用户习惯是一直刷, 一边刷一边加载, 它是不需要查询 select count(*) 的
         // 移动端也不需要有当前页的概念, 如果数据是按时间倒序(时间越后越排在前), 从下往上刷时, 它只需要加载比最下面的时间小的数据即可
-        return U.isTrue(page.getWasMobile())
-                ? paramOnlyLimit(page.getLimit())
-                : new Page<>(page.getPage(), page.getLimit());
+        return page.getWasMobile() ? paramOnlyLimit(page.getLimit()) : new Page<>(page.getPage(), page.getLimit());
     }
 
     /** 在 service 的实现类中调用 --> 在 repository 方法上的返回类型是 mbp 的 Page 对象, service 上的返回类型是 PageReturn, 使用此方法进行转换 */

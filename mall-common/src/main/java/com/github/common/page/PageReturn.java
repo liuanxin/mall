@@ -4,25 +4,22 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiReturn;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Collections;
 import java.util.List;
 
-@Setter
-@Getter
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class PageReturn<T> {
 
     private static final PageReturn EMPTY = new PageReturn<>(0, Collections.emptyList());
 
-    @ApiReturn("SELECT COUNT(*) FROM ... 的结果")
-    private long total;
 
-    @ApiReturn("SELECT ... FROM ... LIMIT 0, 10 的结果")
+    @ApiReturn("总条数: SELECT COUNT(*) FROM ... 的结果")
+    private long total;
+    @ApiReturn("当页数据: SELECT ... FROM ... LIMIT 0, 10 的结果")
     private List<T> list;
+
 
     public PageReturn() {}
     public PageReturn(long total) {
@@ -32,6 +29,22 @@ public class PageReturn<T> {
         this.total = total;
         this.list = list;
     }
+
+
+    public long getTotal() {
+        return total;
+    }
+    public void setTotal(long total) {
+        this.total = total;
+    }
+
+    public List<T> getList() {
+        return list;
+    }
+    public void setList(List<T> list) {
+        this.list = list;
+    }
+
 
     public static <T> PageReturn<T> empty() {
         return EMPTY;

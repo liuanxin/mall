@@ -17,30 +17,30 @@ public class PageParam {
 
     @ApiParam("每页条数. 不传 或 传入负数 或 传入非数字 或 传入大于 " + MAX_LIMIT + " 的数则默认是 " + DEFAULT_LIMIT)
     private Integer limit;
-
     /** 是否是移动端 */
     @ApiParamIgnore
     private Boolean wasMobile = false;
+
 
     public Integer getPage() {
         return (page == null || page <= 0) ? DEFAULT_PAGE_NO : page;
     }
     public void setPage(Integer page) {
-        this.page = page;
+        this.page = ((page == null || page <= 0) ? DEFAULT_PAGE_NO : page);
     }
 
     public Integer getLimit() {
         return (limit == null || limit <= 0 || limit > MAX_LIMIT) ? DEFAULT_LIMIT : limit;
     }
     public void setLimit(Integer limit) {
-        this.limit = limit;
+        this.limit = ((limit == null || limit <= 0 || limit > MAX_LIMIT) ? DEFAULT_LIMIT : limit);
     }
 
     public Boolean getWasMobile() {
-        return wasMobile;
+        return wasMobile != null && wasMobile;
     }
     public void setWasMobile(Boolean wasMobile) {
-        this.wasMobile = wasMobile;
+        this.wasMobile = (wasMobile != null && wasMobile);
     }
 
     /** 分页语句  LIMIT x, xx  中  x  的值 */
