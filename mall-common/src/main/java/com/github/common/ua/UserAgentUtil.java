@@ -15,7 +15,7 @@ import java.io.InputStream;
 public class UserAgentUtil {
 
     /** https://cdnjs.com/libraries/UAParser.js */
-    private static final String UA_PARSE_JS_file = "ua-parser.min.js";
+    private static final String UA_PARSE_JS_FILE = "ua-parser.min.js";
 
     private static final String PARSE_METHOD = "parseInfo";
 
@@ -24,8 +24,8 @@ public class UserAgentUtil {
     static {
         String uaParserJs = readFile();
         if (U.isNotNull(uaParserJs)) {
-            System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");// js nashorn 都可以
-            ScriptEngine engine = new ScriptEngineManager().getEngineByName("JavaScript");
+            System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
+            ScriptEngine engine = new ScriptEngineManager().getEngineByName("JavaScript"); // js nashorn 都可以
             try {
                 // java 运行 js 库不支持下面的正则, 需要处理一下才行
                 String parser = uaParserJs.replace("(?=lg)?", "(?=lg)");
@@ -43,22 +43,22 @@ public class UserAgentUtil {
     }
     private static String readFile() {
         // https://stackoverflow.com/questions/20389255/reading-a-resource-file-from-within-jar
-        try (InputStream in = UserAgentUtil.class.getClassLoader().getResourceAsStream(UA_PARSE_JS_file)) {
+        try (InputStream in = UserAgentUtil.class.getClassLoader().getResourceAsStream(UA_PARSE_JS_FILE)) {
             if (U.isNotNull(in)) {
                 return U.inputStreamToString(in);
             }
         } catch (IOException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("class load file read exception", e);
+                LogUtil.ROOT_LOG.error("class load file({}) exception", UA_PARSE_JS_FILE, e);
             }
         }
-        try (InputStream in = UserAgentUtil.class.getResourceAsStream(UA_PARSE_JS_file)) {
+        try (InputStream in = UserAgentUtil.class.getResourceAsStream(UA_PARSE_JS_FILE)) {
             if (U.isNotNull(in)) {
                 return U.inputStreamToString(in);
             }
         } catch (IOException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("file read exception", e);
+                LogUtil.ROOT_LOG.error("load file({}) exception", UA_PARSE_JS_FILE, e);
             }
         }
         return null;
