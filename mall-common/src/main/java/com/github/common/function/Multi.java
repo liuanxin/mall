@@ -2,7 +2,7 @@ package com.github.common.function;
 
 /**
  * <pre>
- * 当想要表现多(2 ~ 9)类型时使用
+ * 当想要表现多(2 ~ 9)类型时使用, 比如 2 个类型
  *
  * 返回
  * public Two&lt;Long, String&gt; twoReturn() {
@@ -11,9 +11,9 @@ package com.github.common.function;
  * }
  *
  * 使用
- * Two&lt;Long, String&gt; middleData = twoReturn();
- * long id = middleData.one();
- * String no = middleData.two();
+ * Two&lt;Long, String&gt; data = twoReturn();
+ * Long id = data.one();
+ * String no = data.two();
  * </pre>
  */
 public class Multi {
