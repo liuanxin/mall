@@ -268,6 +268,11 @@ public final class RequestUtil {
     }
 
     /** 先从请求头中查, 为空再从参数中查 */
+    public static String getHeader(String headerName) {
+        HttpServletRequest request = getRequest();
+        return U.isNull(request) ? U.EMPTY : request.getHeader(headerName);
+    }
+    /** 先从请求头中查, 为空再从参数中查 */
     public static String getHeaderOrParam(String param) {
         return getHeaderOrParam(param, getRequest());
     }

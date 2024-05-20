@@ -61,7 +61,7 @@ public final class AppTokenHandler {
     }
     /** 从请求中获取 token 数据 */
     private static String getToken() {
-        String token = RequestUtil.getHeaderOrParam(Const.TOKEN);
+        String token = RequestUtil.getHeader(Const.TOKEN);
         if (U.isNotBlank(token)) {
             if (token.startsWith(Const.TOKEN_PREFIX)) {
                 return token.substring(Const.TOKEN_PREFIX.length());
