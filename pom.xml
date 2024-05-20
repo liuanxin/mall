@@ -47,29 +47,29 @@
 
         <!-- 所有的版本都在此处统一控制, 不要在其他地方设置! -->
 
-        <hutool.version>5.8.26</hutool.version>
-        <guava.version>33.1.0-jre</guava.version>
+        <hutool.version>5.8.27</hutool.version>
+        <guava.version>33.2.0-jre</guava.version>
         <joda.version>2.12.7</joda.version>
         <javassist.version>3.30.2-GA</javassist.version>
         <okhttp.version>4.12.0</okhttp.version>
         <poi-ooxml.version>5.2.5</poi-ooxml.version>
         <easyexcel.version>3.3.4</easyexcel.version>
-        <js.version>23.0.3</js.version>
-        <js-engine.version>24.0.0</js-engine.version>
+        <js.version>23.0.4</js.version>
+        <js-engine.version>24.0.1</js-engine.version>
 
         <itextpdf.version>5.5.13.3</itextpdf.version>
         <itext-asian.version>5.2.0</itext-asian.version>
         <!-- https://kb.itextpdf.com/home/it7kb/installation-guidelines/installing-itext-7-for-java -->
-        <itext.version>8.0.3</itext.version>
+        <itext.version>8.0.4</itext.version>
 
-        <elasticsearch.version>8.12.2</elasticsearch.version>
-        <redisson.version>3.27.2</redisson.version>
+        <elasticsearch.version>8.13.4</elasticsearch.version>
+        <redisson.version>3.30.0</redisson.version>
         <hikaricp.version>5.1.0</hikaricp.version>
         <!--<mysql.version>5.1.49 | 8.0.33 | 8.3.0</mysql.version>-->
-        <mybatis-flex.version>1.8.3</mybatis-flex.version>
+        <mybatis-flex.version>1.8.9</mybatis-flex.version>
 
         <api-document.version>0.9.2</api-document.version>
-        <jib-maven-plugin.version>3.4.1</jib-maven-plugin.version>
+        <jib-maven-plugin.version>3.4.2</jib-maven-plugin.version>
 
         <docker-repository>ip:port</docker-repository>
     </properties>
