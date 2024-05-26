@@ -267,7 +267,7 @@ public final class RequestUtil {
         return sbd.toString();
     }
 
-    /** 先从请求头中查, 为空再从参数中查 */
+    /** 从请求头中获取值 */
     public static String getHeader(String headerName) {
         HttpServletRequest request = getRequest();
         return U.isNull(request) ? U.EMPTY : request.getHeader(headerName);
