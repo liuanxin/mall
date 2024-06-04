@@ -65,18 +65,21 @@ public class UserAgentUtil {
     }
 
     public static UserAgent parse(String ua) {
+        return JsonUtil.toObjectNil(parseStr(ua), UserAgent.class);
+    }
+
+    public static String parseStr(String ua) {
         if (U.isNull(SCRIPT_ENGINE) || U.isBlank(ua)) {
-            return null;
+            return U.EMPTY;
         }
 
         try {
-            Object obj = SCRIPT_ENGINE.invokeFunction(PARSE_METHOD, ua);
-            return JsonUtil.toObjectNil(U.toStr(obj), UserAgent.class);
+            return U.toStr(SCRIPT_ENGINE.invokeFunction(PARSE_METHOD, ua));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("parse ua({}) exception", ua, e);
             }
-            return null;
+            return U.EMPTY;
         }
     }
 }
