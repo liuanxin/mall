@@ -1,5 +1,6 @@
 package com.github.common.encrypt;
 
+import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.U;
 import org.junit.Assert;
@@ -88,6 +89,24 @@ public class EncryptTest {
         rsa = Encrypt.rsaDecode(privateKey, encode);
         System.out.println("密码长度是 " + size + " 时拿私钥解密后的值是: " + rsa);
         System.out.println("密码长度是 " + size + " 时解码是否一致: " + rsa.equals(SOURCE));
+    }
+
+    @Test
+    public void reqRes() {
+        Encrypt.RsaPair ras = Encrypt.genericRsaKeyPair(512);
+        String publicKey = ras.getPublicKey();
+        String privateKey = ras.getPrivateKey();
+        System.out.println("任何地方都知道的公钥: " + publicKey);
+        System.out.println("只有服务端知道的私钥: " + privateKey);
+
+        System.out.println("要发送的源数据是: (" + SOURCE + ")");
+        System.out.println("-----");
+
+        Map<String, String> sendData = Encrypt.requestEncode(publicKey, SOURCE);
+        System.out.println("客户端通过公钥处理要发送的数据后: " + JsonUtil.toJson(sendData));
+
+        String decode = Encrypt.responseDecode(privateKey, sendData.get("keys"), sendData.get("values"));
+        System.out.println("服务端通过私钥处理发过来的数据后: (" + decode + ")");
     }
 
     @Test

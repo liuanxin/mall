@@ -92,7 +92,7 @@ public final class Encrypt {
         if (U.isBlank(data)) {
             throw new RuntimeException(String.format("空无需使用 %s 解密", AES));
         }
-        if (secretKey.length() != AES_LEN) {
+        if (U.isBlank(secretKey) || secretKey.length() != AES_LEN) {
             throw new RuntimeException(String.format("%s 解密时, 密钥必须是 %s 位", AES, AES_LEN));
         }
         try {
@@ -209,7 +209,11 @@ public final class Encrypt {
         /** 私钥, 保存到文件 */
         private String privateKey;
     }
-    /** 生成 rsa 的密钥对 */
+    /**
+     * 生成 rsa 的密钥对
+     *
+     * @param keyLength 长度是 512 时生成的公钥长度是 128 私钥长度是 460, 长度是 1024 时生成的公钥长度是 216 私钥长度是 848, 长度是 2048 时生成的公钥长度是 392 私钥长度是 1624
+     */
     public static RsaPair genericRsaKeyPair(int keyLength) {
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(RSA);
@@ -224,8 +228,16 @@ public final class Encrypt {
             throw new RuntimeException(String.format("用 %s 生成 %s 位的密钥对时异常", RSA, keyLength), e);
         }
     }
-    /** 使用 rsa 的公钥加密 */
+    /**
+     * 使用 rsa 的公钥加密
+     *
+     * @param data 要加密的数据, 长度不能超过 53
+     */
     public static String rsaEncode(String publicKey, String data) {
+        int len = 53;
+        if (U.isBlank(publicKey) || data == null || data.length() > len) {
+            throw new RuntimeException(String.format("用 %s 基于公钥(%s)加密(%s)时数据不能为空或长度不能超过 %s", RSA, publicKey, data, len));
+        }
         try {
             byte[] keyBytes = base64Decode(publicKey.getBytes(StandardCharsets.UTF_8));
             X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
@@ -243,6 +255,9 @@ public final class Encrypt {
     }
     /** 使用 rsa 的私钥解密 */
     public static String rsaDecode(String privateKey, String data) {
+        if (U.isBlank(privateKey) || U.isBlank(data)) {
+            throw new RuntimeException(String.format("用 %s 基于私钥(%s)解密(%s)时数据不能为空", RSA, privateKey, data));
+        }
         try {
             byte[] keyBytes = base64Decode(privateKey.getBytes(StandardCharsets.UTF_8));
             PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
@@ -257,6 +272,31 @@ public final class Encrypt {
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 %s 基于私钥(%s)解密(%s)时异常", RSA, privateKey, data), e);
         }
+    }
+
+
+    /**
+     * 客户端: 有公钥和要加密的数据
+     * 1. 运行时生成一个随机数(key)
+     * 2. 使用 rsa 算法基于公钥将 key 加密得到一个值
+     * 3. 用 key 使用 aes 算法加密要传递的数据(data)
+     * 将 2 和 3 的值一起传给服务端
+     */
+    public static Map<String, String> requestEncode(String publicKey, String data) {
+        String key = U.uuid16();
+        String keys = Encrypt.rsaEncode(publicKey, key);
+        String values = Encrypt.aesEncode(data, key);
+        return Map.of("keys", keys, "values", values);
+    }
+
+    /**
+     * 服务端: 有私钥和客户端传过来的 keyData 和 valueData
+     * 1. 使用 rsa 算法基于私钥将 keyData 解密, 得到一个值(key)
+     * 2. 使用 aes 算法基于 key 来解密 valueData 得到 data
+     */
+    public static String responseDecode(String privateKey, String keyData, String valueData) {
+        String key = Encrypt.rsaDecode(privateKey, keyData);
+        return Encrypt.aesDecode(valueData, key);
     }
 
 
