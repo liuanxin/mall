@@ -283,10 +283,9 @@ public final class Encrypt {
      * 将 2 和 3 的值一起传给服务端
      */
     public static Map<String, String> requestEncode(String publicKey, String data) {
+        // 随机数, 用来做 aes 的密钥, 长度 16 位. 数据用这个来加密, 用 rsa 私钥加密这个值也传过去
         String key = U.uuid16();
-        String keys = Encrypt.rsaEncode(publicKey, key);
-        String values = Encrypt.aesEncode(data, key);
-        return Map.of("keys", keys, "values", values);
+        return Map.of("keys", rsaEncode(publicKey, key), "values", aesEncode(data, key));
     }
 
     /**
@@ -295,8 +294,9 @@ public final class Encrypt {
      * 2. 使用 aes 算法基于 key 来解密 valueData 得到 data
      */
     public static String responseDecode(String privateKey, String keyData, String valueData) {
-        String key = Encrypt.rsaDecode(privateKey, keyData);
-        return Encrypt.aesDecode(valueData, key);
+        // 通过 rsa 解出 aes 的密钥, 再用密钥解出数据
+        String key = rsaDecode(privateKey, keyData);
+        return aesDecode(valueData, key);
     }
 
 
