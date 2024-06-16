@@ -94,31 +94,38 @@ public class JsonResult<T> {
     // ---------- 在 controller 中请只使用下面的静态方法就好了. 不要 new JsonResult()... 这样操作 ----------
 
     public static <T> JsonResult<T> success(String msg) {
-        return new JsonResult<>(JsonCode.SUCCESS, msg);
+        JsonCode code = JsonCode.SUCCESS;
+        return new JsonResult<>(code, U.defaultIfBlank(msg, code.getValue()));
     }
 
     public static <T> JsonResult<T> success(String msg, T data) {
-        return new JsonResult<>(JsonCode.SUCCESS,msg, data);
+        JsonCode code = JsonCode.SUCCESS;
+        return new JsonResult<>(code, U.defaultIfBlank(msg, code.getValue()), data);
     }
 
 
     public static <T> JsonResult<T> badRequest(String msg, Map<String, String> validate) {
-        return new JsonResult<>(JsonCode.BAD_REQUEST, msg, validate);
+        JsonCode code = JsonCode.BAD_REQUEST;
+        return new JsonResult<>(code, U.defaultIfBlank(msg, code.getValue()), validate);
     }
 
     public static <T> JsonResult<T> needLogin(String msg) {
-        return new JsonResult<>(JsonCode.NOT_LOGIN, msg);
+        JsonCode code = JsonCode.NOT_LOGIN;
+        return new JsonResult<>(code, U.defaultIfBlank(msg, code.getValue()));
     }
 
     public static <T> JsonResult<T> needPermission(String msg) {
-        return new JsonResult<>(JsonCode.NOT_PERMISSION, msg);
+        JsonCode code = JsonCode.NOT_PERMISSION;
+        return new JsonResult<>(code, U.defaultIfBlank(msg, code.getValue()));
     }
 
     public static <T> JsonResult<T> notFound(String msg) {
-        return new JsonResult<>(JsonCode.NOT_FOUND, msg);
+        JsonCode code = JsonCode.NOT_FOUND;
+        return new JsonResult<>(code, U.defaultIfBlank(msg, code.getValue()));
     }
 
     public static <T> JsonResult<T> fail(String msg) {
-        return new JsonResult<>(JsonCode.FAIL, msg);
+        JsonCode code = JsonCode.FAIL;
+        return new JsonResult<>(code, U.defaultIfBlank(msg, code.getValue()));
     }
 }
