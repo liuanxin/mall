@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
@@ -28,19 +29,23 @@ import java.util.concurrent.TimeUnit;
 public final class Encrypt {
 
     private static final String AES = "AES";
-    /** aes 加解密时, 长度必须是 16 位的密钥 */
-    private static final String AES_SECRET = "&gAe#sEn!cr*yp^t";
-    private static final int AES_LEN = 16;
-
     private static final String DES = "DES";
+    /** 密钥只能是 8 位 */
     private static final String DES_CBC_PKCS5PADDING = "DES/CBC/PKCS5Padding";
-    /** des 加解密时, 长度必须是 8 位的密钥 */
-    private static final String DES_SECRET = "%d#*Es^e";
-    private static final int DES_LEN = 8;
 
+    /** 加密数据的长度不能超过 53 */
     private static final String RSA = "RSA";
-
-    private static final String RC4_SECRET_KEY = "^&NK$1j8kO#h=)hU";
+    /** 生成 rsa 密钥对时的最小长度 */
+    private static final int RSA_KEY_MIN_LEN = 512;
+    /**
+     * <pre>使用 rsa 加密时数据的最大长度. 因此通常的做法是: {
+     *     客户端: 生成一个随机数(0), 使用这个随机数做 aes 或 des 加密(1), 将随机数用 rsa 公钥加密(2),
+     *     服务端: 用 rsa 私钥解密(2)得到随机数(0)再用 aes 或 des 解密(1)
+     * }</pre>
+     */
+    private static final int RSA_DATA_MAX_LEN = 53;
+    /** 用来做数据验签时的算法 */
+    private static final String RSA_SIGN = "SHA256withRSA";
 
     private static final String JWT_SECRET_KEY = "*W0$%Te#nr&y^pOt";
     private static final JWTSigner JWT_SIGNER = new JWTSigner(JWT_SECRET_KEY);
@@ -63,17 +68,10 @@ public final class Encrypt {
     }
 
 
-    /** 使用 aes 加密(使用默认密钥) */
-    public static String aesEncode(String data) {
-        return aesEncode(data, AES_SECRET);
-    }
     /** 使用 aes 加密 */
     public static String aesEncode(String data, String secretKey) {
         if (data == null) {
             throw new RuntimeException(String.format("空无需使用 %s 加密", AES));
-        }
-        if (secretKey.length() != AES_LEN) {
-            throw new RuntimeException(String.format("%s 加密时, 密钥必须是 %s 位", AES, AES_LEN));
         }
         try {
             Cipher cipher = Cipher.getInstance(AES);
@@ -83,17 +81,10 @@ public final class Encrypt {
             throw new RuntimeException(String.format("用 %s 加密(%s)密钥(%s)时异常", AES, data, secretKey), e);
         }
     }
-    /** 使用 aes 解密(使用默认密钥) */
-    public static String aesDecode(String data) {
-        return aesDecode(data, AES_SECRET);
-    }
     /** 使用 aes 解密 */
     public static String aesDecode(String data, String secretKey) {
         if (U.isBlank(data)) {
             throw new RuntimeException(String.format("空无需使用 %s 解密", AES));
-        }
-        if (U.isBlank(secretKey) || secretKey.length() != AES_LEN) {
-            throw new RuntimeException(String.format("%s 解密时, 密钥必须是 %s 位", AES, AES_LEN));
         }
         try {
             Cipher cipher = Cipher.getInstance(AES);
@@ -105,17 +96,10 @@ public final class Encrypt {
     }
 
 
-    /** 使用 des 加密(使用默认密钥) */
-    public static String desEncode(String data) {
-        return desEncode(data, DES_SECRET);
-    }
     /** 使用 des 加密 */
     public static String desEncode(String data, String secretKey) {
         if (data == null) {
             throw new RuntimeException(String.format("空无需使用 %s 加密", DES));
-        }
-        if (secretKey.length() != DES_LEN) {
-            throw new RuntimeException(String.format("%s 加密时, 密钥必须是 %s 位", DES, DES_LEN));
         }
         try {
             DESKeySpec desKey = new DESKeySpec(secretKey.getBytes(StandardCharsets.UTF_8));
@@ -128,17 +112,10 @@ public final class Encrypt {
             throw new RuntimeException(String.format("用 %s 加密(%s)密钥(%s)时异常", DES, data, secretKey), e);
         }
     }
-    /** 使用 des 解密(使用默认密钥) */
-    public static String desDecode(String data) {
-        return desDecode(data, DES_SECRET);
-    }
     /** 使用 des 解密 */
     public static String desDecode(String data, String secretKey) {
         if (data == null || data.trim().length() == 0) {
             throw new RuntimeException(String.format("空无需使用 %s 解密", DES));
-        }
-        if (secretKey.length() != DES_LEN) {
-            throw new RuntimeException(String.format("%s 解密时, 密钥必须是 %s 位", DES, DES_LEN));
         }
         try {
             DESKeySpec desKey = new DESKeySpec(secretKey.getBytes(StandardCharsets.UTF_8));
@@ -153,17 +130,13 @@ public final class Encrypt {
     }
 
 
-    /** 使用 DES/CBC/PKCS5Padding 加密(使用默认密钥) */
-    public static String desCbcEncode(String data) {
-        return desCbcEncode(data, DES_SECRET);
-    }
     /** 使用 DES/CBC/PKCS5Padding 加密 */
     public static String desCbcEncode(String data, String secretKey) {
         if (data == null) {
             throw new RuntimeException(String.format("空无需使用 %s 加密", DES_CBC_PKCS5PADDING));
         }
-        if (secretKey.length() != DES_LEN) {
-            throw new RuntimeException(String.format("%s 加密时, 密钥必须是 %s 位", DES_CBC_PKCS5PADDING, DES_LEN));
+        if (secretKey.length() != 8) {
+            throw new RuntimeException(String.format("%s 加密时, 密钥必须是 %s 位", DES_CBC_PKCS5PADDING, 8));
         }
         try {
             byte[] secretKeyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
@@ -177,17 +150,13 @@ public final class Encrypt {
             throw new RuntimeException(String.format("用 %s 加密(%s)密钥(%s)时异常", DES_CBC_PKCS5PADDING, data, secretKey), e);
         }
     }
-    /** 使用 DES/CBC/PKCS5Padding 解密(使用默认密钥) */
-    public static String desCbcDecode(String data) {
-        return desCbcDecode(data, DES_SECRET);
-    }
     /** 使用 DES/CBC/PKCS5Padding 解密 */
     public static String desCbcDecode(String data, String secretKey) {
         if (data == null || data.trim().length() == 0) {
             throw new RuntimeException(String.format("空无需使用 %s 解密", DES_CBC_PKCS5PADDING));
         }
-        if (secretKey.length() != DES_LEN) {
-            throw new RuntimeException(String.format("%s 解密时, 密钥必须是 %s 位", DES_CBC_PKCS5PADDING, DES_LEN));
+        if (secretKey.length() != 8) {
+            throw new RuntimeException(String.format("%s 解密时, 密钥必须是 %s 位", DES_CBC_PKCS5PADDING, 8));
         }
         try {
             byte[] secretKeyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
@@ -210,82 +179,178 @@ public final class Encrypt {
         private String privateKey;
     }
     /**
-     * 生成 rsa 的密钥对
+     * <pre>生成 rsa 的密钥对, 建议只使用 512  1024  2048 即可, 过大会非常占用 cpu 资源
      *
-     * @param keyLength 长度是 512 时生成的公钥长度是 128 私钥长度是 460, 长度是 1024 时生成的公钥长度是 216 私钥长度是 848, 长度是 2048 时生成的公钥长度是 392 私钥长度是 1624
+     * 长度是 512 时生成的公钥长度是 128 私钥长度是 460
+     * 长度是 1024 时生成的公钥长度是 216 私钥长度是 848
+     * 长度是 2048 时生成的公钥长度是 392 私钥长度是 1624
+     * 长度是 4096 时生成的公钥长度是 736 私钥长度是 3168, 不建议
+     * 长度是 8192 时生成的公钥长度是 1416 私钥长度是 6240, 强烈不建议</pre>
+     *
+     * @param keyLength 长度不能小于 512
      */
     public static RsaPair genericRsaKeyPair(int keyLength) {
+        if (keyLength < RSA_KEY_MIN_LEN) {
+            throw new RuntimeException(String.format("%s 生成密钥对时长度不能小于 %s", RSA, RSA_KEY_MIN_LEN));
+        }
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(RSA);
             keyPairGenerator.initialize(keyLength);
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
             RsaPair pair = new RsaPair();
+            // 公钥用 base64 编码, 跟 getPublicKey 中的 aaa 对应
             pair.setPublicKey(new String(base64Encode(keyPair.getPublic().getEncoded()), StandardCharsets.UTF_8));
+            // 私钥用 base64 编码, 跟 getPrivateKey 中的 bbb 对应
             pair.setPrivateKey(new String(base64Encode(keyPair.getPrivate().getEncoded()), StandardCharsets.UTF_8));
             return pair;
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 %s 生成 %s 位的密钥对时异常", RSA, keyLength), e);
         }
     }
+
+    private static PublicKey getPublicKey(String str) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        // 公钥用 base64 解码, 跟 genericRsaKeyPair 中的 aaa 对应
+        byte[] keyBytes = base64Decode(str.getBytes(StandardCharsets.UTF_8));
+        return KeyFactory.getInstance(RSA).generatePublic(new X509EncodedKeySpec(keyBytes));
+    }
+
+    private static PrivateKey getPrivateKey(String str) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        // 将结果用 base64 解码, 跟 genericRsaKeyPair 中的 bbb 对应
+        byte[] keyBytes = base64Decode(str.getBytes(StandardCharsets.UTF_8));
+        return KeyFactory.getInstance(RSA).generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
+    }
+
     /**
-     * 使用 rsa 的公钥加密
+     * <pre>服务端持有私钥, 公钥公开.
      *
-     * @param data 要加密的数据, 长度不能超过 53
+     * 用于数据传递: 客户端用公钥加密原文后发给服务端, 服务端拿到数据后用私钥解密得到原文
+     * 用于数据验签: 服务端用私钥加密数据后公开, 客户端用公钥签验确定数据确实是服务端发的
+     *
+     * 当前方法 用于数据传递 中的客户端操作: 使用 rsa 的公钥加密原文, 生成密文</pre>
+     *
+     * @see #requestEncodeWithAes
+     * @see #requestEncodeWithDes
+     * @param publicKey 公钥
+     * @param source 原文, 长度不能超过 53. 因此通常的做法是: {
+     *     客户端: 生成一个随机数(0), 使用这个随机数做 aes 或 des 加密(1), 将随机数用 rsa 公钥加密(2),
+     *     服务端: 用 rsa 私钥解密(2)得到随机数(0)再用 aes 或 des 解密(1)
+     * }
+     * @return 密文
      */
-    public static String rsaEncode(String publicKey, String data) {
-        int len = 53;
-        if (U.isBlank(publicKey) || data == null || data.length() > len) {
-            throw new RuntimeException(String.format("用 %s 基于公钥(%s)加密(%s)时数据不能为空或长度不能超过 %s", RSA, publicKey, data, len));
+    public static String rsaClientEncode(String publicKey, String source) {
+        if (U.isBlank(publicKey) || source == null || source.length() > RSA_DATA_MAX_LEN) {
+            throw new RuntimeException(String.format("用 %s 基于公钥(%s)加密(%s)时数据不能为空或长度不能超过 %s",
+                    RSA, publicKey, source, RSA_DATA_MAX_LEN));
         }
         try {
-            byte[] keyBytes = base64Decode(publicKey.getBytes(StandardCharsets.UTF_8));
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
-            KeyFactory keyFactory = KeyFactory.getInstance(RSA);
-            PublicKey key = keyFactory.generatePublic(keySpec);
-
             Cipher cipher = Cipher.getInstance(RSA);
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-            byte[] encodeBytes = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
-
+            cipher.init(Cipher.ENCRYPT_MODE, getPublicKey(publicKey));
+            byte[] encodeBytes = cipher.doFinal(source.getBytes(StandardCharsets.UTF_8));
+            // 用 base64 编码, 跟 rsaServerDecode 中的 xxx 对应
             return new String(base64Encode(encodeBytes), StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("用 %s 基于公钥(%s)加密(%s)时异常", RSA, publicKey, data), e);
+            throw new RuntimeException(String.format("用 %s 基于公钥(%s)加密(%s)时异常", RSA, publicKey, source), e);
         }
     }
-    /** 使用 rsa 的私钥解密 */
-    public static String rsaDecode(String privateKey, String data) {
-        if (U.isBlank(privateKey) || U.isBlank(data)) {
-            throw new RuntimeException(String.format("用 %s 基于私钥(%s)解密(%s)时数据不能为空", RSA, privateKey, data));
+
+    /**
+     * <pre>服务端持有私钥, 公钥公开.
+     *
+     * 用于数据传递: 客户端用公钥加密原文后发给服务端, 服务端拿到数据后用私钥解密得到原文
+     * 用于数据验签: 服务端用私钥加密数据后公开, 客户端用公钥签验确定数据确实是服务端发的
+     *
+     * 当前方法 用于数据传递 中的服务端操作: 使用 rsa 的私钥解密密文, 得到原文</pre>
+     *
+     * @see #responseDecodeWithAes
+     * @see #responseDecodeWithDes
+     * @param privateKey 私钥
+     * @param encryptData 密文
+     * @return 原文
+     */
+    public static String rsaServerDecode(String privateKey, String encryptData) {
+        if (U.isBlank(privateKey) || U.isBlank(encryptData)) {
+            throw new RuntimeException(String.format("用 %s 基于私钥(%s)解密(%s)时数据不能为空", RSA, privateKey, encryptData));
         }
         try {
-            byte[] keyBytes = base64Decode(privateKey.getBytes(StandardCharsets.UTF_8));
-            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
-            KeyFactory keyFactory = KeyFactory.getInstance(RSA);
-            PrivateKey key = keyFactory.generatePrivate(keySpec);
-
             Cipher cipher = Cipher.getInstance(RSA);
-            cipher.init(Cipher.DECRYPT_MODE, key);
-            byte[] decodeBytes = cipher.doFinal(base64Decode(data.getBytes(StandardCharsets.UTF_8)));
-
+            cipher.init(Cipher.DECRYPT_MODE, getPrivateKey(privateKey));
+            // 用 base64 解码, 跟 rsaClientEncode 中的 xxx 对应
+            byte[] decodeBytes = cipher.doFinal(base64Decode(encryptData.getBytes(StandardCharsets.UTF_8)));
             return new String(decodeBytes, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("用 %s 基于私钥(%s)解密(%s)时异常", RSA, privateKey, data), e);
+            throw new RuntimeException(String.format("用 %s 基于私钥(%s)解密(%s)时异常", RSA, privateKey, encryptData), e);
         }
     }
 
+    /**
+     * <pre>服务端持有私钥, 公钥公开.
+     *
+     * 用于数据传递: 客户端用公钥加密原文后发给服务端, 服务端拿到数据后用私钥解密得到原文
+     * 用于数据验签: 服务端用私钥加密数据后公开, 客户端用公钥签验确定数据确实是服务端发的
+     *
+     * 当前方法 用于数据验签 中的服务端操作: 使用 rsa 的私钥加密原文, 生成签名</pre>
+     *
+     * @param privateKey 私钥
+     * @param source 原文
+     * @return 签名数据
+     */
+    public static String rasServerSign(String privateKey, String source) {
+        if (U.isBlank(privateKey) || U.isBlank(source)) {
+            throw new RuntimeException(String.format("用 %s 基于私钥(%s)生成验签时数据(%s)不能为空", RSA, privateKey, source));
+        }
+        try {
+            Signature privateSign = Signature.getInstance(RSA_SIGN);
+            privateSign.initSign(getPrivateKey(privateKey));
+            privateSign.update(source.getBytes(StandardCharsets.UTF_8));
+            // 将结果用 base64 编码, 跟 rasVerifyClient 中的 yyy 对应
+            return new String(base64Encode(privateSign.sign()), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("用 %s 基于私钥(%s)给(%s)生成验签时异常", RSA, privateKey, source), e);
+        }
+    }
+    /**
+     * <pre>服务端持有私钥, 公钥公开.
+     *
+     * 用于数据传递: 客户端用公钥加密原文后发给服务端, 服务端拿到数据后用私钥解密得到原文
+     * 用于数据验签: 服务端用私钥加密数据后公开, 客户端用公钥签验确定数据确实是服务端发的
+     *
+     * 当前方法 用于数据验签 中的客户端操作: 使用 rsa 的公钥验签原文</pre>
+     *
+     * @param publicKey 公钥
+     * @param source 原文
+     * @param signData 签名
+     * @return true 表示验签成功
+     */
+    public static boolean rasClientVerify(String publicKey, String source, String signData) {
+        if (U.isBlank(publicKey) || U.isBlank(source) || U.isBlank(signData)) {
+            throw new RuntimeException(String.format("用 %s 基于公钥(%s)验签(%s)时(%s)不能为空", RSA, publicKey, source, signData));
+        }
+        try {
+            // 公钥用 base64 解码, 跟 genericRsaKeyPair 中的 aaa 对应
+            byte[] keyBytes = base64Decode(publicKey.getBytes(StandardCharsets.UTF_8));
+            PublicKey key = KeyFactory.getInstance(RSA).generatePublic(new X509EncodedKeySpec(keyBytes));
+            Signature publicSign = Signature.getInstance(RSA_SIGN);
+            publicSign.initVerify(key);
+            publicSign.update(source.getBytes(StandardCharsets.UTF_8));
+            // 将结果用 base64 编码, 跟 rasVerifyClient 中的 yyy 对应
+            return publicSign.verify(base64Decode(signData.getBytes(StandardCharsets.UTF_8)));
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("用 %s 基于公钥(%s)验签(%s)时(%s)异常", RSA, publicKey, source, signData), e);
+        }
+    }
 
     /**
      * 客户端: 有公钥和要加密的数据
-     * 1. 运行时生成一个随机数(key)
+     * 1. 运行时生成一个 16 位的随机数(key)
      * 2. 使用 rsa 算法基于公钥将 key 加密得到一个值
      * 3. 用 key 使用 aes 算法加密要传递的数据(data)
      * 将 2 和 3 的值一起传给服务端
      */
-    public static Map<String, String> requestEncode(String publicKey, String data) {
+    public static Map<String, String> requestEncodeWithAes(String publicKey, String data) {
         // 随机数, 用来做 aes 的密钥, 长度 16 位. 数据用这个来加密, 用 rsa 私钥加密这个值也传过去
-        String key = U.uuid16();
-        return Map.of("keys", rsaEncode(publicKey, key), "values", aesEncode(data, key));
+        String key = U.uuid();
+        return Map.of("keys", rsaClientEncode(publicKey, key), "values", aesEncode(data, key));
     }
 
     /**
@@ -293,10 +358,34 @@ public final class Encrypt {
      * 1. 使用 rsa 算法基于私钥将 keyData 解密, 得到一个值(key)
      * 2. 使用 aes 算法基于 key 来解密 valueData 得到 data
      */
-    public static String responseDecode(String privateKey, String keyData, String valueData) {
+    public static String responseDecodeWithAes(String privateKey, String keyData, String valueData) {
         // 通过 rsa 解出 aes 的密钥, 再用密钥解出数据
-        String key = rsaDecode(privateKey, keyData);
+        String key = rsaServerDecode(privateKey, keyData);
         return aesDecode(valueData, key);
+    }
+
+    /**
+     * 客户端: 有公钥和要加密的数据
+     * 1. 运行时生成一个 8 位的随机数(key)
+     * 2. 使用 rsa 算法基于公钥将 key 加密得到一个值
+     * 3. 用 key 使用 aes 算法加密要传递的数据(data)
+     * 将 2 和 3 的值一起传给服务端
+     */
+    public static Map<String, String> requestEncodeWithDes(String publicKey, String data) {
+        // 随机数, 用来做 aes 的密钥, 长度 8 位. 数据用这个来加密, 用 rsa 私钥加密这个值也传过去
+        String key = U.uuid();
+        return Map.of("keys", rsaClientEncode(publicKey, key), "values", desEncode(data, key));
+    }
+
+    /**
+     * 服务端: 有私钥和客户端传过来的 keyData 和 valueData
+     * 1. 使用 rsa 算法基于私钥将 keyData 解密, 得到一个值(key)
+     * 2. 使用 aes 算法基于 key 来解密 valueData 得到 data
+     */
+    public static String responseDecodeWithDes(String privateKey, String keyData, String valueData) {
+        // 通过 rsa 解出 aes 的密钥, 再用密钥解出数据
+        String key = rsaServerDecode(privateKey, keyData);
+        return desDecode(valueData, key);
     }
 
 
@@ -341,12 +430,12 @@ public final class Encrypt {
 
     /** 基于 secret 使用 jwt 将 map 进行编码并使用 aes 加密 */
     public static String jwtEncode(String secret, Map<String, Object> map) {
-        return aesEncode(new JWTSigner(secret).sign(map));
+        return new JWTSigner(secret).sign(map);
     }
     /** 基于 secret 将 map 设置过期时间且进行 jwt 编码并使用 aes 加密 */
     public static String jwtEncode(String secret, Map<String, Object> map, long time, TimeUnit unit) {
         map.put(JWTVerifier.EXP, System.currentTimeMillis() + unit.toMillis(time));
-        return aesEncode(new JWTSigner(secret).sign(map));
+        return new JWTSigner(secret).sign(map);
     }
     /** 使用 aes 解密并基于 secret 解码 jwt 及验证过期和数据完整性, 解码异常 或 数据已过期 或 验证失败 则抛出未登录异常 */
     public static Map<String, Object> jwtDecode(String secret, String data) {
@@ -355,7 +444,7 @@ public final class Encrypt {
         }
 
         try {
-            return new JWTVerifier(secret).verify(aesDecode(data));
+            return new JWTVerifier(secret).verify(data);
         } catch (JWTExpiredException e) {
             throw new ForbiddenException("登录已过期, 请重新登录", e);
         } catch (Exception e) {
@@ -365,12 +454,12 @@ public final class Encrypt {
 
     /** 使用 jwt 将 map 进行编码并使用 aes 加密 */
     public static String jwtEncode(Map<String, Object> map) {
-        return aesEncode(JWT_SIGNER.sign(map));
+        return JWT_SIGNER.sign(map);
     }
     /** 将 map 设置过期时间且进行 jwt 编码并使用 aes 加密 */
     public static String jwtEncode(Map<String, Object> map, long time, TimeUnit unit) {
         map.put(JWTVerifier.EXP, System.currentTimeMillis() + unit.toMillis(time));
-        return aesEncode(JWT_SIGNER.sign(map));
+        return JWT_SIGNER.sign(map);
     }
     /** 使用 aes 解密并解码 jwt 及验证过期和数据完整性, 解码异常 或 数据已过期 或 验证失败 则抛出未登录异常 */
     public static Map<String, Object> jwtDecode(String data) {
@@ -379,7 +468,7 @@ public final class Encrypt {
         }
 
         try {
-            return JWT_VERIFIER.verify(aesDecode(data));
+            return JWT_VERIFIER.verify(data);
         } catch (JWTExpiredException e) {
             throw new ForbiddenException("登录已过期, 请重新登录", e);
         } catch (Exception e) {
@@ -422,17 +511,9 @@ public final class Encrypt {
     }
 
 
-    /** 使用 rc4 加密(使用默认密钥) */
-    public static String rc4Encode(String input) {
-        return rc4Encode(input, RC4_SECRET_KEY);
-    }
     /** 使用 rc4 加密 */
     public static String rc4Encode(String input, String key) {
         return base64Encode(rc4(input, key));
-    }
-    /** 使用 rc4 解密(使用默认密钥) */
-    public static String rc4Decode(String input) {
-        return rc4Decode(input, RC4_SECRET_KEY);
     }
     /** 使用 rc4 解密 */
     public static String rc4Decode(String input, String key) {

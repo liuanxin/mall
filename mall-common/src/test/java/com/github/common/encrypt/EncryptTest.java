@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -16,83 +17,72 @@ public class EncryptTest {
 
     @Test
     public void aesCheck() {
-        String encode = Encrypt.aesEncode(SOURCE);
+        String secret = U.uuid();
+
+        String encode = Encrypt.aesEncode(SOURCE, secret);
         System.out.println(encode);
         Assert.assertTrue(encode.length() > 0);
 
-        String decode = Encrypt.aesDecode(encode);
+        String decode = Encrypt.aesDecode(encode, secret);
         System.out.println(decode);
         Assert.assertEquals(SOURCE, decode);
     }
 
     @Test
     public void desCheck() {
+        String secret = U.uuid();
+
         String key = "12345678";
         String abc = Encrypt.desEncode("abc", key);
         System.out.println(abc);
         String dec = Encrypt.desDecode(abc, key);
         System.out.println(dec);
 
-        String encode = Encrypt.desEncode(SOURCE);
+        String encode = Encrypt.desEncode(SOURCE, secret);
         System.out.println("des: " + encode);
         Assert.assertTrue(encode.length() > 0);
 
-        String decode = Encrypt.desDecode(encode);
+        String decode = Encrypt.desDecode(encode, secret);
         System.out.println("des: " + decode);
         Assert.assertEquals(SOURCE, decode);
+    }
 
-        encode = Encrypt.desCbcEncode(SOURCE);
+    @Test
+    public void desCbc() {
+        String secret = U.uuid().substring(0, 8);
+        String encode = Encrypt.desCbcEncode(SOURCE, secret);
         System.out.println("des/cbc: " + encode);
         Assert.assertTrue(encode.length() > 0);
 
-        decode = Encrypt.desCbcDecode(encode);
+        String decode = Encrypt.desCbcDecode(encode, secret);
         System.out.println("des/cbc: " + decode);
         Assert.assertEquals(SOURCE, decode);
     }
 
     @Test
     public void rsaCheck() {
-        int size = 1024;
-        Encrypt.RsaPair pair = Encrypt.genericRsaKeyPair(size);
-        String publicKey = pair.getPublicKey();
-        String privateKey = pair.getPrivateKey();
-        System.out.println("密码长度是 " + size + " 时的公钥:\n" + publicKey + "\n");
-        System.out.println("密码长度是 " + size + " 时的私钥:\n" + privateKey + "\n");
+        for (Integer size : Arrays.asList(512, 1024, 2048)) {
+            Encrypt.RsaPair pair = Encrypt.genericRsaKeyPair(size);
+            String publicKey = pair.getPublicKey();
+            String privateKey = pair.getPrivateKey();
+            System.out.println("密码长度是 " + size + " 时的公钥长度 " + publicKey.length() + " : " + publicKey);
+            System.out.println("密码长度是 " + size + " 时的私钥长度 " + privateKey.length() + " : " + privateKey);
 
-        String encode = Encrypt.rsaEncode(publicKey, SOURCE);
-        System.out.println("密码长度是 " + size + " 时拿公钥加密后的值是:\n" + encode + "\n");
-        try {
-            System.out.println("密码长度是 " + size + " 时拿公钥解密后的值是: " + Encrypt.rsaDecode(publicKey, encode));
-        } catch (Exception e) {
-            e.printStackTrace();
+            String encode = Encrypt.rsaClientEncode(publicKey, SOURCE);
+            System.out.println("密码长度是 " + size + " 时拿公钥加密后长度 " + encode.length() + " : " + encode);
+            String data = Encrypt.rsaServerDecode(privateKey, encode);
+            System.out.println("密码长度是 " + size + " 时拿私钥解密后(" + data + ")与原文" + (data.equals(SOURCE) ? "一致" : "不一致"));
+
+            String sign = Encrypt.rasServerSign(privateKey, SOURCE);
+            System.out.println("密码长度是 " + size + " 时拿私钥生成验签数据长度 " + sign.length() + " : " + sign);
+            boolean verify = Encrypt.rasClientVerify(publicKey, SOURCE, sign);
+            System.out.println("密码长度是 " + size + " 时拿公钥验签: " + (verify ? "成功" : "失败"));
+            System.out.println("\n-------------\n");
         }
-        String rsa = Encrypt.rsaDecode(privateKey, encode);
-        System.out.println("密码长度是 " + size + " 时拿私钥解密后的值是: " + rsa);
-        System.out.println("密码长度是 " + size + " 时解码是否一致: " + rsa.equals(SOURCE));
-
-        System.out.println("\n\n");
-
-        size = 2048;
-        pair = Encrypt.genericRsaKeyPair(size);
-        publicKey = pair.getPublicKey();
-        privateKey = pair.getPrivateKey();
-        System.out.println("密码长度是 " + size + " 时的公钥:\n" + publicKey + "\n");
-        System.out.println("密码长度是 " + size + " 时的私钥:\n" + privateKey + "\n");
-
-        encode = Encrypt.rsaEncode(publicKey, SOURCE);
-        System.out.println("密码长度是 " + size + " 时拿公钥加密后的值是:\n" + encode + "\n");
-        try {
-            System.out.println("密码长度是 " + size + " 时拿公钥解密后的值是: " + Encrypt.rsaDecode(publicKey, encode));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        rsa = Encrypt.rsaDecode(privateKey, encode);
-        System.out.println("密码长度是 " + size + " 时拿私钥解密后的值是: " + rsa);
-        System.out.println("密码长度是 " + size + " 时解码是否一致: " + rsa.equals(SOURCE));
     }
 
     @Test
-    public void reqRes() {
+    public void rsaReqRes() {
         Encrypt.RsaPair ras = Encrypt.genericRsaKeyPair(512);
         String publicKey = ras.getPublicKey();
         String privateKey = ras.getPrivateKey();
@@ -102,10 +92,17 @@ public class EncryptTest {
         System.out.println("要发送的源数据是: (" + SOURCE + ")");
         System.out.println("-----");
 
-        Map<String, String> sendData = Encrypt.requestEncode(publicKey, SOURCE);
+        Map<String, String> sendData = Encrypt.requestEncodeWithAes(publicKey, SOURCE);
         System.out.println("客户端通过公钥处理要发送的数据后: " + JsonUtil.toJson(sendData));
 
-        String decode = Encrypt.responseDecode(privateKey, sendData.get("keys"), sendData.get("values"));
+        String decode = Encrypt.responseDecodeWithAes(privateKey, sendData.get("keys"), sendData.get("values"));
+        System.out.println("服务端通过私钥处理发过来的数据后: (" + decode + ")");
+        System.out.println("-----");
+
+        sendData = Encrypt.requestEncodeWithDes(publicKey, SOURCE);
+        System.out.println("客户端通过公钥处理要发送的数据后: " + JsonUtil.toJson(sendData));
+
+        decode = Encrypt.responseDecodeWithDes(privateKey, sendData.get("keys"), sendData.get("values"));
         System.out.println("服务端通过私钥处理发过来的数据后: (" + decode + ")");
     }
 
@@ -167,10 +164,11 @@ public class EncryptTest {
 
     @Test
     public void rc4Test() {
-        String encode = Encrypt.rc4Encode(SOURCE);
+        String secret = U.uuid();
+        String encode = Encrypt.rc4Encode(SOURCE, secret);
         System.out.println(encode);
 
-        String decode = Encrypt.rc4Decode(encode);
+        String decode = Encrypt.rc4Decode(encode, secret);
         System.out.println(decode);
         Assert.assertEquals(SOURCE, decode);
     }
