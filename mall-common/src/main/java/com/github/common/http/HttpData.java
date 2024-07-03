@@ -185,6 +185,47 @@ public class HttpData {
     }
 
 
+    public String reqInfo() {
+        List<String> reqList = new ArrayList<>();
+        if (A.isNotEmpty(reqHeader)) {
+            reqList.add("header(" + U.printMap(true, reqHeader) + ")");
+        }
+        if (U.isNotBlank(reqParam)) {
+            reqList.add("param(" + reqParam + ")");
+        }
+        if (U.isNotBlank(reqBody)) {
+            reqList.add("body(" + reqBody + ")");
+        }
+        return String.join(" ", reqList);
+    }
+    public String resInfo() {
+        List<String> resList = new ArrayList<>();
+        if (U.isNotNull(resStatus)) {
+            resList.add("statusCode(" + resStatus + ")");
+        }
+        // https://stackoverflow.com/questions/67345954/how-do-i-get-the-http-status-message-from-responses-on-java-net-httpclient-reque
+        resList.add("reason(" + REASONS.getOrDefault(resStatus, UNKNOWN_STATUS) + ")");
+        if (A.isNotEmpty(resHeader)) {
+            resList.add("header(" + U.printMap(true, resHeader) + ")");
+        }
+        resList.add("result(" + U.toStr(result) + ")");
+        return String.join(" ", resList);
+    }
+    public String exceptionInfo() {
+        List<String> exceptionList = new ArrayList<>();
+        if (U.isNotNull(exception)) {
+            exceptionList.add(exception.getMessage());
+            StackTraceElement[] stackTraceArray = exception.getStackTrace();
+            if (A.isNotEmpty(stackTraceArray)) {
+                for (StackTraceElement trace : stackTraceArray) {
+                    exceptionList.add(trace.toString().trim());
+                }
+            }
+        }
+        return String.join(",", exceptionList);
+    }
+
+
     @Override
     public String toString() {
         StringBuilder sbd = new StringBuilder();
@@ -201,52 +242,20 @@ public class HttpData {
             sbd.append(" [").append(U.toStr(method)).append(" ").append(url).append("]");
 
             // req
-            sbd.append(" req[");
-            if (A.isNotEmpty(reqHeader)) {
-                sbd.append("header(").append(U.printMap(true, reqHeader)).append(")");
+            String req = reqInfo();
+            if (U.isNotBlank(req)) {
+                sbd.append(" req[").append(req).append("]");
             }
-            if (U.isNotBlank(reqParam)) {
-                if (!sbd.toString().endsWith("[")) {
-                    sbd.append(" ");
-                }
-                sbd.append("param(").append(reqParam).append(")");
-            }
-            if (U.isNotBlank(reqBody)) {
-                if (!sbd.toString().endsWith("[")) {
-                    sbd.append(" ");
-                }
-                sbd.append("body(").append(reqBody).append(")");
-            }
-            sbd.append("]");
         }
 
         // res
         if (U.isNotNull(resTime)) {
-            sbd.append(", res[");
-            sbd.append("(");
-            if (U.isNotNull(resStatus)) {
-                sbd.append(resStatus).append(" ");
-            }
-            sbd.append(message()).append(")");
-            if (A.isNotEmpty(resHeader)) {
-                sbd.append(" header(").append(U.printMap(true, resHeader)).append(")");
-            }
-            if (U.isNotBlank(result)) {
-                sbd.append(" result(").append(result).append(")");
-            }
-            sbd.append("]");
+            sbd.append(" res[").append(resInfo()).append("]");
         }
 
         // exception
         if (U.isNotNull(exception)) {
-            sbd.append(", exception[").append(U.toStr(exception.getMessage()));
-            StackTraceElement[] stackTraceArray = exception.getStackTrace();
-            if (A.isNotEmpty(stackTraceArray)) {
-                for (StackTraceElement trace : stackTraceArray) {
-                    sbd.append(", ").append(trace.toString().trim());
-                }
-            }
-            sbd.append("]");
+            sbd.append(" exception[").append(exceptionInfo()).append("]");
         }
         return sbd.toString();
     }
