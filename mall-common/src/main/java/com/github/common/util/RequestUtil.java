@@ -11,9 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * <span style="color:red;">
@@ -23,6 +21,7 @@ import java.util.Locale;
  * 这不是一个好的习惯, 请不要这么做
  * !!!
  * </span> */
+@SuppressWarnings("DuplicatedCode")
 public final class RequestUtil {
 
     private static final String CONTENT_TYPE = "Content-Type";
@@ -216,6 +215,21 @@ public final class RequestUtil {
         return U.EMPTY;
     }
 
+    public static Map<String, String> parseParam(boolean des) {
+        return parseParam(des, getRequest());
+    }
+    public static Map<String, String> parseParam(boolean des, HttpServletRequest request) {
+        if (U.isNull(request)) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, String> map = new HashMap<>();
+        for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+            map.put(entry.getKey(), String.join(",", entry.getValue()));
+        }
+        return map;
+    }
+
     /**
      * <pre>
      * 格式化参数, 只针对 Content-Type: application/x-www-form-urlencoded 方式.
@@ -244,6 +258,24 @@ public final class RequestUtil {
     }
     public static boolean hasUploadFile(HttpServletRequest request) {
         return U.toStr(request.getHeader("Content-Type")).toLowerCase().startsWith("multipart/");
+    }
+
+    public static Map<String, String> parseHeader(boolean des) {
+        return parseHeader(des, getRequest());
+    }
+    public static Map<String, String> parseHeader(boolean des, HttpServletRequest request) {
+        if (U.isNull(request)) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, String> map = new HashMap<>();
+        Enumeration<String> headers = request.getHeaderNames();
+        while (headers.hasMoreElements()) {
+            String headName = headers.nextElement();
+            String value = request.getHeader(headName);
+            map.put(headName, value);
+        }
+        return map;
     }
 
     /** 格式化头里的参数: 键值以冒号分隔 */
