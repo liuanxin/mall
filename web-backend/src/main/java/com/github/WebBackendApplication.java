@@ -1,7 +1,6 @@
 package com.github;
 
 import com.github.common.date.DateUtil;
-import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -21,7 +20,7 @@ public class WebBackendApplication extends SpringBootServletInitializer {
         long ms = System.currentTimeMillis();
         ConfigurableApplicationContext ctx = SpringApplication.run(WebBackendApplication.class, args);
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-            String profile = A.toStr(ctx.getEnvironment().getActiveProfiles());
+            String profile = String.join(",", ctx.getEnvironment().getActiveProfiles());
             String appName = ctx.getEnvironment().getProperty("spring.application.name");
             String port = ctx.getEnvironment().getProperty("server.port");
             String time = DateUtil.toHuman(System.currentTimeMillis() - ms);

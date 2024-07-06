@@ -1,7 +1,6 @@
 package com.github;
 
 import com.github.common.date.DateUtil;
-import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,7 +16,7 @@ public class TimingTaskApplication {
         long ms = System.currentTimeMillis();
         ApplicationContext ctx = new SpringApplicationBuilder(TimingTaskApplication.class).web(WebApplicationType.NONE).run(args);
         if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-            String profile = A.toStr(ctx.getEnvironment().getActiveProfiles());
+            String profile = String.join(",", ctx.getEnvironment().getActiveProfiles());
             String appName = ctx.getEnvironment().getProperty("spring.application.name");
             String port = ctx.getEnvironment().getProperty("server.port");
             String time = DateUtil.toHuman(System.currentTimeMillis() - ms);

@@ -142,7 +142,7 @@ public class GlobalException {
     public ResponseEntity<JsonResult<String>> notSupported(HttpRequestMethodNotSupportedException e) {
         StringBuilder sbd = new StringBuilder("not support");
         if (!online) {
-            sbd.append(String.format(", current(%s), support(%s)", e.getMethod(), A.toStr(e.getSupportedMethods())));
+            sbd.append(String.format(", current(%s), support(%s)", e.getMethod(), String.join(",", e.getSupportedMethods())));
         }
         String msg = sbd.toString();
         int status = (returnStatusCode ? JsonCode.FAIL : JsonCode.SUCCESS).getCode();

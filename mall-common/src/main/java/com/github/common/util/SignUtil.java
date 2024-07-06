@@ -60,11 +60,11 @@ public final class SignUtil {
         for (Map.Entry<String, String[]> entry : paramMap.entrySet()) {
             String k = entry.getKey();
             if (!SIGN.equals(k)) {
-                paramList.add(k + "=" + A.toStr(entry.getValue()));
+                paramList.add(k + "=" + String.join(",", entry.getValue()));
             }
         }
         Collections.sort(paramList);
-        String sign = A.toStr(paramList, "&") + "&" + key;
+        String sign = String.join("&", paramList) + "&" + key;
         return Encrypt.toMd5(sign);
     }
 

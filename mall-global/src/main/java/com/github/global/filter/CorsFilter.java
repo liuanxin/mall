@@ -16,8 +16,8 @@ public class CorsFilter implements Filter {
 
     private static final String ORIGIN = "Origin";
     private static final String CREDENTIALS = "true";
-    private static final String METHODS = A.toStr(Const.SUPPORT_METHODS);
-    private static final String HEADERS = A.toStr(Const.ALLOW_HEADERS);
+    private static final String METHODS = String.join(",", Const.SUPPORT_METHODS);
+    private static final String HEADERS = String.join(",", Const.ALLOW_HEADERS);
     private static final String MAX_AGE = "600";
 
     /** @see org.springframework.http.HttpHeaders */
