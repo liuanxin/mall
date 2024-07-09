@@ -5,7 +5,6 @@ import com.github.common.encrypt.jwt.JWTSigner;
 import com.github.common.encrypt.jwt.JWTVerifier;
 import com.github.common.exception.ForbiddenException;
 import com.github.common.util.U;
-import lombok.Data;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
@@ -171,13 +170,8 @@ public final class Encrypt {
     }
 
 
-    @Data
-    public static class RsaPair {
-        /** 公钥, 发给客户端 */
-        private String publicKey;
-        /** 私钥, 保存到文件 */
-        private String privateKey;
-    }
+    public record RsaPair(String publicKey, String privateKey) {}
+
     /**
      * <pre>生成 rsa 的密钥对, 建议只使用 512  1024  2048 即可, 过大会非常占用 cpu 资源
      *
@@ -197,24 +191,26 @@ public final class Encrypt {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(RSA);
             keyPairGenerator.initialize(keyLength);
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
-
-            RsaPair pair = new RsaPair();
-            // 公钥用 base64 编码, 跟 getPublicKey 中的 aaa 对应
-            pair.setPublicKey(new String(base64Encode(keyPair.getPublic().getEncoded()), StandardCharsets.UTF_8));
-            // 私钥用 base64 编码, 跟 getPrivateKey 中的 bbb 对应
-            pair.setPrivateKey(new String(base64Encode(keyPair.getPrivate().getEncoded()), StandardCharsets.UTF_8));
-            return pair;
+            return new RsaPair(publicKeyToStr(keyPair.getPublic()), privateKeyToStr(keyPair.getPrivate()));
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 %s 生成 %s 位的密钥对时异常", RSA, keyLength), e);
         }
     }
 
+    private static String publicKeyToStr(PublicKey key) {
+        // 公钥用 base64 编码, 跟 getPublicKey 中的 aaa 对应
+        return new String(base64Encode(key.getEncoded()), StandardCharsets.UTF_8);
+    }
     private static PublicKey getPublicKey(String str) throws NoSuchAlgorithmException, InvalidKeySpecException {
         // 公钥用 base64 解码, 跟 genericRsaKeyPair 中的 aaa 对应
         byte[] keyBytes = base64Decode(str.getBytes(StandardCharsets.UTF_8));
         return KeyFactory.getInstance(RSA).generatePublic(new X509EncodedKeySpec(keyBytes));
     }
 
+    private static String privateKeyToStr(PrivateKey key) {
+        // 私钥用 base64 编码, 跟 getPrivateKey 中的 bbb 对应
+        return new String(base64Encode(key.getEncoded()), StandardCharsets.UTF_8);
+    }
     private static PrivateKey getPrivateKey(String str) throws NoSuchAlgorithmException, InvalidKeySpecException {
         // 将结果用 base64 解码, 跟 genericRsaKeyPair 中的 bbb 对应
         byte[] keyBytes = base64Decode(str.getBytes(StandardCharsets.UTF_8));
@@ -253,7 +249,6 @@ public final class Encrypt {
             throw new RuntimeException(String.format("用 %s 基于公钥(%s)加密(%s)时异常", RSA, publicKey, source), e);
         }
     }
-
     /**
      * <pre>服务端持有私钥, 公钥公开.
      *
@@ -303,7 +298,7 @@ public final class Encrypt {
             Signature privateSign = Signature.getInstance(RSA_SIGN);
             privateSign.initSign(getPrivateKey(privateKey));
             privateSign.update(source.getBytes(StandardCharsets.UTF_8));
-            // 将结果用 base64 编码, 跟 rasVerifyClient 中的 yyy 对应
+            // 将结果用 base64 编码, 跟 rasClientVerify 中的 yyy 对应
             return new String(base64Encode(privateSign.sign()), StandardCharsets.UTF_8);
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 %s 基于私钥(%s)给(%s)生成验签时异常", RSA, privateKey, source), e);
@@ -327,13 +322,10 @@ public final class Encrypt {
             throw new RuntimeException(String.format("用 %s 基于公钥(%s)验签(%s)时(%s)不能为空", RSA, publicKey, source, signData));
         }
         try {
-            // 公钥用 base64 解码, 跟 genericRsaKeyPair 中的 aaa 对应
-            byte[] keyBytes = base64Decode(publicKey.getBytes(StandardCharsets.UTF_8));
-            PublicKey key = KeyFactory.getInstance(RSA).generatePublic(new X509EncodedKeySpec(keyBytes));
             Signature publicSign = Signature.getInstance(RSA_SIGN);
-            publicSign.initVerify(key);
+            publicSign.initVerify(getPublicKey(publicKey));
             publicSign.update(source.getBytes(StandardCharsets.UTF_8));
-            // 将结果用 base64 编码, 跟 rasVerifyClient 中的 yyy 对应
+            // 将结果用 base64 编码, 跟 rasServerSign 中的 yyy 对应
             return publicSign.verify(base64Decode(signData.getBytes(StandardCharsets.UTF_8)));
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 %s 基于公钥(%s)验签(%s)时(%s)异常", RSA, publicKey, source, signData), e);
@@ -352,7 +344,6 @@ public final class Encrypt {
         String key = U.uuid();
         return Map.of("keys", rsaClientEncode(publicKey, key), "values", aesEncode(data, key));
     }
-
     /**
      * 服务端: 有私钥和客户端传过来的 keyData 和 valueData
      * 1. 使用 rsa 算法基于私钥将 keyData 解密, 得到一个值(key)
@@ -376,7 +367,6 @@ public final class Encrypt {
         String key = U.uuid();
         return Map.of("keys", rsaClientEncode(publicKey, key), "values", desEncode(data, key));
     }
-
     /**
      * 服务端: 有私钥和客户端传过来的 keyData 和 valueData
      * 1. 使用 rsa 算法基于私钥将 keyData 解密, 得到一个值(key)

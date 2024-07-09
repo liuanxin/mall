@@ -63,8 +63,8 @@ public class EncryptTest {
     public void rsaCheck() {
         for (Integer size : Arrays.asList(512, 1024, 2048)) {
             Encrypt.RsaPair pair = Encrypt.genericRsaKeyPair(size);
-            String publicKey = pair.getPublicKey();
-            String privateKey = pair.getPrivateKey();
+            String publicKey = pair.publicKey();
+            String privateKey = pair.privateKey();
             System.out.println("密码长度是 " + size + " 时的公钥长度 " + publicKey.length() + " : " + publicKey);
             System.out.println("密码长度是 " + size + " 时的私钥长度 " + privateKey.length() + " : " + privateKey);
 
@@ -84,8 +84,8 @@ public class EncryptTest {
     @Test
     public void rsaReqRes() {
         Encrypt.RsaPair ras = Encrypt.genericRsaKeyPair(512);
-        String publicKey = ras.getPublicKey();
-        String privateKey = ras.getPrivateKey();
+        String publicKey = ras.publicKey();
+        String privateKey = ras.privateKey();
         System.out.println("任何地方都知道的公钥: " + publicKey);
         System.out.println("只有服务端知道的私钥: " + privateKey);
 
