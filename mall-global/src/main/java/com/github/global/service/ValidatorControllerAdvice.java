@@ -35,9 +35,6 @@ public class ValidatorControllerAdvice {
     /** 使用 validation(比如 hibernate entity manager)时, 验证不通过抛出的异常 */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<JsonResult<String>> paramValidException(ConstraintViolationException e) {
-        if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("constraint violation fails", e);
-        }
         Map<String, String> errorMap = validatorService.validate(e.getConstraintViolations());
         int status = returnStatusCode ? JsonCode.BAD_REQUEST.getCode() : JsonCode.SUCCESS.getCode();
         JsonResult<String> result = JsonResult.badRequest(String.join(",", errorMap.values()), errorMap);
