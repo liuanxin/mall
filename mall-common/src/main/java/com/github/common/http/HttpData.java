@@ -108,7 +108,7 @@ public class HttpData {
     private Date resTime;
     private Integer resStatus;
     private Map<String, Object> resHeader;
-    private String result;
+    private String resBody;
 
     private Exception exception;
 
@@ -122,11 +122,11 @@ public class HttpData {
         this.reqBody = reqBody;
     }
 
-    public void fillRes(Integer status, Map<String, Object> resHeader, String result) {
+    public void fillRes(Integer status, Map<String, Object> resHeader, String resBody) {
         this.resTime = new Date();
         this.resStatus = status;
         this.resHeader = resHeader;
-        this.result = result;
+        this.resBody = resBody;
     }
 
     public void fillException(Exception exception) {
@@ -142,23 +142,18 @@ public class HttpData {
     public Date getReqTime() {
         return reqTime;
     }
-
     public String getMethod() {
         return method;
     }
-
     public String getUrl() {
         return url;
     }
-
     public Map<String, Object> getReqHeader() {
         return reqHeader;
     }
-
     public String getReqParam() {
         return reqParam;
     }
-
     public String getReqBody() {
         return reqBody;
     }
@@ -167,19 +162,15 @@ public class HttpData {
     public Date getResTime() {
         return resTime;
     }
-
     public Integer getResStatus() {
         return resStatus;
     }
-
     public Map<String, Object> getResHeader() {
         return resHeader;
     }
-
-    public String getResult() {
-        return result;
+    public String getResBody() {
+        return resBody;
     }
-
     public Exception getException() {
         return exception;
     }
@@ -208,7 +199,7 @@ public class HttpData {
         if (A.isNotEmpty(resHeader)) {
             resList.add("header(" + U.printMap(true, resHeader) + ")");
         }
-        resList.add("result(" + U.toStr(result) + ")");
+        resList.add("body(" + U.toStr(resBody) + ")");
         return String.join(" ", resList);
     }
     public String exceptionInfo() {
