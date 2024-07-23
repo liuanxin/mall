@@ -639,15 +639,6 @@ public final class U {
     public static String foggyValue(String value, int max, int leftRight) {
         return foggyValue(value, max, leftRight, leftRight, true);
     }
-
-    public static void main(String[] args) {
-        System.out.println(foggyValue("abc", 1, 0, 0, true));
-        System.out.println(foggyValue("abc", 2, 1, 0, true));
-        System.out.println(foggyValue("abc", 2, 1, 0, false));
-        System.out.println(foggyValue("abc", 2, 2, 0, true));
-        System.out.println(foggyValue("abc", 2, 2, 0, false));
-        System.out.println(foggyValue("abcdefghijklmnopqrstuvwxyz1234567890", 20, 3, 3, true));
-    }
     /**
      * 如果字符长度大于指定长度, 则只输出头尾的固定字符
      * <pre>
