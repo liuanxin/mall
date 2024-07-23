@@ -639,41 +639,50 @@ public final class U {
     public static String foggyValue(String value, int max, int leftRight) {
         return foggyValue(value, max, leftRight, leftRight, true);
     }
+
+    public static void main(String[] args) {
+        System.out.println(foggyValue("abc", 1, 0, 0, true));
+        System.out.println(foggyValue("abc", 2, 1, 0, true));
+        System.out.println(foggyValue("abc", 2, 1, 0, false));
+        System.out.println(foggyValue("abc", 2, 2, 0, true));
+        System.out.println(foggyValue("abc", 2, 2, 0, false));
+        System.out.println(foggyValue("abcdefghijklmnopqrstuvwxyz1234567890", 20, 3, 3, true));
+    }
     /**
      * 如果字符长度大于指定长度, 则只输出头尾的固定字符
      * <pre>
-     * 「(abc, 1, 0, 0, true)」  -> 「**[3]」
+     * 「(abc, 1, 0, 0, true)」  -> 「***[3]」
      * 「(abc, 2, 1, 0, true)」  -> 「a**[3]」
      * 「(abc, 2, 1, 0, false)」 -> 「a**」
-     * 「(13012345678, 11, 3, 4, true)」  -> 「130**5678[11]」
-     * 「(13012345678, 11, 3, 4, false)」 -> 「130**5678」
-     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 0, true)」  -> 「**[36]」
-     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 0, false)」 -> 「**」
-     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 3, true)」  -> 「**890[36]」
-     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 3, false)」 -> 「**890」
-     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 0, true)」  -> 「abc**[36]」
-     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 0, false)」 -> 「abc**」
-     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 3, true)」  -> 「abc**890[36]」
-     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 3, false)」 -> 「abc**890」
+     * 「(abc, 2, 2, 0, true)」  -> 「ab*[3]」
+     * 「(abc, 2, 2, 0, false)」 -> 「ab*」
+     * 「(13012345678, 11, 3, 4, true)」  -> 「130***5678[11]」
+     * 「(13012345678, 11, 3, 4, false)」 -> 「130***5678」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 0, true)」  -> 「***[36]」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 0, false)」 -> 「***」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 3, true)」  -> 「***890[36]」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 0, 3, false)」 -> 「***890」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 0, true)」  -> 「abc***[36]」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 0, false)」 -> 「abc***」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 3, true)」  -> 「abc***890[36]」
+     * 「(abcdefghijklmnopqrstuvwxyz1234567890, 20, 3, 3, false)」 -> 「abc***890」
      * </pre>
      */
     public static String foggyValue(String value, int max, int left, int right, boolean showLen) {
-        if (isBlank(value)) {
-            return value;
-        }
-
-        int valueLen = value.length();
-        int lt = (left < 0 || left > valueLen) ? 0 : left;
-        int rt = (right < 0 || right > valueLen) ? 0 : right;
-        if (valueLen >= max && max > (lt + rt)) {
-            if (showLen) {
-                return String.format("%s**%s[%s]", value.substring(0, lt), value.substring(valueLen - rt), valueLen);
-            } else {
-                return String.format("%s**%s", value.substring(0, lt), value.substring(valueLen - rt));
+        if (isNotBlank(value)) {
+            int valueLen = value.length();
+            int lt = (left < 0 || left > valueLen) ? 0 : left;
+            int rt = (right < 0 || right > valueLen) ? 0 : right;
+            if (valueLen >= max && max >= (lt + rt)) {
+                StringBuilder sbd = new StringBuilder();
+                sbd.append(value, 0, lt).append("*".repeat(Math.min(3, valueLen - lt))).append(value.substring(valueLen - rt));
+                if (showLen) {
+                    sbd.append("[").append(valueLen).append("]");
+                }
+                return sbd.toString();
             }
-        } else {
-            return value;
         }
+        return value;
     }
 
 
