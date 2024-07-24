@@ -194,21 +194,21 @@ public final class Encrypt {
         }
     }
 
-    public static String publicKeyToStr(PublicKey key) {
+    public static String rsaPublicKeyToStr(PublicKey key) {
         // 公钥用 base64 编码, 跟 getPublicKey 中的 aaa 对应
         return new String(base64Encode(key.getEncoded()), StandardCharsets.UTF_8);
     }
-    private static PublicKey getPublicKey(String str) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    private static PublicKey getRsaPublicKey(String str) throws NoSuchAlgorithmException, InvalidKeySpecException {
         // 公钥用 base64 解码, 跟 genericRsaKeyPair 中的 aaa 对应
         byte[] keyBytes = base64Decode(str.getBytes(StandardCharsets.UTF_8));
         return KeyFactory.getInstance(RSA).generatePublic(new X509EncodedKeySpec(keyBytes));
     }
 
-    public static String privateKeyToStr(PrivateKey key) {
+    public static String rsaPrivateKeyToStr(PrivateKey key) {
         // 私钥用 base64 编码, 跟 getPrivateKey 中的 bbb 对应
         return new String(base64Encode(key.getEncoded()), StandardCharsets.UTF_8);
     }
-    private static PrivateKey getPrivateKey(String str) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    private static PrivateKey getRsaPrivateKey(String str) throws NoSuchAlgorithmException, InvalidKeySpecException {
         // 将结果用 base64 解码, 跟 genericRsaKeyPair 中的 bbb 对应
         byte[] keyBytes = base64Decode(str.getBytes(StandardCharsets.UTF_8));
         return KeyFactory.getInstance(RSA).generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
@@ -238,7 +238,7 @@ public final class Encrypt {
         }
         try {
             Cipher cipher = Cipher.getInstance(RSA);
-            cipher.init(Cipher.ENCRYPT_MODE, getPublicKey(publicKey));
+            cipher.init(Cipher.ENCRYPT_MODE, getRsaPublicKey(publicKey));
             byte[] encodeBytes = cipher.doFinal(source.getBytes(StandardCharsets.UTF_8));
             // 用 base64 编码, 跟 rsaServerDecode 中的 xxx 对应
             return new String(base64Encode(encodeBytes), StandardCharsets.UTF_8);
@@ -266,7 +266,7 @@ public final class Encrypt {
         }
         try {
             Cipher cipher = Cipher.getInstance(RSA);
-            cipher.init(Cipher.DECRYPT_MODE, getPrivateKey(privateKey));
+            cipher.init(Cipher.DECRYPT_MODE, getRsaPrivateKey(privateKey));
             // 用 base64 解码, 跟 rsaClientEncode 中的 xxx 对应
             byte[] decodeBytes = cipher.doFinal(base64Decode(encryptData.getBytes(StandardCharsets.UTF_8)));
             return new String(decodeBytes, StandardCharsets.UTF_8);
@@ -293,7 +293,7 @@ public final class Encrypt {
         }
         try {
             Signature privateSign = Signature.getInstance(RSA_SIGN);
-            privateSign.initSign(getPrivateKey(privateKey));
+            privateSign.initSign(getRsaPrivateKey(privateKey));
             privateSign.update(source.getBytes(StandardCharsets.UTF_8));
             // 将结果用 base64 编码, 跟 rasClientVerify 中的 yyy 对应
             return new String(base64Encode(privateSign.sign()), StandardCharsets.UTF_8);
@@ -321,7 +321,7 @@ public final class Encrypt {
         }
         try {
             Signature publicSign = Signature.getInstance(RSA_SIGN);
-            publicSign.initVerify(getPublicKey(publicKey));
+            publicSign.initVerify(getRsaPublicKey(publicKey));
             publicSign.update(source.getBytes(StandardCharsets.UTF_8));
             // 将结果用 base64 编码, 跟 rasServerSign 中的 yyy 对应
             return publicSign.verify(base64Decode(signData.getBytes(StandardCharsets.UTF_8)));
