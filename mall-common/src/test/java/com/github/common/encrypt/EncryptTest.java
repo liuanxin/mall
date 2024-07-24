@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 
+import java.security.KeyPair;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -62,9 +63,9 @@ public class EncryptTest {
     @Test
     public void rsaCheck() {
         for (Integer size : Arrays.asList(512, 1024, 2048)) {
-            Encrypt.RsaPair pair = Encrypt.genericRsaKeyPair(size);
-            String publicKey = pair.publicKey();
-            String privateKey = pair.privateKey();
+            KeyPair pair = Encrypt.genericRsaKeyPair(size);
+            String publicKey = Encrypt.publicKeyToStr(pair.getPublic());
+            String privateKey = Encrypt.privateKeyToStr(pair.getPrivate());
             System.out.println("密码长度是 " + size + " 时的公钥长度 " + publicKey.length() + " : " + publicKey);
             System.out.println("密码长度是 " + size + " 时的私钥长度 " + privateKey.length() + " : " + privateKey);
 
@@ -83,9 +84,9 @@ public class EncryptTest {
 
     @Test
     public void rsaReqRes() {
-        Encrypt.RsaPair ras = Encrypt.genericRsaKeyPair(512);
-        String publicKey = ras.publicKey();
-        String privateKey = ras.privateKey();
+        KeyPair pair = Encrypt.genericRsaKeyPair(512);
+        String publicKey = Encrypt.publicKeyToStr(pair.getPublic());
+        String privateKey = Encrypt.privateKeyToStr(pair.getPrivate());
         System.out.println("任何地方都知道的公钥: " + publicKey);
         System.out.println("只有服务端知道的私钥: " + privateKey);
 

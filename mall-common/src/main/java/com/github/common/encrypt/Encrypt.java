@@ -170,8 +170,6 @@ public final class Encrypt {
     }
 
 
-    public record RsaPair(String publicKey, String privateKey) {}
-
     /**
      * <pre>生成 rsa 的密钥对, 建议只使用 512  1024  2048 即可, 过大会非常占用 cpu 资源
      *
@@ -183,21 +181,20 @@ public final class Encrypt {
      *
      * @param keyLength 长度不能小于 512
      */
-    public static RsaPair genericRsaKeyPair(int keyLength) {
+    public static KeyPair genericRsaKeyPair(int keyLength) {
         if (keyLength < RSA_KEY_MIN_LEN) {
             throw new RuntimeException(String.format("%s 生成密钥对时长度不能小于 %s", RSA, RSA_KEY_MIN_LEN));
         }
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(RSA);
             keyPairGenerator.initialize(keyLength);
-            KeyPair keyPair = keyPairGenerator.generateKeyPair();
-            return new RsaPair(publicKeyToStr(keyPair.getPublic()), privateKeyToStr(keyPair.getPrivate()));
+            return keyPairGenerator.generateKeyPair();
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 %s 生成 %s 位的密钥对时异常", RSA, keyLength), e);
         }
     }
 
-    private static String publicKeyToStr(PublicKey key) {
+    public static String publicKeyToStr(PublicKey key) {
         // 公钥用 base64 编码, 跟 getPublicKey 中的 aaa 对应
         return new String(base64Encode(key.getEncoded()), StandardCharsets.UTF_8);
     }
@@ -207,7 +204,7 @@ public final class Encrypt {
         return KeyFactory.getInstance(RSA).generatePublic(new X509EncodedKeySpec(keyBytes));
     }
 
-    private static String privateKeyToStr(PrivateKey key) {
+    public static String privateKeyToStr(PrivateKey key) {
         // 私钥用 base64 编码, 跟 getPrivateKey 中的 bbb 对应
         return new String(base64Encode(key.getEncoded()), StandardCharsets.UTF_8);
     }
@@ -319,7 +316,8 @@ public final class Encrypt {
      */
     public static boolean rasClientVerify(String publicKey, String source, String signData) {
         if (U.isBlank(publicKey) || U.isBlank(source) || U.isBlank(signData)) {
-            throw new RuntimeException(String.format("用 %s 基于公钥(%s)验签(%s)时(%s)不能为空", RSA, publicKey, source, signData));
+            // throw new RuntimeException(String.format("用 %s 基于公钥(%s)验签(%s)时(%s)不能为空", RSA, publicKey, source, signData));
+            return false;
         }
         try {
             Signature publicSign = Signature.getInstance(RSA_SIGN);
@@ -328,7 +326,8 @@ public final class Encrypt {
             // 将结果用 base64 编码, 跟 rasServerSign 中的 yyy 对应
             return publicSign.verify(base64Decode(signData.getBytes(StandardCharsets.UTF_8)));
         } catch (Exception e) {
-            throw new RuntimeException(String.format("用 %s 基于公钥(%s)验签(%s)时(%s)异常", RSA, publicKey, source, signData), e);
+            // throw new RuntimeException(String.format("用 %s 基于公钥(%s)验签(%s)时(%s)异常", RSA, publicKey, source, signData), e);
+            return false;
         }
     }
 
