@@ -37,7 +37,7 @@ public final class LogUtil {
         }
         if (hasNotTraceId()) {
             // 跟踪号放在最后, 因此在最前加一个空格
-            MDC.put(TRACE_ID_CONTEXT, " " + U.defaultIfBlank(traceId.trim(), U.uuid16()));
+            MDC.put(TRACE_ID_CONTEXT, " " + U.defaultIfBlank(U.toStr(traceId).trim(), U.uuid16()));
         }
     }
     /** 将 跟踪号 和 接收到请求的时间 和 ip 放进日志上下文, 主要用在有 web 环境的地方 */

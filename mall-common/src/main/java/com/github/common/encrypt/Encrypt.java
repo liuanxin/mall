@@ -287,7 +287,7 @@ public final class Encrypt {
      * @param source 原文
      * @return 签名数据
      */
-    public static String rasServerSign(String privateKey, String source) {
+    public static String rsaServerSign(String privateKey, String source) {
         if (U.isBlank(privateKey) || U.isBlank(source)) {
             throw new RuntimeException(String.format("用 %s 基于私钥(%s)生成验签时数据(%s)不能为空", RSA, privateKey, source));
         }
