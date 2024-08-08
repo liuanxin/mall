@@ -15,7 +15,7 @@ public class LocalDateUtil {
 
     private static final Map<String, DateTimeFormatter> FORMATTER_CACHE = new ConcurrentHashMap<>();
 
-    /** 带时区 2020-01-02T03:04:05+08:00 格式的字符串换成 date */
+    /** 带时区 2020-01-02T03:04:05+08:00 或 2020-01-02T03:04:05.678+08:00 格式的字符串换成 date */
     public static Date isoToDate(String str) {
         if (U.isBlank(str)) {
             return null;
