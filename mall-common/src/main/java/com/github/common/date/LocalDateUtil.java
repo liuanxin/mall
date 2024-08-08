@@ -15,6 +15,24 @@ public class LocalDateUtil {
 
     private static final Map<String, DateTimeFormatter> FORMATTER_CACHE = new ConcurrentHashMap<>();
 
+    /** 带时区 2020-01-02T03:04:05+08:00 格式的字符串换成 date */
+    public static Date rfc3339ToDate(String date) {
+        if (U.isBlank(date)) {
+            return null;
+        }
+        OffsetDateTime offsetDateTime = OffsetDateTime.parse(date, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        return U.isNull(offsetDateTime) ? null : Date.from(offsetDateTime.toInstant());
+    }
+
+    /** Date 转换成带时区 2020-01-02T03:04:05+08:00 格式的字符串(使用系统时区, 中国是 +08:00 时区) */
+    public static String dateToRfc3399(Date date) {
+        if (U.isNull(date)) {
+            return U.EMPTY;
+        }
+        OffsetDateTime offsetDateTime = OffsetDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+        return offsetDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    }
+
     public static LocalDateTime toLocalDateTime(TemporalAccessor date) {
         return U.isNull(date) ? null : LocalDateTime.from(date);
     }
