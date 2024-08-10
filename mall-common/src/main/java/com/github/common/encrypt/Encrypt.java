@@ -222,8 +222,8 @@ public final class Encrypt {
      *
      * 当前方法 用于数据传递 中的客户端操作: 使用 rsa 的公钥加密原文, 生成密文</pre>
      *
-     * @see #requestEncodeWithAes
-     * @see #requestEncodeWithDes
+     * @see #rsaClientEncodeWithValueAes
+     * @see #rsaClientEncodeWithValueDes
      * @param publicKey 公钥
      * @param source 原文, 长度不能超过 53. 因此通常的做法是: {
      *     客户端: 生成一个随机数(0), 使用这个随机数做 aes 或 des 加密(1), 将随机数用 rsa 公钥加密(2),
@@ -254,8 +254,8 @@ public final class Encrypt {
      *
      * 当前方法 用于数据传递 中的服务端操作: 使用 rsa 的私钥解密密文, 得到原文</pre>
      *
-     * @see #responseDecodeWithAes
-     * @see #responseDecodeWithDes
+     * @see #rsaServerDecodeWithValueAes
+     * @see #rsaServerDecodeWithValueDes
      * @param privateKey 私钥
      * @param encryptData 密文
      * @return 原文
@@ -295,7 +295,7 @@ public final class Encrypt {
             Signature privateSign = Signature.getInstance(RSA_SIGN);
             privateSign.initSign(getRsaPrivateKey(privateKey));
             privateSign.update(source.getBytes(StandardCharsets.UTF_8));
-            // 将结果用 base64 编码, 跟 rasClientVerify 中的 yyy 对应
+            // 将结果用 base64 编码, 跟 rsaClientVerify 中的 yyy 对应
             return new String(base64Encode(privateSign.sign()), StandardCharsets.UTF_8);
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 %s 基于私钥(%s)给(%s)生成验签时异常", RSA, privateKey, source), e);
@@ -314,7 +314,7 @@ public final class Encrypt {
      * @param signData 签名
      * @return true 表示验签成功
      */
-    public static boolean rasClientVerify(String publicKey, String source, String signData) {
+    public static boolean rsaClientVerify(String publicKey, String source, String signData) {
         if (U.isBlank(publicKey) || U.isBlank(source) || U.isBlank(signData)) {
             // throw new RuntimeException(String.format("用 %s 基于公钥(%s)验签(%s)时(%s)不能为空", RSA, publicKey, source, signData));
             return false;
@@ -323,7 +323,7 @@ public final class Encrypt {
             Signature publicSign = Signature.getInstance(RSA_SIGN);
             publicSign.initVerify(getRsaPublicKey(publicKey));
             publicSign.update(source.getBytes(StandardCharsets.UTF_8));
-            // 将结果用 base64 编码, 跟 rasServerSign 中的 yyy 对应
+            // 将结果用 base64 编码, 跟 rsaServerSign 中的 yyy 对应
             return publicSign.verify(base64Decode(signData.getBytes(StandardCharsets.UTF_8)));
         } catch (Exception e) {
             // throw new RuntimeException(String.format("用 %s 基于公钥(%s)验签(%s)时(%s)异常", RSA, publicKey, source, signData), e);
@@ -332,49 +332,63 @@ public final class Encrypt {
     }
 
     /**
-     * 客户端: 有公钥和要加密的数据
-     * 1. 运行时生成一个 16 位的随机数(key)
-     * 2. 使用 rsa 算法基于公钥将 key 加密得到一个值
-     * 3. 用 key 使用 aes 算法加密要传递的数据(data)
-     * 将 2 和 3 的值一起传给服务端
+     * <pre>
+     * 客户端操作: 有 公钥(pub) 和 要发送的数据(data)
+     * 1. 生成 16 位的随机数(key)
+     * 2. 用 rsa 基于 pub 加密 key 生成一个加密数据(1)
+     * 3. 用 aes 基于 key 加密 data 生成加密数据(2)
+     *
+     * 返回 { "k" : (1), "v" : (2) }
+     * </pre>
      */
-    public static Map<String, String> requestEncodeWithAes(String publicKey, String data) {
-        // 随机数, 用来做 aes 的密钥, 长度 16 位. 数据用这个来加密, 用 rsa 私钥加密这个值也传过去
+    public static Map<String, String> rsaClientEncodeWithValueAes(String publicKey, String data) {
+        // 随机数, 用来做 aes 的密钥, 长度 16 位. 用 rsa 基于公钥加密这个值, 用 aes 基于这个值加密数据
         String key = U.uuid();
-        return Map.of("keys", rsaClientEncode(publicKey, key), "values", aesEncode(data, key));
+        return Map.of("k", rsaClientEncode(publicKey, key), "v", aesEncode(data, key));
     }
     /**
-     * 服务端: 有私钥和客户端传过来的 keyData 和 valueData
-     * 1. 使用 rsa 算法基于私钥将 keyData 解密, 得到一个值(key)
-     * 2. 使用 aes 算法基于 key 来解密 valueData 得到 data
+     * <pre>
+     * 服务端操作: 有 私钥(pri) 和 客户端传过来的 k 和 v
+     * 1. 用 rsa 基于 pri 解密 k 得到一个值(key)
+     * 2. 用 aes 基于 key 解密 v 得到 data
+     *
+     * 返回 data
+     * </pre>
      */
-    public static String responseDecodeWithAes(String privateKey, String keyData, String valueData) {
+    public static String rsaServerDecodeWithValueAes(String privateKey, String k, String v) {
         // 通过 rsa 解出 aes 的密钥, 再用密钥解出数据
-        String key = rsaServerDecode(privateKey, keyData);
-        return aesDecode(valueData, key);
+        String key = rsaServerDecode(privateKey, k);
+        return aesDecode(v, key);
     }
 
     /**
-     * 客户端: 有公钥和要加密的数据
-     * 1. 运行时生成一个 8 位的随机数(key)
-     * 2. 使用 rsa 算法基于公钥将 key 加密得到一个值
-     * 3. 用 key 使用 aes 算法加密要传递的数据(data)
-     * 将 2 和 3 的值一起传给服务端
+     * <pre>
+     * 客户端操作: 有 公钥(pub) 和 要发送的数据(data)
+     * 1. 生成 16 位的随机数(key)
+     * 2. 用 rsa 基于 pub 加密 key 生成一个加密数据(1)
+     * 3. 用 des 基于 key 加密 data 生成加密数据(2)
+     *
+     * 返回 { "k" : (1), "v" : (2) }
+     * </pre>
      */
-    public static Map<String, String> requestEncodeWithDes(String publicKey, String data) {
+    public static Map<String, String> rsaClientEncodeWithValueDes(String publicKey, String data) {
         // 随机数, 用来做 aes 的密钥, 长度 8 位. 数据用这个来加密, 用 rsa 私钥加密这个值也传过去
         String key = U.uuid();
-        return Map.of("keys", rsaClientEncode(publicKey, key), "values", desEncode(data, key));
+        return Map.of("k", rsaClientEncode(publicKey, key), "v", desEncode(data, key));
     }
     /**
-     * 服务端: 有私钥和客户端传过来的 keyData 和 valueData
-     * 1. 使用 rsa 算法基于私钥将 keyData 解密, 得到一个值(key)
-     * 2. 使用 aes 算法基于 key 来解密 valueData 得到 data
+     * <pre>
+     * 服务端操作: 有 私钥(pri) 和 客户端传过来的 k 和 v
+     * 1. 用 rsa 基于 pri 解密 k 得到一个值(key)
+     * 2. 用 des 基于 key 解密 v 得到 data
+     *
+     * 返回 data
+     * </pre>
      */
-    public static String responseDecodeWithDes(String privateKey, String keyData, String valueData) {
+    public static String rsaServerDecodeWithValueDes(String privateKey, String k, String v) {
         // 通过 rsa 解出 aes 的密钥, 再用密钥解出数据
-        String key = rsaServerDecode(privateKey, keyData);
-        return desDecode(valueData, key);
+        String key = rsaServerDecode(privateKey, k);
+        return desDecode(v, key);
     }
 
 

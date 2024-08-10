@@ -7,6 +7,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.KeyPair;
 import java.util.Arrays;
 import java.util.Map;
@@ -74,9 +76,9 @@ public class EncryptTest {
             String data = Encrypt.rsaServerDecode(privateKey, encode);
             System.out.println("密码长度是 " + size + " 时拿私钥解密后(" + data + ")与原文" + (data.equals(SOURCE) ? "一致" : "不一致"));
 
-            String sign = Encrypt.rasServerSign(privateKey, SOURCE);
+            String sign = Encrypt.rsaServerSign(privateKey, SOURCE);
             System.out.println("密码长度是 " + size + " 时拿私钥生成验签数据长度 " + sign.length() + " : " + sign);
-            boolean verify = Encrypt.rasClientVerify(publicKey, SOURCE, sign);
+            boolean verify = Encrypt.rsaClientVerify(publicKey, SOURCE, sign);
             System.out.println("密码长度是 " + size + " 时拿公钥验签: " + (verify ? "成功" : "失败"));
             System.out.println("\n-------------\n");
         }
@@ -90,21 +92,39 @@ public class EncryptTest {
         System.out.println("任何地方都知道的公钥: " + publicKey);
         System.out.println("只有服务端知道的私钥: " + privateKey);
 
-        System.out.println("要发送的源数据是: (" + SOURCE + ")");
+        System.out.println("要发送的源数据是(长度 " + SOURCE.length() + "): (" + SOURCE + ")");
+
         System.out.println("-----");
 
-        Map<String, String> sendData = Encrypt.requestEncodeWithAes(publicKey, SOURCE);
-        System.out.println("客户端通过公钥处理要发送的数据后: " + JsonUtil.toJson(sendData));
+        Map<String, String> map = Encrypt.rsaClientEncodeWithValueAes(publicKey, SOURCE);
+        String sendData = JsonUtil.toJson(map);
+        System.out.println("客户端通过公钥 处理(aes)要发送的数据后: (" + sendData + ")");
 
-        String decode = Encrypt.responseDecodeWithAes(privateKey, sendData.get("keys"), sendData.get("values"));
-        System.out.println("服务端通过私钥处理发过来的数据后: (" + decode + ")");
+        String decode = Encrypt.rsaServerDecodeWithValueAes(privateKey, map.get("k"), map.get("v"));
+        System.out.println("服务端通过私钥 处理(aes)发过来的数据后: (" + decode + ")");
+        System.out.print("源数据长度 " + decode.length() + ", 发送的数据长度 " + sendData.length());
+        System.out.println(", 增长: " + new BigDecimal(sendData.length()).divide(new BigDecimal(decode.length()), 2, RoundingMode.DOWN) + " 倍");
+
         System.out.println("-----");
 
-        sendData = Encrypt.requestEncodeWithDes(publicKey, SOURCE);
-        System.out.println("客户端通过公钥处理要发送的数据后: " + JsonUtil.toJson(sendData));
+        map = Encrypt.rsaClientEncodeWithValueDes(publicKey, SOURCE);
+        sendData = JsonUtil.toJson(map);
+        System.out.println("客户端通过公钥 处理(des)要发送的数据后: (" + sendData + ")");
 
-        decode = Encrypt.responseDecodeWithDes(privateKey, sendData.get("keys"), sendData.get("values"));
-        System.out.println("服务端通过私钥处理发过来的数据后: (" + decode + ")");
+        decode = Encrypt.rsaServerDecodeWithValueDes(privateKey, map.get("k"), map.get("v"));
+        System.out.println("服务端通过私钥 处理(des)发过来的数据后: (" + decode + ")");
+        System.out.print("源数据长度 " + decode.length() + ", 发送的数据长度 " + sendData.length());
+        System.out.println(", 增长: " + new BigDecimal(sendData.length()).divide(new BigDecimal(decode.length()), 2, RoundingMode.DOWN) + " 倍");
+
+        System.out.println("-----");
+
+        String sign = Encrypt.rsaServerSign(privateKey, SOURCE);
+        System.out.println("服务端通过私钥 生成签名(长度 " + sign.length() + "): (" + sign + ")");
+
+        boolean verify = Encrypt.rsaClientVerify(publicKey, SOURCE, sign);
+        System.out.println("客户端通过公钥 验签: (" + verify + ")");
+
+        System.out.println("-----");
     }
 
     @Test
