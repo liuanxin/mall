@@ -19,6 +19,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -127,6 +128,12 @@ public class GlobalException {
         return handle(true, "valid fail", status, handleErrorResult(JsonResult.badRequest(msg, errorMap)), e);
     }
 
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<JsonResult<String>>  missParam(MissingServletRequestParameterException e) {
+        int status = (returnStatusCode ? JsonCode.BAD_REQUEST : JsonCode.SUCCESS).getCode();
+        String msg = String.format("missing param(%s)", e.getParameterName());
+        return handle(true, "missing request param", status, handleErrorResult(JsonResult.badRequest(msg, null)), e);
+    }
 
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<JsonResult<String>> noHandler(NoHandlerFoundException e) {
