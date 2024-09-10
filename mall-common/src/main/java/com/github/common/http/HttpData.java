@@ -134,11 +134,6 @@ public class HttpData {
     }
 
 
-    /** see: https://stackoverflow.com/questions/67345954/how-do-i-get-the-http-status-message-from-responses-on-java-net-httpclient-reque */
-    public String message() {
-        return REASONS.getOrDefault(resStatus, UNKNOWN_STATUS);
-    }
-
     public Date getReqTime() {
         return reqTime;
     }
