@@ -1048,7 +1048,7 @@ public final class U {
         }
         return joiner.toString();
     }
-    /** 转换成 &lt;id: 123&gt;&lt;name: xyz,opq&gt;, 将值进行脱敏(如 password: ***, phone: 130****) */
+    /** 将 map 输出成 &lt;id: 123&gt;&lt;name: xyz,opq&gt;, des 为 true 则将值进行脱敏(如 password: ***, phone: 130****) */
     public static String printMap(boolean des, Map<String, ?> params) {
         if (A.isEmpty(params)) {
             return EMPTY;
