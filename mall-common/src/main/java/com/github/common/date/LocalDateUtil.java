@@ -128,10 +128,6 @@ public class LocalDateUtil {
     public static String formatDate(LocalDate date) {
         return format(date, DateFormatType.YYYY_MM_DD);
     }
-    /** 格式化日期 yyyy-MM-dd */
-    public static String formatDate(Date date) {
-        return format(date, DateFormatType.YYYY_MM_DD);
-    }
     /** 格式化时间 HH:mm:ss */
     public static String formatTime(LocalDateTime date) {
         return format(date, DateFormatType.HH_MM_SS);
@@ -167,14 +163,6 @@ public class LocalDateUtil {
     /** 格式化日期对象成字符串 */
     public static String format(TemporalAccessor date, DateFormatType type) {
         return (U.isNull(date) || U.isNull(type)) ? U.EMPTY : format(date, type.getValue());
-    }
-
-    public static String format(Date date, DateFormatType type) {
-        return (U.isNull(date) || U.isNull(type)) ? U.EMPTY : format(toLocalDateTime(date), type.getValue());
-    }
-
-    public static String format(Date date, String type) {
-        return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : format(toLocalDateTime(date), type);
     }
 
     public static String format(TemporalAccessor date, String type) {
@@ -258,30 +246,17 @@ public class LocalDateUtil {
 
         return null;
     }
+    /** 如果格式是 yyyy-MM-dd, 数据是 2022-01-01, parse 成 LocalDateTime 会抛异常 */
     public static LocalDateTime parseLocalDateTime(String source, String type) {
-        // 如果格式是 yyyy-MM-dd, 数据是 2022-01-01, parse 成 LocalDateTime 会抛异常
         return getFormatter(type).parse(source, LocalDateTime::from);
     }
+    /** 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 LocalDate 不会抛异常 */
     public static LocalDate parseLocalDate(String source, String type) {
-        // 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 LocalDate 不会异常
         return getFormatter(type).parse(source, LocalDate::from);
     }
+    /** 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 LocalTime 不会抛异常 */
     public static LocalTime parseLocalTime(String source, String type) {
-        // 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 LocalTime 不会异常
         return getFormatter(type).parse(source, LocalTime::from);
-    }
-    public static Date parseDate(String source, String type) {
-        try {
-            // 如果格式是 yyyy-MM-dd, 数据是 2022-01-01, parse 成 LocalDateTime 会抛异常
-            LocalDateTime localDateTime = parseLocalDateTime(source, type);
-            if (U.isNotNull(localDateTime)) {
-                return toDate(localDateTime);
-            }
-        } catch (Exception ignore) {
-        }
-        // 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 LocalDate 不会异常
-        LocalTime localTime = parseLocalTime(source, type);
-        return U.isNotNull(localTime) ? toDate(localTime) : null;
     }
 
     /** 获取一个日期所在天的最开始的时间(00:00:00 000), 对日期查询尤其有用 */

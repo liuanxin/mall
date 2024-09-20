@@ -17,6 +17,7 @@ import com.github.common.util.U;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,6 +41,7 @@ public final class JsonModule {
             .addSerializer(float.class, ToStringSerializer.instance)
             .addSerializer(Double.class, ToStringSerializer.instance)
             .addSerializer(double.class, ToStringSerializer.instance)
+            .addSerializer(BigInteger.class, ToStringSerializer.instance)
 
             .addSerializer(BigDecimal.class, BigDecimalSerializer.INSTANCE)
             .addSerializer(Date.class, DateSerializer.INSTANCE) // com.fasterxml.jackson.databind.ser.std.DateSerializer
