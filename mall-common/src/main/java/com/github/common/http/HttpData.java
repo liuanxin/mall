@@ -1,6 +1,7 @@
 package com.github.common.http;
 
 import com.github.common.date.DateUtil;
+import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.U;
 
@@ -180,9 +181,20 @@ public class HttpData {
             reqList.add("param(" + reqParam + ")");
         }
         if (U.isNotBlank(reqBody)) {
-            reqList.add("body(" + reqBody + ")");
+            reqList.add("body(" + dropWhite(reqBody) + ")");
         }
         return String.join(" ", reqList);
+    }
+    private String dropWhite(String json) {
+        if (U.isBlank(json)) {
+            return json;
+        }
+        String t = json.trim();
+        if ((t.startsWith("[") && t.endsWith("]")) || (t.startsWith("{") && t.endsWith("}"))) {
+            return JsonUtil.toJsonNil(JsonUtil.toObject(t, Object.class));
+        } else {
+            return json;
+        }
     }
     public String resInfo() {
         List<String> resList = new ArrayList<>();
@@ -194,7 +206,9 @@ public class HttpData {
         if (A.isNotEmpty(resHeader)) {
             resList.add("header(" + U.printMap(true, resHeader) + ")");
         }
-        resList.add("body(" + U.toStr(resBody) + ")");
+        if (U.isNotBlank(resBody)) {
+            resList.add("body(" + dropWhite(resBody) + ")");
+        }
         return String.join(" ", resList);
     }
     public String exceptionInfo() {
