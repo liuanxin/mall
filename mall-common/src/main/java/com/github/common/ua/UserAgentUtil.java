@@ -64,11 +64,16 @@ public class UserAgentUtil {
         return null;
     }
 
-    public static UserAgent parse(String ua) {
-        return JsonUtil.toObjectNil(parseStr(ua), UserAgent.class);
+    public static String parseStr(String ua) {
+        UserAgent agent = parse(ua);
+        return U.isNotNull(agent) ? agent.toString() : ua;
     }
 
-    public static String parseStr(String ua) {
+    public static UserAgent parse(String ua) {
+        return JsonUtil.toObjectNil(parseWithStr(ua), UserAgent.class);
+    }
+
+    private static String parseWithStr(String ua) {
         if (U.isNull(SCRIPT_ENGINE) || U.isBlank(ua)) {
             return U.EMPTY;
         }
