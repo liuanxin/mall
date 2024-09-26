@@ -22,31 +22,31 @@ public class UserAgent {
         if (U.isNotNull(browser)) {
             String br = browser.toString();
             if (U.isNotBlank(br)) {
-                list.add("\"browser\":\"" + br + "\"");
+                list.add("browser=" + br);
             }
         }
         if (U.isNotNull(cpu)) {
             String cp = cpu.toString();
             if (U.isNotBlank(cp)) {
-                list.add("\"cpu\":\"" + cp + "\"");
+                list.add("cpu=" + cp);
             }
         }
         if (U.isNotNull(device)) {
             String de = device.toString();
             if (U.isNotBlank(de)) {
-                list.add("\"device\":\"" + de + "\"");
+                list.add("device=" + de);
             }
         }
         if (U.isNotNull(engine)) {
             String en = engine.toString();
             if (U.isNotBlank(en)) {
-                list.add("\"engine\":\"" + en + "\"");
+                list.add("engine=" + en);
             }
         }
         if (U.isNotNull(os)) {
             String o = os.toString();
             if (U.isNotBlank(o)) {
-                list.add("\"os\":\"" + o + "\"");
+                list.add("os=" + o);
             }
         }
         return "{" + String.join(",", list) + "}";
