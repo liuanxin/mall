@@ -19,27 +19,37 @@ public class UserAgent {
     @Override
     public String toString() {
         List<String> list = new ArrayList<>();
-        String br = browser.toString();
-        if (U.isNotBlank(br)) {
-            list.add("browser=" + br);
+        if (U.isNotNull(browser)) {
+            String br = browser.toString();
+            if (U.isNotBlank(br)) {
+                list.add("\"browser\":\"" + br + "\"");
+            }
         }
-        String cp = cpu.toString();
-        if (U.isNotBlank(cp)) {
-            list.add("cpu=" + cp);
+        if (U.isNotNull(cpu)) {
+            String cp = cpu.toString();
+            if (U.isNotBlank(cp)) {
+                list.add("\"cpu\":\"" + cp + "\"");
+            }
         }
-        String de = device.toString();
-        if (U.isNotBlank(de)) {
-            list.add("device=" + de);
+        if (U.isNotNull(device)) {
+            String de = device.toString();
+            if (U.isNotBlank(de)) {
+                list.add("\"device\":\"" + de + "\"");
+            }
         }
-        String en = engine.toString();
-        if (U.isNotBlank(en)) {
-            list.add("engine=" + en);
+        if (U.isNotNull(engine)) {
+            String en = engine.toString();
+            if (U.isNotBlank(en)) {
+                list.add("\"engine\":\"" + en + "\"");
+            }
         }
-        String o = os.toString();
-        if (U.isNotBlank(o)) {
-            list.add("os=" + o);
+        if (U.isNotNull(os)) {
+            String o = os.toString();
+            if (U.isNotBlank(o)) {
+                list.add("\"os\":\"" + o + "\"");
+            }
         }
-        return "UserAgentInfo(" + String.join(", ", list) + ")";
+        return "{" + String.join(",", list) + "}";
     }
 
     @Data
