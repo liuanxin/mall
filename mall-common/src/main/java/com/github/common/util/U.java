@@ -414,7 +414,7 @@ public final class U {
     }
 
     public static String toStr(Object obj) {
-        return isNull(obj) ? EMPTY : obj.toString();
+        return isNull(obj) ? EMPTY : (obj instanceof String ? ((String) obj) : obj.toString());
     }
 
     /** 如果字符长度大于指定长度, 则只输出头尾的固定字符 */
