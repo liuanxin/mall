@@ -258,7 +258,7 @@ public class HttpClientUtil {
         HttpRequest.Builder builder = HttpRequest.newBuilder();
         HttpRequest.BodyPublisher body;
         if (A.isNotEmpty(params)) {
-            body = HttpRequest.BodyPublishers.ofString(U.formatSendParam(params));
+            body = HttpRequest.BodyPublishers.ofString(U.formatRequestParam(params));
         } else {
             body = U.isBlank(data) ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(data);
         }

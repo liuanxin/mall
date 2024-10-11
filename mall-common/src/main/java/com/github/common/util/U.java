@@ -973,118 +973,6 @@ public final class U {
         return (fieldMap == null || fieldMap.isEmpty()) ? null : fieldMap.get(field);
     }
 
-
-    /**
-     * @param str "xxx {id} yyy {name}"
-     * @param params { id: 123, name: xyz }
-     * @return "xxx 123 yyy xyz"
-     */
-    public static String format(String str, Map<String, ?> params) {
-        if (isBlank(str) || A.isEmpty(params)) {
-            return str;
-        }
-
-        for (Map.Entry<String, ?> entry : params.entrySet()) {
-            str = str.replace("{" + entry.getKey() + "}", toStr(entry.getValue()));
-        }
-        return str;
-    }
-
-
-    public static String formatPrintParam(String params) {
-        Map<String, String> map = new LinkedHashMap<>();
-        if (U.isNotBlank(params)) {
-            for (String s : params.split("&")) {
-                String[] kv = s.split("=");
-                if (kv.length == 2) {
-                    map.put(kv[0], kv[1]);
-                }
-            }
-        }
-        return formatPrintParam(map);
-    }
-    /** 将参数 转换成 id=123&name=xyz,opq, 将值进行脱敏(如 password=***&phone=130****) */
-    public static String formatPrintParam(Map<String, ?> params) {
-        return formatParam(true, true, params);
-    }
-    /** 将参数 转换成 id=123&name=xyz,opq */
-    public static String formatSendParam(Map<String, ?> params) {
-        return U.formatParam(false, true, params);
-    }
-    /** 转换成 id=123&name=xyz,opq */
-    public static String formatParam(boolean des, boolean encode, Map<String, ?> params) {
-        if (A.isEmpty(params)) {
-            return EMPTY;
-        }
-
-        StringJoiner joiner = new StringJoiner("&");
-        for (Map.Entry<String, ?> entry : params.entrySet()) {
-            String key = entry.getKey();
-            Object obj = entry.getValue();
-
-            String value;
-            String split = ",";
-            if (obj == null) {
-                value = EMPTY;
-            } else if (obj.getClass().isArray()) {
-                StringJoiner stringJoiner = new StringJoiner(split);
-                int len = Array.getLength(obj);
-                for (int i = 0; i < len; i++) {
-                    Object o = Array.get(obj, i);
-                    stringJoiner.add(o == null ? EMPTY : o.toString());
-                }
-                value = stringJoiner.toString();
-            } else if (obj instanceof Collection<?> c) {
-                StringJoiner stringJoiner = new StringJoiner(split);
-                for (Object o : c) {
-                    stringJoiner.add(o == null ? EMPTY : o.toString());
-                }
-                value = stringJoiner.toString();
-            } else {
-                value = obj.toString();
-            }
-            String content = des ? DesensitizationUtil.desWithKey(key, value) : value;
-            joiner.add(key + "=" + (encode ? U.urlEncode(content) : content));
-        }
-        return joiner.toString();
-    }
-    /** 将 map 输出成 &lt;id: 123&gt;&lt;name: xyz,opq&gt;, des 为 true 则将值进行脱敏(如 password: ***, phone: 130****) */
-    public static String printMap(boolean des, Map<String, ?> params) {
-        if (A.isEmpty(params)) {
-            return EMPTY;
-        }
-
-        StringBuilder sbd = new StringBuilder();
-        for (Map.Entry<String, ?> entry : params.entrySet()) {
-            String key = entry.getKey();
-            Object obj = entry.getValue();
-
-            String value;
-            String split = ",";
-            if (obj == null) {
-                value = EMPTY;
-            } else if (obj.getClass().isArray()) {
-                StringJoiner stringJoiner = new StringJoiner(split);
-                int len = Array.getLength(obj);
-                for (int i = 0; i < len; i++) {
-                    stringJoiner.add(toStr(Array.get(obj, i)));
-                }
-                value = stringJoiner.toString();
-            } else if (obj instanceof Collection<?> c) {
-                StringJoiner stringJoiner = new StringJoiner(split);
-                for (Object o : c) {
-                    stringJoiner.add(toStr(o));
-                }
-                value = stringJoiner.toString();
-            } else {
-                value = obj.toString();
-            }
-            String content = des ? DesensitizationUtil.desWithKey(key, value) : value;
-            sbd.append("<").append(key).append(": ").append(content).append(">");
-        }
-        return sbd.toString();
-    }
-
     /** 获取指定类所在 jar 包的地址 */
     public static String getClassInFile(Class<?> clazz) {
         if (isNotNull(clazz)) {
@@ -1100,6 +988,105 @@ public final class U {
             }
         }
         return null;
+    }
+
+
+    /** 对象转字符串, 如果对象是数组列集合则用英文逗号拼接, encode 为 true 表示将值编码 */
+    public static String objectToParam(Object obj, boolean encode) {
+        if (obj == null) {
+            return EMPTY;
+        }
+
+        String split = ",";
+        if (obj.getClass().isArray()) {
+            StringJoiner stringJoiner = new StringJoiner(split);
+            int len = Array.getLength(obj);
+            for (int i = 0; i < len; i++) {
+                Object o = Array.get(obj, i);
+                stringJoiner.add(o == null ? EMPTY : (encode ? urlEncode(o.toString()) : o.toString()));
+            }
+            return stringJoiner.toString();
+        } else if (obj instanceof Collection<?> c) {
+            StringJoiner stringJoiner = new StringJoiner(split);
+            for (Object o : c) {
+                stringJoiner.add(o == null ? EMPTY : (encode ? urlEncode(o.toString()) : o.toString()));
+            }
+            return stringJoiner.toString();
+        }
+
+        return obj.toString();
+    }
+
+    /**
+     * 将参数 转换成 id=123&name=xyz,opq 当需要将参数做签名时用到
+     *
+     * @param sort true 表示使用将参数名排序
+     * @param noBlank true 表示如果值 是 null 或空字符串则不拼在返回中
+     * @param encode true 表示将值进行编码
+     */
+    public static String formatParam(Map<String, ?> params, boolean sort, boolean noBlank, boolean encode) {
+        if (A.isEmpty(params)) {
+            return EMPTY;
+        }
+
+        StringJoiner joiner = new StringJoiner("&");
+        Map<String, ?> data = (sort ? new TreeMap<>(params) : params);
+        for (Map.Entry<String, ?> entry : data.entrySet()) {
+            String key = entry.getKey();
+            String value = objectToParam(entry.getValue(), encode);
+            if (noBlank) {
+                if (isNotBlank(value)) {
+                    joiner.add(key + "=" + value);
+                }
+            } else {
+                joiner.add(key + "=" + value);
+            }
+        }
+        return joiner.toString();
+    }
+
+    /** 用在日志打印: 将 map 转换成 id=123&name=xyz,opq, 将值进行脱敏(如 password=***&phone=130****) */
+    public static String formatPrintParam(Map<String, ?> params) {
+        return formatParam(true, false, params);
+    }
+    /** 用在接口请求前: 将 map 转换成 id=123&name=xyz,opq 值进行 */
+    public static String formatRequestParam(Map<String, ?> params) {
+        return formatParam(false, true, params);
+    }
+    /**
+     * 将 map 转换成 id=123&name=xyz,opq
+     *
+     * @param des true 表示将值脱敏, 用在打印日志时
+     * @param encode true 表示将值编码, 用在请求时, 日志打印时不用
+     */
+    public static String formatParam(boolean des, boolean encode, Map<String, ?> params) {
+        if (A.isEmpty(params)) {
+            return EMPTY;
+        }
+
+        StringJoiner joiner = new StringJoiner("&");
+        for (Map.Entry<String, ?> entry : params.entrySet()) {
+            String key = entry.getKey();
+            String value = objectToParam(entry.getValue(), encode);
+            String content = des ? DesensitizationUtil.desWithKey(key, value) : value;
+            joiner.add(key + "=" + content);
+        }
+        return joiner.toString();
+    }
+    /** 将 map 输出成 &lt;id: 123&gt;&lt;name: xyz,opq&gt;, des 为 true 则将值进行脱敏(如 password: ***, phone: 130****) */
+    public static String formatHeader(boolean des, Map<String, ?> headers) {
+        if (A.isEmpty(headers)) {
+            return EMPTY;
+        }
+
+        StringBuilder sbd = new StringBuilder();
+        for (Map.Entry<String, ?> entry : headers.entrySet()) {
+            String key = entry.getKey();
+            String value = objectToParam(entry.getValue(), false);
+            String content = des ? DesensitizationUtil.desWithKey(key, value) : value;
+            sbd.append("<").append(key).append(": ").append(content).append(">");
+        }
+        return sbd.toString();
     }
 
     /**

@@ -301,7 +301,7 @@ public class HttpUrlConnectionUtil {
                         // 默认值 false, 当向远程服务器传送数据/写数据时, 需设置为 true
                         con.setDoOutput(true);
                         try (OutputStreamWriter output = new OutputStreamWriter(con.getOutputStream())) {
-                            output.write(U.defaultIfBlank(U.formatSendParam(params), body));
+                            output.write(U.defaultIfBlank(U.formatRequestParam(params), body));
                             output.flush();
                         }
                     }

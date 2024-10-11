@@ -175,7 +175,7 @@ public class HttpData {
     public String reqInfo() {
         List<String> reqList = new ArrayList<>();
         if (A.isNotEmpty(reqHeader)) {
-            reqList.add("header(" + U.printMap(true, reqHeader) + ")");
+            reqList.add("header(" + U.formatHeader(true, reqHeader) + ")");
         }
         if (U.isNotBlank(reqParam)) {
             reqList.add("param(" + reqParam + ")");
@@ -204,7 +204,7 @@ public class HttpData {
         // https://stackoverflow.com/questions/67345954/how-do-i-get-the-http-status-message-from-responses-on-java-net-httpclient-reque
         resList.add("reason(" + REASONS.getOrDefault(resStatus, UNKNOWN_STATUS) + ")");
         if (A.isNotEmpty(resHeader)) {
-            resList.add("header(" + U.printMap(true, resHeader) + ")");
+            resList.add("header(" + U.formatHeader(true, resHeader) + ")");
         }
         if (U.isNotBlank(resBody)) {
             resList.add("body(" + dropWhite(resBody) + ")");

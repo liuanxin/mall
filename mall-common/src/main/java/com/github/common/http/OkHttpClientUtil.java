@@ -102,7 +102,7 @@ public class OkHttpClientUtil {
     /** 向指定的 url 进行 post 请求(普通表单方式) */
     public static HttpData postUrlEncode(String url, int timeoutSecond, Map<String, Object> params,
                                          Map<String, Object> headers, boolean printLog) {
-        RequestBody requestBody = RequestBody.create(U.formatParam(false, true, params), FORM);
+        RequestBody requestBody = RequestBody.create(U.formatRequestParam(params), FORM);
         Request.Builder builder = new Request.Builder().post(requestBody);
         Map<String, Object> headerMap = U.defaultIfNull(headers, new HashMap<>());
         headerMap.put("Content-Type", "application/x-www-form-urlencoded");

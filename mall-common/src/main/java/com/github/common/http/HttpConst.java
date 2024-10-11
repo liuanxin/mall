@@ -41,7 +41,7 @@ final class HttpConst {
     /** 处理 get 请求的参数: 拼在 url 上即可 */
     static String appendParamsToUrl(String url, Map<String, Object> params) {
         if (A.isNotEmpty(params)) {
-            return U.appendUrl(url) + U.formatParam(false, true, params);
+            return U.appendUrl(url) + U.formatRequestParam(params);
         }
         return url;
     }

@@ -232,7 +232,7 @@ public final class RequestUtil {
 
     /**
      * <pre>
-     * 格式化参数, 只针对 Content-Type: application/x-www-form-urlencoded 方式.
+     * 格式化入参, 只针对 Content-Type: application/x-www-form-urlencoded 方式.
      *
      * 如果使用文件上传 &lt;from type="multipart/form-data"...&gt; 的方式(Content-Type: multipart/form-data)
      * 或者 RequestBody 的方式(Content-Type: application/json)发送数据,
@@ -243,7 +243,7 @@ public final class RequestUtil {
      * </pre>
      *
      * @param des true 表示脱敏
-     * @return 示例: id=xxx&name=yyy
+     * @return 示例: id=xxx&name=yyy&password=***
      */
     public static String formatParam(boolean des) {
         return formatParam(des, getRequest());
