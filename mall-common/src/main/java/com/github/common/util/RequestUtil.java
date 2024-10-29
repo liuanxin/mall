@@ -249,7 +249,7 @@ public final class RequestUtil {
         return formatParam(des, getRequest());
     }
     public static String formatParam(boolean des, HttpServletRequest request) {
-        return U.isNull(request) ? U.EMPTY : U.formatParam(des, true, request.getParameterMap());
+        return U.isNull(request) ? U.EMPTY : U.formatParam(request.getParameterMap(), false, false, true, des);
     }
 
     public static boolean hasUploadFile() {

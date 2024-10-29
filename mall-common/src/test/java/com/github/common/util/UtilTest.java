@@ -136,10 +136,10 @@ public class UtilTest {
                 "name", new String[] { "xx" },
                 "desc", new String[] { "中文" }
         );
-        System.out.println("准备发送的数据: " + U.formatParam(false, false, paramMap) + "\n");
+        System.out.println("准备发送的数据: " + U.formatPrintParam(paramMap) + "\n");
 
         paramMap = SignUtil.handleSign(paramMap);
-        System.out.println("使用默认 key 真正发送的数据: " + U.formatParam(false, false, paramMap));
+        System.out.println("使用默认 key 真正发送的数据: " + U.formatPrintParam(paramMap));
         SignUtil.checkSign(paramMap);
         System.out.println("使用默认 key 检查通过");
 
@@ -147,7 +147,7 @@ public class UtilTest {
 
         String key = "123";
         paramMap = SignUtil.handleSign(paramMap, key);
-        System.out.println("使用指定 key 真正发送的数据: " + U.formatParam(false, false, paramMap));
+        System.out.println("使用指定 key 真正发送的数据: " + U.formatPrintParam(paramMap));
         SignUtil.checkSign(paramMap, key);
         System.out.println("使用指定 key 检查通过");
     }

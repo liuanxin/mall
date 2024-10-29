@@ -930,7 +930,7 @@ public final class U {
     /** 获取对象的所有属性(包括父类) */
     public static List<Field> getFields(Object obj) {
         Map<String, Field> fieldMap = getFields(obj, 0);
-        return (fieldMap == null || fieldMap.isEmpty()) ? Collections.emptyList() : new ArrayList<>(fieldMap.values());
+        return (isNull(fieldMap) || fieldMap.isEmpty()) ? Collections.emptyList() : new ArrayList<>(fieldMap.values());
     }
     private static Map<String, Field> getFields(Object obj, int depth) {
         // noinspection DuplicatedCode
@@ -970,7 +970,7 @@ public final class U {
     /** 获取对象的指定属性 */
     public static Field getField(Object obj, String field) {
         Map<String, Field> fieldMap = getFields(obj, 0);
-        return (fieldMap == null || fieldMap.isEmpty()) ? null : fieldMap.get(field);
+        return (isNull(fieldMap) || fieldMap.isEmpty()) ? null : fieldMap.get(field);
     }
 
     /** 获取指定类所在 jar 包的地址 */
@@ -991,102 +991,93 @@ public final class U {
     }
 
 
-    /** 对象转字符串, 如果对象是数组列集合则用英文逗号拼接, encode 为 true 表示将值编码 */
-    public static String objectToParam(Object obj, boolean encode) {
-        if (obj == null) {
+    /**
+     * 拼接参数和值, 如果对象是数组或集合则拼多次(用 a=1&a=2 的形式)
+     *
+     * @param eqType true 则返回 a=1, false 则返回 a: 1
+     * @param noBlank true 表示如果值 是 null 或空字符串则不拼接(单值则直接返回空字符串, 数组或集合里面的项则跳过)
+     * @param encode true 表示将值编码
+     * @param des true 表示将值脱敏, 如果编码和脱敏都是 true, 则编码先于脱敏
+     */
+    public static String appendParamAndValue(String key, Object value, boolean eqType, boolean noBlank, boolean encode, boolean des) {
+        if (noBlank && isNull(value)) {
             return EMPTY;
         }
 
-        String split = ",";
-        if (obj.getClass().isArray()) {
-            StringJoiner stringJoiner = new StringJoiner(split);
-            int len = Array.getLength(obj);
+        if (value.getClass().isArray()) {
+            StringJoiner sj = new StringJoiner("&");
+            int len = Array.getLength(value);
             for (int i = 0; i < len; i++) {
-                Object o = Array.get(obj, i);
-                stringJoiner.add(o == null ? EMPTY : (encode ? urlEncode(o.toString()) : o.toString()));
+                sj.add(appendPav(key, Array.get(value, i), eqType, noBlank, encode, des));
             }
-            return stringJoiner.toString();
-        } else if (obj instanceof Collection<?> c) {
-            StringJoiner stringJoiner = new StringJoiner(split);
+            return sj.toString();
+        } else if (value instanceof Collection<?> c) {
+            StringJoiner sj = new StringJoiner("&");
             for (Object o : c) {
-                stringJoiner.add(o == null ? EMPTY : (encode ? urlEncode(o.toString()) : o.toString()));
+                sj.add(appendPav(key, o, eqType, noBlank, encode, des));
             }
-            return stringJoiner.toString();
+            return sj.toString();
+        } else {
+            return appendPav(key, value, eqType, noBlank, encode, des);
+        }
+    }
+    private static String appendPav(String key, Object value, boolean eqType, boolean noBlank, boolean encode, boolean des) {
+        if (isBlank(key)) {
+            return EMPTY;
         }
 
-        return obj.toString();
+        String s = isNull(value) ? EMPTY : value.toString();
+        if (isNotBlank(s)) {
+            String v = encode ? urlEncode(s) : s;
+            String content = des ? DesensitizationUtil.desWithKey(key, v) : v;
+            return key + (eqType ? "=" : ": ") + content;
+        } else if (!noBlank) {
+            return key + (eqType ? "=" : ": ") + EMPTY;
+        } else {
+            return EMPTY;
+        }
     }
 
     /**
-     * 将参数 转换成 id=123&name=xyz,opq 当需要将参数做签名时用到
+     * 将参数 转换成 id=123&name=xyz 当需要将参数做签名时用到
      *
      * @param sort true 表示使用将参数名排序
      * @param noBlank true 表示如果值 是 null 或空字符串则不拼在返回中
      * @param encode true 表示将值进行编码
+     * @param des true 表示将值脱敏
      */
-    public static String formatParam(Map<String, ?> params, boolean sort, boolean noBlank, boolean encode) {
+    public static String formatParam(Map<String, ?> params, boolean sort, boolean noBlank, boolean encode, boolean des) {
         if (A.isEmpty(params)) {
             return EMPTY;
         }
 
-        StringJoiner joiner = new StringJoiner("&");
+        StringJoiner sj = new StringJoiner("&");
         Map<String, ?> data = (sort ? new TreeMap<>(params) : params);
         for (Map.Entry<String, ?> entry : data.entrySet()) {
-            String key = entry.getKey();
-            String value = objectToParam(entry.getValue(), encode);
-            if (noBlank) {
-                if (isNotBlank(value)) {
-                    joiner.add(key + "=" + value);
-                }
-            } else {
-                joiner.add(key + "=" + value);
-            }
+            sj.add(appendParamAndValue(entry.getKey(), entry.getValue(), true, noBlank, encode, des));
         }
-        return joiner.toString();
+        return sj.toString();
     }
-
-    /** 用在日志打印: 将 map 转换成 id=123&name=xyz,opq, 将值进行脱敏(如 password=***&phone=130****) */
+    /** 用在日志打印: 将 map 转换成 id=123&name=xyz, 将值进行脱敏(如 password=***&phone=130****) */
     public static String formatPrintParam(Map<String, ?> params) {
-        return formatParam(true, false, params);
+        return formatParam(params, false, false, true, true);
     }
-    /** 用在接口请求前: 将 map 转换成 id=123&name=xyz,opq 值进行 */
+    /** 用在接口请求前: 将 map 转换成 id=123&name=xyz 值进行 */
     public static String formatRequestParam(Map<String, ?> params) {
-        return formatParam(false, true, params);
+        return formatParam(params, false, false, true, false);
     }
-    /**
-     * 将 map 转换成 id=123&name=xyz,opq
-     *
-     * @param des true 表示将值脱敏, 用在打印日志时
-     * @param encode true 表示将值编码, 用在请求时, 日志打印时不用
-     */
-    public static String formatParam(boolean des, boolean encode, Map<String, ?> params) {
-        if (A.isEmpty(params)) {
-            return EMPTY;
-        }
 
-        StringJoiner joiner = new StringJoiner("&");
-        for (Map.Entry<String, ?> entry : params.entrySet()) {
-            String key = entry.getKey();
-            String value = objectToParam(entry.getValue(), encode);
-            String content = des ? DesensitizationUtil.desWithKey(key, value) : value;
-            joiner.add(key + "=" + content);
-        }
-        return joiner.toString();
-    }
     /** 将 map 输出成 &lt;id: 123&gt;&lt;name: xyz,opq&gt;, des 为 true 则将值进行脱敏(如 password: ***, phone: 130****) */
-    public static String formatHeader(boolean des, Map<String, ?> headers) {
+    public static String formatHeader(Map<String, ?> headers, boolean des) {
         if (A.isEmpty(headers)) {
             return EMPTY;
         }
 
-        StringBuilder sbd = new StringBuilder();
+        StringJoiner sj = new StringJoiner("><", "<", ">");
         for (Map.Entry<String, ?> entry : headers.entrySet()) {
-            String key = entry.getKey();
-            String value = objectToParam(entry.getValue(), false);
-            String content = des ? DesensitizationUtil.desWithKey(key, value) : value;
-            sbd.append("<").append(key).append(": ").append(content).append(">");
+            sj.add(appendParamAndValue(entry.getKey(), entry.getValue(), false, false, true, des));
         }
-        return sbd.toString();
+        return sj.toString();
     }
 
     /**
@@ -1258,19 +1249,19 @@ public final class U {
 
     /** 数组为 null 或 长度为 0 时则抛出异常 */
     public static <T> void assertEmpty(T[] array, String msg) {
-        if (array == null || array.length == 0) {
+        if (isNull(array) || array.length == 0) {
             serviceException(msg);
         }
     }
     /** 列表为 null 或 长度为 0 时则抛出异常 */
     public static <T> void assertEmpty(Collection<T> list, String msg) {
-        if (list == null || list.isEmpty()) {
+        if (isNull(list) || list.isEmpty()) {
             serviceException(msg);
         }
     }
     /** map 为 null 或 长度为 0 时则抛出异常 */
     public static <K, V> void assertEmpty(Map<K, V> map, String msg) {
-        if (map == null || map.isEmpty()) {
+        if (isNull(map) || map.isEmpty()) {
             serviceException(msg);
         }
     }
