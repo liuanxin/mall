@@ -65,8 +65,7 @@
 //            // sql = SqlFormat.format(sql.replaceFirst("^\\s*?\n", ""));
 //            sql = BLANK_REGEX.matcher(sql.replaceFirst("^\\s*?\n", "")).replaceAll(" ");
 //        }
-//        int len = sql.length(), max = 2000, leftRight = 400;
-//        return len > max ? (sql.substring(0, leftRight) + " ... " + sql.substring(len - leftRight, len)) : sql;
+//        return sql;
 //    }
 //
 //    @Override
