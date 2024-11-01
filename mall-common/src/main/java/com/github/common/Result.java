@@ -1,28 +1,7 @@
 package com.github.common;
 
 /** union-type 结构体, 来达到一次返回结果和异常 */
-public class Result<T, E> {
-
-    private final T value;
-    private final E error;
-    private final boolean isOk;
-
-    private Result(T value, E error, boolean isOk) {
-        this.value = value;
-        this.error = error;
-        this.isOk = isOk;
-    }
-
-    public boolean isOk() {
-        return isOk;
-    }
-    public T getValue() {
-        return value;
-    }
-    public E getError() {
-        return error;
-    }
-
+public record Result<T, E> (T value, E error, boolean isOk) {
 
     public static <T, E> Result<T, E> ok(T value) {
         return new Result<>(value, null, true);
