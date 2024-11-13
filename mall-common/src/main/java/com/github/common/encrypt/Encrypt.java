@@ -483,34 +483,47 @@ public final class Encrypt {
     /**
      * 生成 google 动态令牌
      *
-     * @param secret 密钥
+     * @param secret 密钥. 当 secret 中包含非 base32 的字符(字母 a-z 及数字 2-7, 字母不区分大小写)时会进行去除
      * @return 生成的 google 验证码(6 位数字), 每过 30 秒变化
      */
     public static String getGoogleAuthenticatorCode(String secret) {
-        return getGoogleAuthenticatorCode(secret, 0);
+        return getGoogleAuthenticatorCode(secret, true);
     }
 
     /**
      * 生成 google 动态令牌
      *
      * @param secret 密钥
+     * @param handleSecretError true: 当 secret 中包含非 base32 的字符(字母 a-z 及数字 2-7, 字母不区分大小写)时去除, false: 抛出异常
+     * @return 生成的 google 验证码(6 位数字), 每过 30 秒变化
+     */
+    public static String getGoogleAuthenticatorCode(String secret, boolean handleSecretError) {
+        return getGoogleAuthenticatorCode(secret, handleSecretError, 0);
+    }
+
+    /**
+     * 生成 google 动态令牌
+     *
+     * @param secret 密钥. 由 base32 字母表组成: 字母 a-z 及数字 2-7, 字母不区分大小写
+     * @param handleSecretError true: 如果 secret 中包含非 base32 的字符则去除, 否则将会抛出异常
      * @param offsetSecond 偏移时间(-29 到 29 之间), 正数则往前偏移指定秒, 负数则往后偏移指定秒
      * @return 生成的 google 验证码(6 位数字), 每过 30 秒变化
      */
-    public static String getGoogleAuthenticatorCode(String secret, int offsetSecond) {
-        return getGoogleAuthenticatorCode(secret, System.currentTimeMillis(), offsetSecond);
+    public static String getGoogleAuthenticatorCode(String secret, boolean handleSecretError, int offsetSecond) {
+        return getGoogleAuthenticatorCode(secret, handleSecretError, System.currentTimeMillis(), offsetSecond);
     }
 
     /**
      * 生成 google 动态令牌
      *
-     * @param secret 密钥
+     * @param secret 密钥. 由 base32 字母表组成: 字母 a-z 及数字 2-7(字母不区分大小写, 26 个字母 + 6 个数字, 共 32 位), 数字 0 1 8 被跳过(它们与字母 O I B 相似)
+     * @param handleSecretError true: 如果 secret 中包含非 base32 的字符则去除, 否则将会抛出异常
      * @param ms 时间戳
      * @param offsetSecond 偏移时间(-29 到 29 之间), 正数则往前偏移指定秒, 负数则往后偏移指定秒
      * @return 生成的 google 验证码(6 位数字), 每过 30 秒变化
      */
-    public static String getGoogleAuthenticatorCode(String secret, long ms, int offsetSecond) {
-        return GoogleAuthenticator.getCode(secret, ms, offsetSecond);
+    public static String getGoogleAuthenticatorCode(String secret, boolean handleSecretError, long ms, int offsetSecond) {
+        return GoogleAuthenticator.getCode(secret, handleSecretError, ms, offsetSecond);
     }
 
 

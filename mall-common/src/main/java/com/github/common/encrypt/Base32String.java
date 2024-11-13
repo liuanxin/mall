@@ -46,7 +46,7 @@ final class Base32String {
     private final HashMap<Character, Integer> CHAR_MAP;
 
     private Base32String(String alphabet) {
-        // 32 alpha-numeric characters.
+        // 32 alpha numeric characters.
         DIGITS = alphabet.toCharArray();
         MASK = DIGITS.length - 1;
         SHIFT = Integer.numberOfTrailingZeros(DIGITS.length);

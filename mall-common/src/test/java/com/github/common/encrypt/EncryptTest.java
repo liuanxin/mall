@@ -1,5 +1,6 @@
 package com.github.common.encrypt;
 
+import com.github.common.date.DateUtil;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.U;
@@ -155,6 +156,19 @@ public class EncryptTest {
             Encrypt.jwtDecode(encode);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void authenticator() {
+        String secret = U.uuid();
+        for (int i = 0; i < 31; i++) {
+            String code = Encrypt.getGoogleAuthenticatorCode(secret);
+            System.out.println(DateUtil.nowDateTimeMs() + " : " + secret + " -> " + code);
+            try {
+                TimeUnit.SECONDS.sleep(1L);
+            } catch (InterruptedException ignore) {
+            }
         }
     }
 
