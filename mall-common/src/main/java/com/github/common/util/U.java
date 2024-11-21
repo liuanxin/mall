@@ -720,13 +720,22 @@ public final class U {
     public static boolean containsChinese(String value) {
         return checkRegexWithRelax(value, CHINESE);
     }
+
     /** 传入的参数只要来自移动端就返回 true */
     public static boolean hasMobile(String param) {
         return checkRegexWithRelax(param, MOBILE);
     }
-    /** 传入的参数只要是 pc 端就返回 true */
+    /** 传入的参数是 pc 端就返回 true */
     public static boolean hasPc(String param) {
         return checkRegexWithRelax(param, PC);
+    }
+    /** 传入的参数是 iOS 端就返回 true */
+    public static boolean hasIos(String param) {
+        return isNotBlank(param) && param.toLowerCase().contains(" mac os x");
+    }
+    /** 传入的参数是 android 端就返回 true */
+    public static boolean hasAndroid(String param) {
+        return isNotBlank(param) && param.toLowerCase().contains("android ");
     }
 
 
