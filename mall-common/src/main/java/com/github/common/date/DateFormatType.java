@@ -16,14 +16,6 @@ public enum DateFormatType {
     YYYY_MM_DD("yyyy-MM-dd"),
     /** yyyy-MM */
     YYYY_MM("yyyy-MM"),
-    /** HH:mm:ss */
-    HH_MM_SS("HH:mm:ss"),
-    /** HH:mm */
-    HH_MM("HH:mm"),
-    /** yyyy */
-    YYYY("yyyy"),
-    /** MM-dd */
-    MM_DD("MM-dd"),
 
     /** yyyy-MM-dd HH:mm:ss SSS */
     YYYY_MM_DD_HH_MM_SS_SSS("yyyy-MM-dd HH:mm:ss SSS"),
@@ -59,6 +51,15 @@ public enum DateFormatType {
     YYMMDD("yyMMdd"),
     /** yyyyMM */
     YYYYMM("yyyyMM"),
+
+    /** yyyy */
+    YYYY("yyyy"),
+    /** MM-dd */
+    MM_DD("MM-dd"),
+    /** HH:mm:ss */
+    HH_MM_SS("HH:mm:ss"),
+    /** HH:mm */
+    HH_MM("HH:mm"),
 
     /** yyyy/MM/dd */
     USA_YYYY_MM_DD("yyyy/MM/dd"),
