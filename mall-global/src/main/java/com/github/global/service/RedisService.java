@@ -141,10 +141,9 @@ public class RedisService {
      */
     public boolean tryLock(String key, String value, long lockTime, TimeUnit unit) {
         String script = "if redis.call('set', KEYS[1], KEYS[2], 'PX', KEYS[3], 'NX') then return 1 else return 0 end";
-        RedisScript<Long> redisScript = new DefaultRedisScript<>(script, Long.class);
+        RedisScript<Integer> redisScript = new DefaultRedisScript<>(script, Integer.class);
         List<Object> keys = Arrays.asList(key, value, unit.toMillis(lockTime));
-        Long flag = redisTemplate.execute(redisScript, keys);
-        return flag != null && flag == 1L;
+        return U.toInt(redisTemplate.execute(redisScript, keys)) == 1;
     }
 
     /**
