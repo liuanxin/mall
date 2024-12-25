@@ -129,7 +129,7 @@ public class RedisService {
      *     unlock(key, value);
      *   }
      * } else {
-     *   log.info("重试 {} 次依然没有获取到锁", time);
+     *   log.info("未获取到锁");
      * }
      * </pre>
      *
