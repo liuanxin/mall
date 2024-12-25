@@ -7,8 +7,6 @@ import com.github.common.util.U;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -17,6 +15,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+/** 不支持 PATCH 方式 */
 @SuppressWarnings("DuplicatedCode")
 public class HttpUrlConnectionUtil {
 
@@ -273,32 +272,8 @@ public class HttpUrlConnectionUtil {
         return httpData;
     }
 
-    private static void allowPatch() {
-        // https://stackoverflow.com/questions/25163131/httpurlconnection-invalid-http-method-patch
-        try {
-            Field methodsField = HttpURLConnection.class.getDeclaredField("methods");
-
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(methodsField, methodsField.getModifiers() & ~Modifier.FINAL);
-            methodsField.setAccessible(true);
-
-            String[] oldMethods = (String[]) methodsField.get(null);
-            Set<String> methodsSet = new LinkedHashSet<>(Arrays.asList(oldMethods));
-            methodsSet.add("PATCH");
-            String[] newMethods = methodsSet.toArray(new String[0]);
-            methodsField.set(null, newMethods);
-        } catch (Exception e) {
-            if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("HttpURLConnection allow patch Error", e);
-            }
-        }
-    }
     private static HttpData handleRequest(String method, String url, int timeoutSecond, Map<String, Object> params,
                                           Map<String, Object> headers, String body, boolean printLog) {
-        if ("patch".equalsIgnoreCase(method)) {
-            allowPatch();
-        }
         HttpData httpData = new HttpData();
         HttpURLConnection con = null;
         try {
