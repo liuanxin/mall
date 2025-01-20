@@ -36,7 +36,6 @@ public class ShareValue<T> {
     public void remove() {
         shareMap.remove(Thread.currentThread());
     }
-
     public T get() {
         return shareMap.get(Thread.currentThread());
     }
