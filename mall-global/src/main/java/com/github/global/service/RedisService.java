@@ -27,8 +27,8 @@ public class RedisService {
     public void delete(String key) {
         redisTemplate.delete(key);
     }
-    /** 从 redis 中删值, value 非 string 时尽量用这个. 对应命令: UNLINK key */
-    public void unlink(String key) {
+    /** 从 redis 中异步删值, value 非 string 时尽量用这个. 对应命令: UNLINK key */
+    public void asyncDelete(String key) {
         redisTemplate.unlink(key);
     }
 
@@ -64,6 +64,11 @@ public class RedisService {
     /** 从 redis 中取值, 对应命令: GET key */
     public <T> T get(String key) {
         return (T) redisTemplate.opsForValue().get(key);
+    }
+
+    /** 获取 key 的超时时间(单位: 秒）, 对应命令: TTL key */
+    public long getExpireTime(String key) {
+        return U.toLong(redisTemplate.getExpire(key));
     }
 
 
