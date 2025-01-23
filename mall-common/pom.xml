@@ -120,5 +120,11 @@
             <artifactId>js-scriptengine</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.80</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

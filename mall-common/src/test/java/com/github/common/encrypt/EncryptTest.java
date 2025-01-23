@@ -67,8 +67,9 @@ public class EncryptTest {
     public void rsaCheck() {
         for (Integer size : Arrays.asList(512, 1024, 2048)) {
             KeyPair pair = Encrypt.genericRsaKeyPair(size);
-            String publicKey = Encrypt.rsaPublicKeyToStr(pair.getPublic());
-            String privateKey = Encrypt.rsaPrivateKeyToStr(pair.getPrivate());
+            String publicKey = Encrypt.publicKeyToStr(pair.getPublic());
+            String privateKey = Encrypt.privateKeyToStr(pair.getPrivate());
+            // 512  : 128  460,    1024 : 216  844,    2048 : 392  1624
             System.out.println("密码长度是 " + size + " 时的公钥长度 " + publicKey.length() + " : " + publicKey);
             System.out.println("密码长度是 " + size + " 时的私钥长度 " + privateKey.length() + " : " + privateKey);
 
@@ -86,10 +87,31 @@ public class EncryptTest {
     }
 
     @Test
+    public void eccCheck() {
+        KeyPair pair = Encrypt.genericEccKeyPair();
+        String publicKey = Encrypt.publicKeyToStr(pair.getPublic());
+        String privateKey = Encrypt.privateKeyToStr(pair.getPrivate());
+        // secp256r1 : 124  92,    secp384r1: 160  108
+        System.out.println("ecc 的公钥长度 " + publicKey.length() + " : " + publicKey);
+        System.out.println("ecc 的私钥长度 " + privateKey.length() + " : " + privateKey);
+
+        String encode = Encrypt.eccClientEncode(publicKey, SOURCE);
+        System.out.println("ecc 拿公钥加密后长度 " + encode.length() + " : " + encode);
+        String data = Encrypt.eccServerDecode(privateKey, encode);
+        System.out.println("ecc 拿私钥解密后(" + data + ")与原文" + (data.equals(SOURCE) ? "一致" : "不一致"));
+
+        String sign = Encrypt.eccServerSign(privateKey, SOURCE);
+        System.out.println("ecc 拿私钥生成验签数据长度 " + sign.length() + " : " + sign);
+        boolean verify = Encrypt.eccClientVerify(publicKey, SOURCE, sign);
+        System.out.println("ecc 拿公钥验签: " + (verify ? "成功" : "失败"));
+        System.out.println("\n-------------\n");
+    }
+
+    @Test
     public void rsaReqRes() {
         KeyPair pair = Encrypt.genericRsaKeyPair(512);
-        String publicKey = Encrypt.rsaPublicKeyToStr(pair.getPublic());
-        String privateKey = Encrypt.rsaPrivateKeyToStr(pair.getPrivate());
+        String publicKey = Encrypt.publicKeyToStr(pair.getPublic());
+        String privateKey = Encrypt.privateKeyToStr(pair.getPrivate());
         System.out.println("任何地方都知道的公钥: " + publicKey);
         System.out.println("只有服务端知道的私钥: " + privateKey);
 
@@ -115,6 +137,9 @@ public class EncryptTest {
         decode = Encrypt.rsaServerDecodeWithValueDes(privateKey, map.get("k"), map.get("v"));
         System.out.println("服务端通过私钥 处理(des)发过来的数据后: (" + decode + ")");
         System.out.print("源数据长度 " + decode.length() + ", 发送的数据长度 " + sendData.length());
+        // 512:  源数据长度 39, 发送的数据长度 199, 增长: 5.10 倍
+        // 1024: 源数据长度 39, 发送的数据长度 283, 增长: 7.25 倍
+        // 2048: 源数据长度 39, 发送的数据长度 455, 增长: 11.66 倍
         System.out.println(", 增长: " + new BigDecimal(sendData.length()).divide(new BigDecimal(decode.length()), 2, RoundingMode.DOWN) + " 倍");
 
         System.out.println("-----");
@@ -123,6 +148,50 @@ public class EncryptTest {
         System.out.println("服务端通过私钥 生成签名(长度 " + sign.length() + "): (" + sign + ")");
 
         boolean verify = Encrypt.rsaClientVerify(publicKey, SOURCE, sign);
+        System.out.println("客户端通过公钥 验签: (" + verify + ")");
+
+        System.out.println("-----");
+    }
+
+    @Test
+    public void eccReqRes() {
+        KeyPair pair = Encrypt.genericEccKeyPair();
+        String publicKey = Encrypt.publicKeyToStr(pair.getPublic());
+        String privateKey = Encrypt.privateKeyToStr(pair.getPrivate());
+        System.out.println("任何地方都知道的公钥: " + publicKey);
+        System.out.println("只有服务端知道的私钥: " + privateKey);
+
+        System.out.println("要发送的源数据是(长度 " + SOURCE.length() + "): (" + SOURCE + ")");
+
+        System.out.println("-----");
+
+        Map<String, String> map = Encrypt.eccClientEncodeWithValueAes(publicKey, SOURCE);
+        String sendData = JsonUtil.toJson(map);
+        System.out.println("客户端通过公钥 处理(aes)要发送的数据后: (" + sendData + ")");
+
+        String decode = Encrypt.eccServerDecodeWithValueAes(privateKey, map.get("k"), map.get("v"));
+        System.out.println("服务端通过私钥 处理(aes)发过来的数据后: (" + decode + ")");
+        System.out.print("源数据长度 " + decode.length() + ", 发送的数据长度 " + sendData.length());
+        // 源数据长度 39, 发送的数据长度 311, 增长: 7.97 倍
+        System.out.println(", 增长: " + new BigDecimal(sendData.length()).divide(new BigDecimal(decode.length()), 2, RoundingMode.DOWN) + " 倍");
+
+        System.out.println("-----");
+
+        map = Encrypt.eccClientEncodeWithValueDes(publicKey, SOURCE);
+        sendData = JsonUtil.toJson(map);
+        System.out.println("客户端通过公钥 处理(des)要发送的数据后: (" + sendData + ")");
+
+        decode = Encrypt.eccServerDecodeWithValueDes(privateKey, map.get("k"), map.get("v"));
+        System.out.println("服务端通过私钥 处理(des)发过来的数据后: (" + decode + ")");
+        System.out.print("源数据长度 " + decode.length() + ", 发送的数据长度 " + sendData.length());
+        System.out.println(", 增长: " + new BigDecimal(sendData.length()).divide(new BigDecimal(decode.length()), 2, RoundingMode.DOWN) + " 倍");
+
+        System.out.println("-----");
+
+        String sign = Encrypt.eccServerSign(privateKey, SOURCE);
+        System.out.println("服务端通过私钥 生成签名(长度 " + sign.length() + "): (" + sign + ")");
+
+        boolean verify = Encrypt.eccClientVerify(publicKey, SOURCE, sign);
         System.out.println("客户端通过公钥 验签: (" + verify + ")");
 
         System.out.println("-----");
@@ -161,8 +230,8 @@ public class EncryptTest {
 
     @Test
     public void authenticator() {
-        String secret = U.uuid();
-        for (int i = 0; i < 31; i++) {
+        String secret = U.uuid().replace("0", "O").replace("1", "I");
+        for (int i = 0; i < 35; i++) {
             String code = Encrypt.getGoogleAuthenticatorCode(secret);
             System.out.println(DateUtil.nowDateTimeMs() + " : " + secret + " -> " + code);
             try {

@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -50,6 +51,16 @@ public final class Encrypt {
     private static final JWTSigner JWT_SIGNER = new JWTSigner(JWT_SECRET_KEY);
     private static final JWTVerifier JWT_VERIFIER = new JWTVerifier(JWT_SECRET_KEY);
 
+    private static final boolean SUPPORT_ECC;
+    static {
+        boolean hasEcc = false;
+        try {
+            Class<?> clazz = Class.forName("org.bouncycastle.jce.provider.BouncyCastleProvider");
+            Security.addProvider((Provider) clazz.getDeclaredConstructor().newInstance());
+            hasEcc = true;
+        } catch (Exception ignore) {}
+        SUPPORT_ECC = hasEcc;
+    }
 
     /** 使用 base64 编码 */
     public static String base64Encode(String src) {
@@ -194,28 +205,44 @@ public final class Encrypt {
         }
     }
 
-    public static String rsaPublicKeyToStr(PublicKey key) {
-        // 公钥用 base64 编码, 跟 getPublicKey 中的 aaa 对应
+    public static KeyPair genericEccKeyPair() {
+        try {
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC", "SunEC"); // secp256r1 [NIST P-256,X9.62 prime256v1] (1.2.840.10045.3.1.7)
+            keyGen.initialize(new ECGenParameterSpec("secp384r1"));
+            return keyGen.generateKeyPair();
+        } catch (Exception e) {
+            throw new RuntimeException("用 ECC 生成密钥对时异常", e);
+        }
+    }
+
+    public static String publicKeyToStr(PublicKey key) {
         return new String(base64Encode(key.getEncoded()), StandardCharsets.UTF_8);
     }
+    public static String privateKeyToStr(PrivateKey key) {
+        return new String(base64Encode(key.getEncoded()), StandardCharsets.UTF_8);
+    }
+
     private static PublicKey getRsaPublicKey(String str) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        // 公钥用 base64 解码, 跟 genericRsaKeyPair 中的 aaa 对应
         byte[] keyBytes = base64Decode(str.getBytes(StandardCharsets.UTF_8));
         return KeyFactory.getInstance(RSA).generatePublic(new X509EncodedKeySpec(keyBytes));
     }
-
-    public static String rsaPrivateKeyToStr(PrivateKey key) {
-        // 私钥用 base64 编码, 跟 getPrivateKey 中的 bbb 对应
-        return new String(base64Encode(key.getEncoded()), StandardCharsets.UTF_8);
-    }
     private static PrivateKey getRsaPrivateKey(String str) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        // 将结果用 base64 解码, 跟 genericRsaKeyPair 中的 bbb 对应
         byte[] keyBytes = base64Decode(str.getBytes(StandardCharsets.UTF_8));
         return KeyFactory.getInstance(RSA).generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
     }
 
+    private static PublicKey getEccPublicKey(String str) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        byte[] keyBytes = base64Decode(str.getBytes(StandardCharsets.UTF_8));
+        return KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(keyBytes));
+    }
+    private static PrivateKey getEccPrivateKey(String str) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        byte[] keyBytes = base64Decode(str.getBytes(StandardCharsets.UTF_8));
+        return KeyFactory.getInstance("EC").generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
+    }
+
     /**
-     * <pre>服务端持有私钥, 公钥公开.
+     * <pre>
+     * 服务端持有私钥, 公钥公开.
      *
      * 用于数据传递: 客户端用公钥加密原文后发给服务端, 服务端拿到数据后用私钥解密得到原文
      * 用于数据验签: 服务端用私钥加密数据后公开, 客户端用公钥签验确定数据确实是服务端发的
@@ -247,7 +274,8 @@ public final class Encrypt {
         }
     }
     /**
-     * <pre>服务端持有私钥, 公钥公开.
+     * <pre>
+     * 服务端持有私钥, 公钥公开.
      *
      * 用于数据传递: 客户端用公钥加密原文后发给服务端, 服务端拿到数据后用私钥解密得到原文
      * 用于数据验签: 服务端用私钥加密数据后公开, 客户端用公钥签验确定数据确实是服务端发的
@@ -276,7 +304,64 @@ public final class Encrypt {
     }
 
     /**
-     * <pre>服务端持有私钥, 公钥公开.
+     * <pre>
+     * 服务端持有私钥, 公钥公开.
+     *
+     * 用于数据传递: 客户端用公钥加密原文后发给服务端, 服务端拿到数据后用私钥解密得到原文
+     * 用于数据验签: 服务端用私钥加密数据后公开, 客户端用公钥签验确定数据确实是服务端发的
+     *
+     * 当前方法 用于数据传递 中的客户端操作: 使用 ecc 的公钥加密原文, 生成密文</pre>
+     *
+     * @param publicKey 公钥
+     * @param source 原文, rsa 有长度不能超过 53 的限制, ecc 没有
+     * @return 密文
+     */
+    public static String eccClientEncode(String publicKey, String source) {
+        if (!SUPPORT_ECC) {
+            throw new RuntimeException("不支持 ECC 算法, 缺少对应的依赖. 见: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on");
+        }
+        try {
+            Cipher cipher = Cipher.getInstance("ECIES", "BC");
+            cipher.init(Cipher.ENCRYPT_MODE, getEccPublicKey(publicKey));
+            byte[] encodeBytes = cipher.doFinal(source.getBytes(StandardCharsets.UTF_8));
+            return new String(base64Encode(encodeBytes), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("用 ECC 基于公钥(%s)加密(%s)时异常", publicKey, source), e);
+        }
+    }
+    /**
+     * <pre>
+     * 服务端持有私钥, 公钥公开.
+     *
+     * 用于数据传递: 客户端用公钥加密原文后发给服务端, 服务端拿到数据后用私钥解密得到原文
+     * 用于数据验签: 服务端用私钥加密数据后公开, 客户端用公钥签验确定数据确实是服务端发的
+     *
+     * 当前方法 用于数据传递 中的服务端操作: 使用 ecc 的私钥解密密文, 得到原文</pre>
+     *
+     * @param privateKey 私钥
+     * @param encryptData 密文
+     * @return 原文
+     */
+    public static String eccServerDecode(String privateKey, String encryptData) {
+        if (!SUPPORT_ECC) {
+            throw new RuntimeException("不支持 ECC 算法, 缺少对应的依赖. 见: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on");
+        }
+        if (U.isBlank(privateKey) || U.isBlank(encryptData)) {
+            throw new RuntimeException(String.format("用 ECC 基于私钥(%s)解密(%s)时数据不能为空", privateKey, encryptData));
+        }
+        try {
+            Cipher cipher = Cipher.getInstance("ECIES", "BC");
+            cipher.init(Cipher.DECRYPT_MODE, getEccPrivateKey(privateKey));
+            byte[] decodeBytes = cipher.doFinal(base64Decode(encryptData.getBytes(StandardCharsets.UTF_8)));
+            return new String(decodeBytes, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("用 ECC 基于私钥(%s)解密(%s)时异常", privateKey, encryptData), e);
+        }
+    }
+
+    /**
+     * <pre>
+     * 服务端持有私钥, 公钥公开.
      *
      * 用于数据传递: 客户端用公钥加密原文后发给服务端, 服务端拿到数据后用私钥解密得到原文
      * 用于数据验签: 服务端用私钥加密数据后公开, 客户端用公钥签验确定数据确实是服务端发的
@@ -302,7 +387,8 @@ public final class Encrypt {
         }
     }
     /**
-     * <pre>服务端持有私钥, 公钥公开.
+     * <pre>
+     * 服务端持有私钥, 公钥公开.
      *
      * 用于数据传递: 客户端用公钥加密原文后发给服务端, 服务端拿到数据后用私钥解密得到原文
      * 用于数据验签: 服务端用私钥加密数据后公开, 客户端用公钥签验确定数据确实是服务端发的
@@ -327,6 +413,68 @@ public final class Encrypt {
             return publicSign.verify(base64Decode(signData.getBytes(StandardCharsets.UTF_8)));
         } catch (Exception e) {
             // throw new RuntimeException(String.format("用 %s 基于公钥(%s)验签(%s)时(%s)异常", RSA, publicKey, source, signData), e);
+            return false;
+        }
+    }
+
+    /**
+     * <pre>
+     * 服务端持有私钥, 公钥公开.
+     *
+     * 用于数据传递: 客户端用公钥加密原文后发给服务端, 服务端拿到数据后用私钥解密得到原文
+     * 用于数据验签: 服务端用私钥加密数据后公开, 客户端用公钥签验确定数据确实是服务端发的
+     *
+     * 当前方法 用于数据验签 中的服务端操作: 使用 ecc 的私钥加密原文, 生成签名</pre>
+     *
+     * @param privateKey 私钥
+     * @param source 原文
+     * @return 签名数据
+     */
+    public static String eccServerSign(String privateKey, String source) {
+        if (!SUPPORT_ECC) {
+            throw new RuntimeException("不支持 ECC 算法, 缺少对应的依赖. 见: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on");
+        }
+        if (U.isBlank(privateKey) || U.isBlank(source)) {
+            throw new RuntimeException(String.format("用 ECC 基于私钥(%s)生成验签时数据(%s)不能为空", privateKey, source));
+        }
+        try {
+            Signature privateSign = Signature.getInstance("SHA1withECDSA");
+            privateSign.initSign(getEccPrivateKey(privateKey));
+            privateSign.update(source.getBytes(StandardCharsets.UTF_8));
+            return new String(base64Encode(privateSign.sign()), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("用 ECC 基于私钥(%s)给(%s)生成验签时异常", privateKey, source), e);
+        }
+    }
+    /**
+     * <pre>
+     * 服务端持有私钥, 公钥公开.
+     *
+     * 用于数据传递: 客户端用公钥加密原文后发给服务端, 服务端拿到数据后用私钥解密得到原文
+     * 用于数据验签: 服务端用私钥加密数据后公开, 客户端用公钥签验确定数据确实是服务端发的
+     *
+     * 当前方法 用于数据验签 中的客户端操作: 使用 ecc 的公钥验签原文</pre>
+     *
+     * @param publicKey 公钥
+     * @param source 原文
+     * @param signData 签名
+     * @return true 表示验签成功
+     */
+    public static boolean eccClientVerify(String publicKey, String source, String signData) {
+        if (!SUPPORT_ECC) {
+            throw new RuntimeException("不支持 ECC 算法, 缺少对应的依赖. 见: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on");
+        }
+        if (U.isBlank(publicKey) || U.isBlank(source) || U.isBlank(signData)) {
+            // throw new RuntimeException(String.format("用 ECC 基于公钥(%s)验签(%s)时(%s)不能为空", publicKey, source, signData));
+            return false;
+        }
+        try {
+            Signature publicSign = Signature.getInstance("SHA1withECDSA");
+            publicSign.initVerify(getEccPublicKey(publicKey));
+            publicSign.update(source.getBytes(StandardCharsets.UTF_8));
+            return publicSign.verify(base64Decode(signData.getBytes(StandardCharsets.UTF_8)));
+        } catch (Exception e) {
+            // throw new RuntimeException(String.format("用 ECC 基于公钥(%s)验签(%s)时(%s)异常", publicKey, source, signData), e);
             return false;
         }
     }
@@ -363,6 +511,46 @@ public final class Encrypt {
 
     /**
      * <pre>
+     * ecc 没有原文度不能超过 53 的限制, 可以不需要
+     *
+     * 客户端操作: 有 公钥(pub) 和 要发送的数据(data)
+     * 1. 生成 16 位的随机数(key)
+     * 2. 用 ecc 基于 pub 加密 key 生成一个加密数据(1)
+     * 3. 用 aes 基于 key 加密 data 生成加密数据(2)
+     *
+     * 返回 { "k" : (1), "v" : (2) }
+     * </pre>
+     */
+    public static Map<String, String> eccClientEncodeWithValueAes(String publicKey, String data) {
+        if (!SUPPORT_ECC) {
+            throw new RuntimeException("不支持 ECC 算法, 缺少对应的依赖. 见: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on");
+        }
+        // 随机数, 用来做 aes 的密钥, 长度 16 位. 用 ecc 基于公钥加密这个值, 用 aes 基于这个值加密数据
+        String key = U.uuid();
+        return Map.of("k", eccClientEncode(publicKey, key), "v", aesEncode(data, key));
+    }
+    /**
+     * <pre>
+     * ecc 没有原文度不能超过 53 的限制, 可以不需要
+     *
+     * 服务端操作: 有 私钥(pri) 和 客户端传过来的 k 和 v
+     * 1. 用 ecc 基于 pri 解密 k 得到一个值(key)
+     * 2. 用 aes 基于 key 解密 v 得到 data
+     *
+     * 返回 data
+     * </pre>
+     */
+    public static String eccServerDecodeWithValueAes(String privateKey, String k, String v) {
+        if (!SUPPORT_ECC) {
+            throw new RuntimeException("不支持 ECC 算法, 缺少对应的依赖. 见: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on");
+        }
+        // 通过 ecc 解出 aes 的密钥, 再用密钥解出数据
+        String key = eccServerDecode(privateKey, k);
+        return aesDecode(v, key);
+    }
+
+    /**
+     * <pre>
      * 客户端操作: 有 公钥(pub) 和 要发送的数据(data)
      * 1. 生成 16 位的随机数(key)
      * 2. 用 rsa 基于 pub 加密 key 生成一个加密数据(1)
@@ -388,6 +576,46 @@ public final class Encrypt {
     public static String rsaServerDecodeWithValueDes(String privateKey, String k, String v) {
         // 通过 rsa 解出 aes 的密钥, 再用密钥解出数据
         String key = rsaServerDecode(privateKey, k);
+        return desDecode(v, key);
+    }
+
+    /**
+     * <pre>
+     * ecc 没有原文度不能超过 53 的限制, 可以不需要
+     *
+     * 客户端操作: 有 公钥(pub) 和 要发送的数据(data)
+     * 1. 生成 16 位的随机数(key)
+     * 2. 用 ecc 基于 pub 加密 key 生成一个加密数据(1)
+     * 3. 用 des 基于 key 加密 data 生成加密数据(2)
+     *
+     * 返回 { "k" : (1), "v" : (2) }
+     * </pre>
+     */
+    public static Map<String, String> eccClientEncodeWithValueDes(String publicKey, String data) {
+        if (!SUPPORT_ECC) {
+            throw new RuntimeException("不支持 ECC 算法, 缺少对应的依赖. 见: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on");
+        }
+        // 随机数, 用来做 aes 的密钥, 长度 8 位. 数据用这个来加密, 用 ecc 私钥加密这个值也传过去
+        String key = U.uuid();
+        return Map.of("k", eccClientEncode(publicKey, key), "v", desEncode(data, key));
+    }
+    /**
+     * <pre>
+     * ecc 没有原文度不能超过 53 的限制, 可以不需要
+     *
+     * 服务端操作: 有 私钥(pri) 和 客户端传过来的 k 和 v
+     * 1. 用 ecc 基于 pri 解密 k 得到一个值(key)
+     * 2. 用 des 基于 key 解密 v 得到 data
+     *
+     * 返回 data
+     * </pre>
+     */
+    public static String eccServerDecodeWithValueDes(String privateKey, String k, String v) {
+        if (!SUPPORT_ECC) {
+            throw new RuntimeException("不支持 ECC 算法, 缺少对应的依赖. 见: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on");
+        }
+        // 通过 ecc 解出 aes 的密钥, 再用密钥解出数据
+        String key = eccServerDecode(privateKey, k);
         return desDecode(v, key);
     }
 
