@@ -47,6 +47,10 @@ public final class Encrypt {
     /** 用来做数据验签时的算法 */
     private static final String RSA_SIGN = "SHA256withRSA";
 
+    private static final String ECC = "EC";
+    /** 用来做数据验签时的算法 */
+    private static final String ECC_SIGN = "SHA256withECDSA";
+
     private static final String JWT_SECRET_KEY = "*W0$%Te#nr&y^pOt";
     private static final JWTSigner JWT_SIGNER = new JWTSigner(JWT_SECRET_KEY);
     private static final JWTVerifier JWT_VERIFIER = new JWTVerifier(JWT_SECRET_KEY);
@@ -194,20 +198,20 @@ public final class Encrypt {
      */
     public static KeyPair genericRsaKeyPair(int keyLength) {
         if (keyLength < RSA_KEY_MIN_LEN) {
-            throw new RuntimeException(String.format("%s 生成密钥对时长度不能小于 %s", RSA, RSA_KEY_MIN_LEN));
+            throw new RuntimeException(String.format("rsa 生成密钥对时长度不能小于 %s", RSA_KEY_MIN_LEN));
         }
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(RSA);
             keyPairGenerator.initialize(keyLength);
             return keyPairGenerator.generateKeyPair();
         } catch (Exception e) {
-            throw new RuntimeException(String.format("用 %s 生成 %s 位的密钥对时异常", RSA, keyLength), e);
+            throw new RuntimeException(String.format("用 rsa 生成 %s 位的密钥对时异常", keyLength), e);
         }
     }
 
     public static KeyPair genericEccKeyPair() {
         try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC", "SunEC"); // secp256r1 [NIST P-256,X9.62 prime256v1] (1.2.840.10045.3.1.7)
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance(ECC); // secp256r1 [NIST P-256,X9.62 prime256v1] (1.2.840.10045.3.1.7)
             keyGen.initialize(new ECGenParameterSpec("secp384r1"));
             return keyGen.generateKeyPair();
         } catch (Exception e) {
@@ -233,11 +237,11 @@ public final class Encrypt {
 
     private static PublicKey getEccPublicKey(String str) throws NoSuchAlgorithmException, InvalidKeySpecException {
         byte[] keyBytes = base64Decode(str.getBytes(StandardCharsets.UTF_8));
-        return KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(keyBytes));
+        return KeyFactory.getInstance(ECC).generatePublic(new X509EncodedKeySpec(keyBytes));
     }
     private static PrivateKey getEccPrivateKey(String str) throws NoSuchAlgorithmException, InvalidKeySpecException {
         byte[] keyBytes = base64Decode(str.getBytes(StandardCharsets.UTF_8));
-        return KeyFactory.getInstance("EC").generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
+        return KeyFactory.getInstance(ECC).generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
     }
 
     /**
@@ -260,8 +264,8 @@ public final class Encrypt {
      */
     public static String rsaClientEncode(String publicKey, String source) {
         if (U.isBlank(publicKey) || source == null || source.length() > RSA_DATA_MAX_LEN) {
-            throw new RuntimeException(String.format("用 %s 基于公钥(%s)加密(%s)时数据不能为空或长度不能超过 %s",
-                    RSA, publicKey, source, RSA_DATA_MAX_LEN));
+            throw new RuntimeException(String.format("用 rsa 基于公钥(%s)加密(%s)时数据不能为空或长度不能超过 %s",
+                    publicKey, source, RSA_DATA_MAX_LEN));
         }
         try {
             Cipher cipher = Cipher.getInstance(RSA);
@@ -270,7 +274,7 @@ public final class Encrypt {
             // 用 base64 编码, 跟 rsaServerDecode 中的 xxx 对应
             return new String(base64Encode(encodeBytes), StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("用 %s 基于公钥(%s)加密(%s)时异常", RSA, publicKey, source), e);
+            throw new RuntimeException(String.format("用 rsa 基于公钥(%s)加密(%s)时异常", publicKey, source), e);
         }
     }
     /**
@@ -290,7 +294,7 @@ public final class Encrypt {
      */
     public static String rsaServerDecode(String privateKey, String encryptData) {
         if (U.isBlank(privateKey) || U.isBlank(encryptData)) {
-            throw new RuntimeException(String.format("用 %s 基于私钥(%s)解密(%s)时数据不能为空", RSA, privateKey, encryptData));
+            throw new RuntimeException(String.format("用 rsa 基于私钥(%s)解密(%s)时数据不能为空", privateKey, encryptData));
         }
         try {
             Cipher cipher = Cipher.getInstance(RSA);
@@ -299,7 +303,7 @@ public final class Encrypt {
             byte[] decodeBytes = cipher.doFinal(base64Decode(encryptData.getBytes(StandardCharsets.UTF_8)));
             return new String(decodeBytes, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("用 %s 基于私钥(%s)解密(%s)时异常", RSA, privateKey, encryptData), e);
+            throw new RuntimeException(String.format("用 rsa 基于私钥(%s)解密(%s)时异常", privateKey, encryptData), e);
         }
     }
 
@@ -374,7 +378,7 @@ public final class Encrypt {
      */
     public static String rsaServerSign(String privateKey, String source) {
         if (U.isBlank(privateKey) || U.isBlank(source)) {
-            throw new RuntimeException(String.format("用 %s 基于私钥(%s)生成验签时数据(%s)不能为空", RSA, privateKey, source));
+            throw new RuntimeException(String.format("用 rsa 基于私钥(%s)生成验签时数据(%s)不能为空", privateKey, source));
         }
         try {
             Signature privateSign = Signature.getInstance(RSA_SIGN);
@@ -383,7 +387,7 @@ public final class Encrypt {
             // 将结果用 base64 编码, 跟 rsaClientVerify 中的 yyy 对应
             return new String(base64Encode(privateSign.sign()), StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("用 %s 基于私钥(%s)给(%s)生成验签时异常", RSA, privateKey, source), e);
+            throw new RuntimeException(String.format("用 rsa 基于私钥(%s)给(%s)生成验签时异常", privateKey, source), e);
         }
     }
     /**
@@ -402,7 +406,7 @@ public final class Encrypt {
      */
     public static boolean rsaClientVerify(String publicKey, String source, String signData) {
         if (U.isBlank(publicKey) || U.isBlank(source) || U.isBlank(signData)) {
-            // throw new RuntimeException(String.format("用 %s 基于公钥(%s)验签(%s)时(%s)不能为空", RSA, publicKey, source, signData));
+            // throw new RuntimeException(String.format("用 rsa 基于公钥(%s)验签(%s)时(%s)不能为空", publicKey, source, signData));
             return false;
         }
         try {
@@ -412,7 +416,7 @@ public final class Encrypt {
             // 将结果用 base64 编码, 跟 rsaServerSign 中的 yyy 对应
             return publicSign.verify(base64Decode(signData.getBytes(StandardCharsets.UTF_8)));
         } catch (Exception e) {
-            // throw new RuntimeException(String.format("用 %s 基于公钥(%s)验签(%s)时(%s)异常", RSA, publicKey, source, signData), e);
+            // throw new RuntimeException(String.format("用 rsa 基于公钥(%s)验签(%s)时(%s)异常", publicKey, source, signData), e);
             return false;
         }
     }
@@ -438,7 +442,7 @@ public final class Encrypt {
             throw new RuntimeException(String.format("用 ECC 基于私钥(%s)生成验签时数据(%s)不能为空", privateKey, source));
         }
         try {
-            Signature privateSign = Signature.getInstance("SHA1withECDSA");
+            Signature privateSign = Signature.getInstance(ECC_SIGN);
             privateSign.initSign(getEccPrivateKey(privateKey));
             privateSign.update(source.getBytes(StandardCharsets.UTF_8));
             return new String(base64Encode(privateSign.sign()), StandardCharsets.UTF_8);
@@ -469,7 +473,7 @@ public final class Encrypt {
             return false;
         }
         try {
-            Signature publicSign = Signature.getInstance("SHA1withECDSA");
+            Signature publicSign = Signature.getInstance(ECC_SIGN);
             publicSign.initVerify(getEccPublicKey(publicKey));
             publicSign.update(source.getBytes(StandardCharsets.UTF_8));
             return publicSign.verify(base64Decode(signData.getBytes(StandardCharsets.UTF_8)));
