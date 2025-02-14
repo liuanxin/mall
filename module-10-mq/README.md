@@ -33,7 +33,7 @@ public void onReceive(Message message) {
 }
 
 /** 入参是 mq 中的数据, 返回是处理完之后需要存到表里的搜索键 */
-public void business(String json) {
+public String business(String json) {
     // ...
     return searchKey;
 }
