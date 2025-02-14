@@ -18,7 +18,7 @@ package com.github.mq.constant;
  *    设置重要的消息「死信 --> 死信的死信(延迟半小时) --> 死信」成一个环, 再「重要队列 --> 死信」
  *    死信的死信因为是一个延迟队列(就是想它到期了再回去死信), 因此不需要消费, 只消费死信队列即可
  *    这样可以实现延迟队列(比如定时取消订单功能), 也可以在定义队列时设置为延迟队列(需要安装 delay 插件,
- *    见: https://www.rabbitmq.com/community-plugins.html), 在发送时设置延迟时间完成延迟功能
+ *    见: <a href="https://www.rabbitmq.com/community-plugins.html">...</a>), 在发送时设置延迟时间完成延迟功能
  *
  *   需要处理消费     需要处理消费                不需要消费
  *    example --> example_dead(死信) --> example_dead_dead(死信的死信)

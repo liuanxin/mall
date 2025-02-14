@@ -60,7 +60,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ClientRouterInterceptor implements Interceptor {
 
     private static final Map<String, Object> CLASS_METHOD_CACHE = new ConcurrentHashMap<>();
-    private static final Object NIL_OBJ = new Object();
+    private static final String NIL_OBJ = "";
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
@@ -92,7 +92,7 @@ public class ClientRouterInterceptor implements Interceptor {
     private DatabaseRouter getAnnotation(String classAndMethod) {
         Object cacheRouter = CLASS_METHOD_CACHE.get(classAndMethod);
         // 如果在缓存里的是一个空对象, 直接返回 null
-        if (cacheRouter == NIL_OBJ) {
+        if (NIL_OBJ.equals(cacheRouter)) {
             return null;
         }
         if (cacheRouter instanceof DatabaseRouter dr) {
