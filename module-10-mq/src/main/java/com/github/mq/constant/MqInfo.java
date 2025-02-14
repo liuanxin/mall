@@ -72,7 +72,7 @@ public enum MqInfo {
     private final String exchangeType;
     private final String exchangeName;
     /**
-     * 是否是延迟交换机, 如果设置为 true 需要安装 delay 插件. 见: https://www.rabbitmq.com/community-plugins.html
+     * 是否是延迟交换机, 如果设置为 true 需要安装 delay 插件. 见: <a href="https://www.rabbitmq.com/community-plugins.html">...</a>
      *
      * @see org.springframework.amqp.rabbit.core.RabbitAdmin#declareExchange
      */

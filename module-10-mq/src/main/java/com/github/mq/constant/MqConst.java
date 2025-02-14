@@ -40,11 +40,11 @@ public class MqConst {
     /** 0.初始, 1.失败, 2.成功 */
     public static final int SUCCESS = 2;
 
-    /** rabbitmq 用在死信队列时的交换机名. 见: https://www.rabbitmq.com/dlx.html */
+    /** rabbitmq 用在死信队列时的交换机名. 见: <a href="https://www.rabbitmq.com/dlx.html">...</a> */
     public static final String DEAD_EXCHANGE = "x-dead-letter-exchange";
-    /** rabbitmq 用在死信队列时的路由键名. 见: https://www.rabbitmq.com/dlx.html */
+    /** rabbitmq 用在死信队列时的路由键名. 见: <a href="https://www.rabbitmq.com/dlx.html">...</a> */
     public static final String DEAD_ROUTE_KEY = "x-dead-letter-routing-key";
-    /** rabbitmq 用在延迟队列时的配置名. 见: https://www.rabbitmq.com/ttl.html */
+    /** rabbitmq 用在延迟队列时的配置名. 见: <a href="https://www.rabbitmq.com/ttl.html">...</a> */
     public static final String DELAY = "x-message-ttl";
 
 
