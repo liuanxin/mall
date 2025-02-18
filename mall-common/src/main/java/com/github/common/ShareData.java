@@ -10,9 +10,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * public class Xx {
  *
  *     // 其独立于所有的线程, 可以用 static final 来修饰
- *     private static final ShareValue&lt;String&gt; SHARE_STRING = new ShareValue&lt;&gt;;
+ *     private static final ShareData&lt;String&gt; SHARE_STRING = new ShareData&lt;&gt;;
  *     // 要共享多个独立数据就申明多个
- *     // private static final ShareValue&lt;XXX&gt; SHARE_XXX = new ShareValue&lt;&gt;;
+ *     // private static final ShareData&lt;XXX&gt; SHARE_XXX = new ShareData&lt;&gt;;
  *
  *     // 在 try 中 put 值, 在 finally 中 remove
  *     public void xxx() {
@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * }
  * </pre>
  */
-public class ShareValue<T> {
+public class ShareData<T> {
 
     private final Map<Thread, T> shareMap = new ConcurrentHashMap<>();
 
