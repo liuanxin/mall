@@ -42,24 +42,24 @@ public final class U {
     public static final int MAX_DEPTH = 20;
 
     /** 手机号. 见 <a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%86%85%E5%9C%B0%E7%A7%BB%E5%8A%A8%E7%BB%88%E7%AB%AF%E9%80%9A%E8%AE%AF%E5%8F%B7%E6%AE%B5">https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%86%85%E5%9C%B0%E7%A7%BB%E5%8A%A8%E7%BB%88%E7%AB%AF%E9%80%9A%E8%AE%AF%E5%8F%B7%E6%AE%B5</a> */
-    private static final String PHONE = "^1[3-9]\\d{9}$";
+    private static final Pattern PHONE = Pattern.compile("^1[3-9]\\d{9}$");
     /** _abc-def@123-hij.uvw_xyz.com 是正确的, -123@xyz.com 不是 */
-    private static final String EMAIL = "^\\w[\\w\\-]*@([\\w\\-]+\\.\\w+)+$";
+    private static final Pattern EMAIL = Pattern.compile("^\\w[\\w\\-]*@([\\w\\-]+\\.\\w+)+$");
     /** ico, jpeg, jpg, bmp, png, svg 后缀 */
-    private static final String IMAGE = "(?i)^(.*)\\.(ico|jpeg|jpg|bmp|png|svg)$";
+    private static final Pattern IMAGE = Pattern.compile("(?i)^(.*)\\.(ico|jpeg|jpg|bmp|png|svg)$");
     /** IPv4 地址 */
-    private static final String IPV4 = "^([01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])(\\.([01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])){3}$";
+    private static final Pattern IPV4 = Pattern.compile("^([01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])(\\.([01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])){3}$");
     /** 身份证号码 */
-    private static final String ID_CARD = "(^[1-9]\\d{5}(18|19|([23]\\d))\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3}[0-9Xx]$)|(^[1-9]\\d{5}\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3}$)";
+    private static final Pattern ID_CARD = Pattern.compile("(^[1-9]\\d{5}(18|19|([23]\\d))\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3}[0-9Xx]$)|(^[1-9]\\d{5}\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3}$)");
 
     /** 中文 */
-    private static final String CHINESE = "[\\u4e00-\\u9fa5]";
+    private static final Pattern CHINESE = Pattern.compile("[\\u4e00-\\u9fa5]");
     /** 是否是移动端. 见 <a href="https://gist.github.com/dalethedeveloper/1503252">https://gist.github.com/dalethedeveloper/1503252</a> */
-    private static final String MOBILE = "(?i)Mobile|iP(hone|od|ad)|Android|BlackBerry|Blazer|PSP|UCWEB|IEMobile|Kindle|NetFront|Silk-Accelerated|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Dol(f|ph)in|Skyfire|Zune";
+    private static final Pattern MOBILE = Pattern.compile("(?i)Mobile|iP(hone|od|ad)|Android|BlackBerry|Blazer|PSP|UCWEB|IEMobile|Kindle|NetFront|Silk-Accelerated|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Dol(f|ph)in|Skyfire|Zune");
     /** 是否是 pc 端 */
-    private static final String PC = "(?i)AppleWebKit|Mozilla|Chrome|Safari|MSIE|Windows NT";
+    private static final Pattern PC = Pattern.compile("(?i)AppleWebKit|Mozilla|Chrome|Safari|MSIE|Windows NT");
     /** 是否是本地 ip */
-    private static final String LOCAL = "(?i)127.0.0.1|localhost|::1|0:0:0:0:0:0:0:1";
+    private static final Pattern LOCAL = Pattern.compile("(?i)127.0.0.1|localhost|::1|0:0:0:0:0:0:0:1");
 
     /**
      * <pre>
@@ -457,7 +457,7 @@ public final class U {
         int count = 0;
         String str = obj.toString();
         for (int i = 0; i < str.length(); i++) {
-            count += (str.substring(i, i + 1).matches(CHINESE) ? 2 : 1);
+            count += (CHINESE.matcher(str.substring(i, i + 1)).matches() ? 2 : 1);
         }
         return count;
     }
@@ -685,7 +685,10 @@ public final class U {
      * 匹配多行注释 : /\*\*(\s|.)*?\* /<br/>
      */
     public static boolean checkRegexWithStrict(String param, String regex) {
-        return isNotBlank(param) && Pattern.compile(regex).matcher(param).matches();
+        return isNotBlank(param) && checkRegexWithStrict(param, Pattern.compile(regex));
+    }
+    private static boolean checkRegexWithStrict(String param, Pattern pattern) {
+        return isNotBlank(param) && pattern.matcher(param).matches();
     }
     /** 后缀是图片则返回 true */
     public static boolean hasImage(String image) {
@@ -714,7 +717,10 @@ public final class U {
 
     /** 只要找到匹配即返回 true */
     public static boolean checkRegexWithRelax(String param, String regex) {
-        return isNotBlank(param) && Pattern.compile(regex).matcher(param).find();
+        return isNotBlank(param) && checkRegexWithRelax(param, Pattern.compile(regex));
+    }
+    private static boolean checkRegexWithRelax(String param, Pattern pattern) {
+        return isNotBlank(param) && pattern.matcher(param).find();
     }
     /** 传入的参数只要包含中文就返回 true */
     public static boolean containsChinese(String value) {
