@@ -617,12 +617,15 @@ public final class U {
 
     /** 为空或是空字符或是 null undefined 时返回 true */
     public static boolean isBlank(String str) {
-        if (isNull(str)) {
+        if (str == null) {
             return true;
-        } else {
-            String trim = str.trim();
-            return trim.isEmpty() || "null".equalsIgnoreCase(trim) || "undefined".equalsIgnoreCase(trim);
         }
+        String trim = str.trim();
+        if (trim.isEmpty()) {
+            return true;
+        }
+        String lc = trim.toLowerCase();
+        return "null".equals(lc) || "undefined".equals(lc);
     }
     /** 非空且不是空字符时返回 true */
     public static boolean isNotBlank(String str) {
@@ -1134,13 +1137,13 @@ public final class U {
             // ByteStreams.copy(inputStream, outputStream);
 
             // jdk-8
-            // byte[] buf = new byte[8192];
-            // for (int length; (length = input.read(buf)) != -1; ) {
-            //     output.write(buf, 0, length);
-            // }
+            byte[] buf = new byte[8192];
+            for (int length; (length = input.read(buf)) != -1; ) {
+                output.write(buf, 0, length);
+            }
 
             // jdk-9
-            input.transferTo(output);
+            // input.transferTo(output);
         } catch (IOException e) {
             throw new RuntimeException("input to output exception", e);
         }
