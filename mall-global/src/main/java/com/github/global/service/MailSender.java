@@ -1,5 +1,6 @@
 package com.github.global.service;
 
+import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import lombok.RequiredArgsConstructor;
@@ -12,9 +13,12 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
+import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.internet.InternetAddress;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -23,64 +27,79 @@ import java.util.List;
  */
 @RequiredArgsConstructor
 @Configuration
-@ConditionalOnClass({ Message.class, JavaMailSender.class })
+@ConditionalOnClass({ JavaMailSender.class })
 public class MailSender {
 
     private final JavaMailSender mailSender;
 
-    public void sendText(String to, String subject, String textContent) {
-        // 从配置文件中获取发送邮件地址
-        sendText(((JavaMailSenderImpl) mailSender).getUsername(), to, subject, textContent);
+    public void sendText(String to, String subject, String content) {
+        sendText(Collections.singletonList(to), subject, content);
     }
 
-    public void sendText(String from, String to, String subject, String textContent) {
+    public void sendText(List<String> toList, String subject, String content) {
+        sendText(((JavaMailSenderImpl) mailSender).getUsername(), toList, subject, content);
+    }
+
+    public void sendText(String from, List<String> toList, String subject, String content) {
         U.assertBlank(from, "Need from email address");
-        U.assertBlank(to, "Need to email address");
+        U.assertEmpty(toList, "Need to email address");
         U.assertBlank(subject, "Need email subject");
-        U.assertBlank(textContent, "Need email content");
+        U.assertBlank(content, "Need email content");
 
         try {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
-            mailMessage.setTo(to);
+            mailMessage.setTo(toList.toArray(String[]::new));
             mailMessage.setFrom(from);
             mailMessage.setSubject(subject);
-            mailMessage.setText(textContent);
+            mailMessage.setText(content);
             mailSender.send(mailMessage);
         } catch (MailException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("{} -> {} (title: {}, content: {}) exception",
-                        from, to, subject, U.toStr(textContent, 500, 100), e);
+                        from, toList, subject, U.toStr(content, 500, 100), e);
             }
         }
     }
 
-    public void sendHtml(String to, String subject, String htmlContent, List<File> attachFileList) {
-        // 从配置文件中获取发送邮件地址
-        sendHtml(((JavaMailSenderImpl) mailSender).getUsername(), to, subject, htmlContent, attachFileList);
+
+    public void sendHtml(String to, String subject, String content, List<File> attachList) {
+        sendHtml(Collections.singletonList(to), subject, content, attachList);
     }
 
-    public void sendHtml(String from, String to, String subject, String htmlContent, List<File> attachFileList) {
+    public void sendHtml(List<String> toList, String subject, String content, List<File> attachList) {
+        sendHtml(((JavaMailSenderImpl) mailSender).getUsername(), toList, subject, content, attachList);
+    }
+
+    public void sendHtml(String from, List<String> toList, String subject, String content, List<File> attachList) {
         U.assertBlank(from, "Need from email address");
-        U.assertBlank(to, "Need to email address");
+        U.assertEmpty(toList, "Need to email address");
         U.assertBlank(subject, "Need email subject");
-        U.assertBlank(htmlContent, "Need email content");
+        U.assertBlank(content, "Need email content");
 
         try {
+            List<InternetAddress> addressList = new ArrayList<>();
+            for (String to : toList) {
+                if (U.isNotBlank(to)) {
+                    addressList.add(new InternetAddress(to));
+                }
+            }
             mailSender.send(mimeMessage -> {
-                mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
+                mimeMessage.setRecipients(Message.RecipientType.TO, addressList.toArray(Address[]::new));
                 mimeMessage.setFrom(new InternetAddress(from));
                 mimeMessage.setSubject(subject);
 
                 MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-                helper.setText(htmlContent, true);
-                for (File file : attachFileList) {
-                    helper.addAttachment(file.getName(), new FileSystemResource(file));
+                helper.setText(content, true);
+                if (A.isNotEmpty(attachList)) {
+                    for (File file : attachList) {
+                        helper.addAttachment(file.getName(), new FileSystemResource(file));
+                    }
                 }
             });
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("{} -> {} (title: {}, content: {}, attach: {}) exception",
-                        from, to, subject, U.toStr(htmlContent, 500, 100), attachFileList, e);
+                        from, toList, subject, U.toStr(content, 500, 100), attachList, e);
             }
         }
     }
