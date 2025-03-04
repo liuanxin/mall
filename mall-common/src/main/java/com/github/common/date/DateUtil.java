@@ -157,11 +157,13 @@ public class DateUtil {
     }
 
     /**
+     * <pre>
      * 默认格式化
      *   日期时间: yyyy-MM-dd HH:mm:ss
      *   日期:    yyyy-MM-dd
      *   时间:    HH:mm:ss
      *   年:     yyyy
+     * </pre>
      */
     public static String format(TemporalAccessor date) {
         if (date instanceof LocalDateTime) {
