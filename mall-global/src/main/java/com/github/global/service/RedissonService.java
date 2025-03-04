@@ -55,7 +55,7 @@ public class RedissonService {
     }
     /** 往 redis 放值, 并设定超时时间, 对应命令: SET key value PX ms */
     public <T> void set(String key, T value, long time, TimeUnit unit) {
-        redisson.getBucket(key, USE_CODEC).set(value, time, unit);
+        redisson.getBucket(key, USE_CODEC).set(value, Duration.of(time, unit.toChronoUnit()));
     }
 
     /** 设置超时时间, 对应命令: PEXPIRE key ms */

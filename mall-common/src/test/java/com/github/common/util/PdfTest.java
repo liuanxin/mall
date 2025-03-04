@@ -7,6 +7,7 @@ import com.itextpdf.text.Element;
 import org.junit.Test;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class PdfTest {
@@ -208,7 +209,7 @@ public class PdfTest {
                 "value", "显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字"
         )));
         data.put("orderInfo", Arrays.asList(
-                A.maps("c1", "入库单号: ", "c2", "RV000013-150721-0004", "c3", "创建时间: ", "c4", DateUtil.formatDateTime(new Date())),
+                A.maps("c1", "入库单号: ", "c2", "RV000013-150721-0004", "c3", "创建时间: ", "c4", DateUtil.formatDateTime(LocalDateTime.now())),
                 A.maps("c1", "目的仓库: ", "c2", "USEA", "c3", "客户代码: ", "c4", "000013"),
                 A.maps("c1", "跟踪号: ", "c2", "YT1520216989500749", "c3", "客户参考号: ", "c4", "JD2015002")
         ));

@@ -1,14 +1,16 @@
 package com.github.common.date;
 
 import com.github.common.util.U;
-import org.joda.time.*;
-import org.joda.time.format.DateTimeFormat;
 import org.springframework.context.i18n.LocaleContextHolder;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.IsoFields;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalAdjusters;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DateUtil {
 
@@ -18,14 +20,99 @@ public class DateUtil {
     private static final long DAY = 24 * HOUR;
     private static final long YEAR = 365 * DAY;
 
+    private static final Map<String, DateTimeFormatter> FORMATTER_CACHE = new ConcurrentHashMap<>();
+
+    /** 带时区 2020-01-02T03:04:05+08:00 或 2020-01-02T03:04:05.678+08:00 格式的字符串换成 date */
+    public static Date isoToDate(String str) {
+        if (U.isBlank(str)) {
+            return null;
+        }
+        OffsetDateTime offsetDateTime = OffsetDateTime.parse(str, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        return U.isNull(offsetDateTime) ? null : Date.from(offsetDateTime.toInstant());
+    }
+
+    /** Date 转换成带时区 2020-01-02T03:04:05+08:00 格式的字符串(使用系统时区, 中国是 +08:00 时区) */
+    public static String dateToIso(Date date) {
+        if (U.isNull(date)) {
+            return U.EMPTY;
+        }
+        OffsetDateTime offsetDateTime = OffsetDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+        return offsetDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    }
+
+    public static LocalDateTime toLocalDateTime(TemporalAccessor date) {
+        return U.isNull(date) ? null : LocalDateTime.from(date);
+    }
+    public static LocalDateTime toLocalDateTime(Date date) {
+        return U.isNull(date) ? null : LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+    }
+    public static LocalDateTime toLocalDateTime(LocalDate date) {
+        return U.isNull(date) ? null : LocalDateTime.of(date, LocalTime.MIN);
+    }
+
+    public static LocalDate toLocalDate(TemporalAccessor date) {
+        return U.isNull(date) ? null : LocalDate.from(date);
+    }
+    public static LocalDate toLocalDate(Date date) {
+        LocalDateTime localDateTime = toLocalDateTime(date);
+        return U.isNull(localDateTime) ? null : localDateTime.toLocalDate();
+    }
+    public static LocalDate toLocalDate(LocalDateTime date) {
+        return U.isNull(date) ? null : date.toLocalDate();
+    }
+
+    public static Date toDate(TemporalAccessor date) {
+        return U.isNull(date) ? null : toDate(toLocalDateTime(date));
+    }
+    public static Date toDate(LocalDateTime dateTime) {
+        return U.isNull(dateTime) ? null : Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
+    }
+    public static Date toDate(LocalDate date) {
+        return U.isNull(date) ? null : toDate(toLocalDateTime(date));
+    }
+
     /** 到秒的时间戳(如 MySQL 的 UNIX_TIMESTAMP() 函数) */
     public static Date toDate(int timestamp) {
         return new Date(timestamp * 1000L);
     }
 
-    /** 当前时间 */
-    public static Date now() {
-        return new Date();
+    private static DateTimeFormatter getFormatter(String type) {
+        return getFormatter(type, null, null);
+    }
+    private static DateTimeFormatter getFormatter(String type, String timezone) {
+        return getFormatter(type, timezone, null);
+    }
+    private static DateTimeFormatter getFormatter(String type, Locale locale) {
+        return getFormatter(type, null, locale);
+    }
+    private static DateTimeFormatter getFormatter(String type, String timezone, Locale locale) {
+        List<String> keyList = new ArrayList<>();
+        keyList.add(type);
+        boolean hasTimeZone = U.isNotBlank(timezone);
+        if (hasTimeZone) {
+            keyList.add(timezone);
+        }
+        boolean hasLocale = U.isNotNull(locale);
+        if (hasLocale) {
+            keyList.add(U.toStr(locale));
+        }
+        return FORMATTER_CACHE.computeIfAbsent(String.join("-", keyList), s -> {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(s);
+            if (hasTimeZone) {
+                TimeZone timeZone = TimeZone.getTimeZone(timezone);
+                if (U.isNotNull(timeZone)) {
+                    formatter.withZone(timeZone.toZoneId());
+                }
+            }
+            if (hasLocale) {
+                formatter.withLocale(locale);
+            }
+            return formatter;
+        });
+    }
+
+    public static LocalDateTime now() {
+        return LocalDateTime.now();
     }
 
     /** 返回 yyyy-MM-dd HH:mm:ss 格式的当前时间 */
@@ -34,83 +121,167 @@ public class DateUtil {
     }
     /** 返回 yyyy-MM-dd HH:mm:ss SSS 格式的当前时间 */
     public static String nowDateTimeMs() {
-        return now(DateFormatType.YYYY_MM_DD_HH_MM_SSSSS);
+        return now(DateFormatType.YYYY_MM_DD_HH_MM_SS_SSS);
     }
     /** 获取当前时间日期的字符串 */
     public static String now(DateFormatType dateFormatType) {
         return format(now(), dateFormatType);
     }
     /** 格式化日期 yyyy-MM-dd */
-    public static String formatDate(Date date) {
+    public static String formatDate(LocalDateTime date) {
         return format(date, DateFormatType.YYYY_MM_DD);
     }
-    /** 格式化日期 yyyy/MM/dd */
-    public static String formatUsaDate(Date date) {
-        return format(date, DateFormatType.USA_YYYY_MM_DD);
+    /** 格式化日期 yyyy-MM-dd */
+    public static String formatDate(LocalDate date) {
+        return format(date, DateFormatType.YYYY_MM_DD);
     }
     /** 格式化时间 HH:mm:ss */
-    public static String formatTime(Date date) {
+    public static String formatTime(LocalDateTime date) {
         return format(date, DateFormatType.HH_MM_SS);
     }
     /** 格式化日期和时间 yyyy-MM-dd HH:mm:ss */
-    public static String formatDateTime(Date date) {
+    public static String formatDateTime(LocalDateTime date) {
         return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SS);
     }
-    /** 格式化日期 yyyy-MM-dd HH:mm:ss SSS */
-    public static String formatDateTimeMs(Date date) {
+    /** 格式化日期 yyyy-MM-dd HH:mm:ss.SSS */
+    public static String formatDateTimeMs(LocalDateTime date) {
         return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SSSSS);
     }
-
-    /** 格式化日期对象成字符串 */
-    public static String format(Date date, DateFormatType type) {
-        return (U.isNull(date) || U.isNull(type)) ? U.EMPTY : format(date, type.getValue());
+    /** 格式化日期 yyyy/MM/dd */
+    public static String formatUsaDate(LocalDate date) {
+        return format(toLocalDate(date), DateFormatType.USA_YYYY_MM_DD);
     }
-
-    public static String format(Date date, String type) {
-        return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : DateTimeFormat.forPattern(type).print(date.getTime());
+    /** 格式化日期 yyyy-MM-dd HH:mm:ss.SSS */
+    public static String formatDateTimeMs(Date date) {
+        return format(toLocalDateTime(date), DateFormatType.YYYY_MM_DD_HH_MM_SSSSS);
     }
 
     /**
-     * 将字符串转换成 Date 对象
-     *
-     * @see DateFormatType
+     * 默认格式化
+     *   日期时间: yyyy-MM-dd HH:mm:ss
+     *   日期:    yyyy-MM-dd
+     *   时间:    HH:mm:ss
+     *   年:     yyyy
      */
-    public static Date parse(String source) {
-        if (U.isNotBlank(source)) {
-            for (DateFormatType type : DateFormatType.values()) {
-                Date date = parse(source, type);
-                if (U.isNotNull(date)) {
-                    return date;
-                }
-            }
+    public static String format(TemporalAccessor date) {
+        if (date instanceof LocalDateTime) {
+            return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SS.getValue());
+        } else if (date instanceof LocalDate) {
+            return format(date, DateFormatType.YYYY_MM_DD.getValue());
+        } else if (date instanceof LocalTime) {
+            return format(date, DateFormatType.HH_MM_SS.getValue());
+        } else {
+            return date.toString();
         }
-        return null;
     }
-    public static Date parse(String source, DateFormatType type) {
-        if (U.isNotBlank(source) && U.isNotNull(type)) {
-            if (type.isCst()) {
+
+    /** 格式化日期对象成字符串 */
+    public static String format(TemporalAccessor date, DateFormatType type) {
+        return (U.isNull(date) || U.isNull(type)) ? U.EMPTY : format(date, type.getValue());
+    }
+
+    public static String format(TemporalAccessor date, String type) {
+        return format(date, type, Locale.getDefault());
+    }
+
+    public static String format(TemporalAccessor date, String type, String timezone) {
+        return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : getFormatter(type, timezone).format(date);
+    }
+
+    public static String format(TemporalAccessor date, String type, Locale locale) {
+        return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : getFormatter(type, locale).format(date);
+    }
+
+    public static TemporalAccessor parse(String source) {
+        if (U.isBlank(source)) {
+            return null;
+        }
+
+        for (DateFormatType type : DateFormatType.values()) {
+            if (type.isLocalDateTimeType()) {
                 try {
-                    // cst 单独处理
-                    return new SimpleDateFormat(type.getValue(), Locale.ENGLISH).parse(source.trim());
-                } catch (ParseException | IllegalArgumentException ignore) {
-                    return null;
+                    LocalDateTime localDateTime = parseLocalDateTime(source, type.getValue());
+                    if (U.isNotNull(localDateTime)) {
+                        return localDateTime;
+                    }
+                } catch (Exception ignore) {
                 }
             }
-            return parse(source, type.getValue());
+            if (type.isLocalDateType()) {
+                LocalDate localDate = parseLocalDate(source, type.getValue());
+                if (U.isNotNull(localDate)) {
+                    return localDate;
+                }
+            }
+            if (type.isLocalTimeType()) {
+                LocalTime localTime = parseLocalTime(source, type.getValue());
+                if (U.isNotNull(localTime)) {
+                    return localTime;
+                }
+            }
         }
         return null;
     }
-    public static Date parse(String source, String type) {
-        if (U.isNotBlank(source)) {
-            try {
-                Date date = DateTimeFormat.forPattern(type).parseDateTime(source.trim()).toDate();
-                if (date != null) {
-                    return date;
-                }
-            } catch (IllegalArgumentException ignore) {
+    public static TemporalAccessor parse(String source, DateFormatType type) {
+        return U.isNotNull(type) ? parse(source, type.getValue()) : null;
+    }
+    public static TemporalAccessor parse(String source, String type) {
+        return U.isBlank(source) || U.isBlank(type) ? null : parse(getFormatter(type), source);
+    }
+    public static TemporalAccessor parse(String source, String type, String timezone) {
+        return U.isBlank(source) || U.isBlank(type) ? null : parse(getFormatter(type, timezone), source);
+    }
+    private static TemporalAccessor parse(DateTimeFormatter formatter, String source) {
+        // 如果格式是 yyyy-MM-dd, 数据是 2022-01-01, parse 成 LocalDateTime 会抛异常
+        try {
+            LocalDateTime localDateTime = formatter.parse(source, LocalDateTime::from);
+            if (U.isNotNull(localDateTime)) {
+                return localDateTime;
             }
+        } catch (Exception ignore) {
         }
+
+        // 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 LocalDate 不会异常
+        try {
+            LocalDate localDate = formatter.parse(source, LocalDate::from);
+            if (U.isNotNull(localDate)) {
+                return localDate;
+            }
+        } catch (Exception ignore) {
+        }
+
+        // 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 LocalTime 不会异常
+        try {
+            LocalTime time = formatter.parse(source, LocalTime::from);
+            if (U.isNotNull(time)) {
+                return time;
+            }
+        } catch (Exception ignore) {
+        }
+
         return null;
+    }
+    /** 如果格式是 yyyy-MM-dd, 数据是 2022-01-01, parse 成 LocalDateTime 会抛异常 */
+    public static LocalDateTime parseLocalDateTime(String source, String type) {
+        return getFormatter(type).parse(source, LocalDateTime::from);
+    }
+    /** 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 LocalDate 不会抛异常 */
+    public static LocalDate parseLocalDate(String source, String type) {
+        return getFormatter(type).parse(source, LocalDate::from);
+    }
+    /** 如果格式是 yyyy-MM-dd HH:mm:ss, 数据是 2022-01-01 01:02:03, parse 成 LocalTime 不会抛异常 */
+    public static LocalTime parseLocalTime(String source, String type) {
+        return getFormatter(type).parse(source, LocalTime::from);
+    }
+
+    public static LocalDate parseToLocalDate(String source) {
+        return toLocalDate(parse(source));
+    }
+    public static LocalDateTime parseToLocalDateTime(String source) {
+        return toLocalDateTime(parse(source));
+    }
+    public static Date parseToDate(String source) {
+        return toDate(parse(source.trim()));
     }
 
     /**
@@ -223,149 +394,59 @@ public class DateUtil {
     }
 
     /** 获取一个日期所在天的最开始的时间(00:00:00 000), 对日期查询尤其有用 */
-    public static Date getDayStart(Date date) {
-        return U.isNull(date) ? null : getDateTimeStart(date).toDate();
-    }
-    private static DateTime getDateTimeStart(Date date) {
-        return new DateTime(date)
-                .hourOfDay().withMinimumValue()
-                .minuteOfHour().withMinimumValue()
-                .secondOfMinute().withMinimumValue()
-                .millisOfSecond().withMinimumValue();
+    public static LocalDateTime getDayStart(LocalDateTime date) {
+        return U.isNull(date) ? null : date.with(LocalTime.MIN);
     }
     /** 获取一个日期所在天的最晚的时间(23:59:59 999), 对日期查询尤其有用 */
-    public static Date getDayEnd(Date date) {
-        return U.isNull(date) ? null : getDateTimeEnd(date).toDate();
-    }
-    private static DateTime getDateTimeEnd(Date date) {
-        return new DateTime(date)
-                .hourOfDay().withMaximumValue()
-                .minuteOfHour().withMaximumValue()
-                .secondOfMinute().withMaximumValue()
-                .millisOfSecond().withMaximumValue();
+    private static LocalDateTime getDayEnd(LocalDateTime date) {
+        return U.isNull(date) ? null : date.with(LocalTime.MAX);
     }
 
     /** 获取一个日期所在星期天(星期一是第一天)的第一毫秒(00:00:00 000) */
-    public static Date getSundayStart(Date date) {
-        return U.isNull(date) ? null :
-                new DateTime(date)
-                        .plusWeeks(-1)
-                        .dayOfWeek().withMaximumValue()
-                        .hourOfDay().withMinimumValue()
-                        .minuteOfHour().withMinimumValue()
-                        .secondOfMinute().withMinimumValue()
-                        .millisOfSecond().withMinimumValue().toDate();
+    public static LocalDateTime getSundayStart(LocalDateTime date) {
+        return U.isNull(date) ? null : date.with(DayOfWeek.SUNDAY).with(LocalTime.MIN);
     }
     /** 获取一个日期所在星期六(星期六是最后一天)的最后一毫秒(23:59:59 999) */
-    public static Date getSaturdayEnd(Date date) {
-        return U.isNull(date) ? null :
-                new DateTime(date)
-                        .withDayOfWeek(6)
-                        .hourOfDay().withMaximumValue()
-                        .minuteOfHour().withMaximumValue()
-                        .secondOfMinute().withMaximumValue()
-                        .millisOfSecond().withMaximumValue().toDate();
+    public static LocalDateTime getSaturdayEnd(LocalDateTime date) {
+        return U.isNull(date) ? null : date.with(DayOfWeek.SATURDAY).with(LocalTime.MAX);
     }
 
     /** 获取一个日期所在星期一(星期一是第一天)的第一毫秒(00:00:00 000) */
-    public static Date getMondayStart(Date date) {
-        return U.isNull(date) ? null :
-                new DateTime(date)
-                        .withDayOfWeek(1)
-                        .hourOfDay().withMinimumValue()
-                        .minuteOfHour().withMinimumValue()
-                        .secondOfMinute().withMinimumValue()
-                        .millisOfSecond().withMinimumValue().toDate();
+    public static LocalDateTime getMondayStart(LocalDateTime date) {
+        return U.isNull(date) ? null : date.with(DayOfWeek.MONDAY).with(LocalTime.MIN);
     }
     /** 获取一个日期所在星期天(星期天是最后一天)的最后一毫秒(23:59:59 999) */
-    public static Date getSundayEnd(Date date) {
-        return U.isNull(date) ? null :
-                new DateTime(date)
-                        .withDayOfWeek(7)
-                        .hourOfDay().withMaximumValue()
-                        .minuteOfHour().withMaximumValue()
-                        .secondOfMinute().withMaximumValue()
-                        .millisOfSecond().withMaximumValue().toDate();
+    public static LocalDateTime getSundayEnd(LocalDateTime date) {
+        return U.isNull(date) ? null : date.with(DayOfWeek.SUNDAY).with(LocalTime.MAX);
     }
 
     /** 获取一个日期所在月的第一毫秒(00:00:00 000) */
-    public static Date getMonthStart(Date date) {
-        return U.isNull(date) ? null :
-                new DateTime(date)
-                        .dayOfMonth().withMinimumValue()
-                        .hourOfDay().withMinimumValue()
-                        .minuteOfHour().withMinimumValue()
-                        .secondOfMinute().withMinimumValue()
-                        .millisOfSecond().withMinimumValue().toDate();
+    public static LocalDateTime getMonthStart(LocalDateTime date) {
+        return U.isNull(date) ? null : date.withDayOfMonth(1).with(LocalTime.MIN);
     }
     /** 获取一个日期所在月的最后一毫秒(23:59:59 999) */
-    public static Date getMonthEnd(Date date) {
-        return U.isNull(date) ? null :
-                new DateTime(date)
-                        .dayOfMonth().withMaximumValue()
-                        .hourOfDay().withMaximumValue()
-                        .minuteOfHour().withMaximumValue()
-                        .secondOfMinute().withMaximumValue()
-                        .millisOfSecond().withMaximumValue().toDate();
+    public static LocalDateTime getMonthEnd(LocalDateTime date) {
+        return U.isNull(date) ? null : date.with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX);
     }
 
     /** 获取一个日期所在季度的第一毫秒(00:00:00 000) */
-    public static Date getQuarterStart(Date date) {
-        if (U.isNull(date)) {
-            return null;
-        }
-
-        DateTime dateTime = new DateTime(date);
-        int month = dateTime.getMonthOfYear();
-        // 日期所在月的季度开始月
-        int quarterMonth = (month % 3 != 0) ? ((month / 3) * 3 + 1) : (month - 2);
-
-        return dateTime.monthOfYear().setCopy(quarterMonth)
-                .dayOfMonth().withMinimumValue()
-                .hourOfDay().withMinimumValue()
-                .minuteOfHour().withMinimumValue()
-                .secondOfMinute().withMinimumValue()
-                .millisOfSecond().withMinimumValue().toDate();
+    public static LocalDateTime getQuarterStart(LocalDateTime date) {
+        return U.isNull(date) ? null : date.withMonth(date.get(IsoFields.QUARTER_OF_YEAR) * 3 - 2)
+                .withDayOfMonth(1).with(LocalTime.MIN);
     }
     /** 获取一个日期所在季度的最后一毫秒(23:59:59 999) */
-    public static Date getQuarterEnd(Date date) {
-        if (U.isNull(date)) {
-            return null;
-        }
-        DateTime dateTime = new DateTime(date);
-        int month = dateTime.getMonthOfYear();
-        // 日期所在月的季度结束月
-        int quarterMonth = (month % 3 != 0) ? (((month / 3) + 1) * 3) : month;
-
-        return dateTime.monthOfYear().setCopy(quarterMonth)
-                .dayOfMonth().withMaximumValue()
-                .hourOfDay().withMaximumValue()
-                .minuteOfHour().withMaximumValue()
-                .secondOfMinute().withMaximumValue()
-                .millisOfSecond().withMaximumValue().toDate();
+    public static LocalDateTime getQuarterEnd(LocalDateTime date) {
+        return U.isNull(date) ? null : date.withMonth(date.get(IsoFields.QUARTER_OF_YEAR) * 3)
+                .with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX);
     }
 
     /** 获取一个日期所在年的第一毫秒(23:59:59 999) */
-    public static Date getYearStart(Date date) {
-        return U.isNull(date) ? null :
-                new DateTime(date)
-                        .monthOfYear().withMinimumValue()
-                        .dayOfMonth().withMinimumValue()
-                        .hourOfDay().withMinimumValue()
-                        .minuteOfHour().withMinimumValue()
-                        .secondOfMinute().withMinimumValue()
-                        .millisOfSecond().withMinimumValue().toDate();
+    public static LocalDateTime getYearStart(LocalDateTime date) {
+        return U.isNull(date) ? null : date.withMonth(1).withDayOfMonth(1).with(LocalTime.MIN);
     }
     /** 获取一个日期所在年的最后一毫秒(23:59:59 999) */
-    public static Date getYearEnd(Date date) {
-        return U.isNull(date) ? null :
-                new DateTime(date)
-                        .monthOfYear().withMaximumValue()
-                        .dayOfMonth().withMaximumValue()
-                        .hourOfDay().withMaximumValue()
-                        .minuteOfHour().withMaximumValue()
-                        .secondOfMinute().withMaximumValue()
-                        .millisOfSecond().withMaximumValue().toDate();
+    public static LocalDateTime getYearEnd(LocalDateTime date) {
+        return U.isNull(date) ? null : date.withMonth(12).withDayOfMonth(31).with(LocalTime.MAX);
     }
 
     /**
@@ -373,185 +454,117 @@ public class DateUtil {
      *
      * @param year 正数表示多少年后, 负数表示多少年前
      */
-    public static Date addYears(Date date, int year) {
-        return new DateTime(date).plusYears(year).toDate();
+    public static LocalDateTime addYears(LocalDateTime date, int year) {
+        return U.isNull(date) ? null : date.plusYears(year);
     }
     /**
      * 取得指定日期 N 个月后的日期
      *
      * @param month 正数表示多少月后, 负数表示多少月前
      */
-    public static Date addMonths(Date date, int month) {
-        return new DateTime(date).plusMonths(month).toDate();
+    public static LocalDateTime addMonths(LocalDateTime date, int month) {
+        return U.isNull(date) ? null : date.plusMonths(month);
     }
     /**
      * 取得指定日期 N 天后的日期
      *
      * @param day 正数表示多少天后, 负数表示多少天前
      */
-    public static Date addDays(Date date, int day) {
-        return new DateTime(date).plusDays(day).toDate();
+    public static LocalDateTime addDays(LocalDateTime date, int day) {
+        return U.isNull(date) ? null : date.plusDays(day);
     }
     /**
      * 取得指定日期 N 周后的日期
      *
      * @param week 正数表示多少周后, 负数表示多少周前
      */
-    public static Date addWeeks(Date date, int week) {
-        return new DateTime(date).plusWeeks(week).toDate();
+    public static LocalDateTime addWeeks(LocalDateTime date, int week) {
+        return U.isNull(date) ? null : date.plusWeeks(week);
     }
     /**
      * 取得指定日期 N 小时后的日期
      *
      * @param hour 正数表示多少小时后, 负数表示多少小时前
      */
-    public static Date addHours(Date date, int hour) {
-        return new DateTime(date).plusHours(hour).toDate();
+    public static LocalDateTime addHours(LocalDateTime date, int hour) {
+        return U.isNull(date) ? null : date.plusHours(hour);
     }
     /**
      * 取得指定日期 N 分钟后的日期
      *
      * @param minute 正数表示多少分钟后, 负数表示多少分钟前
      */
-    public static Date addMinute(Date date, int minute) {
-        return new DateTime(date).plusMinutes(minute).toDate();
+    public static LocalDateTime addMinute(LocalDateTime date, int minute) {
+        return U.isNull(date) ? null : date.plusMinutes(minute);
     }
     /**
      * 取得指定日期 N 秒后的日期
      *
      * @param second 正数表示多少秒后, 负数表示多少秒前
      */
-    public static Date addSeconds(Date date, int second) {
-        return new DateTime(date).plusSeconds(second).toDate();
+    public static LocalDateTime addSeconds(LocalDateTime date, int second) {
+        return U.isNull(date) ? null : date.plusSeconds(second);
     }
 
     /** 传入的时间是不是当月当日. 用来验证生日 */
-    public static boolean wasBirthday(Date date) {
-        DateTime dt = DateTime.now();
-        DateTime dateTime = new DateTime(date);
-        return dt.getMonthOfYear() == dateTime.getMonthOfYear() && dt.getDayOfMonth() == dateTime.getDayOfMonth();
+    public static boolean wasBirthday(LocalDateTime date) {
+        LocalDateTime now = LocalDateTime.now();
+        return now.getMonth() == date.getMonth() && now.getDayOfMonth() == date.getDayOfMonth();
     }
 
     /** 计算两个日期之间相差的年数. 如果 start 比 end 大将会返回负数 */
-    public static int betweenYear(Date start, Date end) {
+    public static long betweenYear(LocalDateTime start, LocalDateTime end) {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        // 将 月、日、时、分、秒、毫秒 置为相同
-        DateTime begin = new DateTime(start)
-                .monthOfYear().withMinimumValue()
-                .dayOfMonth().withMinimumValue()
-                .hourOfDay().withMinimumValue()
-                .minuteOfHour().withMinimumValue()
-                .secondOfMinute().withMinimumValue()
-                .millisOfSecond().withMinimumValue();
-        DateTime after = new DateTime(end)
-                .monthOfYear().withMinimumValue()
-                .dayOfMonth().withMinimumValue()
-                .hourOfDay().withMinimumValue()
-                .minuteOfHour().withMinimumValue()
-                .secondOfMinute().withMinimumValue()
-                .millisOfSecond().withMinimumValue();
-        return Years.yearsBetween(begin, after).getYears();
+        return ChronoUnit.YEARS.between(start, end);
     }
 
     /** 计算两个日期之间相差的月数. 如果 start 比 end 大将会返回负数 */
-    public static int betweenMonth(Date start, Date end) {
+    public static long betweenMonth(LocalDateTime start, LocalDateTime end) {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        // 将 日、时、分、秒、毫秒 置为相同
-        DateTime begin = new DateTime(start)
-                .dayOfMonth().withMinimumValue()
-                .hourOfDay().withMinimumValue()
-                .minuteOfHour().withMinimumValue()
-                .secondOfMinute().withMinimumValue()
-                .millisOfSecond().withMinimumValue();
-        DateTime after = new DateTime(end)
-                .dayOfMonth().withMinimumValue()
-                .hourOfDay().withMinimumValue()
-                .minuteOfHour().withMinimumValue()
-                .secondOfMinute().withMinimumValue()
-                .millisOfSecond().withMinimumValue();
-        return Months.monthsBetween(begin, after).getMonths();
+        return ChronoUnit.MONTHS.between(start, end);
     }
 
     /** 计算两个日期之间相差的星期数. 如果 start 比 end 大将会返回负数 */
-    public static int betweenWeek(Date start, Date end) {
+    public static long betweenWeek(LocalDateTime start, LocalDateTime end) {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        // 将时间置为当前时间所在星期中<星期一>且将 时、分、秒、毫秒 置为相同
-        DateTime begin = new DateTime(start)
-                .dayOfWeek().withMinimumValue()
-                .hourOfDay().withMinimumValue()
-                .minuteOfHour().withMinimumValue()
-                .secondOfMinute().withMinimumValue()
-                .millisOfSecond().withMinimumValue();
-        DateTime after = new DateTime(end)
-                .dayOfWeek().withMinimumValue()
-                .hourOfDay().withMinimumValue()
-                .minuteOfHour().withMinimumValue()
-                .secondOfMinute().withMinimumValue()
-                .millisOfSecond().withMinimumValue();
-        return Weeks.weeksBetween(begin, after).getWeeks();
+        return ChronoUnit.WEEKS.between(start, end);
     }
 
     /** 计算两个日期之间相差的天数. 如果 start 比 end 大将会返回负数 */
-    public static int betweenDay(Date start, Date end) {
+    public static long betweenDay(LocalDateTime start, LocalDateTime end) {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        // 将 时、分、秒、毫秒 置为相同
-        DateTime begin = new DateTime(start)
-                .hourOfDay().withMinimumValue()
-                .minuteOfHour().withMinimumValue()
-                .secondOfMinute().withMinimumValue()
-                .millisOfSecond().withMinimumValue();
-        DateTime after = new DateTime(end)
-                .hourOfDay().withMinimumValue()
-                .minuteOfHour().withMinimumValue()
-                .secondOfMinute().withMinimumValue()
-                .millisOfSecond().withMinimumValue();
-        return Days.daysBetween(begin, after).getDays();
+        return ChronoUnit.DAYS.between(start, end);
     }
 
     /** 计算两个日期之间相差的小时数. 如果 start 比 end 大将会返回负数 */
-    public static int betweenHour(Date start, Date end) {
+    public static long betweenHour(LocalDateTime start, LocalDateTime end) {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        // 将 分、秒、毫秒 置为相同
-        DateTime begin = new DateTime(start)
-                .minuteOfHour().withMinimumValue()
-                .secondOfMinute().withMinimumValue()
-                .millisOfSecond().withMinimumValue();
-        DateTime after = new DateTime(end)
-                .minuteOfHour().withMinimumValue()
-                .secondOfMinute().withMinimumValue()
-                .millisOfSecond().withMinimumValue();
-        return Hours.hoursBetween(begin, after).getHours();
+        return ChronoUnit.HOURS.between(start, end);
     }
 
     /** 计算两个日期之间相差的小时数. 如果 start 比 end 大将会返回负数 */
-    public static int betweenMinute(Date start, Date end) {
+    public static long betweenMinute(LocalDateTime start, LocalDateTime end) {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        // 将 秒、毫秒 置为相同
-        DateTime begin = new DateTime(start).secondOfMinute().withMinimumValue().millisOfSecond().withMinimumValue();
-        DateTime after = new DateTime(end).secondOfMinute().withMinimumValue().millisOfSecond().withMinimumValue();
-        return Minutes.minutesBetween(begin, after).getMinutes();
+        return ChronoUnit.MINUTES.between(start, end);
     }
 
     /** 计算两个日期之间相差的秒数. 如果 start 比 end 大将会返回负数 */
-    public static int betweenSecond(Date start, Date end) {
+    public static long betweenSecond(LocalDateTime start, LocalDateTime end) {
         if (U.isNull(start) || U.isNull(end)) {
             return 0;
         }
-        // 将 毫秒 置为相同
-        DateTime begin = new DateTime(start).millisOfSecond().withMinimumValue();
-        DateTime after = new DateTime(end).millisOfSecond().withMinimumValue();
-        return Seconds.secondsBetween(begin, after).getSeconds();
+        return ChronoUnit.SECONDS.between(start, end);
     }
 }

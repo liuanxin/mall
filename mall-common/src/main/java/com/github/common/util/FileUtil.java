@@ -5,6 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,7 @@ public final class FileUtil {
         }
 
         // 保存及访问地址中拼上 /年/月/日/ 按日来保存文件, 前后都要有 /
-        String middlePath = addYmd ? ("/" + DateUtil.formatUsaDate(DateUtil.now()) + "/") : "/";
+        String middlePath = addYmd ? ("/" + DateUtil.formatUsaDate(LocalDate.now()) + "/") : "/";
         // 目录不存在就生成
         File directory = new File(directoryPrefix + middlePath);
         if (!directory.exists()) {

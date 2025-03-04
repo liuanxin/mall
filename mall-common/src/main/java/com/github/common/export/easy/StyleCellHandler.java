@@ -6,10 +6,9 @@ import com.alibaba.excel.metadata.data.WriteCellData;
 import com.alibaba.excel.write.handler.CellWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
+import com.github.common.ShareData;
 import com.github.common.util.A;
 import com.github.common.util.U;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.hssf.usermodel.HSSFPalette;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -22,7 +21,6 @@ import org.apache.poi.xssf.usermodel.XSSFColor;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("DuplicatedCode")
 @RequiredArgsConstructor
@@ -35,8 +33,7 @@ public class StyleCellHandler implements CellWriteHandler {
 
     private static final int[] TITLE_RGB = new int[] { 160, 200, 230 };
 
-    private static final Cache<Thread, Map<String, CellStyle>> STYLE_CACHE =
-            CacheBuilder.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build();
+    private static final ShareData<Map<String, CellStyle>> STYLE_CACHE = new ShareData<>();
 
     private final boolean hasCellStyle;
 
@@ -118,8 +115,7 @@ public class StyleCellHandler implements CellWriteHandler {
     /** 头样式: 垂直居中, 水平居左, 粗体, 字体大小 */
     private static CellStyle headStyle(Workbook workbook) {
         String key = "head";
-        Thread currentThread = Thread.currentThread();
-        Map<String, CellStyle> styleMap = STYLE_CACHE.getIfPresent(currentThread);
+        Map<String, CellStyle> styleMap = STYLE_CACHE.get();
         if (A.isEmpty(styleMap)) {
             styleMap = new ConcurrentHashMap<>();
         } else if (styleMap.containsKey(key)) {
@@ -153,15 +149,14 @@ public class StyleCellHandler implements CellWriteHandler {
         style.setFont(font);
 
         styleMap.put(key, style);
-        STYLE_CACHE.put(currentThread, styleMap);
+        STYLE_CACHE.put(styleMap);
         return style;
     }
 
     /** 内容样式: 垂直居中, 水平居左, 字体大小 */
     private static CellStyle contentStyle(Workbook workbook) {
         String key = "content";
-        Thread currentThread = Thread.currentThread();
-        Map<String, CellStyle> styleMap = STYLE_CACHE.getIfPresent(currentThread);
+        Map<String, CellStyle> styleMap = STYLE_CACHE.get();
         if (A.isEmpty(styleMap)) {
             styleMap = new ConcurrentHashMap<>();
         } else if (styleMap.containsKey(key)) {
@@ -177,15 +172,14 @@ public class StyleCellHandler implements CellWriteHandler {
         style.setFont(font);
 
         styleMap.put(key, style);
-        STYLE_CACHE.put(currentThread, styleMap);
+        STYLE_CACHE.put(styleMap);
         return style;
     }
 
     /** 数字样式: 垂直居中, 水平居右, 字体大小 10 */
     private static CellStyle numberStyle(Workbook workbook) {
         String key = "number";
-        Thread currentThread = Thread.currentThread();
-        Map<String, CellStyle> styleMap = STYLE_CACHE.getIfPresent(currentThread);
+        Map<String, CellStyle> styleMap = STYLE_CACHE.get();
         if (A.isEmpty(styleMap)) {
             styleMap = new ConcurrentHashMap<>();
         } else if (styleMap.containsKey(key)) {
@@ -201,7 +195,7 @@ public class StyleCellHandler implements CellWriteHandler {
         style.setFont(font);
 
         styleMap.put(key, style);
-        STYLE_CACHE.put(currentThread, styleMap);
+        STYLE_CACHE.put(styleMap);
         return style;
     }
 }

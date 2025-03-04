@@ -19,6 +19,6 @@ public class StringToDateConverter implements Converter<String, Date> {
 
     @Override
     public Date convert(String source) {
-        return DateUtil.parse(source.trim());
+        return DateUtil.parseToDate(source.trim());
     }
 }

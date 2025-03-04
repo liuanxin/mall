@@ -9,6 +9,7 @@ import com.github.common.util.A;
 import com.github.common.util.U;
 
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public final class BeanChange {
@@ -94,7 +95,10 @@ public final class BeanChange {
 
     private static String getValue(Object obj, String dateFormat) {
         if (obj instanceof Date d) {
-            return U.isBlank(dateFormat) ? DateUtil.formatDateTime(d) : DateUtil.format(d, dateFormat);
+            LocalDateTime dateTime = DateUtil.toLocalDateTime(d);
+            return U.isBlank(dateFormat)
+                    ? DateUtil.formatDateTime(dateTime)
+                    : DateUtil.format(dateTime, dateFormat);
         } else {
             return U.toStr(obj);
         }

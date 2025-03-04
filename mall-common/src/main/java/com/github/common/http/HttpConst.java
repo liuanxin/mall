@@ -1,6 +1,5 @@
 package com.github.common.http;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.github.common.Const;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
@@ -48,7 +47,7 @@ final class HttpConst {
 
     /** 处理公共头 */
     static Map<String, Object> handleCommonHeader(Map<String, Object> headers /*, String userAgent*/ ) {
-        Map<String, Object> returnMap = ObjectUtil.defaultIfNull(headers, new HashMap<>());
+        Map<String, Object> returnMap = U.defaultIfNull(headers, new HashMap<>());
         /*
         if (U.isNotBlank(userAgent)) {
             returnMap.put("User-Agent", userAgent);

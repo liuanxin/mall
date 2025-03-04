@@ -18,6 +18,6 @@ public class RetryMqSendTask implements SchedulingConfigurer {
     @Override
     public void configureTasks(ScheduledTaskRegistrar schedule) {
         String cron = "13 0/2 * * * *"; // configService.getRetryMqCron();
-        CronUtil.runTask(schedule, "重试 mq 发送", cron, mqRetryHandler::handlerSend);
+        CronUtil.runTask(schedule, "重试 mq 发送", cron, desc -> mqRetryHandler.handlerSend());
     }
 }

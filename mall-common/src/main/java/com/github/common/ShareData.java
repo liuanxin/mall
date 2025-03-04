@@ -39,4 +39,8 @@ public class ShareData<T> {
     public T get() {
         return shareMap.get(Thread.currentThread());
     }
+
+    public void clear() {
+        shareMap.clear();
+    }
 }

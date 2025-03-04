@@ -43,8 +43,8 @@ public class BeanTest {
         a1.setId(123);
         a1.setType(1);
         a1.setName("张三");
-        a1.setCreateTime(DateUtil.parse("2021-09-09"));
-        a1.setUpdateTime(DateUtil.parse("2021-09-09"));
+        a1.setCreateTime(DateUtil.parseToDate("2021-09-09"));
+        a1.setUpdateTime(DateUtil.parseToDate("2021-09-09"));
         a1.setGender(1);
         a1.setStatus("abc");
         a1.setState("xyz");
@@ -53,8 +53,8 @@ public class BeanTest {
         a2.setId(1234);
         a2.setType(2);
         a2.setName("李四");
-        a2.setCreateTime(DateUtil.parse("2021-09-10"));
-        a2.setUpdateTime(DateUtil.parse("2021-09-10"));
+        a2.setCreateTime(DateUtil.parseToDate("2021-09-10"));
+        a2.setUpdateTime(DateUtil.parseToDate("2021-09-10"));
         a2.setIsDeleted(0);
         a2.setGender(2);
         a2.setStatus("");

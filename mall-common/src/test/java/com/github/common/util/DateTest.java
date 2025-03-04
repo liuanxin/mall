@@ -5,7 +5,7 @@ import com.github.common.date.DateUtil;
 import org.junit.Test;
 import org.springframework.context.i18n.LocaleContextHolder;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -13,7 +13,7 @@ public class DateTest {
 
     @Test
     public void date() {
-        Date now = DateUtil.now();
+        LocalDateTime now = DateUtil.now();
         System.out.println(now);
         System.out.println(DateUtil.formatDateTime(now));
         System.out.println(DateUtil.formatDateTimeMs(now));
@@ -27,11 +27,11 @@ public class DateTest {
 
         LocaleContextHolder.setLocale(Locale.CHINA);
         // LocaleContextHolder.setLocale(Locale.US);
-        long end = Objects.requireNonNull(DateUtil.parse("2019-01-03 01:02:02.123")).getTime();
-        long start = Objects.requireNonNull(DateUtil.parse("2019-01-01 01:02:03.321")).getTime();
+        long end = Objects.requireNonNull(DateUtil.parseToDate("2019-01-03 01:02:02.123")).getTime();
+        long start = Objects.requireNonNull(DateUtil.parseToDate("2019-01-01 01:02:03.321")).getTime();
         System.out.println(DateUtil.toHumanRoughly(end - start));
         System.out.println(DateUtil.toHuman(end - start));
 
-        System.out.println(DateUtil.getDayStart(DateUtil.parse("2019-01-03 01:02:02")));
+        System.out.println(DateUtil.getDayStart(DateUtil.toLocalDateTime(DateUtil.parse("2019-01-03 01:02:02"))));
     }
 }
