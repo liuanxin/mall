@@ -1,4 +1,4 @@
-package com.github.common.converter;
+package com.github.global.converter;
 
 import com.github.common.util.U;
 import org.springframework.core.convert.converter.Converter;

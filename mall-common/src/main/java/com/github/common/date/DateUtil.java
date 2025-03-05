@@ -1,7 +1,6 @@
 package com.github.common.date;
 
 import com.github.common.util.U;
-import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -311,7 +310,7 @@ public class DateUtil {
      * </pre>
      */
     public static String toHumanRoughly(long intervalMs) {
-        boolean hasCn = LocaleContextHolder.getLocale() == Locale.CHINA;
+        boolean hasCn = Locale.getDefault() == Locale.CHINA;
         if (intervalMs == 0) {
             return hasCn ? "刚刚" : "Now";
         }
@@ -350,7 +349,7 @@ public class DateUtil {
         if (intervalMs == 0) {
             return "0";
         }
-        boolean hasCn = LocaleContextHolder.getLocale().equals(Locale.CHINA);
+        boolean hasCn = Locale.getDefault().equals(Locale.CHINA);
 
         boolean flag = (intervalMs < 0);
         long ms = Math.abs(intervalMs);

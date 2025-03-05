@@ -1,6 +1,6 @@
 package com.github.global.config;
 
-import com.github.common.converter.*;
+import com.github.global.converter.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
@@ -14,7 +14,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport
  * @see org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
  */
-@SuppressWarnings("NullableProblems")
 @Configuration
 @ConditionalOnClass(WebMvcConfigurer.class)
 public class GlobalWebConfig implements WebMvcConfigurer {
@@ -30,6 +29,8 @@ public class GlobalWebConfig implements WebMvcConfigurer {
         registry.addConverterFactory(new StringToNumberConverter());
         registry.addConverterFactory(new StringToEnumConverter());
         registry.addConverter(new StringToDateConverter());
+        registry.addConverter(new StringToLocalDateConverter());
+        registry.addConverter(new StringToLocalDateTimeConverter());
         registry.addConverter(new StringToMoneyConverter());
     }
 
