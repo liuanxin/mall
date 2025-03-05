@@ -3,14 +3,12 @@ package com.github.common.util;
 import com.github.common.bean.BeanChange;
 import com.github.common.bean.CollectProperty;
 import com.github.common.date.DateUtil;
-import lombok.Data;
 import org.junit.Test;
 
 import java.util.Date;
 
 public class BeanTest {
 
-    @Data
     public static class Abc {
         private int id;
 
@@ -35,6 +33,69 @@ public class BeanTest {
         private String status;
 
         private String state;
+
+        public int getId() {
+            return id;
+        }
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public int getType() {
+            return type;
+        }
+        public void setType(int type) {
+            this.type = type;
+        }
+
+        public String getName() {
+            return name;
+        }
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Integer getIsDeleted() {
+            return isDeleted;
+        }
+        public void setIsDeleted(Integer isDeleted) {
+            this.isDeleted = isDeleted;
+        }
+
+        public Date getCreateTime() {
+            return createTime;
+        }
+        public void setCreateTime(Date createTime) {
+            this.createTime = createTime;
+        }
+
+        public Date getUpdateTime() {
+            return updateTime;
+        }
+        public void setUpdateTime(Date updateTime) {
+            this.updateTime = updateTime;
+        }
+
+        public int getGender() {
+            return gender;
+        }
+        public void setGender(int gender) {
+            this.gender = gender;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public String getState() {
+            return state;
+        }
+        public void setState(String state) {
+            this.state = state;
+        }
     }
 
     @Test

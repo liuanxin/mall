@@ -42,7 +42,7 @@ public class BackendIndexController {
         SecurityCodeUtil.Code code = SecurityCodeUtil.generateCode(count, style, width, height, background, color);
 
         // 往 session 里面丢值
-        BackendSessionUtil.putImageCode(code.getContent());
+        BackendSessionUtil.putImageCode(code.content());
 
         // 向页面渲染图像
         response.setDateHeader("Expires", 0);
@@ -50,7 +50,7 @@ public class BackendIndexController {
         response.addHeader("Cache-Control", "post-check=0, pre-check=0");
         response.setHeader("Pragma", "no-cache");
         response.setContentType("image/png");
-        javax.imageio.ImageIO.write(code.getImage(), "png", response.getOutputStream());
+        javax.imageio.ImageIO.write(code.image(), "png", response.getOutputStream());
     }
 
     @GetMapping("/collect")

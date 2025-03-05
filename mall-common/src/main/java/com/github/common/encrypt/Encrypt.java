@@ -57,12 +57,14 @@ public final class Encrypt {
 
     private static final boolean SUPPORT_ECC;
     static {
-        boolean hasEcc = false;
+        boolean hasEcc;
         try {
             Class<?> clazz = Class.forName("org.bouncycastle.jce.provider.BouncyCastleProvider");
             Security.addProvider((Provider) clazz.getDeclaredConstructor().newInstance());
             hasEcc = true;
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+            hasEcc = false;
+        }
         SUPPORT_ECC = hasEcc;
     }
 

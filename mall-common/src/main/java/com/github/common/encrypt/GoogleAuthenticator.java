@@ -69,16 +69,10 @@ final class GoogleAuthenticator {
 
     private static String output(String str) {
         int l = str.length();
-        if (l > 6) {
+        if (l >= 6) {
             return str;
+        } else {
+            return "0".repeat(6 - l) + str;
         }
-
-        StringBuilder sbd = new StringBuilder();
-        int loop = 6 - l;
-        for (int i = 0; i < loop; i++) {
-            sbd.append("0");
-        }
-        sbd.append(str);
-        return sbd.toString();
     }
 }

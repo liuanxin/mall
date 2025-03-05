@@ -3,16 +3,12 @@ package com.github.common.json;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.common.util.U;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 /**
  * 返回码. 前端基于此进行相应的页面跳转, 通常会有 渲染数据、输出返回描述、导到登录页、不进行任务处理 这几种
  *
  * @see org.springframework.http.HttpStatus
  */
-@Getter
-@RequiredArgsConstructor
 public enum JsonCode {
 
     // 一般来说, 返回编码就用在 http response code 上就好了, 当需要前端来变更页面逻辑时才需要添加
@@ -42,6 +38,17 @@ public enum JsonCode {
     private final int code;
     private final String value;
 
+    JsonCode(int code, String value) {
+        this.code = code;
+        this.value = value;
+    }
+
+    public int getCode() {
+        return code;
+    }
+    public String getValue() {
+        return value;
+    }
 
     @JsonValue
     public int serializer() {

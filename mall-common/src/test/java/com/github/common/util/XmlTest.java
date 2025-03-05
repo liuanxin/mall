@@ -2,7 +2,6 @@ package com.github.common.util;
 
 import com.github.common.xml.Cdata;
 import com.github.common.xml.XmlUtil;
-import lombok.Data;
 import org.junit.Test;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -42,14 +41,27 @@ public class XmlTest {
     }
 
 
-    @Data
     @XmlRootElement(name = "abc")
     public static class Abc {
         private Long id;
 
         private String name;
+
+        public Long getId() {
+            return id;
+        }
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+        public void setName(String name) {
+            this.name = name;
+        }
     }
-    @Data
+
     @XmlRootElement(name = "xyz")
     @XmlAccessorType(XmlAccessType.FIELD)
     public static class Xyz {
@@ -57,5 +69,19 @@ public class XmlTest {
 
         @XmlJavaTypeAdapter(Cdata.Adapter.class)
         private String name;
+
+        public Long getId() {
+            return id;
+        }
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+        public void setName(String name) {
+            this.name = name;
+        }
     }
 }

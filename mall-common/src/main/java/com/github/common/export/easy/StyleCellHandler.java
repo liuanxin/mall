@@ -9,7 +9,6 @@ import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
 import com.github.common.ShareData;
 import com.github.common.util.A;
 import com.github.common.util.U;
-import lombok.RequiredArgsConstructor;
 import org.apache.poi.hssf.usermodel.HSSFPalette;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -23,7 +22,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("DuplicatedCode")
-@RequiredArgsConstructor
 public class StyleCellHandler implements CellWriteHandler {
 
     /** 标题行字体大小 */
@@ -35,7 +33,11 @@ public class StyleCellHandler implements CellWriteHandler {
 
     private static final ShareData<Map<String, CellStyle>> STYLE_CACHE = new ShareData<>();
 
+
     private final boolean hasCellStyle;
+    public StyleCellHandler(boolean hasCellStyle) {
+        this.hasCellStyle = hasCellStyle;
+    }
 
 
     @Override

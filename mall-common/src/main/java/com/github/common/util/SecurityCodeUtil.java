@@ -1,10 +1,5 @@
 package com.github.common.util;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Random;
@@ -33,6 +28,8 @@ public final class SecurityCodeUtil {
             "Times",
             "fixedsys"
     };
+
+    public record Code(String content, BufferedImage image) {}
 
     /**
      * <pre>
@@ -165,14 +162,5 @@ public final class SecurityCodeUtil {
 
     private static boolean isNotBlank(String str) {
         return str != null && !str.isEmpty();
-    }
-
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Code {
-        private String content;
-        private BufferedImage image;
     }
 }

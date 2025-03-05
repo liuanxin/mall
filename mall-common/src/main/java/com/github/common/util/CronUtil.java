@@ -9,11 +9,6 @@ public class CronUtil {
 
     /**
      * <pre>
-     * import lombok.RequiredArgsConstructor;
-     * import org.springframework.context.annotation.Configuration;
-     * import org.springframework.scheduling.annotation.SchedulingConfigurer;
-     * import org.springframework.scheduling.config.ScheduledTaskRegistrar;
-     *
      * &#064;Configuration
      * &#064;RequiredArgsConstructor
      * &#064;SuppressWarnings("NullableProblems")
