@@ -36,6 +36,7 @@ public class GlobalFilterConfig {
 //    @Value("${spring.messages.basename:}")
 //    private String i18nBaseNames;
 
+    /** @see org.springframework.boot.autoconfigure.web.servlet.HttpEncodingAutoConfiguration#characterEncodingFilter() */
     @Bean
     @Order(1)
     public FilterRegistrationBean<CharacterEncodingFilter> characterFilter(CharacterEncodingFilter filter) {
