@@ -40,7 +40,19 @@ public class DateUtil {
     }
 
     public static LocalDateTime toLocalDateTime(TemporalAccessor date) {
-        return U.isNull(date) ? null : LocalDateTime.from(date);
+        if (U.isNull(date)) {
+            return null;
+        }
+        if (date instanceof LocalDateTime) {
+            return (LocalDateTime) date;
+        }
+        if (date instanceof LocalDate) {
+            return LocalDateTime.of((LocalDate) date, LocalTime.MIN);
+        }
+        if (date instanceof LocalTime) {
+            return LocalDateTime.of(LocalDate.MIN, (LocalTime) date);
+        }
+        return LocalDateTime.from(date);
     }
     public static LocalDateTime toLocalDateTime(Date date) {
         return U.isNull(date) ? null : LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
@@ -96,7 +108,7 @@ public class DateUtil {
             keyList.add(U.toStr(locale));
         }
         return FORMATTER_CACHE.computeIfAbsent(String.join("-", keyList), s -> {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(s);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(type);
             if (hasTimeZone) {
                 TimeZone timeZone = TimeZone.getTimeZone(timezone);
                 if (U.isNotNull(timeZone)) {
@@ -193,7 +205,7 @@ public class DateUtil {
         return (U.isNull(date) || U.isBlank(type)) ? U.EMPTY : getFormatter(type, locale).format(date);
     }
 
-    public static TemporalAccessor parse(String source) {
+    private static TemporalAccessor parse(String source) {
         if (U.isBlank(source)) {
             return null;
         }
@@ -209,15 +221,21 @@ public class DateUtil {
                 }
             }
             if (type.isLocalDateType()) {
-                LocalDate localDate = parseLocalDate(source, type.getValue());
-                if (U.isNotNull(localDate)) {
-                    return localDate;
+                try {
+                    LocalDate localDate = parseLocalDate(source, type.getValue());
+                    if (U.isNotNull(localDate)) {
+                        return localDate;
+                    }
+                } catch (Exception ignore) {
                 }
             }
             if (type.isLocalTimeType()) {
-                LocalTime localTime = parseLocalTime(source, type.getValue());
-                if (U.isNotNull(localTime)) {
-                    return localTime;
+                try {
+                    LocalTime localTime = parseLocalTime(source, type.getValue());
+                    if (U.isNotNull(localTime)) {
+                        return localTime;
+                    }
+                } catch (Exception ignore) {
                 }
             }
         }
@@ -399,7 +417,7 @@ public class DateUtil {
         return U.isNull(date) ? null : date.with(LocalTime.MIN);
     }
     /** 获取一个日期所在天的最晚的时间(23:59:59 999), 对日期查询尤其有用 */
-    private static LocalDateTime getDayEnd(LocalDateTime date) {
+    public static LocalDateTime getDayEnd(LocalDateTime date) {
         return U.isNull(date) ? null : date.with(LocalTime.MAX);
     }
 
