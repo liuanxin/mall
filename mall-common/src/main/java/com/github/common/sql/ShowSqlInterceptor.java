@@ -1,6 +1,7 @@
 package com.github.common.sql;
 
-import com.github.common.ShareData;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.common.date.DateUtil;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
@@ -14,6 +15,7 @@ import com.mysql.cj.protocol.Resultset;
 import com.mysql.cj.protocol.ServerSession;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -25,10 +27,11 @@ import java.util.regex.Pattern;
 public class ShowSqlInterceptor implements QueryInterceptor {
 
     private static final String TIME_SPLIT = "~";
+    private static final Pattern BLANK_REGEX = Pattern.compile("\\s{1,}");
     private static final AtomicLong ID = new AtomicLong(0L);
     /** 每条 sql 执行前记录时间戳, 如果使用 ThreadLocal 会有 pre 了但运行时异常不去 post 的情况 */
-    private static final ShareData<String> TIME_CACHE = new ShareData<>();
-    private static final Pattern BLANK_REGEX = Pattern.compile("\\s{1,}");
+    private static final Cache<Thread, String> SQL_TIME_CACHE =
+            Caffeine.newBuilder().maximumSize(2000).expireAfterWrite(30, TimeUnit.MINUTES).build();
 
     @Override
     public QueryInterceptor init(MysqlConnection conn, Properties props, Log log) {
@@ -41,7 +44,7 @@ public class ShowSqlInterceptor implements QueryInterceptor {
             String realSql = getRealSql(sql);
             if (U.isNotBlank(realSql)) {
                 long id = ID.addAndGet(1);
-                TIME_CACHE.put(id + TIME_SPLIT + System.currentTimeMillis());
+                SQL_TIME_CACHE.put(Thread.currentThread(), id + TIME_SPLIT + System.currentTimeMillis());
                 String dataSource = "";
                 if (U.isNotNull(query)) {
                     Session session = query.getSession();
@@ -73,7 +76,8 @@ public class ShowSqlInterceptor implements QueryInterceptor {
         if (ShowSqlThreadLocal.hasPrint() && LogUtil.SQL_LOG.isDebugEnabled()) {
             String realSql = getRealSql(sql);
             if (U.isNotBlank(realSql)) {
-                String idAndTime = TIME_CACHE.get();
+                Thread thread = Thread.currentThread();
+                String idAndTime = SQL_TIME_CACHE.getIfPresent(thread);
                 if (U.isNotNull(idAndTime)) {
                     try {
                         String[] split = idAndTime.split(TIME_SPLIT);
@@ -94,7 +98,7 @@ public class ShowSqlInterceptor implements QueryInterceptor {
                             LogUtil.SQL_LOG.debug(sbd.toString());
                         }
                     } finally {
-                        TIME_CACHE.remove();
+                        SQL_TIME_CACHE.invalidate(thread);
                     }
                 }
             }
@@ -106,6 +110,6 @@ public class ShowSqlInterceptor implements QueryInterceptor {
     public boolean executeTopLevelOnly() { return false; }
     @Override
     public void destroy() {
-        TIME_CACHE.clear();
+        SQL_TIME_CACHE.cleanUp();
     }
 }
