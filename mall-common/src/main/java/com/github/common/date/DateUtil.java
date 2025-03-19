@@ -43,9 +43,6 @@ public class DateUtil {
         if (U.isNull(date)) {
             return null;
         }
-        if (date instanceof LocalDateTime) {
-            return (LocalDateTime) date;
-        }
         if (date instanceof LocalDate) {
             return LocalDateTime.of((LocalDate) date, LocalTime.MIN);
         }
