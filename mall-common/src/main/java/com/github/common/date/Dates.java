@@ -125,43 +125,43 @@ public class Dates {
 
     /** 返回 yyyy-MM-dd HH:mm:ss 格式的当前时间 */
     public static String nowDateTime() {
-        return now(DateFormatType.YYYY_MM_DD_HH_MM_SS);
+        return now(FormatType.YYYY_MM_DD_HH_MM_SS);
     }
     /** 返回 yyyy-MM-dd HH:mm:ss SSS 格式的当前时间 */
     public static String nowDateTimeMs() {
-        return now(DateFormatType.YYYY_MM_DD_HH_MM_SS_SSS);
+        return now(FormatType.YYYY_MM_DD_HH_MM_SS_SSS);
     }
     /** 获取当前时间日期的字符串 */
-    public static String now(DateFormatType dateFormatType) {
-        return format(now(), dateFormatType);
+    public static String now(FormatType formatType) {
+        return format(now(), formatType);
     }
     /** 格式化日期 yyyy-MM-dd */
     public static String formatDate(LocalDateTime date) {
-        return format(date, DateFormatType.YYYY_MM_DD);
+        return format(date, FormatType.YYYY_MM_DD);
     }
     /** 格式化日期 yyyy-MM-dd */
     public static String formatDate(LocalDate date) {
-        return format(date, DateFormatType.YYYY_MM_DD);
+        return format(date, FormatType.YYYY_MM_DD);
     }
     /** 格式化时间 HH:mm:ss */
     public static String formatTime(LocalDateTime date) {
-        return format(date, DateFormatType.HH_MM_SS);
+        return format(date, FormatType.HH_MM_SS);
     }
     /** 格式化日期和时间 yyyy-MM-dd HH:mm:ss */
     public static String formatDateTime(LocalDateTime date) {
-        return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SS);
+        return format(date, FormatType.YYYY_MM_DD_HH_MM_SS);
     }
     /** 格式化日期 yyyy-MM-dd HH:mm:ss.SSS */
     public static String formatDateTimeMs(LocalDateTime date) {
-        return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SSSSS);
+        return format(date, FormatType.YYYY_MM_DD_HH_MM_SSSSS);
     }
     /** 格式化日期 yyyy/MM/dd */
     public static String formatUsaDate(LocalDate date) {
-        return format(toLocalDate(date), DateFormatType.USA_YYYY_MM_DD);
+        return format(toLocalDate(date), FormatType.USA_YYYY_MM_DD);
     }
     /** 格式化日期 yyyy-MM-dd HH:mm:ss.SSS */
     public static String formatDateTimeMs(Date date) {
-        return format(toLocalDateTime(date), DateFormatType.YYYY_MM_DD_HH_MM_SSSSS);
+        return format(toLocalDateTime(date), FormatType.YYYY_MM_DD_HH_MM_SSSSS);
     }
 
     /**
@@ -175,18 +175,18 @@ public class Dates {
      */
     public static String format(TemporalAccessor date) {
         if (date instanceof LocalDateTime) {
-            return format(date, DateFormatType.YYYY_MM_DD_HH_MM_SS.getValue());
+            return format(date, FormatType.YYYY_MM_DD_HH_MM_SS.getValue());
         } else if (date instanceof LocalDate) {
-            return format(date, DateFormatType.YYYY_MM_DD.getValue());
+            return format(date, FormatType.YYYY_MM_DD.getValue());
         } else if (date instanceof LocalTime) {
-            return format(date, DateFormatType.HH_MM_SS.getValue());
+            return format(date, FormatType.HH_MM_SS.getValue());
         } else {
             return date.toString();
         }
     }
 
     /** 格式化日期对象成字符串 */
-    public static String format(TemporalAccessor date, DateFormatType type) {
+    public static String format(TemporalAccessor date, FormatType type) {
         return (U.isNull(date) || U.isNull(type)) ? U.EMPTY : format(date, type.getValue());
     }
 
@@ -207,7 +207,7 @@ public class Dates {
             return null;
         }
 
-        for (DateFormatType type : DateFormatType.values()) {
+        for (FormatType type : FormatType.values()) {
             if (type.isLocalDateTimeType()) {
                 try {
                     LocalDateTime localDateTime = parseLocalDateTime(source, type.getValue());
@@ -238,7 +238,7 @@ public class Dates {
         }
         return null;
     }
-    public static TemporalAccessor parse(String source, DateFormatType type) {
+    public static TemporalAccessor parse(String source, FormatType type) {
         return U.isNotNull(type) ? parse(source, type.getValue()) : null;
     }
     public static TemporalAccessor parse(String source, String type) {

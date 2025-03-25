@@ -1,7 +1,7 @@
 package com.github.common.util;
 
-import com.github.common.date.DateFormatType;
 import com.github.common.date.Dates;
+import com.github.common.date.FormatType;
 import org.junit.Test;
 import org.springframework.context.i18n.LocaleContextHolder;
 
@@ -21,7 +21,7 @@ public class DateTest {
         System.out.println("fd      : " + date);
         System.out.println("ldt     : " + Dates.parseToLocalDateTime(date));
 
-        date = Dates.format(now, DateFormatType.USA_YYYY_MM_DD_HH_MM_SS);
+        date = Dates.format(now, FormatType.USA_YYYY_MM_DD_HH_MM_SS);
         System.out.println("usa     : " + date);
         System.out.println("ldt usa : " + Dates.parseToLocalDateTime(date));
 

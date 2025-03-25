@@ -1,7 +1,7 @@
 package com.github.common.date;
 
 /** 日期的格式化类型 */
-public enum DateFormatType {
+public enum FormatType {
 
     /** yyyy-MM-dd HH:mm:ss */
     YYYY_MM_DD_HH_MM_SS("yyyy-MM-dd HH:mm:ss"),
@@ -82,7 +82,7 @@ public enum DateFormatType {
 
     private final String value;
 
-    DateFormatType(String value) {
+    FormatType(String value) {
         this.value = value;
     }
 

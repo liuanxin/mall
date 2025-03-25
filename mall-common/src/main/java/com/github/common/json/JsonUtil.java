@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.github.common.date.DateFormatType;
+import com.github.common.date.FormatType;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
@@ -58,7 +58,7 @@ public class JsonUtil {
 
     public static void globalConfig(ObjectMapper objectMapper) {
         // 默认时间格式. 要自定义在字段上标 @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8") 即可
-        SimpleDateFormat dateFormat = new SimpleDateFormat(DateFormatType.YYYY_MM_DD_HH_MM_SS.getValue());
+        SimpleDateFormat dateFormat = new SimpleDateFormat(FormatType.YYYY_MM_DD_HH_MM_SS.getValue());
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
         objectMapper.setDateFormat(dateFormat);
 

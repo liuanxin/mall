@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  *
  * 此 convert 用于替代 org.springframework.format.annotation.DateTimeFormat 注解
  *
- * @see com.github.common.date.DateFormatType
+ * @see com.github.common.date.FormatType
  * @see org.springframework.format.annotation.DateTimeFormat
  */
 public class StringToLocalDateTimeConverter implements Converter<String, LocalDateTime> {
