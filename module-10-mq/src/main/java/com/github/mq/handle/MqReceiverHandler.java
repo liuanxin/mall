@@ -1,7 +1,7 @@
 package com.github.mq.handle;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.github.common.date.DateUtil;
+import com.github.common.date.Dates;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
@@ -105,7 +105,7 @@ public class MqReceiverHandler {
         } finally {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 long now = System.currentTimeMillis();
-                LogUtil.ROOT_LOG.info("消费 {} 结束, 耗时: ({})", desc, DateUtil.toHuman(now - start));
+                LogUtil.ROOT_LOG.info("消费 {} 结束, 耗时: ({})", desc, Dates.toHuman(now - start));
             }
             LogUtil.unbind();
         }
@@ -159,14 +159,14 @@ public class MqReceiverHandler {
                 LogUtil.ROOT_LOG.info("消费({})数据({})成功", desc, msgId);
             }
             status = MqConst.SUCCESS;
-            remark = String.format("<%s : 消费(%s)数据成功>%s", DateUtil.nowDateTime(), desc, sbd);
+            remark = String.format("<%s : 消费(%s)数据成功>%s", Dates.nowDateTime(), desc, sbd);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("消费({})数据({})异常", desc, msgId, e);
             }
             status = MqConst.FAIL;
             String oldRemark = U.isNull(model) ? "" : U.toStr(model.getRemark());
-            String now = DateUtil.nowDateTime();
+            String now = Dates.nowDateTime();
             String msg = e.getMessage();
             if (currentRetryCount < consumerRetryCount) {
                 remark = String.format("<%s : 消费(%s)数据异常(%s)>%s", now, desc, msg, oldRemark);

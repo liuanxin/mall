@@ -1,6 +1,6 @@
 package com.github.common.util;
 
-import com.github.common.date.DateUtil;
+import com.github.common.date.Dates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -33,7 +33,7 @@ public final class LogUtil {
         if (U.lessAndEquals0(getStartTime())) {
             Date now = new Date();
             MDC.put(START_TIME, U.toStr(now.getTime()));
-            MDC.put(RECEIVE_TIME_CONTEXT, DateUtil.formatDateTimeMs(now) + " -> ");
+            MDC.put(RECEIVE_TIME_CONTEXT, Dates.formatDateTimeMs(now) + " -> ");
         }
         if (hasNotTraceId()) {
             // 跟踪号放在最后, 因此在最前加一个空格

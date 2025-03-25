@@ -2,7 +2,7 @@ package com.github.common.sql;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.common.date.DateUtil;
+import com.github.common.date.Dates;
 import com.github.common.util.LogUtil;
 import com.github.common.util.U;
 import com.mysql.cj.MysqlConnection;
@@ -90,7 +90,7 @@ public class ShowSqlInterceptor implements QueryInterceptor {
                                 sbd.append("id: ").append(id);
                             }
                             if (U.greater0(start)) {
-                                sbd.append(", use-time: ").append(DateUtil.toHuman(System.currentTimeMillis() - start));
+                                sbd.append(", use-time: ").append(Dates.toHuman(System.currentTimeMillis() - start));
                             }
                             if (U.isNotNull(rs) && rs.hasRows()) {
                                 sbd.append(", return-size: ").append(rs.getRows().size());

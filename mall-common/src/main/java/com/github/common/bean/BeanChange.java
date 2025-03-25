@@ -2,7 +2,7 @@ package com.github.common.bean;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.github.common.date.DateUtil;
+import com.github.common.date.Dates;
 import com.github.common.function.Multi;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
@@ -95,10 +95,10 @@ public final class BeanChange {
 
     private static String getValue(Object obj, String dateFormat) {
         if (obj instanceof Date d) {
-            LocalDateTime dateTime = DateUtil.toLocalDateTime(d);
+            LocalDateTime dateTime = Dates.toLocalDateTime(d);
             return U.isBlank(dateFormat)
-                    ? DateUtil.formatDateTime(dateTime)
-                    : DateUtil.format(dateTime, dateFormat);
+                    ? Dates.formatDateTime(dateTime)
+                    : Dates.format(dateTime, dateFormat);
         } else {
             return U.toStr(obj);
         }

@@ -1,6 +1,6 @@
 package com.github.mq.handle;
 
-import com.github.common.date.DateUtil;
+import com.github.common.date.Dates;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.ApplicationContexts;
 import com.github.common.util.LogUtil;
@@ -125,14 +125,14 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                 LogUtil.ROOT_LOG.info("发送({})数据({})成功", desc, msgId);
             }
             status = MqConst.SUCCESS;
-            remark = String.format("<%s : 消息(%s)发送成功>%s", DateUtil.nowDateTime(), desc, U.toStr(model.getRemark()));
+            remark = String.format("<%s : 消息(%s)发送成功>%s", Dates.nowDateTime(), desc, U.toStr(model.getRemark()));
         } catch (RuntimeException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("发送({})数据({})异常", desc, msgId, e);
             }
             status = MqConst.FAIL;
             String oldRemark = U.toStr(U.isNull(model) ? null : model.getRemark());
-            remark = String.format("<%s : 发送(%s)数据异常(%s)>%s", DateUtil.nowDateTime(),
+            remark = String.format("<%s : 发送(%s)数据异常(%s)>%s", Dates.nowDateTime(),
                     desc, e.getMessage(), oldRemark);
             throw e;
         } finally {
@@ -174,11 +174,11 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                             ApplicationContexts.getBean(MqSenderHandler.class).provide(null, data);
                         } else {
                             String remark = String.format("<%s : 发送失败且重试(%s)达到上限(%s)>",
-                                    DateUtil.nowDateTime(), retryCount, providerRetryCount);
+                                    Dates.nowDateTime(), retryCount, providerRetryCount);
                             handleError(mqSend, remark);
                         }
                     } else {
-                        String remark = String.format("<%s : 消息到交换机失败>", DateUtil.nowDateTime());
+                        String remark = String.format("<%s : 消息到交换机失败>", Dates.nowDateTime());
                         handleError(mqSend, remark);
                     }
                 }
@@ -207,7 +207,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
             if (U.isNotNull(mqSend)) {
                 int code = msg.getReplyCode();
                 String text = msg.getReplyText();
-                String remark = String.format("<%s : 消息到队列时失败(%s -> %s)>", DateUtil.nowDateTime(), code, text);
+                String remark = String.format("<%s : 消息到队列时失败(%s -> %s)>", Dates.nowDateTime(), code, text);
                 handleError(mqSend, remark);
             }
         }

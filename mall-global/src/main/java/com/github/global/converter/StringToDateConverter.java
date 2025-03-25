@@ -1,6 +1,6 @@
 package com.github.global.converter;
 
-import com.github.common.date.DateUtil;
+import com.github.common.date.Dates;
 import org.springframework.core.convert.converter.Converter;
 
 import java.util.Date;
@@ -19,6 +19,6 @@ public class StringToDateConverter implements Converter<String, Date> {
 
     @Override
     public Date convert(String source) {
-        return DateUtil.parseToDate(source.trim());
+        return Dates.parseToDate(source.trim());
     }
 }

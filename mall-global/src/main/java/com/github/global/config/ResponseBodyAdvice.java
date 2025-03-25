@@ -1,6 +1,6 @@
 package com.github.global.config;
 
-import com.github.common.date.DateUtil;
+import com.github.common.date.Dates;
 import com.github.common.util.A;
 import com.github.common.util.LogUtil;
 import com.github.common.util.RequestUtil;
@@ -44,7 +44,7 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
                 sbd.append("[").append(req.getMethod()).append(" ").append(req.getURI()).append("]");
                 long startTime = LogUtil.getStartTime();
                 if (U.greater0(startTime)) {
-                    sbd.append(" time(").append(DateUtil.toHuman(System.currentTimeMillis() - startTime)).append(") ");
+                    sbd.append(" time(").append(Dates.toHuman(System.currentTimeMillis() - startTime)).append(") ");
                 }
 
                 sbd.append(parameter.getContainingClass().getName());

@@ -1,6 +1,6 @@
 package com.github.common.http;
 
-import com.github.common.date.DateUtil;
+import com.github.common.date.Dates;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.A;
 import com.github.common.util.U;
@@ -231,10 +231,10 @@ public class HttpData {
         StringBuilder sbd = new StringBuilder();
         if (U.isNotNull(reqTime)) {
             // time
-            sbd.append("[").append(DateUtil.formatDateTimeMs(reqTime));
+            sbd.append("[").append(Dates.formatDateTimeMs(reqTime));
             if (U.isNotNull(resTime)) {
-                sbd.append(" -> ").append(DateUtil.formatDateTimeMs(resTime));
-                sbd.append("(").append(DateUtil.toHuman(resTime.getTime() - reqTime.getTime())).append(")");
+                sbd.append(" -> ").append(Dates.formatDateTimeMs(resTime));
+                sbd.append("(").append(Dates.toHuman(resTime.getTime() - reqTime.getTime())).append(")");
             }
             sbd.append("]");
 

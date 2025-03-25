@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.github.common.date.DateUtil;
+import com.github.common.date.Dates;
 import com.github.common.util.DesensitizationUtil;
 import com.github.common.util.U;
 
@@ -194,7 +194,7 @@ public final class JsonModule {
 
         @Override
         public Date deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            Date date = DateUtil.parseToDate(p.getText().trim());
+            Date date = Dates.parseToDate(p.getText().trim());
             // 时间戳为 0 的是否反序列化为 null, 这样当数据库表字段设置 1970-01-01 这样的默认值时, 反序列化时就是 null 值
             return (U.isNull(date)/* || date.getTime() <= 0*/) ? null : date;
         }
@@ -206,7 +206,7 @@ public final class JsonModule {
 
         @Override
         public LocalDate deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return DateUtil.parseToLocalDate(p.getText().trim());
+            return Dates.parseToLocalDate(p.getText().trim());
         }
     }
 
@@ -216,7 +216,7 @@ public final class JsonModule {
 
         @Override
         public LocalDateTime deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return DateUtil.parseToLocalDateTime(p.getText().trim());
+            return Dates.parseToLocalDateTime(p.getText().trim());
         }
     }
 

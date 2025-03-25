@@ -11,7 +11,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DateUtil {
+public class Dates {
 
     private static final long SECOND = 1000L;
     private static final long MINUTE = 60 * SECOND;

@@ -1,6 +1,6 @@
 package com.github.mq.handle;
 
-import com.github.common.date.DateUtil;
+import com.github.common.date.Dates;
 import com.github.common.util.A;
 import com.github.common.util.U;
 import com.github.global.service.RedissonService;
@@ -59,12 +59,12 @@ public class MqRetryHandler {
         try {
             MqInfo mqInfo = MqInfo.from(mqReceive.getType());
             if (U.isNull(mqInfo)) {
-                remark = String.format("<%s : 没有这个业务类型场景>%s", DateUtil.nowDateTime(), oldRemark);
+                remark = String.format("<%s : 没有这个业务类型场景>%s", Dates.nowDateTime(), oldRemark);
             } else {
                 if (sendMsg(mqReceive.getMsgId(), mqReceive.getSearchKey(), mqInfo, mqReceive.getMsg())) {
-                    remark = String.format("<%s : 重试时发到 mq 成功>%s", DateUtil.nowDateTime(), oldRemark);
+                    remark = String.format("<%s : 重试时发到 mq 成功>%s", Dates.nowDateTime(), oldRemark);
                 } else {
-                    remark = String.format("<%s : 同 msg_id 的任务正在执行>%s", DateUtil.nowDateTime(), oldRemark);
+                    remark = String.format("<%s : 同 msg_id 的任务正在执行>%s", Dates.nowDateTime(), oldRemark);
                 }
             }
         } catch (Exception e) {
@@ -105,10 +105,10 @@ public class MqRetryHandler {
         String remark = null;
         MqInfo mqInfo = MqInfo.from(mqSend.getType());
         if (U.isNull(mqInfo)) {
-            remark = String.format("<%s : 没有这个业务类型场景>%s", DateUtil.nowDateTime(), oldRemark);
+            remark = String.format("<%s : 没有这个业务类型场景>%s", Dates.nowDateTime(), oldRemark);
         } else {
             if (!sendMsg(mqSend.getMsgId(), mqSend.getSearchKey(), mqInfo, mqSend.getMsg())) {
-                remark = String.format("<%s : 同 msg_id 的任务正在执行>%s", DateUtil.nowDateTime(), oldRemark);
+                remark = String.format("<%s : 同 msg_id 的任务正在执行>%s", Dates.nowDateTime(), oldRemark);
             }
         }
         // 上面的 sendMsg 调用返回为 true 时, 内部方法会自动处理「成功」或「失败且重试次数 + 1」, 因此当前只处理 remark 有值的场景

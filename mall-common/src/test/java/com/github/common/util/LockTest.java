@@ -1,17 +1,17 @@
 package com.github.common.util;
 
 import com.github.common.LockWithKey;
-import com.github.common.date.DateUtil;
+import com.github.common.date.Dates;
 
 public class LockTest {
 
     public static void main(String[] args) throws Exception {
         String key = "abc";
         Thread t1 = new Thread(() -> {
-            System.out.println(DateUtil.nowDateTimeMs() + " : " + "start: " + Thread.currentThread());
+            System.out.println(Dates.nowDateTimeMs() + " : " + "start: " + Thread.currentThread());
             if (LockWithKey.tryLock(key)) {
                 try {
-                    System.out.println(DateUtil.nowDateTimeMs() + " : " + Thread.currentThread() + " has lock");
+                    System.out.println(Dates.nowDateTimeMs() + " : " + Thread.currentThread() + " has lock");
                     Thread.sleep(2000L);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -19,16 +19,16 @@ public class LockTest {
                     LockWithKey.unLock(key);
                 }
             } else {
-                System.out.println(DateUtil.nowDateTimeMs() + " : " + Thread.currentThread() + " no lock");
+                System.out.println(Dates.nowDateTimeMs() + " : " + Thread.currentThread() + " no lock");
             }
-            System.out.println(DateUtil.nowDateTimeMs() + " : " + "end: " + Thread.currentThread());
+            System.out.println(Dates.nowDateTimeMs() + " : " + "end: " + Thread.currentThread());
         });
 
         Thread t2 = new Thread(() -> {
-            System.out.println(DateUtil.nowDateTimeMs() + " : " + "start: " + Thread.currentThread());
+            System.out.println(Dates.nowDateTimeMs() + " : " + "start: " + Thread.currentThread());
             if (LockWithKey.tryLock(key)) {
                 try {
-                    System.out.println(DateUtil.nowDateTimeMs() + " : " + Thread.currentThread() + " has lock");
+                    System.out.println(Dates.nowDateTimeMs() + " : " + Thread.currentThread() + " has lock");
                     Thread.sleep(2000L);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -36,17 +36,17 @@ public class LockTest {
                     LockWithKey.unLock(key);
                 }
             } else {
-                System.out.println(DateUtil.nowDateTimeMs() + " : " + Thread.currentThread() + " no lock");
+                System.out.println(Dates.nowDateTimeMs() + " : " + Thread.currentThread() + " no lock");
             }
-            System.out.println(DateUtil.nowDateTimeMs() + " : " + "end: " + Thread.currentThread());
+            System.out.println(Dates.nowDateTimeMs() + " : " + "end: " + Thread.currentThread());
         });
 
-        System.out.println(DateUtil.nowDateTimeMs() + " : " + "start");
+        System.out.println(Dates.nowDateTimeMs() + " : " + "start");
         t1.start();
         t2.start();
         t1.join();
         t2.join();
-        System.out.println(DateUtil.nowDateTimeMs() + " : " + "end");
+        System.out.println(Dates.nowDateTimeMs() + " : " + "end");
         /*
         2024-12-18 14:53:32.979 : start
         2024-12-18 14:53:33.022 : start: Thread[Thread-1,5,main]

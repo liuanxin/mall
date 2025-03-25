@@ -1,6 +1,6 @@
 package com.github.global.converter;
 
-import com.github.common.date.DateUtil;
+import com.github.common.date.Dates;
 import org.springframework.core.convert.converter.Converter;
 
 import java.time.LocalDate;
@@ -19,6 +19,6 @@ public class StringToLocalDateConverter implements Converter<String, LocalDate> 
 
     @Override
     public LocalDate convert(String source) {
-        return DateUtil.parseToLocalDate(source.trim());
+        return Dates.parseToLocalDate(source.trim());
     }
 }

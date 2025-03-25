@@ -1,6 +1,6 @@
 package com.github.common.util;
 
-import com.github.common.date.DateUtil;
+import com.github.common.date.Dates;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -37,7 +37,7 @@ public final class FileUtil {
         }
 
         // 保存及访问地址中拼上 /年/月/日/ 按日来保存文件, 前后都要有 /
-        String middlePath = addYmd ? ("/" + DateUtil.formatUsaDate(LocalDate.now()) + "/") : "/";
+        String middlePath = addYmd ? ("/" + Dates.formatUsaDate(LocalDate.now()) + "/") : "/";
         // 目录不存在就生成
         File directory = new File(directoryPrefix + middlePath);
         if (!directory.exists()) {

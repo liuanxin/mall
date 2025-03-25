@@ -1,6 +1,6 @@
 package com.github.mq.service;
 
-import com.github.common.date.DateUtil;
+import com.github.common.date.Dates;
 import com.github.common.page.Pages;
 import com.github.common.util.A;
 import com.github.mq.constant.MqConst;
@@ -51,7 +51,7 @@ public class MqSendService {
         MqSendTableDef msDef = MqSendTableDef.MQ_SEND;
         QueryWrapper query = QueryWrapper.create()
                 .select(msDef.ID)
-                .or(msDef.STATUS.eq(MqConst.INIT).and(msDef.CREATE_TIME.lt(DateUtil.addMinute(DateUtil.now(), -2))))
+                .or(msDef.STATUS.eq(MqConst.INIT).and(msDef.CREATE_TIME.lt(Dates.addMinute(Dates.now(), -2))))
                 .or(msDef.STATUS.eq(MqConst.FAIL).and(msDef.RETRY_COUNT.lt(maxRetryCount)))
                 .orderBy(msDef.UPDATE_TIME.asc());
         // 表中有 text 字段, 因此先只查出 id, 再用 id 查具体的数据
