@@ -71,11 +71,14 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                             U.inputToOutput(input, output);
                             byte[] bytes = output.toByteArray();
 
-                            String body = logHandler.toJson(JsonUtil.nativeObject(new String(bytes, StandardCharsets.UTF_8)));
+                            String originalBody = new String(bytes, StandardCharsets.UTF_8);
+                            // 这里的目的是为了打印日志, 先转成 object 再 toJson 有两个目的:
+                            // 1.去掉原数据中可能有的空白符(换行制表空格等), 2.字段脱敏(密码字段的值输出成 *** 等)
+                            String body = logHandler.toJson(JsonUtil.toObjectNil(originalBody, Object.class));
 
                             String method = RequestUtil.getMethod();
                             String url = RequestUtil.getRequestUrl();
-                            LogUtil.ROOT_LOG.info("[{} {}] request-body({})", method, url, body);
+                            LogUtil.ROOT_LOG.info("[{} {}] request-body({})", method, url, U.defaultIfBlank(body, originalBody));
 
                             // 在 ByteArrayOutputStream 和 ByteArrayInputStream 上调用 close 是无意义的, 它们也都有实现 reset 方法
                             return new ByteArrayInputStream(bytes);
