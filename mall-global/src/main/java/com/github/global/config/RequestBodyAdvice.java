@@ -71,14 +71,10 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                             U.inputToOutput(input, output);
                             byte[] bytes = output.toByteArray();
 
-                            String originalBody = new String(bytes, StandardCharsets.UTF_8);
-                            // 这里的目的是为了打印日志, 先转成 object 再 toJson 有两个目的:
-                            // 1.去掉原数据中可能有的空白符(换行制表空格等), 2.字段脱敏(密码字段的值输出成 *** 等)
-                            String body = logHandler.toJson(JsonUtil.toObjectNil(originalBody, Object.class));
-
                             String method = RequestUtil.getMethod();
                             String url = RequestUtil.getRequestUrl();
-                            LogUtil.ROOT_LOG.info("[{} {}] request-body({})", method, url, U.defaultIfBlank(body, originalBody));
+                            String body = dropWhiteAndDesensitization(new String(bytes, StandardCharsets.UTF_8));
+                            LogUtil.ROOT_LOG.info("[{} {}] request-body({})", method, url, body);
 
                             // 在 ByteArrayOutputStream 和 ByteArrayInputStream 上调用 close 是无意义的, 它们也都有实现 reset 方法
                             return new ByteArrayInputStream(bytes);
@@ -88,5 +84,21 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
             }
         }
         return super.beforeBodyRead(inputMessage, parameter, targetType, converterType);
+    }
+    /**
+     * 这里是为了打印日志, 先转成 object 再 toJson 有两个目的:
+     * 1.去掉原数据中可能有的空白符(比如换行制表空格等), 2.字段脱敏(比如密码字段的值输出成 *** 等)
+     */
+    private String dropWhiteAndDesensitization(String json) {
+        if (U.isNotBlank(json)) {
+            String t = json.trim();
+            if ((t.startsWith("[") && t.endsWith("]")) || (t.startsWith("{") && t.endsWith("}"))) {
+                String str = logHandler.toJson(JsonUtil.toObjectNil(t, Object.class));
+                if (U.isNotBlank(str)) {
+                    return str;
+                }
+            }
+        }
+        return json;
     }
 }

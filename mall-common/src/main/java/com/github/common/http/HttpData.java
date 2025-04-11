@@ -191,7 +191,7 @@ public class HttpData {
         }
         String t = json.trim();
         if ((t.startsWith("[") && t.endsWith("]")) || (t.startsWith("{") && t.endsWith("}"))) {
-            return JsonUtil.toJsonNil(JsonUtil.toObject(t, Object.class));
+            return JsonUtil.toJsonNil(JsonUtil.toObjectNil(t, Object.class));
         } else {
             return json;
         }
