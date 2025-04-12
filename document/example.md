@@ -61,7 +61,7 @@ INSERT INTO `t_product_test` (`id`, `user_id`, `name`, `type`) VALUES
 # 127.0.0.1  dev-redis
 ```
 
-运行 `WebBackendApplication.java`, 请求 `http://127.0.0.1:8686/example ?gender=0|1|2` 查看示例
+运行 `WebBackendApplication.java`, 请求 `http://127.0.0.1:8686/example?gender=0|1|2` 查看示例
 
 请求后端: http://127.0.0.1:8686/static/api-info-example.html  
 项目文档: http://127.0.0.1:8686/static/api-info.html  

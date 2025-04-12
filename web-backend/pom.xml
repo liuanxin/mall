@@ -147,7 +147,8 @@
                     </container>
                 </configuration>
                 <!--
-                编译时上传到 docker 私服: mvn clean compile -DsendCredentialsOverHttp=true jib:build
+                在本地打 docker 镜像: mvn clean compile -DsendCredentialsOverHttp=true jib:buildTar 将会生成 target/jib-image.tar 文件
+                编译时上传到 docker 私服: mvn clean compile -DsendCredentialsOverHttp=true jib:build -Djib.to.auth.username=xx -Djib.to.auth.password=xxx 如果有 docker login 过用户名密码的选项可以去掉
                 私服支持 https 可以去掉 -DsendCredentialsOverHttp=true 选项, 要去掉 jib:build 选项可以解开下面的配置
                 -->
                 <!--
