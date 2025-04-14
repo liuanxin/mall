@@ -16,7 +16,12 @@ public class GlobalConfig {
         return new ApplicationContexts();
     }
 
+    /**
+     * @see org.springframework.boot.autoconfigure.http.JacksonHttpMessageConvertersConfiguration.MappingJackson2HttpMessageConverterConfiguration#mappingJackson2HttpMessageConverter
+     * @see org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration.JacksonObjectMapperConfiguration#jacksonObjectMapper
+     */
     @Bean
+    @SuppressWarnings("JavadocReference")
     @ConditionalOnClass(ObjectMapper.class)
     public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(ObjectMapper objectMapper) {
         JsonUtil.globalConfig(objectMapper);
