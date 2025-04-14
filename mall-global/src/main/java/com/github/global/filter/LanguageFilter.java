@@ -93,7 +93,6 @@ public class LanguageFilter implements Filter {
                         // messages.properties, messages_zh_CN.properties, messages_en_US.properties
                         String filename = resource.getFilename();
                         if (U.isNotBlank(filename)) {
-                            // noinspection ConstantConditions
                             String name = filename.substring(0, filename.indexOf(".properties"));
                             // 只要 zh_CN、en_US 这些带语言的文件, 不带的忽略
                             if (!name.equals(fileName) && name.startsWith(fileName)) {
@@ -127,7 +126,7 @@ public class LanguageFilter implements Filter {
 
     private Locale handleLocale(String paramLang, String headLang, String acceptLanguage, Locale originalLocale) {
         Locale locale = getLocale(paramLang, headLang, acceptLanguage, originalLocale);
-        // 「请求的语言」如果是空 或 「请求的语言」不在「国际化对应的语言列表」中 则使用默认语言
+        // 「请求的语言」如果为空 或 「请求的语言」 不在 「国际化对应的语言列表」 中则使用默认语言
         return (blankLocale(locale) || !locales.contains(locale)) ? Const.DEFAULT_LOCALE : locale;
     }
 

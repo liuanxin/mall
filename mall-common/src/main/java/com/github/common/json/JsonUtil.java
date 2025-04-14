@@ -79,6 +79,8 @@ public class JsonUtil {
         // 允许字符串中包含未加引号的控制字符(值小于 32 的 ASCII 字符, 包括制表符和换行字符)
         // json 标准要求所有控制符必须使用引号, 因此默认是 false, 遇到此类字符时会抛出异常
         // objectMapper.configure(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature(), true);
+
+        // 序列化及反序列化模块
         objectMapper.registerModule(JsonModule.GLOBAL_MODULE);
     }
 
