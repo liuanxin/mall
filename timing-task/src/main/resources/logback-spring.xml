@@ -44,7 +44,6 @@
 
     <logger name="com.github.common.mvc" level="${thirdLogLevel}"/>
 
-    <logger name="com.baomidou" level="${thirdLogLevel}"/>
     <logger name="com.netflix" level="${thirdLogLevel}"/>
     <logger name="com.alibaba" level="${thirdLogLevel}"/>
     <logger name="com.aliyun" level="${thirdLogLevel}"/>
@@ -110,7 +109,7 @@
     </springProfile>
 
     <!-- 生产: 异步输出到文件 -->
-    <springProfile name="prod">
+    <springProfile name="prod,prod1,prod2">
         <appender name="PROJECT" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <file>${FILE_PATH}.log</file>
             <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
