@@ -1,7 +1,7 @@
 package com.github.common.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.json.JsonReadFeature;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -35,22 +35,20 @@ public class JsonUtil {
     */
     private static final Map<String, JavaType> TYPE_CACHE = new ConcurrentHashMap<>();
 
-    private static final ObjectMapper OBJECT_MAPPER = globalConfig(JsonMapper.builder()
-            .serializationInclusion(JsonInclude.Include.NON_EMPTY)
-            .build());
-
-    private static final ObjectMapper JSON5_MAPPER = globalConfig(JsonMapper.builder()
-            // 「null, 空字符串, 数字的默认值(0), list 及 map 为空或长度为 0」不序列化, 最大程度的节省带宽
-            .serializationInclusion(JsonInclude.Include.NON_DEFAULT)
-
-            .enable(JsonReadFeature.ALLOW_JAVA_COMMENTS) // 支持注释
-            .enable(JsonReadFeature.ALLOW_TRAILING_COMMA) // 支持尾逗号
-            .enable(JsonReadFeature.ALLOW_SINGLE_QUOTES) // 字符串可以使用单引号
-            .enable(JsonReadFeature.ALLOW_UNQUOTED_FIELD_NAMES) // key 可以不带引号
-            // .enable(JsonReadFeature.ALLOW_NON_NUMERIC_NUMBERS) // 无穷 NaN 可以引用成数字
-            // .enable(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER) // 反斜线 \ 可以换行
-            // .enable(JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS) // 支持 .123 这样的数字, 123. 不支持
-            .build());
+    // 默认时间格式. 要自定义在字段上标 @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8") 即可
+    private static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat(FormatType.YYYY_MM_DD_HH_MM_SS.getValue());
+    static {
+        DEFAULT_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+    }
+    private static final ObjectMapper OBJECT_MAPPER = globalConfig(
+            JsonMapper.builder()
+                    // 「null, 空字符串, list 及 map 为空或长度为 0」不序列化
+                    .serializationInclusion(JsonInclude.Include.NON_EMPTY)
+                    // 「null, 空字符串, 数字的默认值(0), list 及 map 为空或长度为 0」不序列化, 最大程度的节省带宽
+                    // .serializationInclusion(JsonInclude.Include.NON_DEFAULT)
+                    .build()
+                    .setDateFormat(DEFAULT_DATE_FORMAT)
+    );
 
 
     private static final ObjectMapper EMPTY_OBJECT_MAPPER = JsonMapper.builder()
@@ -63,30 +61,42 @@ public class JsonUtil {
             .configure(MapperFeature.USE_ANNOTATIONS, false)
             .build();
 
+    @SuppressWarnings("deprecation")
     public static ObjectMapper globalConfig(ObjectMapper objectMapper) {
-        // 默认时间格式. 要自定义在字段上标 @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8") 即可
-        SimpleDateFormat dateFormat = new SimpleDateFormat(FormatType.YYYY_MM_DD_HH_MM_SS.getValue());
-        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
-        return objectMapper.setDateFormat(dateFormat)
-
-                // 序列化时: date 不要用时间戳
-                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                // 序列化时: duration(时间量) 不要用时间戳
-                .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
-
-                // 反序列化时: 不确定的属性项上不要失败
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                // 反序列化时: 不确定值的枚举返回 null
-                .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
-                // 反序列化时: 浮点数用 BigDecimal
-                .configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true)
-                // 反序列化时: 整数用 BigInteger
-                // .configure(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS, true)
-
-                // 允许字符串中包含未加引号的控制字符(值小于 32 的 ASCII 字符, 包括制表符和换行字符)
-                // json 标准要求所有控制符必须使用引号, 因此默认是 false, 遇到此类字符时会抛出异常
-                // .configure(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature(), true);
-
+        return objectMapper.enable(
+                        // 支持注释
+                        JsonParser.Feature.ALLOW_COMMENTS,
+                        // 支持尾逗号
+                        JsonParser.Feature.ALLOW_TRAILING_COMMA,
+                        // 字符串可以使用单引号
+                        JsonParser.Feature.ALLOW_SINGLE_QUOTES,
+                        // key 可以不带引号
+                        JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES
+                        // 无穷 NaN 可以引用成数字
+                        // JsonParser.Feature.ALLOW_NON_NUMERIC_NUMBERS,
+                        // 反斜线 \ 可以换行
+                        // JsonParser.Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER,
+                        // 支持 .123 这样的数字, 123. 不支持
+                        // JsonParser.Feature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS,
+                )
+                .disable(
+                        // 序列化时: date 不要用时间戳
+                        SerializationFeature.WRITE_DATES_AS_TIMESTAMPS,
+                        // 序列化时: duration(时间量) 不要用时间戳
+                        SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS
+                )
+                .enable(
+                        // 反序列化时: 不确定值的枚举返回 null
+                        DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,
+                        // 反序列化时: 浮点数用 BigDecimal
+                        DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS
+                        // 反序列化时: 整数用 BigInteger
+                        // DeserializationFeature.USE_BIG_INTEGER_FOR_INTS
+                )
+                .disable(
+                        // 反序列化时: 不确定的属性不要抛 JsonMappingException
+                        DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES
+                )
                 // 序列化及反序列化模块
                 .registerModule(JsonModule.GLOBAL_MODULE);
     }
