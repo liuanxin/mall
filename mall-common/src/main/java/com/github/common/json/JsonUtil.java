@@ -42,9 +42,9 @@ public class JsonUtil {
     }
     private static final ObjectMapper OBJECT_MAPPER = globalConfig(
             JsonMapper.builder()
-                    // 「null, 空字符串, list 及 map 为空或长度为 0」不序列化
+                    // 「null、空字符串、list 及 map 为空或长度为 0」不序列化
                     .serializationInclusion(JsonInclude.Include.NON_EMPTY)
-                    // 「null, 空字符串, 数字的默认值(0), list 及 map 为空或长度为 0」不序列化, 最大程度的节省带宽
+                    // 「null、空字符串、list 及 map 为空或长度为 0、数字为 0、时间的毫秒数为 0」不序列化, 最大程度的节省带宽
                     // .serializationInclusion(JsonInclude.Include.NON_DEFAULT)
                     .build()
                     .setDateFormat(DEFAULT_DATE_FORMAT)
@@ -63,7 +63,8 @@ public class JsonUtil {
 
     @SuppressWarnings("deprecation")
     public static ObjectMapper globalConfig(ObjectMapper objectMapper) {
-        return objectMapper.enable(
+        return objectMapper
+                .enable(
                         // 支持注释
                         JsonParser.Feature.ALLOW_COMMENTS,
                         // 支持尾逗号
