@@ -52,12 +52,13 @@ public class JsonUtil {
 
 
     private static final ObjectMapper EMPTY_OBJECT_MAPPER = JsonMapper.builder()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
             .build();
+    // 上面的使用实体上的注解, 下面不使用, 用在某些场景时分别用到这两个 mapper 来完成一些数据转换
     private static final ObjectMapper IGNORE_OBJECT_MAPPER = JsonMapper.builder()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
             .configure(MapperFeature.USE_ANNOTATIONS, false)
             .build();
 
