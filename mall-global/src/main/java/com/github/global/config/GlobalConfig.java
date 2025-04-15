@@ -3,12 +3,12 @@ package com.github.global.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.ApplicationContexts;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 @Configuration
+@SuppressWarnings("JavadocReference")
 public class GlobalConfig {
 
     @Bean
@@ -17,15 +17,13 @@ public class GlobalConfig {
     }
 
     /**
-     * @see org.springframework.boot.autoconfigure.http.JacksonHttpMessageConvertersConfiguration.MappingJackson2HttpMessageConverterConfiguration#mappingJackson2HttpMessageConverter
      * @see org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration.JacksonObjectMapperConfiguration#jacksonObjectMapper
+     * @see org.springframework.boot.autoconfigure.http.JacksonHttpMessageConvertersConfiguration.MappingJackson2HttpMessageConverterConfiguration#mappingJackson2HttpMessageConverter
      */
     @Bean
-    @SuppressWarnings("JavadocReference")
-    @ConditionalOnClass(ObjectMapper.class)
-    public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(ObjectMapper objectMapper) {
-        JsonUtil.globalConfig(objectMapper);
-        return new MappingJackson2HttpMessageConverter(objectMapper);
+    public ObjectMapper jacksonObjectMapper(Jackson2ObjectMapperBuilder builder) {
+        // 加一些全局策略
+        return JsonUtil.globalConfig(builder.createXmlMapper(false).build());
     }
 
     // /** see: https://www.baeldung.com/spring-boot-customize-jackson-objectmapper */

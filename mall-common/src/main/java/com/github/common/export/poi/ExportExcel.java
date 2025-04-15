@@ -6,13 +6,14 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * 如果想要将数据导成文件保持, 使用 {@link com.github.common.export.FileExport} 类
+ * 如果想要将数据导成文件保存, 使用 {@link com.github.common.export.FileExport} 类
  * 如果要导出文件在 web 端下载, 使用 {@link com.github.common.export.WebExport} 类
  */
 @SuppressWarnings("DuplicatedCode")
@@ -253,8 +254,10 @@ public class ExportExcel {
      * </pre>
      */
     public static void dispose(Workbook workbook) {
-        if (workbook instanceof SXSSFWorkbook s) {
-            s.dispose();
+        try {
+            workbook.close();
+        } catch (IOException e) {
+            throw new RuntimeException("关闭工作簿时异常", e);
         }
     }
 

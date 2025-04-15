@@ -106,10 +106,10 @@ public final class FileExport {
         }
 
         // 没有数据或没有标题, 返回一个内容为空的文件
-        byte[] content = ExportCsv.getContent(titleMap, dataList).getBytes(StandardCharsets.UTF_8);
+        String content = ExportCsv.getContent(titleMap, dataList);
         String fileName = encodeName(name) + ".csv";
         try {
-            Files.write(new File(dir, fileName).toPath(), content, StandardOpenOption.APPEND);
+            Files.write(new File(dir, fileName).toPath(), content.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
         } catch (IOException e) {
             throw new RuntimeException(String.format("保存文件(%s)到(%s)时异常", fileName, directory), e);
         }
