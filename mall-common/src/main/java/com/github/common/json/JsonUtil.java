@@ -65,14 +65,15 @@ public class JsonUtil {
     @SuppressWarnings("deprecation")
     public static ObjectMapper globalConfig(ObjectMapper objectMapper) {
         return objectMapper
+                // 反序列化时, 对 json5 部分功能的支持
                 .enable(
-                        // 支持注释
+                        // 支持注释: { /* xx */ "a": "x" } 可以正常解析
                         JsonParser.Feature.ALLOW_COMMENTS,
-                        // 支持尾逗号
+                        // 支持尾逗号: [ 1, 2, ] 和 { "a": 1, } 可以正常解析
                         JsonParser.Feature.ALLOW_TRAILING_COMMA,
-                        // 字符串可以使用单引号
+                        // 字符串可以使用单引号: { 'a': 'x' } 可以正常解析
                         JsonParser.Feature.ALLOW_SINGLE_QUOTES,
-                        // key 可以不带引号
+                        // key 可以不带引号: { a: "x" } 可以正常解析
                         JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES
                         // 无穷 NaN 可以引用成数字
                         // JsonParser.Feature.ALLOW_NON_NUMERIC_NUMBERS,
