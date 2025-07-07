@@ -37,7 +37,7 @@ public class GlobalLogHandler {
     private final ObjectMapper logDesObjectMapper;
 
     public GlobalLogHandler(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper.copy();
+        this.objectMapper = objectMapper;
 
         this.logDesObjectMapper = objectMapper.copy();
         this.logDesObjectMapper.registerModule(JsonModule.LOG_SENSITIVE_MODULE);

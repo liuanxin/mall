@@ -23,6 +23,11 @@ import org.springframework.web.servlet.mvc.method.annotation.AbstractMappingJack
 import java.lang.reflect.Method;
 import java.util.List;
 
+/**
+ * {@link com.github.global.filter.LogTraceFilter} 输出请求的 method uri header param<br>
+ * {@link com.github.global.config.RequestBodyAdvice} 输出请求中 RequestBody 的 json<br>
+ * {@link com.github.global.config.ResponseBodyAdvice} 当前输出响应中 ResponseBody 的 json
+ */
 @SuppressWarnings("NullableProblems")
 @RequiredArgsConstructor
 @ConditionalOnClass({ ResponseBody.class })

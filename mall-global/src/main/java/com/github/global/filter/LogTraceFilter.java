@@ -10,6 +10,11 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.List;
 
+/**
+ * {@link com.github.global.filter.LogTraceFilter} 当前输出请求的 method uri header param<br>
+ * {@link com.github.global.config.RequestBodyAdvice} 输出请求中 RequestBody 的 json<br>
+ * {@link com.github.global.config.ResponseBodyAdvice} 输出响应中 ResponseBody 的 json
+ */
 public class LogTraceFilter implements Filter {
 
     private final List<String> excludePathList;
