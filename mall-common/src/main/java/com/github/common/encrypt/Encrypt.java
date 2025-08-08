@@ -496,7 +496,7 @@ public final class Encrypt {
      * </pre>
      */
     public static Map<String, String> rsaClientEncodeWithValueAes(String publicKey, String data) {
-        // 随机数, 用来做 aes 的密钥, 长度 16 位. 用 rsa 基于公钥加密这个值, 用 aes 基于这个值加密数据
+        // 随机数用来做 aes 的密钥,  用 rsa 基于公钥加密这个值, 用 aes 基于这个值加密数据
         String key = U.uuid();
         return Map.of("k", rsaClientEncode(publicKey, key), "v", aesEncode(data, key));
     }
@@ -531,7 +531,7 @@ public final class Encrypt {
         if (!SUPPORT_ECC) {
             throw new RuntimeException("不支持 ECC 算法, 缺少对应的依赖. 见: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on");
         }
-        // 随机数, 用来做 aes 的密钥, 长度 16 位. 用 ecc 基于公钥加密这个值, 用 aes 基于这个值加密数据
+        // 随机数用来做 aes 的密钥,  用 ecc 基于公钥加密这个值, 用 aes 基于这个值加密数据
         String key = U.uuid();
         return Map.of("k", eccClientEncode(publicKey, key), "v", aesEncode(data, key));
     }
@@ -566,7 +566,7 @@ public final class Encrypt {
      * </pre>
      */
     public static Map<String, String> rsaClientEncodeWithValueDes(String publicKey, String data) {
-        // 随机数, 用来做 aes 的密钥, 长度 8 位. 数据用这个来加密, 用 rsa 私钥加密这个值也传过去
+        // 随机数用来做 aes 的密钥, 数据用这个来加密, 用 rsa 私钥加密这个值也传过去
         String key = U.uuid();
         return Map.of("k", rsaClientEncode(publicKey, key), "v", desEncode(data, key));
     }
@@ -601,7 +601,7 @@ public final class Encrypt {
         if (!SUPPORT_ECC) {
             throw new RuntimeException("不支持 ECC 算法, 缺少对应的依赖. 见: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on");
         }
-        // 随机数, 用来做 aes 的密钥, 长度 8 位. 数据用这个来加密, 用 ecc 私钥加密这个值也传过去
+        // 随机数用来做 aes 的密钥, 数据用这个来加密, 用 ecc 私钥加密这个值也传过去
         String key = U.uuid();
         return Map.of("k", eccClientEncode(publicKey, key), "v", desEncode(data, key));
     }
