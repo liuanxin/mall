@@ -26,8 +26,12 @@ public class LogTraceFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+        HttpServletRequest request = (HttpServletRequest) req;
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            chain.doFilter(req, res);
+            return;
+        }
         try {
-            HttpServletRequest request = (HttpServletRequest) req;
             String traceId = request.getHeader(Const.TRACE);
             String ip = RequestUtil.getRealIp(request);
             LogUtil.putTraceAndIp(traceId, ip, LocaleContextHolder.getLocale());
