@@ -116,7 +116,7 @@ public class EncryptTest {
     @Test
     public void eccCheck() {
         System.out.println("===== ECC =====");
-        KeyPair pair = EccEncrypt.genericEccKeyPair();
+        KeyPair pair = EccEncrypt.generateEccKeyPair();
         String publicKey = EccEncrypt.publicKeyToEccStr(pair.getPublic());
         String privateKey = EccEncrypt.privateKeyToEccStr(pair.getPrivate());
 //        String publicKey = "04b7668e1d04f9f5c821f7daef701115da26701e791b885707bed5cf5a8dab255bbb2cefc1f73bd673757d87e2a9954b780a59515dcaab091b4c66e4aab9954271";

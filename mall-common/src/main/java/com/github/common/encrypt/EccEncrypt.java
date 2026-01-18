@@ -115,30 +115,15 @@ public final class EccEncrypt {
     }
     */
 
-    private static final String ECC = "EC";
-    /** 用来做数据验签时的算法 */
-    private static final String ECC_SIGN = "SHA256withECDSA";
-
     // 支持 ECC 算法的依赖. 见: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on
     static {
         Security.addProvider(new BouncyCastleProvider());
     }
 
-    public static KeyPair genericEccKeyPair() {
-        try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance(ECC, "BC");
-            // 曲线名
-            // secp256r1 [NIST P-256,X9.62 prime256v1] (1.2.840.10045.3.1.7)
-            keyGen.initialize(new ECGenParameterSpec("secp256r1"));
-            return keyGen.generateKeyPair();
-        } catch (Exception e) {
-            throw new RuntimeException("用 ECC 生成密钥对时异常", e);
-        }
-    }
-
     public static KeyPair generateEccKeyPair() {
         try {
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC", "BC");
+            // 曲线名 secp256r1 [NIST P-256,X9.62 prime256v1] (1.2.840.10045.3.1.7)
             keyGen.initialize(new ECGenParameterSpec("secp256r1"));
             return keyGen.generateKeyPair();
         } catch (Exception e) {
