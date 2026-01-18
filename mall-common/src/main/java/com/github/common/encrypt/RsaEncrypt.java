@@ -12,6 +12,87 @@ import java.util.Map;
 
 public final class RsaEncrypt {
 
+    /*
+    // pnpm i jsencrypt crypto-js
+    import JSEncrypt from 'jsencrypt';
+    import CryptoJS from 'crypto-js';
+
+    // 使用 crypto-js 计算 SHA256
+    const sha256 = (str) => {
+        return CryptoJS.SHA256(str).toString();
+    }
+
+    // 生成密钥对(公钥 私钥)
+    const rsaGenerateKey = (keyLen = 512) => {
+        const crypt = new JSEncrypt({ default_key_size: keyLen });
+        return { priKey: crypt.getPrivateKey(), pubKey: crypt.getPublicKey() };
+    }
+
+    const rsaPub = (pubKey) => {
+        const pub = new JSEncrypt();
+        pub.setPublicKey(pubKey);
+        return pub;
+    }
+    const rsaPri = (priKey) => {
+        const pri = new JSEncrypt();
+        pri.setPrivateKey(priKey);
+        return pri;
+    }
+
+    // 使用公钥加密
+    export const rsaEncrypt = (pubKey, data) => {
+        return rsaPub(pubKey).encrypt(data);
+    }
+
+    // 使用私钥解密(通常用在服务端, 当前不在客户端用)
+    const rsaDecrypt = (priKey, encryptData) => {
+        return rsaPri(priKey).decrypt(encryptData);
+    }
+
+    // 使用私钥生成签名(通常用在服务端, 当前不在客户端用)
+    const rsaSign = (priKey, data) => {
+        return rsaPri(priKey).sign(data, sha256, 'sha256');
+    }
+
+    // 使用公钥验证签名, 正确则返回 true
+    export const rsaVerify = (pubKey, data, sign) => {
+        return rsaPub(pubKey).verify(data, sign, sha256);
+    }
+
+    function rsaExample() {
+        // 1. 初始化并生成密钥对
+        const pair = rsaGenerateKey();
+        const publicKey = pair.pubKey;
+        const privateKey = pair.priKey;
+
+        console.log('--- RSA ---');
+        console.log('公钥:', publicKey);
+        console.log('私钥:', privateKey);
+
+        const originalData = 'Hello RSA 中文 2026!';
+        console.log('原文:', originalData);
+
+        // 公钥加密
+        let start = Date.now();
+        const encrypted = rsaEncrypt(publicKey, originalData);
+        console.log(`公钥加密后: ${encrypted}, 耗时:(${Date.now() - start})`);
+        // 私钥解密
+        start = Date.now();
+        const decrypted = rsaDecrypt(privateKey, encrypted);
+        console.log(`私钥解密后: ${decrypted}, 耗时:(${Date.now() - start})`);
+
+        // 私钥签名
+        start = Date.now();
+        const sign = rsaSign(privateKey, originalData);
+        console.log(`私钥生成签名: ${sign}, 耗时:(${Date.now() - start})`);
+        // 公钥校验
+        start = Date.now();
+        const v = rsaVerify(publicKey, originalData, sign);
+        console.log(`公钥验证签名: ${v}, 耗时:(${Date.now() - start})`);
+        console.log('--- RSA ---');
+    }
+    */
+
     /** 加密数据的长度不能超过 53 */
     private static final String RSA = "RSA";
     /** 用来做数据验签时的算法 */

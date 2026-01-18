@@ -22,6 +22,99 @@ import java.util.Base64;
 
 public final class EccEncrypt {
 
+    /*
+    // pnpm i elliptic crypto-js
+    import elliptic from 'elliptic';
+    import CryptoJS from 'crypto-js';
+
+    // 曲线: p256 对应 secp256r1
+    const ecc = new elliptic.ec('p256');
+    // 使用 secp256k1 曲线 (比特币/以太坊同款)
+    // const ecc = new elliptic.ecc('secp256k1');
+
+    // 生成密钥对(公钥 私钥)
+    const eccGenerateKey = () => {
+        const key = ecc.genKeyPair();
+        return { priKey: key.getPrivate('hex'), pubKey: key.getPublic(false, 'hex') };
+    }
+
+    const eccPub = (pubKey) => {
+        return ecc.keyFromPublic(pubKey, 'hex');
+    }
+    const eccPri = (priKey) => {
+        return ecc.keyFromPrivate(priKey);
+    }
+
+    // 使用公钥加密(客户端用)
+    export const eccEncrypt = (pubKey, data) => {
+        const key = ecc.genKeyPair();
+        const sharedSecret = key.derive(eccPub(pubKey).getPublic()).toString(16).padStart(64, '0');
+        const aesKey = CryptoJS.enc.Hex.parse(sharedSecret.substring(0, 32));
+        const iv = CryptoJS.lib.WordArray.random(128 / 8);
+        const encrypted = CryptoJS.AES.encrypt(data, aesKey, { iv: iv });
+        // 使用 aes
+        return key.getPublic(false, 'hex') + iv.toString() + encrypted.toString();
+    }
+
+    // 使用私钥解密(通常用在服务端, 当前不在客户端用)
+    const eccDecrypt = (priKey, encryptData) => {
+        const pubKey = encryptData.substring(0, 130);
+        const ivHex = encryptData.substring(130, 162);
+        const ciphertext = encryptData.substring(162);
+        const sharedSecret = eccPri(priKey).derive(eccPub(pubKey).getPublic()).toString(16).padStart(64, '0');
+        const aesKey = CryptoJS.enc.Hex.parse(sharedSecret.substring(0, 32));
+        const iv = CryptoJS.enc.Hex.parse(ivHex);
+        return CryptoJS.AES.decrypt(ciphertext, aesKey, { iv: iv }).toString(CryptoJS.enc.Utf8);
+    }
+
+    // 使用私钥生成签名(通常用在服务端, 当前不在客户端用)
+    const eccSign = (priKey, data) => {
+        // 使用 UTF-8 编码字符串
+        const msgHash = CryptoJS.SHA256(CryptoJS.enc.Utf8.parse(data)).toString();
+        return eccPri(priKey).sign(msgHash).toDER('hex');
+    }
+
+    // 使用公钥验证签名, 正确则返回 true
+    export const eccVerify = (pubKey, data, sign) => {
+        // 使用 UTF-8 编码字符串
+        const msgHash = CryptoJS.SHA256(CryptoJS.enc.Utf8.parse(data)).toString();
+        return eccPub(pubKey).verify(msgHash, sign);
+    }
+
+    function eccExample() {
+        // 1. 初始化并生成密钥对
+        const pair = eccGenerateKey();
+        const publicKey = pair.pubKey;
+        const privateKey = pair.priKey;
+
+        console.log('--- ECC ---');
+        console.log('公钥:', publicKey);
+        console.log('私钥:', privateKey);
+
+        const originalData = 'Hello ECC 中文 2026!';
+        console.log('原文:', originalData);
+
+        // 公钥加密
+        let start = Date.now();
+        const encrypted = eccEncrypt(publicKey, originalData);
+        console.log(`公钥加密后: ${encrypted}, 耗时:(${Date.now() - start})`);
+        // 私钥解密
+        start = Date.now();
+        const decrypted = eccDecrypt(privateKey, encrypted);
+        console.log(`私钥解密后: ${decrypted}, 耗时:(${Date.now() - start})`);
+
+        // 私钥签名
+        start = Date.now();
+        const sign = eccSign(privateKey, originalData);
+        console.log(`私钥生成签名: ${sign}, 耗时:(${Date.now() - start})`);
+        // 公钥校验
+        start = Date.now();
+        const v = eccVerify(publicKey, originalData, sign);
+        console.log(`公钥验证签名: ${v}, 耗时:(${Date.now() - start})`);
+        console.log('--- ECC ---');
+    }
+    */
+
     private static final String ECC = "EC";
     /** 用来做数据验签时的算法 */
     private static final String ECC_SIGN = "SHA256withECDSA";
