@@ -1,16 +1,20 @@
 package com.github.global.service;
 
+import com.github.common.util.A;
 import com.github.common.util.U;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
@@ -30,6 +34,11 @@ public class RedisService {
     /** 从 redis 中异步删值, value 非 string 时尽量用这个. 对应命令: UNLINK key */
     public void asyncDelete(String key) {
         redisTemplate.unlink(key);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public void batchDelete(Collection keys) {
+        redisTemplate.delete(keys);
     }
 
     /** 往 redis 中放值, 对应命令: SET key value */
@@ -69,6 +78,47 @@ public class RedisService {
     /** 获取 key 的超时时间(单位: 秒）, 对应命令: TTL key */
     public long getExpireTime(String key) {
         return U.toLong(redisTemplate.getExpire(key));
+    }
+
+
+    /**
+     * <pre>执行 scan 并批量处理, 比如下面的代码,
+     * 会运行 scan 0  match user:xxx:* count 1000 命令, redis 会返回一个新的游标值和一个列表,
+     * 比如 900 和 [ 'user:xxx:a', 'user:xxx:b' ] 表示从头开始, 扫描了 1000 条数据库, 当前在 900 的位置, 找到两条记录
+     * 后续会再运行 scan 900  match user:xxx:* count 1000 命令, 当返回的记录达到了 100 条时, 会操作 batchDelete 操作
+     * 最后会将剩余的做 batchDelete 操作
+     *
+     * try {
+     *     scan("user:" + id + ":*", 1000, 100, keys -> batchDelete(keys));
+     * } cath (Exception e) {
+     *     log.error("处理时异常", e);
+     * }
+     * </pre>
+     *
+     * @param pattern 扫描时的格式
+     * @param singleCount 单次扫描的数量
+     * @param singleActionCount 一次处理的数量
+     * @param consumer 实际的处理
+     */
+    public void scan(String pattern, int singleCount, int singleActionCount, Consumer<List<String>> consumer) {
+        if (U.isBlank(pattern)) {
+            return;
+        }
+        int sc = singleCount <= 0 ? 100 : singleCount;
+        int sac = singleActionCount <= 0 ? 100 : singleActionCount;
+        try (Cursor<Object> cursor = redisTemplate.scan(ScanOptions.scanOptions().match(pattern).count(sc).build())) {
+            List<String> keys = new ArrayList<>();
+            while (cursor.hasNext()) {
+                keys.add(U.toStr(cursor.next()));
+                if (keys.size() >= sac) {
+                    consumer.accept(keys);
+                    keys.clear();
+                }
+            }
+            if (A.isNotEmpty(keys)) {
+                consumer.accept(keys);
+            }
+        }
     }
 
 

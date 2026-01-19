@@ -20,9 +20,9 @@ public class ManagerIndexController {
         return "manager-api";
     }
 
-    @GetMapping("/code")
-    public void code(HttpServletResponse response, String width, String height,
-                     String count, String style, String background, String color) throws IOException {
+    @GetMapping("/captcha")
+    public void captcha(HttpServletResponse response, String width, String height,
+                       String count, String style, String background, String color) throws IOException {
         SecurityCodeUtil.Code code = SecurityCodeUtil.generateCode(count, style, width, height, background, color);
 
         // 往 session 里面丢值

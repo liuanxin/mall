@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.net.IDN;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -213,6 +214,42 @@ public final class RequestUtil {
             }
         }
         return U.EMPTY;
+    }
+
+    public static String getRootDomain() {
+        return getRootDomain(getRequest());
+    }
+    public static String getRootDomain(HttpServletRequest request) {
+        if (U.isNull(request)) {
+            return U.EMPTY;
+        }
+        String serverName = request.getServerName();
+        if (U.isBlank(serverName)) {
+            return U.EMPTY;
+        }
+
+        // 处理 IP 地址或 localhost
+        if (serverName.matches("^(\\d{1,3}\\.){3}\\d{1,3}$") || "localhost".equalsIgnoreCase(serverName)) {
+            return serverName;
+        }
+
+        // 将国际域名转换为 ASCII (例如：中文域名)
+        String domain = IDN.toASCII(serverName).toLowerCase();
+        // 简单的二级域名拆解逻辑
+        String[] parts = domain.split("\\.");
+        int len = parts.length;
+        if (len <= 2) {
+            return domain;
+        }
+
+        // 特殊处理常见的复合顶级域名，如 .com.cn, .net.cn, .org.cn, 如果倒数第二位是这些关键词，则取最后三位
+        String lastTwo = parts[len - 2];
+        if (lastTwo.equals("com") || lastTwo.equals("net") || lastTwo.equals("org")
+                || lastTwo.equals("gov") || lastTwo.equals("edu")) {
+            return parts[len - 3] + "." + parts[len - 2] + "." + parts[len - 1];
+        }
+        // 默认取最后两位 (例如: boss.xx.com -> xx.com)
+        return parts[len - 2] + "." + parts[len - 1];
     }
 
     public static Map<String, String> parseParam(boolean des) {
