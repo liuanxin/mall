@@ -93,6 +93,8 @@ public class RedisService {
      * } cath (Exception e) {
      *     log.error("处理时异常", e);
      * }
+     *
+     * 注意 scan 是 O(N) 的, 尽管其不像 keys 命令会阻塞主线程, 但是当 redis 中有大量数据时, 依然会产生 cpu 抖动
      * </pre>
      *
      * @param pattern 扫描时的格式
@@ -211,6 +213,12 @@ public class RedisService {
         // 释放锁的时候先去缓存中取, 如果值跟之前存进去的一样才进行删除操作, 避免当前线程执行太长, 超时后其他线程又设置了值在处理. 之后当前线程又执行此动作
         String script = "if redis.call('get', KEYS[1]) == KEYS[2] then redis.call('del', KEYS[1]); end";
         redisTemplate.execute(new DefaultRedisScript<>(script, Long.class), Arrays.asList(key, value));
+    }
+
+    /** 运行 lua 脚本 */
+    public <T> T runScript(String script, Class<T> clazz, List<Object> params) {
+        DefaultRedisScript<T> sc = new DefaultRedisScript<>(script, clazz);
+        return redisTemplate.execute(sc, params);
     }
 
 
