@@ -10,7 +10,6 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.data.redis.core.script.RedisScript;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -197,10 +196,15 @@ public class RedisService {
      * @return 返回 true 则表示获取到了锁
      */
     public boolean tryLock(String key, String value, long lockTime, TimeUnit unit) {
-        String script = "if redis.call('set', KEYS[1], KEYS[2], 'PX', KEYS[3], 'NX') then return 1 else return 0 end";
-        RedisScript<Integer> redisScript = new DefaultRedisScript<>(script, Integer.class);
-        List<Object> keys = Arrays.asList(key, value, unit.toMillis(lockTime));
-        return U.toInt(redisTemplate.execute(redisScript, keys)) == 1;
+        String script = """
+                if redis.call('set', KEYS[1], ARGV[1], 'PX', ARGV[2], 'NX') then
+                    return 1;
+                else
+                    return 0;
+                end
+                """;
+        Integer i = runScript(script, Integer.class, Collections.singletonList(key), value, unit.toMillis(lockTime));
+        return U.toInt(i) == 1;
     }
 
     /**
@@ -211,14 +215,18 @@ public class RedisService {
      */
     public void unlock(String key, String value) {
         // 释放锁的时候先去缓存中取, 如果值跟之前存进去的一样才进行删除操作, 避免当前线程执行太长, 超时后其他线程又设置了值在处理. 之后当前线程又执行此动作
-        String script = "if redis.call('get', KEYS[1]) == KEYS[2] then redis.call('del', KEYS[1]); end";
-        redisTemplate.execute(new DefaultRedisScript<>(script, Long.class), Arrays.asList(key, value));
+        String script = """
+                if redis.call('get', KEYS[1]) == ARGV[1] then
+                    redis.call('del', KEYS[1]);
+                end
+                return 1;
+                """;
+        runScript(script, Integer.class, Collections.singletonList(key), value);
     }
 
     /** 运行 lua 脚本 */
-    public <T> T runScript(String script, Class<T> clazz, List<Object> params) {
-        DefaultRedisScript<T> sc = new DefaultRedisScript<>(script, clazz);
-        return redisTemplate.execute(sc, params);
+    public <T> T runScript(String script, Class<T> clazz, List<Object> keys, Object... args) {
+        return redisTemplate.execute(new DefaultRedisScript<>(script, clazz), keys, args);
     }
 
 
