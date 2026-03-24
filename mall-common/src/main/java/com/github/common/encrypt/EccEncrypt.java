@@ -42,7 +42,7 @@ public final class EccEncrypt {
     import elliptic from 'elliptic'
     import CryptoJS from 'crypto-js'
     
-    const hasTest = import.meta.env.DEV
+    const hasDev = import.meta.env.DEV
     
     const ec = new elliptic.ec('p256')
     
@@ -75,7 +75,7 @@ public final class EccEncrypt {
         // 4. 拼接：临时公钥(130位) + IV(32位) + 密文
         const result = ephemeralKey.getPublic(false, 'hex') + iv.toString() + encrypted.toString()
     
-        if (hasTest) {
+        if (hasDev) {
             console.log(`ECC 公钥(${pubKey})加密(${strData}) -> (${result})`)
         }
         return result
@@ -102,7 +102,7 @@ public final class EccEncrypt {
         const decryptedBytes = CryptoJS.AES.decrypt(ciphertext, aesKey, { iv: iv })
         const result = decryptedBytes.toString(CryptoJS.enc.Utf8)
     
-        if (hasTest) {
+        if (hasDev) {
             console.log(`ECC 私钥(${priKey})解密(${encryptData}) -> (${result})`)
         }
         return result
@@ -112,7 +112,7 @@ public final class EccEncrypt {
     export const eccSign = (priKey, data) => {
         const msgHash = CryptoJS.SHA256(CryptoJS.enc.Utf8.parse(data)).toString()
         const sign = getPriKeyObj(priKey).sign(msgHash).toDER('hex')
-        if (hasTest) {
+        if (hasDev) {
             console.log(`ECC 私钥(${priKey})给数据(${data})生成签名(${sign})`)
         }
         return sign
@@ -122,7 +122,7 @@ public final class EccEncrypt {
     export const eccVerify = (pubKey, data, sign) => {
         const msgHash = CryptoJS.SHA256(CryptoJS.enc.Utf8.parse(data)).toString()
         const verify = getPubKeyObj(pubKey).verify(msgHash, sign)
-        if (hasTest) {
+        if (hasDev) {
             console.log(`ECC 公钥(${pubKey})给数据(${data})验签(${sign}) -> (${verify})`)
         }
         return verify
