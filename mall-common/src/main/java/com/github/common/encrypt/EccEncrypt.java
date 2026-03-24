@@ -20,6 +20,17 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Base64;
 
+/**
+ * <pre>
+ * ECC 加密工具类.
+ *
+ * 在需要客户端加密服务端解密的场景时, 客户端会在最开始请求服务端获取到配置的公钥并保存到本地缓存,
+ * 后续在需要加密的接口上使用公钥加密, 服务端用配置的私钥解密.
+ *
+ * 在需要服务端加密客户端解密的场景时, 客户端在请求前生成临时密钥对,
+ * 将临时公钥传递到服务端, 服务端使用公钥加密后返回数据, 客户端用临时私钥解密.
+ * </pre>
+ */
 public final class EccEncrypt {
 
     /*

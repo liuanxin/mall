@@ -422,9 +422,11 @@ public final class Arr {
         return listToMap(list, keyFunc, MapValueDuplicateType.COVER);
     }
     /** 用指定的方法将 List 转换成 HashMap(过滤 key 和 value 为空) */
-    public static <K, V> Map<K, V> listToMap(Collection<V> list,
-                                             Function<? super V, K> keyFunc,
-                                             MapValueDuplicateType duplicateType) {
+    public static <K, V> Map<K, V> listToMap(
+            Collection<V> list,
+            Function<? super V, K> keyFunc,
+            MapValueDuplicateType duplicateType
+    ) {
         return listToMap(new HashMap<>(), list, keyFunc, duplicateType);
     }
 
@@ -433,46 +435,58 @@ public final class Arr {
         return listToLinkedMap(list, keyFunc, MapValueDuplicateType.COVER);
     }
     /** 用指定的方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空) */
-    public static <K, V> Map<K, V> listToLinkedMap(Collection<V> list,
-                                                   Function<? super V, K> keyFunc,
-                                                   MapValueDuplicateType duplicateType) {
+    public static <K, V> Map<K, V> listToLinkedMap(
+            Collection<V> list,
+            Function<? super V, K> keyFunc,
+            MapValueDuplicateType duplicateType
+    ) {
         return listToMap(new LinkedHashMap<>(), list, keyFunc, duplicateType);
     }
 
 
     /** 用两个指定方法将 List 转换成 HashMap(过滤 key 和 value 为空), 如果同样的 key 有多个值, 后面将覆盖前面 */
-    public static <T, K, V> Map<K, V> listToMapKeyValue(Collection<T> list,
-                                                        Function<? super T, K> keyFunc,
-                                                        Function<? super T, V> valueFunc) {
+    public static <T, K, V> Map<K, V> listToMapKeyValue(
+            Collection<T> list,
+            Function<? super T, K> keyFunc,
+            Function<? super T, V> valueFunc
+    ) {
         return listToMapKeyValue(list, keyFunc, valueFunc, MapValueDuplicateType.COVER);
     }
     /** 用两个指定方法将 List 转换成 HashMap(过滤 key 和 value 为空) */
-    public static <T, K, V> Map<K, V> listToMapKeyValue(Collection<T> list,
-                                                        Function<? super T, K> keyFunc,
-                                                        Function<? super T, V> valueFunc,
-                                                        MapValueDuplicateType duplicateType) {
+    public static <T, K, V> Map<K, V> listToMapKeyValue(
+            Collection<T> list,
+            Function<? super T, K> keyFunc,
+            Function<? super T, V> valueFunc,
+            MapValueDuplicateType duplicateType
+    ) {
         return listToMapKeyValue(new HashMap<>(), list, keyFunc, valueFunc, duplicateType);
     }
 
     /** 用两个指定方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空), 如果同样的 key 有多个值, 后面将覆盖前面 */
-    public static <T, K, V> Map<K, V> listToLinkedMapKeyValue(Collection<T> list,
-                                                              Function<? super T, K> keyFunc,
-                                                              Function<? super T, V> valueFunc) {
+    public static <T, K, V> Map<K, V> listToLinkedMapKeyValue(
+            Collection<T> list,
+            Function<? super T, K> keyFunc,
+            Function<? super T, V> valueFunc
+    ) {
         return listToLinkedMapKeyValue(list, keyFunc, valueFunc, MapValueDuplicateType.COVER);
     }
     /** 用两个指定方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空) */
-    public static <T, K, V> Map<K, V> listToLinkedMapKeyValue(Collection<T> list,
-                                                              Function<? super T, K> keyFunc,
-                                                              Function<? super T, V> valueFunc,
-                                                              MapValueDuplicateType duplicateType) {
+    public static <T, K, V> Map<K, V> listToLinkedMapKeyValue(
+            Collection<T> list,
+            Function<? super T, K> keyFunc,
+            Function<? super T, V> valueFunc,
+            MapValueDuplicateType duplicateType
+    ) {
         return listToMapKeyValue(new LinkedHashMap<>(), list, keyFunc, valueFunc, duplicateType);
     }
 
 
-    private static <K, V> Map<K, V> listToMap(Map<K, V> returnMap,
-                                              Collection<V> list,
-                                              Function<? super V, K> keyFunc,
-                                              MapValueDuplicateType duplicateType) {
+    private static <K, V> Map<K, V> listToMap(
+            Map<K, V> returnMap,
+            Collection<V> list,
+            Function<? super V, K> keyFunc,
+            MapValueDuplicateType duplicateType
+    ) {
         if (isNotEmpty(list)) {
             for (V v : list) {
                 if (Obj.isNotNull(v)) {
@@ -489,11 +503,13 @@ public final class Arr {
         }
         return returnMap;
     }
-    private static <T, K, V> Map<K, V> listToMapKeyValue(Map<K, V> returnMap,
-                                                         Collection<T> list,
-                                                         Function<? super T, K> keyFunc,
-                                                         Function<? super T, V> valueFunc,
-                                                         MapValueDuplicateType duplicateType) {
+    private static <T, K, V> Map<K, V> listToMapKeyValue(
+            Map<K, V> returnMap,
+            Collection<T> list,
+            Function<? super T, K> keyFunc,
+            Function<? super T, V> valueFunc,
+            MapValueDuplicateType duplicateType
+    ) {
         if (isNotEmpty(list)) {
             for (T obj : list) {
                 if (Obj.isNotNull(obj)) {
@@ -540,10 +556,12 @@ public final class Arr {
     public static <K, V> Map<K, Set<V>> listToLinkedMapLinkedSet(Collection<V> list, Function<? super V, K> keyFunc) {
         return listToMapCollection(list, keyFunc, new LinkedHashMap<>(), LinkedHashSet::new);
     }
-    private static <K, V, C extends Collection<V>> Map<K, C> listToMapCollection(Collection<V> list,
-                                                                                 Function<? super V, K> keyFunc,
-                                                                                 Map<K, C> multiMap,
-                                                                                 Supplier<C> instance) {
+    private static <K, V, C extends Collection<V>> Map<K, C> listToMapCollection(
+            Collection<V> list,
+            Function<? super V, K> keyFunc,
+            Map<K, C> multiMap,
+            Supplier<C> instance
+    ) {
         if (Arr.isNotEmpty(list)) {
             for (V v : list) {
                 if (Obj.isNotNull(v)) {
@@ -559,48 +577,62 @@ public final class Arr {
 
 
     /** 用两个指定方法将 List 转换成 HashMap(过滤 key 和 value 为空), 其中 map 的 value 是 List */
-    public static <T, K, V> Map<K, List<V>> listToMapKeyValueList(Collection<T> list,
-                                                                  Function<? super T, K> keyFunc,
-                                                                  Function<? super T, V> valueFunc) {
+    public static <T, K, V> Map<K, List<V>> listToMapKeyValueList(
+            Collection<T> list,
+            Function<? super T, K> keyFunc,
+            Function<? super T, V> valueFunc
+    ) {
         return listToMapKeyValueCollection(list, keyFunc, valueFunc, new HashMap<>(), ArrayList::new);
     }
     /** 用两个指定方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空), 其中 map 的 value 是 List */
-    public static <T, K, V> Map<K, List<V>> listToLinkedMapKeyValueList(Collection<T> list,
-                                                                        Function<? super T, K> keyFunc,
-                                                                        Function<? super T, V> valueFunc) {
+    public static <T, K, V> Map<K, List<V>> listToLinkedMapKeyValueList(
+            Collection<T> list,
+            Function<? super T, K> keyFunc,
+            Function<? super T, V> valueFunc
+    ) {
         return listToMapKeyValueCollection(list, keyFunc, valueFunc, new LinkedHashMap<>(), ArrayList::new);
     }
 
     /** 用两个指定方法将 List 转换成 HashMap(过滤 key 和 value 为空), 其中 map 的 value 是 HashSet */
-    public static <T, K, V> Map<K, Set<V>> listToMapKeyValueSet(Collection<T> list,
-                                                                Function<? super T, K> keyFunc,
-                                                                Function<? super T, V> valueFunc) {
+    public static <T, K, V> Map<K, Set<V>> listToMapKeyValueSet(
+            Collection<T> list,
+            Function<? super T, K> keyFunc,
+            Function<? super T, V> valueFunc
+    ) {
         return listToMapKeyValueCollection(list, keyFunc, valueFunc, new HashMap<>(), HashSet::new);
     }
     /** 用两个指定方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空), 其中 map 的 value 是 HashSet */
-    public static <T, K, V> Map<K, Set<V>> listToLinkedMapKeyValueSet(Collection<T> list,
-                                                                      Function<? super T, K> keyFunc,
-                                                                      Function<? super T, V> valueFunc) {
+    public static <T, K, V> Map<K, Set<V>> listToLinkedMapKeyValueSet(
+            Collection<T> list,
+            Function<? super T, K> keyFunc,
+            Function<? super T, V> valueFunc
+    ) {
         return listToMapKeyValueCollection(list, keyFunc, valueFunc, new LinkedHashMap<>(), HashSet::new);
     }
 
     /** 用两个指定方法将 List 转换成 HashMap(过滤 key 和 value 为空), 其中 map 的 value 是 LinkedHashSet */
-    public static <T, K, V> Map<K, Set<V>> listToMapKeyValueLinkedSet(Collection<T> list,
-                                                                      Function<? super T, K> keyFunc,
-                                                                      Function<? super T, V> valueFunc) {
+    public static <T, K, V> Map<K, Set<V>> listToMapKeyValueLinkedSet(
+            Collection<T> list,
+            Function<? super T, K> keyFunc,
+            Function<? super T, V> valueFunc
+    ) {
         return listToMapKeyValueCollection(list, keyFunc, valueFunc, new HashMap<>(), LinkedHashSet::new);
     }
     /** 用两个指定方法将 List 转换成 LinkedHashMap(过滤 key 和 value 为空), 其中 map 的 value 是 LinkedHashSet */
-    public static <T, K, V> Map<K, Set<V>> listToLinkedMapKeyValueLinkedSet(Collection<T> list,
-                                                                            Function<? super T, K> keyFunc,
-                                                                            Function<? super T, V> valueFunc) {
+    public static <T, K, V> Map<K, Set<V>> listToLinkedMapKeyValueLinkedSet(
+            Collection<T> list,
+            Function<? super T, K> keyFunc,
+            Function<? super T, V> valueFunc
+    ) {
         return listToMapKeyValueCollection(list, keyFunc, valueFunc, new LinkedHashMap<>(), LinkedHashSet::new);
     }
-    private static <T, K, V, C extends Collection<V>> Map<K, C> listToMapKeyValueCollection(Collection<T> list,
-                                                                                            Function<? super T, K> keyFunc,
-                                                                                            Function<? super T, V> valueFunc,
-                                                                                            Map<K, C> multiMap,
-                                                                                            Supplier<C> instance) {
+    private static <T, K, V, C extends Collection<V>> Map<K, C> listToMapKeyValueCollection(
+            Collection<T> list,
+            Function<? super T, K> keyFunc,
+            Function<? super T, V> valueFunc,
+            Map<K, C> multiMap,
+            Supplier<C> instance
+    ) {
         if (Arr.isNotEmpty(list)) {
             for (T obj : list) {
                 if (Obj.isNotNull(obj)) {
