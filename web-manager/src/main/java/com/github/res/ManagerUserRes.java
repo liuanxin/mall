@@ -1,8 +1,8 @@
 package com.github.res;
 
 import com.github.common.json.JsonUtil;
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 import com.github.liuanxin.api.annotation.ApiReturn;
 import com.github.manager.model.ManagerMenu;
 import com.github.manager.model.ManagerUser;
@@ -54,9 +54,9 @@ public class ManagerUserRes {
 
     public static ManagerUserRes assemblyData(ManagerUser user, List<ManagerMenu> menus) {
         ManagerUserRes res = JsonUtil.convert(user, ManagerUserRes.class);
-        if (U.isNotNull(res)) {
+        if (Obj.isNotNull(res)) {
             List<ManagerMenuRes> menuList = JsonUtil.convertList(menus, ManagerMenuRes.class);
-            if (A.isNotEmpty(menuList)) {
+            if (Arr.isNotEmpty(menuList)) {
                 res.setMenus(menuList);
             }
         }

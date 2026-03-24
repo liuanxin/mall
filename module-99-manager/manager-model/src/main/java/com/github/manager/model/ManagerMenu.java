@@ -1,7 +1,7 @@
 package com.github.manager.model;
 
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
@@ -40,8 +40,8 @@ public class ManagerMenu {
     private List<ManagerPermission> permissionList;
 
     private static void handle(ManagerMenu menu, Map<String, List<ManagerMenu>> menuMap, int depth) {
-        List<ManagerMenu> menus = menuMap.get(U.toStr(menu.getId()));
-        if (A.isNotEmpty(menus) && depth <= U.MAX_DEPTH) {
+        List<ManagerMenu> menus = menuMap.get(Obj.toStr(menu.getId()));
+        if (Arr.isNotEmpty(menus) && depth <= Obj.MAX_DEPTH) {
             for (ManagerMenu m : menus) {
                 handle(m, menuMap, depth + 1);
             }
@@ -52,39 +52,39 @@ public class ManagerMenu {
     public static Map<String, List<ManagerMenu>> handleRelation(List<ManagerMenu> menus,
                                                                 List<ManagerPermission> permissions,
                                                                 Map<String, Collection<Long>> roleIdMenuIdMap) {
-        if (A.isEmpty(roleIdMenuIdMap) || A.isNotEmpty(menus)) {
+        if (Arr.isEmpty(roleIdMenuIdMap) || Arr.isNotEmpty(menus)) {
             return Collections.emptyMap();
         }
 
-        Map<Long, List<ManagerPermission>> mpMap = A.listToMapList(permissions, ManagerPermission::getMenuId);
+        Map<Long, List<ManagerPermission>> mpMap = Arr.listToMapList(permissions, ManagerPermission::getMenuId);
 
         List<ManagerMenu> firstMenuList = new ArrayList<>();
         Map<String, List<ManagerMenu>> relationMap = new HashMap<>();
         for (ManagerMenu menu : menus) {
             // 将权限写进菜单
             List<ManagerPermission> mps = mpMap.get(menu.getId());
-            if (A.isNotEmpty(mps)) {
+            if (Arr.isNotEmpty(mps)) {
                 menu.setPermissionList(mps);
             }
 
             if (menu.getPid() == ROOT_ID) {
                 firstMenuList.add(menu);
             } else {
-                relationMap.computeIfAbsent(U.toStr(menu.getPid()), (k1) -> new ArrayList<>()).add(menu);
+                relationMap.computeIfAbsent(Obj.toStr(menu.getPid()), (k1) -> new ArrayList<>()).add(menu);
             }
         }
         Map<String, ManagerMenu> tmpMap = new HashMap<>();
         for (ManagerMenu menu : firstMenuList) {
             handle(menu, relationMap, 0);
-            tmpMap.put(U.toStr(menu.getId()), menu);
+            tmpMap.put(Obj.toStr(menu.getId()), menu);
         }
 
         Map<String, List<ManagerMenu>> returnMap = new HashMap<>();
-        if (A.isNotEmpty(tmpMap)) {
+        if (Arr.isNotEmpty(tmpMap)) {
             for (Map.Entry<String, Collection<Long>> entry : roleIdMenuIdMap.entrySet()) {
                 List<ManagerMenu> managerMenus = new ArrayList<>();
                 for (Long mid : entry.getValue()) {
-                    managerMenus.add(tmpMap.get(U.toStr(mid)));
+                    managerMenus.add(tmpMap.get(Obj.toStr(mid)));
                 }
                 returnMap.put(entry.getKey(), managerMenus);
             }
@@ -94,7 +94,7 @@ public class ManagerMenu {
 
     /** 将有层级关系的菜单平级返回 */
     static List<ManagerMenu> handleAllMenu(List<ManagerMenu> menus) {
-        if (A.isEmpty(menus)) {
+        if (Arr.isEmpty(menus)) {
             return Collections.emptyList();
         } else {
             List<ManagerMenu> returnList = new ArrayList<>();
@@ -121,12 +121,12 @@ public class ManagerMenu {
         allMenuUseDepthWithDepth(returnList, menus, 0);
     }
     private static void allMenuUseDepthWithDepth(List<ManagerMenu> returnList, List<ManagerMenu> menus, int depth) {
-        if (A.isNotEmpty(menus)) {
+        if (Arr.isNotEmpty(menus)) {
             for (ManagerMenu menu : menus) {
                 returnList.add(menu);
 
                 List<ManagerMenu> children = menu.getChildren();
-                if (A.isNotEmpty(children) && depth <= U.MAX_DEPTH) {
+                if (Arr.isNotEmpty(children) && depth <= Obj.MAX_DEPTH) {
                     allMenuUseDepthWithDepth(returnList, children, depth + 1);
                 }
             }
@@ -150,12 +150,12 @@ public class ManagerMenu {
         allMenuUseBreadthWithDepth(returnList, menus, 0);
     }
     private static void allMenuUseBreadthWithDepth(List<ManagerMenu> returnList, List<ManagerMenu> menus, int depth) {
-        if (A.isNotEmpty(menus)) {
+        if (Arr.isNotEmpty(menus)) {
             returnList.addAll(menus);
 
             for (ManagerMenu menu : menus) {
                 List<ManagerMenu> children = menu.getChildren();
-                if (A.isNotEmpty(children) && depth <= U.MAX_DEPTH) {
+                if (Arr.isNotEmpty(children) && depth <= Obj.MAX_DEPTH) {
                     allMenuUseBreadthWithDepth(returnList, children, depth + 1);
                 }
             }

@@ -2,8 +2,8 @@ package com.github.web;
 
 import com.github.common.annotation.NotNeedLogin;
 import com.github.common.annotation.NotNeedPermission;
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 import com.github.liuanxin.api.annotation.ApiGroup;
 import com.github.liuanxin.api.annotation.ApiIgnore;
 import com.github.liuanxin.api.annotation.ApiMethod;
@@ -41,23 +41,23 @@ public class ManagerCollectionController {
             HandlerMethod handlerMethod = entry.getValue();
             NotNeedLogin login = getAnnotation(handlerMethod, NotNeedLogin.class);
             // 如果有标 不需要登录 则表示这个请求不需要收集
-            if (U.isNotNull(login) && login.value()) {
+            if (Obj.isNotNull(login) && login.value()) {
                 continue;
             }
             // 如果有标 不需要权限 则表示这个请求不需要收集
             NotNeedPermission permission = getAnnotation(handlerMethod, NotNeedPermission.class);
-            if (U.isNotNull(permission) && login.value()) {
+            if (Obj.isNotNull(permission) && login.value()) {
                 continue;
             }
 
-            if (U.isNotNull(requestMapping) && wasJsonApi(handlerMethod)) {
+            if (Obj.isNotNull(requestMapping) && wasJsonApi(handlerMethod)) {
                 String className = handlerMethod.getBeanType().getSimpleName();
                 if (className.endsWith(classSuffix)) {
                     className = className.substring(0, className.indexOf(classSuffix));
                 }
                 ApiGroup apiGroup = getAnnotation(handlerMethod, ApiGroup.class);
                 String menu;
-                if (U.isNull(apiGroup)) {
+                if (Obj.isNull(apiGroup)) {
                     menu = className;
                 } else {
                     String[] t = apiGroup.value()[0].split("-");
@@ -65,13 +65,13 @@ public class ManagerCollectionController {
                 }
 
                 ApiMethod apiMethod = handlerMethod.getMethodAnnotation(ApiMethod.class);
-                String permissionName = U.isNull(apiMethod) ? U.EMPTY : apiMethod.value();
+                String permissionName = Obj.isNull(apiMethod) ? Obj.EMPTY : apiMethod.value();
                 // 类名用作 front
                 String key = String.join(sp, Arrays.asList(menu, className));
 
-                String method = A.toStr(requestMapping.getMethodsCondition().getMethods());
+                String method = Arr.toStr(requestMapping.getMethodsCondition().getMethods());
                 PatternsRequestCondition prc = requestMapping.getPatternsCondition();
-                String url = U.isNull(prc) ? U.EMPTY : String.join(",", prc.getPatterns());
+                String url = Obj.isNull(prc) ? Obj.EMPTY : String.join(",", prc.getPatterns());
                 String value = String.join(sp, Arrays.asList(permissionName, method, url));
 
                 multiMap.computeIfAbsent(key, (k1) -> new LinkedHashSet<>()).add(value);
@@ -102,10 +102,10 @@ public class ManagerCollectionController {
     }
 
     private static boolean wasJsonApi(HandlerMethod handlerMethod) {
-        if (U.isNotNull(getAnnotation(handlerMethod, ResponseBody.class))) {
+        if (Obj.isNotNull(getAnnotation(handlerMethod, ResponseBody.class))) {
             return true;
         } else {
-            return U.isNotNull(getAnnotationByClass(handlerMethod, RestController.class));
+            return Obj.isNotNull(getAnnotationByClass(handlerMethod, RestController.class));
         }
     }
     private static <T extends Annotation> T getAnnotationByClass(HandlerMethod handlerMethod, Class<T> clazz) {
@@ -113,7 +113,7 @@ public class ManagerCollectionController {
     }
     private static <T extends Annotation> T getAnnotation(HandlerMethod handlerMethod, Class<T> clazz) {
         T annotation = handlerMethod.getMethodAnnotation(clazz);
-        if (U.isNull(annotation)) {
+        if (Obj.isNull(annotation)) {
             annotation = getAnnotationByClass(handlerMethod, clazz);
         }
         return annotation;

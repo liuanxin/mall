@@ -2,8 +2,8 @@ package com.github.common.encrypt;
 
 import com.github.common.date.Dates;
 import com.github.common.json.JsonUtil;
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -20,7 +20,7 @@ public class EncryptTest {
 
     @Test
     public void aesCheck() {
-        String secret = U.uuid();
+        String secret = Obj.uuid();
 
         String encode = Encrypt.aesEncode(SOURCE, secret);
         System.out.println(encode);
@@ -33,7 +33,7 @@ public class EncryptTest {
 
     @Test
     public void desCheck() {
-        String secret = U.uuid();
+        String secret = Obj.uuid();
 
         String key = "12345678";
         String abc = Encrypt.desEncode("abc", key);
@@ -52,7 +52,7 @@ public class EncryptTest {
 
     @Test
     public void desCbc() {
-        String secret = U.uuid().substring(0, 8);
+        String secret = Obj.uuid().substring(0, 8);
         String encode = Encrypt.desCbcEncode(SOURCE, secret);
         System.out.println("des/cbc: " + encode);
         Assert.assertTrue(encode.length() > 0);
@@ -199,7 +199,7 @@ public class EncryptTest {
 
     @Test
     public void jwtCheck() {
-        String encode = Encrypt.jwtEncode(A.maps(
+        String encode = Encrypt.jwtEncode(Arr.maps(
                 "id", 123,
                 "name", System.currentTimeMillis()
         ));
@@ -208,17 +208,17 @@ public class EncryptTest {
 
         Map<String, Object> decode = Encrypt.jwtDecode(encode);
         Assertions.assertEquals(123, decode.get("id"));
-        Assertions.assertTrue(System.currentTimeMillis() > U.toLong(decode.get("name").toString()));
+        Assertions.assertTrue(System.currentTimeMillis() > Obj.toLong(decode.get("name").toString()));
 
 
-        encode = Encrypt.jwtEncode(A.maps("id", 123), 2L, TimeUnit.SECONDS);
+        encode = Encrypt.jwtEncode(Arr.maps("id", 123), 2L, TimeUnit.SECONDS);
         Assertions.assertTrue(encode.length() > 0);
 
         decode = Encrypt.jwtDecode(encode);
         Assertions.assertEquals(123, decode.get("id"));
 
 
-        encode = Encrypt.jwtEncode(A.maps("id", 123), 10L, TimeUnit.MILLISECONDS);
+        encode = Encrypt.jwtEncode(Arr.maps("id", 123), 10L, TimeUnit.MILLISECONDS);
         Assertions.assertTrue(encode.length() > 0);
         try {
             Thread.sleep(11L);
@@ -230,7 +230,7 @@ public class EncryptTest {
 
     @Test
     public void authenticator() {
-        String secret = U.uuid().replace("0", "O").replace("1", "I");
+        String secret = Obj.uuid().replace("0", "O").replace("1", "I");
         for (int i = 0; i < 35; i++) {
             String code = Encrypt.getGoogleAuthenticatorCode(secret);
             System.out.println(Dates.nowDateTimeMs() + " : " + secret + " -> " + code);
@@ -268,7 +268,7 @@ public class EncryptTest {
 
     @Test
     public void rc4Test() {
-        String secret = U.uuid();
+        String secret = Obj.uuid();
         String encode = Encrypt.rc4Encode(SOURCE, secret);
         System.out.println(encode);
 

@@ -1,7 +1,7 @@
 package com.github.common.export.poi;
 
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -94,7 +94,7 @@ public class ExportExcel {
                                   LinkedHashMap<String, List<?>> dataMap) {
         Workbook workbook = create(excel07);
         // 没有标题直接返回
-        if (A.isEmpty(titleMap)) {
+        if (Arr.isEmpty(titleMap)) {
             return workbook;
         }
 
@@ -139,7 +139,7 @@ public class ExportExcel {
 
             // 当前 sheet 的数据
             dataList = entry.getValue();
-            size = A.isEmpty(dataList) ? 0 : dataList.size();
+            size = Arr.isEmpty(dataList) ? 0 : dataList.size();
             boolean hasBigData = size > sheetMaxRow;
 
             // 一个 sheet 数据过多 excel 处理会出错, 分多个 sheet
@@ -162,7 +162,7 @@ public class ExportExcel {
                     cell = row.createCell(cellIndex);
                     cell.setCellStyle(headStyle);
 
-                    String title = U.toStr(titleMapEntry.getValue().split("\\|")[0]);
+                    String title = Obj.toStr(titleMapEntry.getValue().split("\\|")[0]);
                     cell.setCellValue(title);
                     setWidthAndHeight(cell, title);
                     cellIndex++;
@@ -189,12 +189,12 @@ public class ExportExcel {
                                 // 数据列
                                 cell = row.createCell(cellIndex);
 
-                                cellData = U.getFieldMethod(data, titleMapEntry.getKey());
-                                if (U.isDouble(cellData)) {
+                                cellData = Obj.getFieldMethod(data, titleMapEntry.getKey());
+                                if (Obj.isDouble(cellData)) {
                                     if (!hasBigData) {
                                         cell.setCellStyle(numberStyle);
                                     }
-                                    cell.setCellValue(U.toDouble(cellData));
+                                    cell.setCellValue(Obj.toDouble(cellData));
                                 } else {
                                     if (!hasBigData) {
                                         cell.setCellStyle(contentStyle);
@@ -267,7 +267,7 @@ public class ExportExcel {
      * @see org.apache.poi.ss.util.WorkbookUtil#validateSheetName
      */
     private static String handleSheetName(String sheetName, int sheetCount, int sheetIndex) {
-        if (U.isBlank(sheetName)) {
+        if (Obj.isBlank(sheetName)) {
             sheetName = "sheet";
         }
         String tmpSn = sheetName.replace("/", " ").replace("\\", " ").replace("?", " ")
@@ -279,7 +279,7 @@ public class ExportExcel {
             tmpSn = tmpSn.substring(0, tmpSn.length() - 1);
         }
         String tmp = tmpSn.replaceAll("\\s{2,}", " ");
-        String indexSuffix = (sheetCount > 1) ? (" - " + (sheetIndex + 1)) : U.EMPTY;
+        String indexSuffix = (sheetCount > 1) ? (" - " + (sheetIndex + 1)) : Obj.EMPTY;
         int nameLen = 31 - indexSuffix.length();
         return ((tmp.length() > nameLen) ? tmp.substring(0, nameLen) : tmp) + indexSuffix;
     }
@@ -292,7 +292,7 @@ public class ExportExcel {
             String[] lines = data.split("\n");
             for (String s : lines) {
                 // 列宽: 从内容来确定, 中文为 2 个长度, 左移 8 相当于 * 256
-                int lineWidth = (U.toLen(s) + 2) << 8;
+                int lineWidth = (Obj.toLen(s) + 2) << 8;
                 if (lineWidth > maxWidth) {
                     maxWidth = lineWidth;
                 }

@@ -4,7 +4,7 @@ import com.github.common.annotation.NeedLogin;
 import com.github.common.json.JsonResult;
 import com.github.common.mvc.AppTokenHandler;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import com.github.global.constant.Develop;
 import com.github.liuanxin.api.annotation.ApiGroup;
 import com.github.liuanxin.api.annotation.ApiMethod;
@@ -27,7 +27,7 @@ public class BackendUserController {
     @GetMapping("/refresh-token")
     public JsonResult<String> refreshToken() {
         String refreshToken = AppTokenHandler.resetTokenExpireTime();
-        U.assertBlank(refreshToken, "token 刷新失败, 请重新登录!");
+        Obj.assertBlank(refreshToken, "token 刷新失败, 请重新登录!");
         return JsonResult.success("token 刷新成功!", refreshToken);
     }
 
@@ -39,8 +39,8 @@ public class BackendUserController {
     public JsonResult<UserLoginRes> login(@ApiParam(value = "用户名", required = true) String userName,
                                           @ApiParam("密码, 当验证码为空时") String password,
                                           @ApiParam("验证码") String code) {
-        U.assertBlank(userName, "请输入用户名");
-        U.assertException(U.isBlank(password) && U.isBlank(code), "请使用密码或验证码登录");
+        Obj.assertBlank(userName, "请输入用户名");
+        Obj.assertException(Obj.isBlank(password) && Obj.isBlank(code), "请使用密码或验证码登录");
 
         /*
         User user;

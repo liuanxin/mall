@@ -1,9 +1,9 @@
 package com.github.common.http;
 
 import com.github.common.json.JsonUtil;
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import okhttp3.*;
 
 import java.io.File;
@@ -44,7 +44,7 @@ public class OkHttpClientUtil {
                 .addInterceptor(chain -> {
                     Request request = chain.request();
                     TimeoutConfig tag = request.tag(TimeoutConfig.class);
-                    if (U.isNotNull(tag)) {
+                    if (Obj.isNotNull(tag)) {
                         chain.withReadTimeout(tag.readTimeout, TimeUnit.MILLISECONDS);
                     }
                     return chain.proceed(request);
@@ -79,7 +79,7 @@ public class OkHttpClientUtil {
                                Map<String, Object> headers, boolean printLog) {
         String useUrl = HttpConst.appendParamsToUrl(url, params);
         Request.Builder builder = new Request.Builder();
-        Map<String, Object> headerMap = U.defaultIfNull(headers, new HashMap<>());
+        Map<String, Object> headerMap = Obj.defaultIfNull(headers, new HashMap<>());
         headerMap.put("Content-Type", "application/x-www-form-urlencoded");
         handleHeader(builder, headerMap);
         return handleRequest(useUrl, timeoutSecond, builder, null, null, printLog);
@@ -102,9 +102,9 @@ public class OkHttpClientUtil {
     /** 向指定的 url 进行 post 请求(普通表单方式) */
     public static HttpData postUrlEncode(String url, int timeoutSecond, Map<String, Object> params,
                                          Map<String, Object> headers, boolean printLog) {
-        RequestBody requestBody = RequestBody.create(U.formatRequestParam(params), FORM);
+        RequestBody requestBody = RequestBody.create(Obj.formatRequestParam(params), FORM);
         Request.Builder builder = new Request.Builder().post(requestBody);
-        Map<String, Object> headerMap = U.defaultIfNull(headers, new HashMap<>());
+        Map<String, Object> headerMap = Obj.defaultIfNull(headers, new HashMap<>());
         headerMap.put("Content-Type", "application/x-www-form-urlencoded");
         handleHeader(builder, headerMap);
         return handleRequest(url, timeoutSecond, builder, params, null, printLog);
@@ -116,7 +116,7 @@ public class OkHttpClientUtil {
     }
     /** 向指定的 url 基于 post 发起请求(body 中是 json) */
     public static HttpData post(String url, Map<String, Object> params, String json) {
-        return post(url, params, json, A.maps("Content-Type", "application/json"));
+        return post(url, params, json, Arr.maps("Content-Type", "application/json"));
     }
     /** 向指定的 url 基于 post 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData post(String url, String data, Map<String, Object> headers) {
@@ -134,7 +134,7 @@ public class OkHttpClientUtil {
     /** 向指定的 url 基于 post 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData post(String url, int timeoutSecond, Map<String, Object> params,
                                 String json, Map<String, Object> headers, boolean printLog) {
-        String content = U.toStr(json);
+        String content = Obj.toStr(json);
         String useUrl = HttpConst.appendParamsToUrl(url, params);
         Request.Builder builder = new Request.Builder().post(RequestBody.create(content, JSON));
         handleHeader(builder, headers);
@@ -148,7 +148,7 @@ public class OkHttpClientUtil {
     }
     /** 向指定的 url 基于 put 发起请求(body 中是 json) */
     public static HttpData put(String url, Map<String, Object> params, String json) {
-        return put(url, params, json, A.maps("Content-Type", "application/json"));
+        return put(url, params, json, Arr.maps("Content-Type", "application/json"));
     }
     /** 向指定的 url 基于 put 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData put(String url, String data, Map<String, Object> headers) {
@@ -166,7 +166,7 @@ public class OkHttpClientUtil {
     /** 向指定的 url 基于 put 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData put(String url, int timeoutSecond, Map<String, Object> params,
                                String data, Map<String, Object> headers, boolean printLog) {
-        String content = U.toStr(data);
+        String content = Obj.toStr(data);
         String useUrl = HttpConst.appendParamsToUrl(url, params);
         RequestBody requestBody = RequestBody.create(content, JSON);
         Request.Builder builder = new Request.Builder().put(requestBody);
@@ -176,7 +176,7 @@ public class OkHttpClientUtil {
 
     /** 向指定的 url 基于 delete 发起请求(body 中是 json) */
     public static HttpData delete(String url, String json) {
-        return delete(url, json, A.maps("Content-Type", "application/json"));
+        return delete(url, json, Arr.maps("Content-Type", "application/json"));
     }
     /** 向指定的 url 基于 delete 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData delete(String url, String data, Map<String, Object> headers) {
@@ -189,7 +189,7 @@ public class OkHttpClientUtil {
     /** 向指定的 url 基于 delete 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData delete(String url, int timeoutSecond, String data,
                                   Map<String, Object> headers, boolean printLog) {
-        String content = U.toStr(data);
+        String content = Obj.toStr(data);
         RequestBody requestBody = RequestBody.create(content, JSON);
         Request.Builder builder = new Request.Builder().delete(requestBody);
         handleHeader(builder, headers);
@@ -219,19 +219,19 @@ public class OkHttpClientUtil {
     public static HttpData uploadFile(String url, String method, int timeoutSecond, Map<String, Object> headers,
                                       Map<String, Object> params, Map<String, File> files, boolean printLog) {
         MultipartBody.Builder builder = new MultipartBody.Builder().setType(FORM_DATA);
-        if (A.isNotEmpty(params)) {
+        if (Arr.isNotEmpty(params)) {
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 String key = entry.getKey();
-                String value = U.toStr(entry.getValue());
+                String value = Obj.toStr(entry.getValue());
 
                 builder.addFormDataPart(key, value);
             }
         }
         Map<String, String> fileMap = new LinkedHashMap<>();
-        if (A.isNotEmpty(files)) {
+        if (Arr.isNotEmpty(files)) {
             for (Map.Entry<String, File> entry : files.entrySet()) {
                 File file = entry.getValue();
-                if (U.isNotNull(file)) {
+                if (Obj.isNotNull(file)) {
                     String key = entry.getKey();
                     String fileName = file.getName();
                     MediaType type = MediaType.parse(URLConnection.guessContentTypeFromName(file.getName()));
@@ -255,11 +255,11 @@ public class OkHttpClientUtil {
     /** 处理请求时存到 header 中的数据 */
     private static void handleHeader(Request.Builder request, Map<String, Object> headers) {
         Map<String, Object> headerMap = HttpConst.handleCommonHeader(headers/*, USER_AGENT*/);
-        if (A.isNotEmpty(headerMap)) {
+        if (Arr.isNotEmpty(headerMap)) {
             for (Map.Entry<String, Object> entry : headerMap.entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
-                if (U.isNotNull(value)) {
+                if (Obj.isNotNull(value)) {
                     request.addHeader(key, value.toString());
                 }
             }
@@ -276,14 +276,14 @@ public class OkHttpClientUtil {
         String method = request.method();
 
         HttpData httpData = new HttpData();
-        httpData.fillReq(method, url, handleHeader(request.headers()), U.formatPrintParam(params), body);
+        httpData.fillReq(method, url, handleHeader(request.headers()), Obj.formatPrintParam(params), body);
         try (
                 Response response = HTTP_CLIENT.newCall(request).execute();
                 ResponseBody responseBody = response.body()
         ) {
             int statusCode = response.code();
             Map<String, Object> resHeader = handleHeader(response.headers());
-            String result = U.isNotNull(responseBody) ? responseBody.string() : null;
+            String result = Obj.isNotNull(responseBody) ? responseBody.string() : null;
             httpData.fillRes(statusCode, resHeader, result);
             if (printLog && LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info(httpData.toString());
@@ -297,7 +297,7 @@ public class OkHttpClientUtil {
         return httpData;
     }
     private static Map<String, Object> handleHeader(Headers resHeaders) {
-        if (U.isNotNull(resHeaders)) {
+        if (Obj.isNotNull(resHeaders)) {
             Map<String, Object> returnMap = new LinkedHashMap<>();
             for (String key : resHeaders.names()) {
                 returnMap.put(key, resHeaders.get(key));

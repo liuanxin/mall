@@ -1,6 +1,6 @@
 package com.github.common.ua;
 
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,33 +51,33 @@ public class UserAgent {
     @Override
     public String toString() {
         List<String> list = new ArrayList<>();
-        if (U.isNotNull(browser)) {
+        if (Obj.isNotNull(browser)) {
             String br = browser.toString();
-            if (U.isNotBlank(br)) {
+            if (Obj.isNotBlank(br)) {
                 list.add("browser=" + br);
             }
         }
-        if (U.isNotNull(cpu)) {
+        if (Obj.isNotNull(cpu)) {
             String cp = cpu.toString();
-            if (U.isNotBlank(cp)) {
+            if (Obj.isNotBlank(cp)) {
                 list.add("cpu=" + cp);
             }
         }
-        if (U.isNotNull(device)) {
+        if (Obj.isNotNull(device)) {
             String de = device.toString();
-            if (U.isNotBlank(de)) {
+            if (Obj.isNotBlank(de)) {
                 list.add("device=" + de);
             }
         }
-        if (U.isNotNull(engine)) {
+        if (Obj.isNotNull(engine)) {
             String en = engine.toString();
-            if (U.isNotBlank(en)) {
+            if (Obj.isNotBlank(en)) {
                 list.add("engine=" + en);
             }
         }
-        if (U.isNotNull(os)) {
+        if (Obj.isNotNull(os)) {
             String o = os.toString();
-            if (U.isNotBlank(o)) {
+            if (Obj.isNotBlank(o)) {
                 list.add("os=" + o);
             }
         }
@@ -105,10 +105,10 @@ public class UserAgent {
         @Override
         public String toString() {
             List<String> list = new ArrayList<>();
-            if (U.isNotBlank(name)) {
+            if (Obj.isNotBlank(name)) {
                 list.add(name.toLowerCase());
             }
-            if (U.isNotBlank(version)) {
+            if (Obj.isNotBlank(version)) {
                 list.add(version);
             }
             return String.join(":", list);
@@ -141,7 +141,7 @@ public class UserAgent {
 
         @Override
         public String toString() {
-            return U.toStr(architecture);
+            return Obj.toStr(architecture);
         }
     }
     public static class UserAgentDevice {
@@ -173,13 +173,13 @@ public class UserAgent {
         @Override
         public String toString() {
             List<String> list = new ArrayList<>();
-            if (U.isNotBlank(type)) {
+            if (Obj.isNotBlank(type)) {
                 list.add(type.toLowerCase());
             }
-            if (U.isNotBlank(vendor)) {
+            if (Obj.isNotBlank(vendor)) {
                 list.add(vendor.toLowerCase());
             }
-            if (U.isNotBlank(model)) {
+            if (Obj.isNotBlank(model)) {
                 list.add(model.toLowerCase());
             }
             return String.join(":", list);

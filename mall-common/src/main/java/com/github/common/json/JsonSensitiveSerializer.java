@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.github.common.util.DesensitizationUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -31,7 +31,7 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
 
     @Override
     public void serialize(Object obj, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        if (U.isNull(obj)) {
+        if (Obj.isNull(obj)) {
             gen.writeNull();
         }
         else if (obj instanceof String s) {
@@ -57,17 +57,17 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
     }
 
     private void handleString(String value, JsonGenerator gen) throws IOException {
-        if (U.isNotBlank(value)) {
-            Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
-            if (U.isNotNull(field)) {
+        if (Obj.isNotBlank(value)) {
+            Field field = Obj.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
+            if (Obj.isNotNull(field)) {
                 JsonSensitiveString sensitiveField = getFieldAnnotation(field, JsonSensitiveString.class);
-                if (U.isNotNull(sensitiveField)) {
+                if (Obj.isNotNull(sensitiveField)) {
                     gen.writeString(sensitiveField.value().des(value, sensitiveField.showLen()));
                     return;
                 }
 
                 JsonSensitive sensitive = getFieldAnnotation(field, JsonSensitive.class);
-                if (U.isNotNull(sensitive)) {
+                if (Obj.isNotNull(sensitive)) {
                     gen.writeString(DesensitizationUtil.desString(value, sensitive.start(), sensitive.end()));
                     return;
                 }
@@ -77,10 +77,10 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
     }
 
     private void handleNumber(Number value, JsonGenerator gen) throws IOException {
-        Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
-        if (U.isNotNull(field)) {
+        Field field = Obj.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
+        if (Obj.isNotNull(field)) {
             JsonSensitive sensitive = getFieldAnnotation(field, JsonSensitive.class);
-            if (U.isNotNull(sensitive)) {
+            if (Obj.isNotNull(sensitive)) {
                 gen.writeObject(DesensitizationUtil.desNumber(value, sensitive.randomNumber(), sensitive.digitsNumber()));
             }
         }
@@ -89,10 +89,10 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
 
     /** @see com.fasterxml.jackson.databind.ser.std.DateSerializer */
     private void handleDate(Date value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
-        if (U.isNotNull(field)) {
+        Field field = Obj.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
+        if (Obj.isNotNull(field)) {
             JsonSensitive sensitive = getFieldAnnotation(field, JsonSensitive.class);
-            if (U.isNotNull(sensitive)) {
+            if (Obj.isNotNull(sensitive)) {
                 long randomDateTimeMillis = sensitive.randomDateTimeMillis();
                 if (randomDateTimeMillis != 0) {
                     // 修改时间
@@ -101,7 +101,7 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
             }
 
             JsonFormat jsonFormat = getFieldAnnotation(field, JsonFormat.class);
-            if (U.isNotNull(jsonFormat)) {
+            if (Obj.isNotNull(jsonFormat)) {
                 JsonFormat.Value format = new JsonFormat.Value(jsonFormat);
                 Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
                 SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
@@ -117,12 +117,12 @@ public class JsonSensitiveSerializer extends JsonSerializer<Object> {
     private <T extends Annotation> T getFieldAnnotation(Field field, Class<T> clazz) {
         String key = field.getType().getName() + "#" + field.getName() + "." + clazz.getName();
         T sen = (T) FIELD_MAP.get(key);
-        if (U.isNotNull(sen)) {
+        if (Obj.isNotNull(sen)) {
             return sen;
         }
 
         T s = field.getAnnotation(clazz);
-        if (U.isNotNull(s)) {
+        if (Obj.isNotNull(s)) {
             FIELD_MAP.put(key, s);
         }
         return s;

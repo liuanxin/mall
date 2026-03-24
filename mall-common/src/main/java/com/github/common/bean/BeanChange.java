@@ -5,8 +5,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.common.date.Dates;
 import com.github.common.function.Multi;
 import com.github.common.json.JsonUtil;
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
@@ -34,16 +34,16 @@ public final class BeanChange {
         if (oldObj == newObj) {
             return null;
         }
-        if (U.isNull(oldObj)) {
+        if (Obj.isNull(oldObj)) {
             return NEW;
         }
-        if (U.isNull(newObj)) {
+        if (Obj.isNull(newObj)) {
             return DEL;
         }
 
         List<Multi.Two<Integer, String>> fieldList = new ArrayList<>();
         CollectProperty.Group all = CollectProperty.Group.ALL;
-        for (Field field : U.getFields(oldObj)) {
+        for (Field field : Obj.getFields(oldObj)) {
             String fieldName = field.getName();
             CollectProperty cp = field.getAnnotation(CollectProperty.class);
             JsonFormat jsonFormat = field.getAnnotation(JsonFormat.class);
@@ -52,37 +52,37 @@ public final class BeanChange {
             String dateFormat;
             Map<String, String> map;
             Set<CollectProperty.Group> typeSet;
-            if (U.isNull(cp)) {
+            if (Obj.isNull(cp)) {
                 name = fieldName;
                 order = Integer.MAX_VALUE;
-                dateFormat = U.isNull(jsonFormat) ? null : jsonFormat.pattern();
+                dateFormat = Obj.isNull(jsonFormat) ? null : jsonFormat.pattern();
                 map = Collections.emptyMap();
                 typeSet = Collections.singleton(all);
             } else {
                 name = cp.value();
                 order = cp.order();
-                dateFormat = U.isNull(jsonFormat) ? cp.dateFormat() : jsonFormat.pattern();
+                dateFormat = Obj.isNull(jsonFormat) ? cp.dateFormat() : jsonFormat.pattern();
                 Map<String, String> valueMapping = JsonUtil.convertType(cp.valueMapping(), MAP_REFERENCE);
-                map = A.isEmpty(valueMapping) ? Collections.emptyMap() : valueMapping;
+                map = Arr.isEmpty(valueMapping) ? Collections.emptyMap() : valueMapping;
                 typeSet = new HashSet<>(Arrays.asList(cp.group()));
             }
 
             if (collectType == all || typeSet.contains(all) || typeSet.contains(collectType)) {
                 Object oldValue = getField(fieldName, oldObj);
                 Object newValue = getField(fieldName, newObj);
-                if (U.notEquals(oldValue, newValue)) {
+                if (Obj.notEquals(oldValue, newValue)) {
                     String value = compareValue(getValue(oldValue, dateFormat), getValue(newValue, dateFormat), name, map);
-                    if (U.isNotBlank(value)) {
+                    if (Obj.isNotBlank(value)) {
                         fieldList.add(new Multi.Two<>(order, value));
                     }
                 }
             }
         }
-        if (A.isNotEmpty(fieldList)) {
+        if (Arr.isNotEmpty(fieldList)) {
             fieldList.sort(Comparator.comparingInt(Multi.Two::one));
             List<String> values = new ArrayList<>();
             for (Multi.Two<Integer, String> field : fieldList) {
-                values.add(U.toStr(field.two()));
+                values.add(Obj.toStr(field.two()));
             }
             return "<" + String.join(">,<", values) + ">";
         }
@@ -90,24 +90,24 @@ public final class BeanChange {
     }
 
     private static Object getField(String field, Object obj) {
-        return U.invokeMethod(obj, "get" + field.substring(0, 1).toUpperCase() + field.substring(1));
+        return Obj.invokeMethod(obj, "get" + field.substring(0, 1).toUpperCase() + field.substring(1));
     }
 
     private static String getValue(Object obj, String dateFormat) {
         if (obj instanceof Date d) {
             LocalDateTime dateTime = Dates.toLocalDateTime(d);
-            return U.isBlank(dateFormat)
+            return Obj.isBlank(dateFormat)
                     ? Dates.formatDateTime(dateTime)
                     : Dates.format(dateTime, dateFormat);
         } else {
-            return U.toStr(obj);
+            return Obj.toStr(obj);
         }
     }
 
     private static String compareValue(String oldStr, String newStr, String name, Map<String, String> map) {
-        if (U.isNull(oldStr)) {
+        if (Obj.isNull(oldStr)) {
             return String.format(INSERT, name, getMapping(map, newStr));
-        } else if (U.isNull(newStr)) {
+        } else if (Obj.isNull(newStr)) {
             return String.format(REMOVE, name, getMapping(map, oldStr));
         } else if (!oldStr.equals(newStr)) {
             return String.format(UPDATE, name, getMapping(map, oldStr), getMapping(map, newStr));
@@ -118,11 +118,11 @@ public final class BeanChange {
 
     private static String getMapping(Map<String, String> map, String str) {
         String value = map.get(str);
-        if (U.isNotBlank(value)) {
+        if (Obj.isNotBlank(value)) {
             return value;
         }
         String other = map.get(VALUE_OTHER_KEY);
-        if (U.isNotBlank(other)) {
+        if (Obj.isNotBlank(other)) {
             return other;
         }
         return str;

@@ -98,8 +98,8 @@ public final class Compressor {
 
     /** 压缩 html 代码成一行 */
     public static String html(String html) {
-        if (U.isBlank(html)) {
-            return U.EMPTY;
+        if (Obj.isBlank(html)) {
+            return Obj.EMPTY;
         }
 
         // 收集 <script> 标签. 这个特殊的标签里面的内容要单独处理
@@ -163,11 +163,11 @@ public final class Compressor {
         return content;
     }
     private static String receiveJs(String html, List<String> ignoreList) {
-        if (U.isNotBlank(html) && A.isNotEmpty(ignoreList)) {
+        if (Obj.isNotBlank(html) && Arr.isNotEmpty(ignoreList)) {
             String place;
             while (html.contains(SCRIPT_PLACE)) {
                 place = ignoreList.remove(0);
-                if (U.isNotBlank(place)) {
+                if (Obj.isNotBlank(place)) {
                     // 把 js 字符串中 // 或 /* */ 替换掉
                     place = replaceComment(SCRIPT_STR_SINGLE_REGEX, SCRIPT_STR_SINGLE_PLACE, place);
                     place = replaceComment(SCRIPT_STR_SINGLE_APOSTROPHE_REGEX, SCRIPT_STR_SINGLE_PLACE, place);

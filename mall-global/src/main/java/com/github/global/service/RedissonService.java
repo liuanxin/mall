@@ -1,6 +1,6 @@
 package com.github.global.service;
 
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
@@ -297,7 +297,7 @@ public class RedissonService {
     }
     /** 将指定的 set 存进 redis 并返回成功条数, 对应命令: SADD key v1 v2 v3 ... */
     public <T> boolean setAdd(String key, Collection<T> set) {
-        return A.isNotEmpty(set) && redisson.getSet(key, USE_CODEC).addAll(set);
+        return Arr.isNotEmpty(set) && redisson.getSet(key, USE_CODEC).addAll(set);
     }
     /** 获取 set, 对应命令: SMEMBERS key */
     public <T> Set<T> setGet(String key) {

@@ -4,7 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.common.date.Dates;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import com.mysql.cj.MysqlConnection;
 import com.mysql.cj.Query;
 import com.mysql.cj.Session;
@@ -42,15 +42,15 @@ public class ShowSqlInterceptor implements QueryInterceptor {
     public <T extends Resultset> T preProcess(Supplier<String> sql, Query query) {
         if (ShowSqlThreadLocal.hasPrint() && LogUtil.SQL_LOG.isDebugEnabled()) {
             String realSql = getRealSql(sql);
-            if (U.isNotBlank(realSql)) {
+            if (Obj.isNotBlank(realSql)) {
                 long id = ID.addAndGet(1);
                 SQL_TIME_CACHE.put(Thread.currentThread(), id + TIME_SPLIT + System.currentTimeMillis());
                 String dataSource = "";
-                if (U.isNotNull(query)) {
+                if (Obj.isNotNull(query)) {
                     Session session = query.getSession();
-                    if (U.isNotNull(session)) {
+                    if (Obj.isNotNull(session)) {
                         HostInfo hostInfo = session.getHostInfo();
-                        if (U.isNotNull(hostInfo)) {
+                        if (Obj.isNotNull(hostInfo)) {
                             dataSource = ", db: " + hostInfo.getHost() + ":" + hostInfo.getPort() + "/" + hostInfo.getDatabase();
                         }
                     }
@@ -62,7 +62,7 @@ public class ShowSqlInterceptor implements QueryInterceptor {
     }
 
     private String getRealSql(Supplier<String> sql) {
-        if (U.isNull(sql)) {
+        if (Obj.isNull(sql)) {
             return null;
         }
 
@@ -75,24 +75,24 @@ public class ShowSqlInterceptor implements QueryInterceptor {
     public <T extends Resultset> T postProcess(Supplier<String> sql, Query query, T rs, ServerSession serverSession) {
         if (ShowSqlThreadLocal.hasPrint() && LogUtil.SQL_LOG.isDebugEnabled()) {
             String realSql = getRealSql(sql);
-            if (U.isNotBlank(realSql)) {
+            if (Obj.isNotBlank(realSql)) {
                 Thread thread = Thread.currentThread();
                 String idAndTime = SQL_TIME_CACHE.getIfPresent(thread);
-                if (U.isNotNull(idAndTime)) {
+                if (Obj.isNotNull(idAndTime)) {
                     try {
                         String[] split = idAndTime.split(TIME_SPLIT);
                         if (split.length == 2) {
-                            long id = U.toLong(split[0]);
-                            long start = U.toLong(split[1]);
+                            long id = Obj.toLong(split[0]);
+                            long start = Obj.toLong(split[1]);
 
                             StringBuilder sbd = new StringBuilder();
-                            if (U.greater0(id)) {
+                            if (Obj.greater0(id)) {
                                 sbd.append("id: ").append(id);
                             }
-                            if (U.greater0(start)) {
+                            if (Obj.greater0(start)) {
                                 sbd.append(", use-time: ").append(Dates.toHuman(System.currentTimeMillis() - start));
                             }
-                            if (U.isNotNull(rs) && rs.hasRows()) {
+                            if (Obj.isNotNull(rs) && rs.hasRows()) {
                                 sbd.append(", return-size: ").append(rs.getRows().size());
                             }
                             LogUtil.SQL_LOG.debug(sbd.toString());

@@ -1,7 +1,7 @@
 package com.github.util;
 
 import com.github.common.json.JsonUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -35,7 +35,7 @@ class BackendSessionModel {
     }
 
     public String userInfo() {
-        return U.toStr(id) + "/" + U.toStr(name);
+        return Obj.toStr(id) + "/" + Obj.toStr(name);
     }
 
     /** 当前用户在指定域名下是否已登录. 已登录就返回 true */

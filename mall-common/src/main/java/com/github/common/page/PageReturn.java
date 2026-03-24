@@ -2,7 +2,7 @@ package com.github.common.page;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.common.json.JsonUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import com.github.liuanxin.api.annotation.ApiReturn;
 
 import java.util.Collections;
@@ -58,7 +58,7 @@ public class PageReturn<T> {
 
     /** 在 Controller 中调用 --> 组装不同的 res 时使用此方法 */
     public static <S,T> PageReturn<T> convertTotal(PageReturn<S> pageInfo) {
-        if (U.isNull(pageInfo)) {
+        if (Obj.isNull(pageInfo)) {
             return EMPTY;
         } else {
             return new PageReturn<>(pageInfo.getTotal());
@@ -67,7 +67,7 @@ public class PageReturn<T> {
 
     /** 在 Controller 中调用 --> 组装不同的 res 时使用此方法 */
     public static <S,T> PageReturn<T> convert(PageReturn<S> pageInfo, Class<T> clazz) {
-        if (U.isNull(pageInfo)) {
+        if (Obj.isNull(pageInfo)) {
             return EMPTY;
         } else {
             return new PageReturn<>(pageInfo.getTotal(), JsonUtil.convertList(pageInfo.getList(), clazz));

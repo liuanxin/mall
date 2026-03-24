@@ -1,9 +1,9 @@
 package com.github.util;
 
 import com.github.common.constant.CommonConst;
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.common.util.CollectClassUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import com.github.global.constant.GlobalConst;
 import com.github.manager.constant.ManagerConst;
 import com.github.order.constant.OrderConst;
@@ -17,7 +17,7 @@ import java.util.Map;
 @SuppressWarnings("rawtypes")
 public final class ManagerDataCollectUtil {
 
-    private static final Map<String, Class> ENUM_MAP = A.maps(
+    private static final Map<String, Class> ENUM_MAP = Arr.maps(
             GlobalConst.MODULE_NAME, GlobalConst.class,
 
             CommonConst.MODULE_NAME, CommonConst.class,
@@ -36,9 +36,9 @@ public final class ManagerDataCollectUtil {
     public static Map<String, Object> singleEnumInfo(String type) {
         Map<String, Object> returnMap = new HashMap<>();
         for (String anEnum : type.split(",")) {
-            if (U.isNotBlank(anEnum)) {
+            if (Obj.isNotBlank(anEnum)) {
                 Object data = ALL_ENUM_INFO.get(anEnum.trim());
-                if (U.isNotNull(data)) {
+                if (Obj.isNotNull(data)) {
                     returnMap.put(anEnum, data);
                 }
             }

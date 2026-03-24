@@ -1,8 +1,8 @@
 package com.github.mq.handle;
 
 import com.github.common.date.Dates;
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 import com.github.global.service.RedissonService;
 import com.github.mq.constant.MqConst;
 import com.github.mq.constant.MqInfo;
@@ -40,7 +40,7 @@ public class MqRetryHandler {
     public boolean handlerReceive() {
         for (;;) {
             List<MqReceive> mqReceiveList = mqReceiveService.queryRetryMsg(maxRetryCount, mqRetryLimit);
-            if (A.isEmpty(mqReceiveList)) {
+            if (Arr.isEmpty(mqReceiveList)) {
                 return true;
             }
             for (MqReceive mqReceive : mqReceiveList) {
@@ -53,12 +53,12 @@ public class MqRetryHandler {
         }
     }
     private void retryReceive(MqReceive mqReceive) {
-        String oldRemark = U.toStr(mqReceive.getRemark());
+        String oldRemark = Obj.toStr(mqReceive.getRemark());
         int status = MqConst.SUCCESS;
         String remark = null;
         try {
             MqInfo mqInfo = MqInfo.from(mqReceive.getType());
-            if (U.isNull(mqInfo)) {
+            if (Obj.isNull(mqInfo)) {
                 remark = String.format("<%s : 没有这个业务类型场景>%s", Dates.nowDateTime(), oldRemark);
             } else {
                 if (sendMsg(mqReceive.getMsgId(), mqReceive.getSearchKey(), mqInfo, mqReceive.getMsg())) {
@@ -76,7 +76,7 @@ public class MqRetryHandler {
             if (status == MqConst.FAIL) {
                 update.setRetryCount(mqReceive.getRetryCount() + 1);
             }
-            if (U.isNotBlank(remark)) {
+            if (Obj.isNotBlank(remark)) {
                 update.setRemark(remark);
             }
             // 状态变更: 成功 或 失败且重试次数 + 1
@@ -88,7 +88,7 @@ public class MqRetryHandler {
     public boolean handlerSend() {
         for (;;) {
             List<MqSend> mqSendList = mqSendService.queryRetryMsg(maxRetryCount, mqRetryLimit);
-            if (A.isEmpty(mqSendList)) {
+            if (Arr.isEmpty(mqSendList)) {
                 return true;
             }
             for (MqSend mqSend : mqSendList) {
@@ -101,10 +101,10 @@ public class MqRetryHandler {
         }
     }
     private void retrySend(MqSend mqSend) {
-        String oldRemark = U.toStr(mqSend.getRemark());
+        String oldRemark = Obj.toStr(mqSend.getRemark());
         String remark = null;
         MqInfo mqInfo = MqInfo.from(mqSend.getType());
-        if (U.isNull(mqInfo)) {
+        if (Obj.isNull(mqInfo)) {
             remark = String.format("<%s : 没有这个业务类型场景>%s", Dates.nowDateTime(), oldRemark);
         } else {
             if (!sendMsg(mqSend.getMsgId(), mqSend.getSearchKey(), mqInfo, mqSend.getMsg())) {
@@ -112,7 +112,7 @@ public class MqRetryHandler {
             }
         }
         // 上面的 sendMsg 调用返回为 true 时, 内部方法会自动处理「成功」或「失败且重试次数 + 1」, 因此当前只处理 remark 有值的场景
-        if (U.isNotBlank(remark)) {
+        if (Obj.isNotBlank(remark)) {
             MqSend update = new MqSend();
             update.setId(mqSend.getId());
             update.setStatus(MqConst.SUCCESS);

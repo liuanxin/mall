@@ -15,8 +15,8 @@ public class IdTest {
 
     private static final int COUNT = 1_000_000;
     private static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(
-            U.CPU_SIZE,
-            U.CPU_SIZE + 1,
+            Obj.CPU_SIZE,
+            Obj.CPU_SIZE + 1,
             5L, TimeUnit.SECONDS,
             new LinkedBlockingQueue<>()
     );

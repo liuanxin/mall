@@ -1,6 +1,6 @@
 package com.github.global.converter;
 
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
 
@@ -32,7 +32,7 @@ public class StringToEnumConverter implements ConverterFactory<String, Enum> {
 
         @Override
         public E convert(String source) {
-            return U.toEnum(enumType, source);
+            return Obj.toEnum(enumType, source);
         }
     }
 }

@@ -35,12 +35,12 @@ public final class CollectClassUtil {
         for (Map.Entry<String, Class> entry : enumClassMap.entrySet()) {
             List<Class<?>> enumList = getEnumListInPackage(entry.getValue(), Const.enumPath(entry.getKey()));
             for (Class anEnum : enumList) {
-                if (U.isNotNull(anEnum) && anEnum.isEnum()) {
+                if (Obj.isNotNull(anEnum) && anEnum.isEnum()) {
                     String key = anEnum.getSimpleName();
                     try {
                         // 在 enum 中如果有静态的 select 方法且返回的是 Map 就用这个
                         Object result = anEnum.getMethod(METHOD).invoke(null);
-                        if (U.isNotNull(result)) {
+                        if (Obj.isNotNull(result)) {
                             returnMap.put(key, result);
                             break;
                         }
@@ -50,17 +50,17 @@ public final class CollectClassUtil {
                     List<Map<String, Object>> returnList = new ArrayList<>();
                     for (Object en : anEnum.getEnumConstants()) {
                         // 没有 getCode 方法就使用枚举的 ordinal
-                        Object k = U.invokeMethod(en, CODE_METHOD);
-                        if (U.isNull(k)) {
+                        Object k = Obj.invokeMethod(en, CODE_METHOD);
+                        if (Obj.isNull(k)) {
                             k = ((Enum) en).ordinal();
                         }
 
                         // 没有 getValue 方法就使用枚举的 name
-                        Object value = U.invokeMethod(en, VALUE_METHOD);
-                        if (U.isNull(value)) {
+                        Object value = Obj.invokeMethod(en, VALUE_METHOD);
+                        if (Obj.isNull(value)) {
                             value = ((Enum) en).name();
                         }
-                        returnList.add(Map.of(CODE, U.toStr(k), VALUE, value));
+                        returnList.add(Map.of(CODE, Obj.toStr(k), VALUE, value));
                     }
 
                     returnMap.put(key, returnList);
@@ -83,7 +83,7 @@ public final class CollectClassUtil {
 
     private static List<Class<?>> getClassList(Class<?> clazz, String classPackage, boolean wasEnum) {
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-            LogUtil.ROOT_LOG.debug("{} in ({})", clazz, U.getClassInFile(clazz));
+            LogUtil.ROOT_LOG.debug("{} in ({})", clazz, Obj.getClassInFile(clazz));
         }
         List<Class<?>> classList = new ArrayList<>();
         String packageName = classPackage.replace(".", "/");
@@ -93,7 +93,7 @@ public final class CollectClassUtil {
                 File parent = new File(url.getPath());
                 if (parent.isDirectory()) {
                     File[] files = parent.listFiles();
-                    if (A.isNotEmpty(files)) {
+                    if (Arr.isNotEmpty(files)) {
                         for (File file : files) {
                             Class<?> aClass;
                             if (wasEnum) {
@@ -135,7 +135,7 @@ public final class CollectClassUtil {
     }
 
     private static Class<?> getEnum(String name, String classPackage) {
-        if (U.isNotBlank(name)) {
+        if (Obj.isNotBlank(name)) {
             String className = classPackage + "." + name.replace(".class", "");
             try {
                 Class<?> clazz = Class.forName(className);
@@ -152,7 +152,7 @@ public final class CollectClassUtil {
     }
 
     private static Class<?> getClass(String name, String classPackage) {
-        if (U.isNotBlank(name)) {
+        if (Obj.isNotBlank(name)) {
             String className = classPackage + "." + name.replace(".class", "");
             try {
                 return Class.forName(className);

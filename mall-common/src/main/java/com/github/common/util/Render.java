@@ -23,7 +23,7 @@ public final class Render {
     public static String url(String url) {
         // 前缀改成 // 开头(去掉 http 或 https)
         // domain = domain.replaceFirst("(?i)^http(s?):", "");
-        return U.isBlank(url) ? U.EMPTY : HTTP_PATTERN.matcher(url).replaceFirst("");
+        return Obj.isBlank(url) ? Obj.EMPTY : HTTP_PATTERN.matcher(url).replaceFirst("");
     }
 
     /**
@@ -46,9 +46,9 @@ public final class Render {
                 }
             }
         }
-        if (U.isNotBlank(path)) {
+        if (Obj.isNotBlank(path)) {
             path = path.startsWith("/") ? path.substring(1) : path;
         }
-        return url(U.toStr(path));
+        return url(Obj.toStr(path));
     }
 }

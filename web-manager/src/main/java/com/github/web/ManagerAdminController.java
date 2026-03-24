@@ -4,7 +4,7 @@ import com.github.common.json.JsonResult;
 import com.github.common.page.PageParam;
 import com.github.common.page.PageReturn;
 import com.github.common.util.FileUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import com.github.config.ManagerConfig;
 import com.github.liuanxin.api.annotation.ApiGroup;
 import com.github.liuanxin.api.annotation.ApiMethod;
@@ -44,7 +44,7 @@ public class ManagerAdminController {
         req.basicCheck();
 
         ManagerUser managerUser = req.operateParam();
-        if (U.isNotNull(managerUser) && U.greater0(image.getSize())) {
+        if (Obj.isNotNull(managerUser) && Obj.greater0(image.getSize())) {
             managerUser.setAvatar(FileUtil.save(image, config.getFilePath(), config.getFileUrl(), false));
         }
         adminService.addOrUpdateUser(managerUser);

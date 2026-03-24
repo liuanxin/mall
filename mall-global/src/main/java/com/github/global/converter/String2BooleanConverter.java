@@ -1,6 +1,6 @@
 package com.github.global.converter;
 
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import org.springframework.core.convert.converter.Converter;
 
 /**
@@ -14,6 +14,6 @@ public class String2BooleanConverter implements Converter<String, Boolean> {
 
     @Override
     public Boolean convert(String source) {
-        return U.toBoolean(source);
+        return Obj.toBoolean(source);
     }
 }

@@ -3,7 +3,7 @@ package com.github.common.money;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.common.util.ChineseConvert;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 import java.io.Serializable;
 
@@ -89,7 +89,7 @@ public class Money implements Serializable {
 
     /** 检查金额是否是负数 */
     public void checkEmptyAndNegative() {
-        U.assertException(cent == null || cent < 0, "金额不能是负数");
+        Obj.assertException(cent == null || cent < 0, "金额不能是负数");
     }
 
     /** 输出大写中文 */

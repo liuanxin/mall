@@ -1,6 +1,6 @@
 package com.github.common.encrypt;
 
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -20,7 +20,7 @@ final class GoogleAuthenticator {
      * @return 生成的 google 验证码(6 位数字), 每过 30 秒变化
      */
     static String getCode(String secret, boolean handleSecretError, long ms, int offsetSecond) {
-        if (U.isBlank(secret)) {
+        if (Obj.isBlank(secret)) {
             return "000000";
         }
 

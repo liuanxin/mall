@@ -1,8 +1,8 @@
 package com.github.global.service;
 
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
@@ -41,10 +41,10 @@ public class MailSender {
     }
 
     public void sendText(String from, List<String> toList, String subject, String content) {
-        U.assertBlank(from, "Need from email address");
-        U.assertEmpty(toList, "Need to email address");
-        U.assertBlank(subject, "Need email subject");
-        U.assertBlank(content, "Need email content");
+        Obj.assertBlank(from, "Need from email address");
+        Obj.assertEmpty(toList, "Need to email address");
+        Obj.assertBlank(subject, "Need email subject");
+        Obj.assertBlank(content, "Need email content");
 
         try {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
@@ -56,7 +56,7 @@ public class MailSender {
         } catch (MailException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("{} -> {} (title: {}, content: {}) exception",
-                        from, toList, subject, U.toStr(content, 500, 100), e);
+                        from, toList, subject, Obj.toStr(content, 500, 100), e);
             }
         }
     }
@@ -71,15 +71,15 @@ public class MailSender {
     }
 
     public void sendHtml(String from, List<String> toList, String subject, String content, List<File> attachList) {
-        U.assertBlank(from, "Need from email address");
-        U.assertEmpty(toList, "Need to email address");
-        U.assertBlank(subject, "Need email subject");
-        U.assertBlank(content, "Need email content");
+        Obj.assertBlank(from, "Need from email address");
+        Obj.assertEmpty(toList, "Need to email address");
+        Obj.assertBlank(subject, "Need email subject");
+        Obj.assertBlank(content, "Need email content");
 
         try {
             List<InternetAddress> addressList = new ArrayList<>();
             for (String to : toList) {
-                if (U.isNotBlank(to)) {
+                if (Obj.isNotBlank(to)) {
                     addressList.add(new InternetAddress(to));
                 }
             }
@@ -90,7 +90,7 @@ public class MailSender {
 
                 MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
                 helper.setText(content, true);
-                if (A.isNotEmpty(attachList)) {
+                if (Arr.isNotEmpty(attachList)) {
                     for (File file : attachList) {
                         helper.addAttachment(file.getName(), new FileSystemResource(file));
                     }
@@ -99,7 +99,7 @@ public class MailSender {
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("{} -> {} (title: {}, content: {}, attach: {}) exception",
-                        from, toList, subject, U.toStr(content, 500, 100), attachList, e);
+                        from, toList, subject, Obj.toStr(content, 500, 100), attachList, e);
             }
         }
     }

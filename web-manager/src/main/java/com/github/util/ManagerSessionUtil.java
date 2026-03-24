@@ -4,8 +4,8 @@ import com.github.common.exception.ForbiddenException;
 import com.github.common.exception.NotLoginException;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.LogUtil;
+import com.github.common.util.Obj;
 import com.github.common.util.RequestUtil;
-import com.github.common.util.U;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -21,7 +21,7 @@ public class ManagerSessionUtil {
 
     /** 验证图片验证码 */
     public static boolean checkImageCode(String code) {
-        if (U.isBlank(code)) {
+        if (Obj.isBlank(code)) {
             return false;
         }
 
@@ -39,7 +39,7 @@ public class ManagerSessionUtil {
     /** 登录之后调用此方法, 将 用户信息、可访问的 url 等放入 session */
     public static <T,P> void whenLogin(T account, List<P> permissions) {
         ManagerSessionModel sessionModel = ManagerSessionModel.assemblyData(account, permissions);
-        if (U.isNotNull(sessionModel)) {
+        if (Obj.isNotNull(sessionModel)) {
             if (LogUtil.ROOT_LOG.isDebugEnabled()) {
                 LogUtil.ROOT_LOG.debug("put ({}) in session({})",
                         JsonUtil.toJson(sessionModel), RequestUtil.getSession().getId());

@@ -70,7 +70,7 @@ public final class ChineseConvert {
         boolean hasPoint = pointIndex > -1;
 
         String left = hasPoint ? money.substring(0, pointIndex) : money;
-        long leftLong = U.toLong(left);
+        long leftLong = Obj.toLong(left);
         boolean negative = leftLong < 0;
         if (negative) {
             left = left.substring(1);
@@ -95,16 +95,16 @@ public final class ChineseConvert {
                 sbd.append(NEGATIVE);
             }
             for (int i = 0; i < leftLen; i++) {
-                int number = U.toInt(left.charAt(i));
+                int number = Obj.toInt(left.charAt(i));
                 sbd.append(NUM[number]).append(INTEGER[leftLen - i - 1]);
             }
         }
         // 处理小数位后面的值
-        long rightLong = U.toLong(right);
+        long rightLong = Obj.toLong(right);
         if (rightLong > 0) {
             sbd.append(SPLIT);
             for (int i = 0; i < rightLen; i++) {
-                int number = U.toInt(right.charAt(i));
+                int number = Obj.toInt(right.charAt(i));
                 sbd.append(NUM[number]).append(DECIMAL[i]);
             }
         } else if (rightLong == 0) {

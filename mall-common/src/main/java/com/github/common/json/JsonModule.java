@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.github.common.date.Dates;
 import com.github.common.util.DesensitizationUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -66,26 +66,26 @@ public final class JsonModule {
     private static final Map<String, JsonFormat.Value> FIELD_FORMAT_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, DateTimeFormatter> FORMAT_CACHE = new ConcurrentHashMap<>();
     private static JsonFormat.Value getJsonFormatOnField(JsonGenerator gen) {
-        Field field = U.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
-        if (U.isNull(field)) {
+        Field field = Obj.getField(gen.getCurrentValue(), gen.getOutputContext().getCurrentName());
+        if (Obj.isNull(field)) {
             return null;
         } else {
             String key = field.getType().getName() + "#" + field.getName();
             return FIELD_FORMAT_CACHE.computeIfAbsent(key, s -> {
                 JsonFormat jsonFormat = field.getAnnotation(JsonFormat.class);
-                return U.isNotNull(jsonFormat) ? new JsonFormat.Value(jsonFormat) : null;
+                return Obj.isNotNull(jsonFormat) ? new JsonFormat.Value(jsonFormat) : null;
             });
         }
     }
     private static String format(TemporalAccessor value, JsonGenerator gen, SerializerProvider provider) {
         JsonFormat.Value format = getJsonFormatOnField(gen);
-        if (U.isNull(format)) {
+        if (Obj.isNull(format)) {
             return null;
         } else {
             DateTimeFormatter formatter = FORMAT_CACHE.computeIfAbsent(format.getPattern(), s -> {
                 DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(s);
                 Locale locale = format.hasLocale() ? format.getLocale() : provider.getLocale();
-                if (U.isNotNull(locale)) {
+                if (Obj.isNotNull(locale)) {
                     dateTimeFormatter.withLocale(locale);
                 }
                 return dateTimeFormatter;
@@ -112,12 +112,12 @@ public final class JsonModule {
         @Override
         public void serialize(Date value, JsonGenerator gen, SerializerProvider provider) throws IOException {
             // 时间戳为 0 的是否序列化为 null, 这样当数据库表字段设置 1970-01-01 这样的默认值时, 序列化时就是 null 值
-            if (U.isNull(value)/* || value.getTime() <= 0*/) {
+            if (Obj.isNull(value)/* || value.getTime() <= 0*/) {
                 gen.writeNull();
             } else {
                 // 标了 JsonFormat 则以注解为主
                 JsonFormat.Value format = getJsonFormatOnField(gen);
-                if (U.isNotNull(format)) {
+                if (Obj.isNotNull(format)) {
                     Locale loc = format.hasLocale() ? format.getLocale() : provider.getLocale();
                     SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
                     df.setTimeZone(format.hasTimeZone() ? format.getTimeZone() : provider.getTimeZone());
@@ -136,12 +136,12 @@ public final class JsonModule {
 
         @Override
         public void serialize(LocalDate value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            if (U.isNull(value)) {
+            if (Obj.isNull(value)) {
                 gen.writeNull();
             } else {
                 // 标了 JsonFormat 则以注解为主
                 String dateFormat = format(value, gen, provider);
-                if (U.isNotNull(dateFormat)) {
+                if (Obj.isNotNull(dateFormat)) {
                     gen.writeString(dateFormat);
                 } else {
                     // 默认显示成 yyyy-MM-dd
@@ -157,12 +157,12 @@ public final class JsonModule {
 
         @Override
         public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            if (U.isNull(value)) {
+            if (Obj.isNull(value)) {
                 gen.writeNull();
             } else {
                 // 标了 JsonFormat 则以注解为主
                 String dateFormat = format(value, gen, provider);
-                if (U.isNotNull(dateFormat)) {
+                if (Obj.isNotNull(dateFormat)) {
                     gen.writeString(dateFormat);
                 } else {
                     // 默认显示成 yyyy-MM-dd HH:mm:ss
@@ -178,7 +178,7 @@ public final class JsonModule {
 
         @Override
         public void serialize(BigDecimal value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-            if (U.isNull(value)) {
+            if (Obj.isNull(value)) {
                 gen.writeNull();
             } else {
                 gen.writeString(value.stripTrailingZeros().toPlainString());
@@ -196,7 +196,7 @@ public final class JsonModule {
         public Date deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             Date date = Dates.parseToDate(p.getText().trim());
             // 时间戳为 0 的是否反序列化为 null, 这样当数据库表字段设置 1970-01-01 这样的默认值时, 反序列化时就是 null 值
-            return (U.isNull(date)/* || date.getTime() <= 0*/) ? null : date;
+            return (Obj.isNull(date)/* || date.getTime() <= 0*/) ? null : date;
         }
     }
 
@@ -227,7 +227,7 @@ public final class JsonModule {
         @Override
         public BigDecimal deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             String text = p.getText();
-            return U.isBlank(text) ? null : new BigDecimal(text.trim());
+            return Obj.isBlank(text) ? null : new BigDecimal(text.trim());
         }
     }
 
@@ -237,7 +237,7 @@ public final class JsonModule {
 
         @Override
         public Boolean deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return U.toBool(p.getText());
+            return Obj.toBool(p.getText());
         }
     }
     /** 反序列化 Boolean(null 或 true 或 false) */
@@ -246,7 +246,7 @@ public final class JsonModule {
 
         @Override
         public Boolean deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return U.toBoolean(p.getText());
+            return Obj.toBoolean(p.getText());
         }
     }
 }

@@ -5,7 +5,7 @@ import com.github.common.annotation.NotNeedPermission;
 import com.github.common.encrypt.Encrypt;
 import com.github.common.json.JsonResult;
 import com.github.common.util.FileUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import com.github.config.ManagerConfig;
 import com.github.liuanxin.api.annotation.ApiGroup;
 import com.github.liuanxin.api.annotation.ApiMethod;
@@ -38,12 +38,12 @@ public class ManagerUserController {
     @ApiMethod(value = "登录", index = 0)
     @PostMapping("/login")
     public JsonResult<ManagerUserRes> login(@ApiParam("用户名") String userName, @ApiParam("密码") String password) {
-        U.assertException(U.isBlank(userName) || U.isBlank(password), "请输入用户名或密码");
+        Obj.assertException(Obj.isBlank(userName) || Obj.isBlank(password), "请输入用户名或密码");
 
         ManagerUser user = adminService.getUser(userName);
-        U.assertNil(user, "用户名或密码有误");
-        U.assertException(Encrypt.checkNotBcrypt(password, user.getPassword()), "用户名或密码不正确");
-        U.assertException(U.isTrue(user.getStatus()), "用户被禁止登录, 请联系管理员");
+        Obj.assertNil(user, "用户名或密码有误");
+        Obj.assertException(Encrypt.checkNotBcrypt(password, user.getPassword()), "用户名或密码不正确");
+        Obj.assertException(Obj.isTrue(user.getStatus()), "用户被禁止登录, 请联系管理员");
 
         // 登录成功后填充菜单和权限, 平级放到用户上
         user.assignmentData(adminService.getUserRole(user.getId(), !user.getHasManager(), true)); // 管理员不加载菜单

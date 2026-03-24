@@ -4,9 +4,9 @@ import com.github.common.export.csv.ExportCsv;
 import com.github.common.export.easy.ExportEasyExcel;
 import com.github.common.export.poi.ExportColumnHandler;
 import com.github.common.export.poi.ExportExcel;
-import com.github.common.util.A;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 import com.github.common.util.RequestUtil;
-import com.github.common.util.U;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import javax.servlet.http.HttpServletResponse;
@@ -85,9 +85,9 @@ public final class WebExport {
         ExportType exportType = ExportType.to(type);
         if (exportType.isExcel()) {
             if (primitivePoi) {
-                exportExcel(type, name, A.linkedMaps(name, titleMap), A.linkedMaps(name, dataList), response);
+                exportExcel(type, name, Arr.linkedMaps(name, titleMap), Arr.linkedMaps(name, dataList), response);
             } else {
-                exportEasyExcel(type, name, A.linkedMaps(name, titleMap), A.linkedMaps(name, dataList), response);
+                exportEasyExcel(type, name, Arr.linkedMaps(name, titleMap), Arr.linkedMaps(name, dataList), response);
             }
         } else if (exportType.isCsv()) {
             exportCsv(name, titleMap, dataList, response);
@@ -240,10 +240,10 @@ public final class WebExport {
     private static String encodeName(String name) {
         String fileName = name + "-" + (new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
         String userAgent = RequestUtil.userAgent();
-        if (U.isNotBlank(userAgent) && userAgent.contains("Mozilla")) {
+        if (Obj.isNotBlank(userAgent) && userAgent.contains("Mozilla")) {
             return new String(fileName.getBytes(), StandardCharsets.ISO_8859_1);
         } else {
-            return U.urlEncode(fileName);
+            return Obj.urlEncode(fileName);
         }
     }
 }

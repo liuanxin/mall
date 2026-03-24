@@ -1,9 +1,9 @@
 package com.github.common.http;
 
 import com.github.common.Const;
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,26 +39,26 @@ final class HttpConst {
 
     /** 处理 get 请求的参数: 拼在 url 上即可 */
     static String appendParamsToUrl(String url, Map<String, Object> params) {
-        if (A.isNotEmpty(params)) {
-            return U.appendUrl(url) + U.formatRequestParam(params);
+        if (Arr.isNotEmpty(params)) {
+            return Obj.appendUrl(url) + Obj.formatRequestParam(params);
         }
         return url;
     }
 
     /** 处理公共头 */
     static Map<String, Object> handleCommonHeader(Map<String, Object> headers /*, String userAgent*/ ) {
-        Map<String, Object> returnMap = U.defaultIfNull(headers, new HashMap<>());
+        Map<String, Object> returnMap = Obj.defaultIfNull(headers, new HashMap<>());
         /*
         if (U.isNotBlank(userAgent)) {
             returnMap.put("User-Agent", userAgent);
         }
         */
         String traceId = LogUtil.getTraceId();
-        if (U.isNotBlank(traceId)) {
+        if (Obj.isNotBlank(traceId)) {
             returnMap.put(Const.TRACE, traceId);
         }
         String language = LogUtil.getLanguage();
-        if (U.isNotBlank(language)) {
+        if (Obj.isNotBlank(language)) {
             returnMap.put("Accept-Language", language);
         }
         return returnMap;

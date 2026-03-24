@@ -5,8 +5,8 @@ import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.alibaba.excel.write.builder.ExcelWriterSheetBuilder;
 import com.alibaba.excel.write.handler.WriteHandler;
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 
 import java.io.OutputStream;
 import java.util.*;
@@ -48,7 +48,7 @@ public class ExportEasyExcel {
         try (ExcelWriter excelWriter = EasyExcel.write(outputStream).excelType(excelType).build()) {
             int size;
             Class<?> headClass;
-            if (A.isEmpty(dataList)) {
+            if (Arr.isEmpty(dataList)) {
                 size = 0;
                 headClass = Void.class;
             } else {
@@ -76,7 +76,7 @@ public class ExportEasyExcel {
                     fromIndex = 0;
                     toIndex = size;
                 }
-                List<?> realDataList = A.isEmpty(dataList) ? Collections.emptyList() : dataList.subList(fromIndex, toIndex);
+                List<?> realDataList = Arr.isEmpty(dataList) ? Collections.emptyList() : dataList.subList(fromIndex, toIndex);
 
                 // 指定头, 并指定只输出指定头相关的列
                 ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(realSheetName).useDefaultStyle(false);
@@ -123,7 +123,7 @@ public class ExportEasyExcel {
         // 每个 sheet 的最大列
         int maxColumn = getMaxColumn(excel07);
         for (LinkedHashMap<String, String> sheetTitleMap : titleMap.values()) {
-            if (A.isNotEmpty(sheetTitleMap)) {
+            if (Arr.isNotEmpty(sheetTitleMap)) {
                 int columnSize = sheetTitleMap.size();
                 if (columnSize > maxColumn) {
                     throw new RuntimeException("Invalid column number " + columnSize + ", max: " + maxColumn);
@@ -143,13 +143,13 @@ public class ExportEasyExcel {
                 // 表头在导出时显示的名字
                 List<List<String>> titles = new ArrayList<>();
                 for (String value : sheetTitleMap.values()) {
-                    if (U.isNotBlank(value)) {
+                    if (Obj.isNotBlank(value)) {
                         titles.add(Collections.singletonList(value));
                     }
                 }
 
                 List<?> sheetDataList = dataMap.get(sheetName);
-                int size = A.isEmpty(sheetDataList) ? 0 : sheetDataList.size();
+                int size = Arr.isEmpty(sheetDataList) ? 0 : sheetDataList.size();
                 List<WriteHandler> handlerList = Arrays.asList(
                         FREEZE_TITLE_HANDLER,
                         new StyleCellHandler(size <= CELL_STYLE_CROSSOVER)
@@ -164,7 +164,7 @@ public class ExportEasyExcel {
                     String realSheetName = handleSheetName(sheetName, realSheetCount, i);
 
                     List<?> realDataList;
-                    if (A.isEmpty(sheetDataList)) {
+                    if (Arr.isEmpty(sheetDataList)) {
                         realDataList = Collections.emptyList();
                     } else {
                         if (realSheetCount > 1) {
@@ -179,7 +179,7 @@ public class ExportEasyExcel {
                     // 指定头, 并指定只输出指定头相关的列
                     ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(realSheetName)
                             .useDefaultStyle(false).includeColumnFieldNames(fields);
-                    if (A.isNotEmpty(titles)) {
+                    if (Arr.isNotEmpty(titles)) {
                         sheetBuilder.head(titles);
                     }
                     for (WriteHandler handler : handlerList) {
@@ -197,7 +197,7 @@ public class ExportEasyExcel {
      * @see org.apache.poi.ss.util.WorkbookUtil#validateSheetName
      */
     private static String handleSheetName(String sheetName, int sheetCount, int sheetIndex) {
-        if (U.isBlank(sheetName)) {
+        if (Obj.isBlank(sheetName)) {
             sheetName = "sheet";
         }
         String tmpSn = sheetName.replace("/", " ").replace("\\", " ").replace("?", " ")
@@ -209,7 +209,7 @@ public class ExportEasyExcel {
             tmpSn = tmpSn.substring(0, tmpSn.length() - 1);
         }
         String tmp = BLANK_REGEX.matcher(tmpSn).replaceAll(" ");
-        String indexSuffix = (sheetCount > 1) ? (" - " + (sheetIndex + 1)) : U.EMPTY;
+        String indexSuffix = (sheetCount > 1) ? (" - " + (sheetIndex + 1)) : Obj.EMPTY;
         int nameLen = 31 - indexSuffix.length();
         return ((tmp.length() > nameLen) ? tmp.substring(0, nameLen) : tmp) + indexSuffix;
     }

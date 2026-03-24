@@ -2,7 +2,7 @@ package com.github.common.json;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 /**
  * 返回码. 前端基于此进行相应的页面跳转, 通常会有 渲染数据、输出返回描述、导到登录页、不进行任务处理 这几种
@@ -56,7 +56,7 @@ public enum JsonCode {
     }
     @JsonCreator
     public static JsonCode deserializer(Object obj) {
-        if (U.isNotNull(obj)) {
+        if (Obj.isNotNull(obj)) {
             String str = obj.toString().trim();
             for (JsonCode e : values()) {
                 if (str.equals(String.valueOf(e.code))) {

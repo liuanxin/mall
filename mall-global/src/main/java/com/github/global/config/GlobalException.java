@@ -4,9 +4,9 @@ import com.github.common.exception.*;
 import com.github.common.json.JsonCode;
 import com.github.common.json.JsonResult;
 import com.github.common.json.JsonUtil;
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import com.github.global.service.I18nService;
 import com.github.global.service.ValidationService;
 import lombok.RequiredArgsConstructor;
@@ -149,7 +149,7 @@ public class GlobalException {
     public ResponseEntity<JsonResult<String>> notSupported(HttpRequestMethodNotSupportedException e) {
         StringBuilder sbd = new StringBuilder("not support");
         if (!online) {
-            sbd.append(String.format(", current(%s), support(%s)", e.getMethod(), A.toStr(e.getSupportedMethods())));
+            sbd.append(String.format(", current(%s), support(%s)", e.getMethod(), Arr.toStr(e.getSupportedMethods())));
         }
         String msg = sbd.toString();
         int status = (returnStatusCode ? JsonCode.FAIL : JsonCode.SUCCESS).getCode();
@@ -182,9 +182,9 @@ public class GlobalException {
     @ExceptionHandler(Throwable.class)
     public ResponseEntity other(Throwable throwable) {
         Throwable exception = throwable.getCause();
-        if (U.isNotNull(exception)) {
+        if (Obj.isNotNull(exception)) {
             // 异常可能套了很多层, 只要是自定义的异常就用各自的处理
-            for (int i = 0; i < U.MAX_DEPTH; i++) {
+            for (int i = 0; i < Obj.MAX_DEPTH; i++) {
                 if (exception instanceof NotFoundException) {
                     return notFound((NotFoundException) exception);
                 } else if (exception instanceof NotLoginException) {
@@ -213,12 +213,12 @@ public class GlobalException {
     private ResponseEntity<JsonResult<String>> handle(boolean knowError, String msg, int status,
                                                       JsonResult<String> result, Throwable e) {
         // 非生产 且 异常信息非空 时, 将异常写入返回值
-        if (!online && U.isNotNull(e)) {
+        if (!online && Obj.isNotNull(e)) {
             List<String> exceptionList = new ArrayList<>();
-            exceptionList.add(U.toStr(e.getMessage()));
+            exceptionList.add(Obj.toStr(e.getMessage()));
 
             StackTraceElement[] stackTraceArray = e.getStackTrace();
-            if (A.isNotEmpty(stackTraceArray)) {
+            if (Arr.isNotEmpty(stackTraceArray)) {
                 for (StackTraceElement trace : stackTraceArray) {
                     exceptionList.add(trace.toString().trim());
                 }
@@ -227,7 +227,7 @@ public class GlobalException {
         }
 
         StringBuilder sbd = new StringBuilder();
-        if (U.isNotBlank(msg)) {
+        if (Obj.isNotBlank(msg)) {
             sbd.append(msg).append(", ");
         }
         sbd.append(String.format("exception result: (%s)", JsonUtil.toJson(result)));
@@ -249,7 +249,7 @@ public class GlobalException {
             boolean hasCn = LocaleContextHolder.getLocale() == Locale.CHINA;
             return hasCn ? "出错了, 我们会尽快处理" : "Something went wrong, we'll fix it asap";
         } else {
-            return U.isNull(e) ? "exception" : e.getMessage();
+            return Obj.isNull(e) ? "exception" : e.getMessage();
         }
     }
 }

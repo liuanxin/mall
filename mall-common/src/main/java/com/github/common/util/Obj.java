@@ -29,7 +29,7 @@ import java.util.zip.GZIPOutputStream;
 
 /** 工具类 */
 @SuppressWarnings("DuplicatedCode")
-public final class U {
+public final class Obj {
 
     public static final Random RANDOM = new Random();
 
@@ -1065,7 +1065,7 @@ public final class U {
      * @param des true 表示将值脱敏
      */
     public static String formatParam(Map<String, ?> params, boolean sort, boolean noBlank, boolean encode, boolean des) {
-        if (A.isEmpty(params)) {
+        if (Arr.isEmpty(params)) {
             return EMPTY;
         }
 
@@ -1087,7 +1087,7 @@ public final class U {
 
     /** 将 map 输出成 &lt;id: 123&gt;&lt;name: xyz,opq&gt;, des 为 true 则将值进行脱敏(如 password: ***, phone: 130****) */
     public static String formatHeader(Map<String, ?> headers, boolean des) {
-        if (A.isEmpty(headers)) {
+        if (Arr.isEmpty(headers)) {
             return EMPTY;
         }
 

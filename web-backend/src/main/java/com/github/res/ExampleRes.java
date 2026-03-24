@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.common.enums.Gender;
 import com.github.common.json.JsonUtil;
 import com.github.common.page.PageReturn;
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 import com.github.liuanxin.api.annotation.ApiReturn;
 import com.github.product.enums.ProductTestType;
 import com.github.product.model.ProductTest;
@@ -61,17 +61,17 @@ public class ExampleRes {
     /** 组装数据 */
     public static PageReturn<ExampleRes> assemblyData(PageReturn<UserTest> userPageInfo, List<ProductTest> testList) {
         PageReturn<ExampleRes> returnRes = PageReturn.convertTotal(userPageInfo);
-        if (U.isNotNull(userPageInfo)) {
+        if (Obj.isNotNull(userPageInfo)) {
             // 把商品数据整理成  userId: List<商品>
-            Map<Long, List<ProductTest>> userIdMap = A.listToMapList(testList, ProductTest::getUserId);
+            Map<Long, List<ProductTest>> userIdMap = Arr.listToMapList(testList, ProductTest::getUserId);
 
             List<ExampleRes> exampleVoList = new ArrayList<>();
             for (UserTest userExample : userPageInfo.getList()) {
                 ExampleRes res = JsonUtil.convert(userExample, ExampleRes.class);
-                if (U.isNotNull(res)) {
+                if (Obj.isNotNull(res)) {
                     // 从上面的 map 中获取当前用户对应的商品列表
                     Collection<ProductTest> productExamples = userIdMap.get(userExample.getId());
-                    if (A.isNotEmpty(productExamples)) {
+                    if (Arr.isNotEmpty(productExamples)) {
                         List<ProductTest> examples = new ArrayList<>(productExamples);
                         // 把用户商品数据转换成前端需要的数据
                         res.setExampleProductList(JsonUtil.convertList(examples, ExampleProductRes.class));

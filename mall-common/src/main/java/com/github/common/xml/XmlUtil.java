@@ -1,7 +1,7 @@
 package com.github.common.xml;
 
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -67,7 +67,7 @@ public class XmlUtil {
     }
     @SuppressWarnings("unchecked")
     private static <T> T convertObject(String xml, Class<T> clazz) throws Exception {
-        return U.isBlank(xml) ? null : (T) JAXBContext.newInstance(clazz).createUnmarshaller().unmarshal(new StringReader(xml));
+        return Obj.isBlank(xml) ? null : (T) JAXBContext.newInstance(clazz).createUnmarshaller().unmarshal(new StringReader(xml));
     }
     public static <T> T toObjectNil(String xml, Class<T> clazz) {
         try {

@@ -1,9 +1,9 @@
 package com.github.global.filter;
 
 import com.github.common.Const;
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -39,7 +39,7 @@ public class LanguageFilter implements Filter {
     private final String languageParam;
     private final Set<Locale> locales;
     public LanguageFilter(String languageParam, String i18nBaseNames) {
-        this.languageParam = U.defaultIfBlank(languageParam, "lang");
+        this.languageParam = Obj.defaultIfBlank(languageParam, "lang");
         this.locales = scanLocale(i18nBaseNames);
     }
 
@@ -65,7 +65,7 @@ public class LanguageFilter implements Filter {
 
             LocaleContextHolder.setLocale(calcLocale);
             LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
-            if (U.isNotNull(localeResolver)) {
+            if (Obj.isNotNull(localeResolver)) {
                 localeResolver.setLocale(request, (HttpServletResponse) res, calcLocale);
             }
             chain.doFilter(request, res);
@@ -73,11 +73,11 @@ public class LanguageFilter implements Filter {
     }
 
     private Set<Locale> scanLocale(String baseNames) {
-        if (U.isBlank(baseNames)) {
+        if (Obj.isBlank(baseNames)) {
             return Collections.emptySet();
         }
         String[] files = StringUtils.commaDelimitedListToStringArray(StringUtils.trimAllWhitespace(baseNames));
-        if (A.isEmpty(files)) {
+        if (Arr.isEmpty(files)) {
             return Collections.emptySet();
         }
 
@@ -86,18 +86,18 @@ public class LanguageFilter implements Filter {
         for (String file : files) {
             try {
                 Resource[] resources = PATTERN_RESOLVER.getResources(String.format("classpath*:%s*.properties", file));
-                if (A.isNotEmpty(resources)) {
+                if (Arr.isNotEmpty(resources)) {
                     // i18n/messages -> messages, i18n/validation -> validation
                     String fileName = file.substring(file.lastIndexOf("/") + 1);
                     for (Resource resource : resources) {
                         // messages.properties, messages_zh_CN.properties, messages_en_US.properties
                         String filename = resource.getFilename();
-                        if (U.isNotBlank(filename)) {
+                        if (Obj.isNotBlank(filename)) {
                             String name = filename.substring(0, filename.indexOf(".properties"));
                             // 只要 zh_CN、en_US 这些带语言的文件, 不带的忽略
                             if (!name.equals(fileName) && name.startsWith(fileName)) {
                                 String language = name.substring(fileName.length() + 1);
-                                if (U.isNotBlank(language)) {
+                                if (Obj.isNotBlank(language)) {
                                     languages.add(language);
                                 }
                             }
@@ -110,14 +110,14 @@ public class LanguageFilter implements Filter {
                 }
             }
         }
-        if (A.isEmpty(languages)) {
+        if (Arr.isEmpty(languages)) {
             return Collections.emptySet();
         }
 
         Set<Locale> sets = new HashSet<>();
         for (String lang : languages) {
             Locale locale = parse(lang);
-            if (U.isNotNull(locale)) {
+            if (Obj.isNotNull(locale)) {
                 sets.add(locale);
             }
         }
@@ -146,10 +146,10 @@ public class LanguageFilter implements Filter {
         return originalLocale;
     }
     private Locale parse(String lang) {
-        return U.isBlank(lang) ? null : Locale.forLanguageTag(lang.replace("_", "-"));
+        return Obj.isBlank(lang) ? null : Locale.forLanguageTag(lang.replace("_", "-"));
     }
     private boolean blankLocale(Locale locale) {
-        return U.isNull(locale) || (U.isBlank(locale.getLanguage()) && U.isBlank(locale.getCountry()));
+        return Obj.isNull(locale) || (Obj.isBlank(locale.getLanguage()) && Obj.isBlank(locale.getCountry()));
     }
     private boolean notBlankLocale(Locale locale) {
         return !blankLocale(locale);

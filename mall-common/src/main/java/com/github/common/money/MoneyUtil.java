@@ -1,6 +1,6 @@
 package com.github.common.money;
 
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -9,7 +9,7 @@ public class MoneyUtil {
 
     /** 元转换为分 */
     public static Long yuan2Cent(String yuan, int scale) {
-        if (U.isBlank(yuan)) {
+        if (Obj.isBlank(yuan)) {
             return null;
         }
 
@@ -22,18 +22,18 @@ public class MoneyUtil {
             yuan = yuan.replace(",", "");
         }
 
-        U.assertException(U.isNotDouble(yuan), String.format("金额(%s)必须是数字", yuan));
+        Obj.assertException(Obj.isNotDouble(yuan), String.format("金额(%s)必须是数字", yuan));
         return new BigDecimal(yuan).movePointRight(scale).longValue();
     }
     /** 分转换为元 */
     public static String cent2Yuan(Long cent, int scale) {
-        if (U.isNull(cent)) {
-            return U.EMPTY;
+        if (Obj.isNull(cent)) {
+            return Obj.EMPTY;
         }
         if (cent == 0) {
             return "0";
         }
-        String yuan = (cent > 0 ? U.EMPTY : "-") + BigDecimal.valueOf(Math.abs(cent)).movePointLeft(scale);
+        String yuan = (cent > 0 ? Obj.EMPTY : "-") + BigDecimal.valueOf(Math.abs(cent)).movePointLeft(scale);
         if (yuan.endsWith("0")) {
             yuan = yuan.substring(0, yuan.length() - 1);
             if (yuan.endsWith("0")) {
@@ -44,7 +44,7 @@ public class MoneyUtil {
     }
     /** 分转换为带千分位的元 */
     public static String cent2ShowYuan(Long cent) {
-        return U.formatNumberToThousands(cent2Yuan(cent, 2));
+        return Obj.formatNumberToThousands(cent2Yuan(cent, 2));
     }
 
 
@@ -52,19 +52,19 @@ public class MoneyUtil {
 
     /** 设置金额的精度, 忽略后面的精度 */
     public static BigDecimal setPrecision(BigDecimal money, int scale) {
-        return U.isNull(money) ? null : money.setScale(scale, RoundingMode.DOWN);
+        return Obj.isNull(money) ? null : money.setScale(scale, RoundingMode.DOWN);
     }
 
     /** num1 + num2 */
     public static BigDecimal add(BigDecimal num1, BigDecimal num2) {
-        BigDecimal n1 = U.isNull(num1) ? BigDecimal.ZERO : num1;
-        BigDecimal n2 = U.isNull(num2) ? BigDecimal.ZERO : num2;
+        BigDecimal n1 = Obj.isNull(num1) ? BigDecimal.ZERO : num1;
+        BigDecimal n2 = Obj.isNull(num2) ? BigDecimal.ZERO : num2;
         return n1.add(n2);
     }
     /** num1 - num2 */
     public static BigDecimal subtract(BigDecimal num1, BigDecimal num2) {
-        BigDecimal n1 = U.isNull(num1) ? BigDecimal.ZERO : num1;
-        BigDecimal n2 = U.isNull(num2) ? BigDecimal.ZERO : num2;
+        BigDecimal n1 = Obj.isNull(num1) ? BigDecimal.ZERO : num1;
+        BigDecimal n2 = Obj.isNull(num2) ? BigDecimal.ZERO : num2;
         return n1.subtract(n2);
     }
     /** num1 * num2 */
@@ -73,9 +73,9 @@ public class MoneyUtil {
     }
     /** num1 * num2 */
     public static BigDecimal multiply(BigDecimal num1, BigDecimal num2) {
-        if (U.isNull(num2)) {
+        if (Obj.isNull(num2)) {
             return num1;
-        } else if (U.isNull(num1)) {
+        } else if (Obj.isNull(num1)) {
             return num2;
         } else {
             return num1.multiply(num2);
@@ -91,9 +91,9 @@ public class MoneyUtil {
     }
     /** num1 / num2 返回有指定位小数点精度的结果, 指定精度取舍 */
     public static BigDecimal divideScaleMode(BigDecimal num1, BigDecimal num2, int scale, RoundingMode mode) {
-        U.assertException(num2 == null || num2.doubleValue() == 0, "除数要有值且不能为 0");
+        Obj.assertException(num2 == null || num2.doubleValue() == 0, "除数要有值且不能为 0");
 
-        BigDecimal n1 = U.isNull(num1) ? BigDecimal.ZERO : num1;
+        BigDecimal n1 = Obj.isNull(num1) ? BigDecimal.ZERO : num1;
         return n1.divide(num2, scale, mode);
     }
 }

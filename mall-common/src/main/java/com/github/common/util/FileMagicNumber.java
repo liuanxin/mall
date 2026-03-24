@@ -31,10 +31,10 @@ public enum FileMagicNumber {
     }
 
     private static boolean check(String magicNumber, List<FileMagicNumber> magicNumberList) {
-        if (U.isNotBlank(magicNumber)) {
+        if (Obj.isNotBlank(magicNumber)) {
             String upperCase = magicNumber.toUpperCase();
             for (FileMagicNumber value : magicNumberList) {
-                if (U.isNotBlank(value.magicNumber) && upperCase.startsWith(value.magicNumber.toUpperCase())) {
+                if (Obj.isNotBlank(value.magicNumber) && upperCase.startsWith(value.magicNumber.toUpperCase())) {
                     return true;
                 }
             }

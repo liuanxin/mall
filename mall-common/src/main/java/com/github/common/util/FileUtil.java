@@ -20,7 +20,7 @@ public final class FileUtil {
     public static String save(MultipartFile file, String directoryPrefix, String urlPrefix, boolean addYmd) {
         directoryPrefix = directoryPrefix.trim();
         // 保存目录以 / 开头, 结尾不带 /
-        directoryPrefix = U.addPrefix(directoryPrefix);
+        directoryPrefix = Obj.addPrefix(directoryPrefix);
         if (directoryPrefix.endsWith("/")) {
             directoryPrefix = directoryPrefix.substring(0, directoryPrefix.length() - 1);
         }
@@ -45,7 +45,7 @@ public final class FileUtil {
             directory.mkdirs();
         }
         // 重命名
-        String newName = U.renameFile(file.getOriginalFilename());
+        String newName = Obj.renameFile(file.getOriginalFilename());
 
         try {
             file.transferTo(new File(directory, newName));
@@ -53,7 +53,7 @@ public final class FileUtil {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("upload file exception", e);
             }
-            U.serviceException("文件上传时异常");
+            Obj.serviceException("文件上传时异常");
         }
         return urlPrefix + middlePath + newName;
     }

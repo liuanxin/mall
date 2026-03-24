@@ -1,6 +1,6 @@
 package com.github.common.encrypt;
 
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -215,7 +215,7 @@ public final class EccEncrypt {
      * @return 密文
      */
     public static String eccEncode(String publicKey, String source) {
-        if (U.isBlank(publicKey) || source == null) {
+        if (Obj.isBlank(publicKey) || source == null) {
             throw new RuntimeException(String.format("用 ECC 基于公钥(%s)加密(%s)时数据不能为空", publicKey, source));
         }
         try {
@@ -257,7 +257,7 @@ public final class EccEncrypt {
      * @return 原文
      */
     public static String eccDecode(String privateKey, String encryptData) {
-        if (U.isBlank(privateKey) || U.isBlank(encryptData)) {
+        if (Obj.isBlank(privateKey) || Obj.isBlank(encryptData)) {
             throw new RuntimeException(String.format("用 ECC 基于私钥(%s)解密(%s)时数据不能为空", privateKey, encryptData));
         }
         if (encryptData.length() < 162) {
@@ -297,7 +297,7 @@ public final class EccEncrypt {
      * @return 签名数据
      */
     public static String eccSign(String privateKey, String source) {
-        if (U.isBlank(privateKey) || source == null) {
+        if (Obj.isBlank(privateKey) || source == null) {
             throw new RuntimeException(String.format("用 ECC 基于私钥(%s)生成验签时数据(%s)不能为空", privateKey, source));
         }
         try {
@@ -324,7 +324,7 @@ public final class EccEncrypt {
      * @return true 表示验签成功
      */
     public static boolean eccVerify(String publicKey, String source, String sign) {
-        if (U.isBlank(publicKey) || U.isBlank(source) || U.isBlank(sign)) {
+        if (Obj.isBlank(publicKey) || Obj.isBlank(source) || Obj.isBlank(sign)) {
             return false;
         }
         try {

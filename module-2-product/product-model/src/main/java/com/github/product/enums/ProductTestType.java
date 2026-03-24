@@ -2,7 +2,7 @@ package com.github.product.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -17,7 +17,7 @@ public enum ProductTestType {
     private final String value;
 
     public static ProductTestType fromCode(Integer code) {
-        if (U.isNotNull(code)) {
+        if (Obj.isNotNull(code)) {
             for (ProductTestType value : values()) {
                 if (value.code == code) {
                     return value;
@@ -34,7 +34,7 @@ public enum ProductTestType {
     /** 数据反序列化. 如 male、0、男、{"code": 0, "value": "男"} 都可以反序列化为 Gender.Male 值 */
     @JsonCreator
     public static ProductTestType deserializer(Object obj) {
-        if (U.isNotNull(obj)) {
+        if (Obj.isNotNull(obj)) {
             String str = obj.toString().trim();
             for (ProductTestType e : values()) {
                 if (str.equals(String.valueOf(e.code)) || str.equalsIgnoreCase(e.value)) {

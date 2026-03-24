@@ -2,7 +2,7 @@ package com.github.common.ua;
 
 import com.github.common.json.JsonUtil;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -23,7 +23,7 @@ public class UserAgentUtil {
     private static final Invocable SCRIPT_ENGINE;
     static {
         String uaParserJs = readFile();
-        if (U.isNotNull(uaParserJs)) {
+        if (Obj.isNotNull(uaParserJs)) {
             System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
             ScriptEngine engine = new ScriptEngineManager().getEngineByName("JavaScript"); // js nashorn 都可以
             try {
@@ -44,8 +44,8 @@ public class UserAgentUtil {
     private static String readFile() {
         // https://stackoverflow.com/questions/20389255/reading-a-resource-file-from-within-jar
         try (InputStream in = UserAgentUtil.class.getClassLoader().getResourceAsStream(UA_PARSE_JS_FILE)) {
-            if (U.isNotNull(in)) {
-                return U.inputStreamToString(in);
+            if (Obj.isNotNull(in)) {
+                return Obj.inputStreamToString(in);
             }
         } catch (IOException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
@@ -53,8 +53,8 @@ public class UserAgentUtil {
             }
         }
         try (InputStream in = UserAgentUtil.class.getResourceAsStream(UA_PARSE_JS_FILE)) {
-            if (U.isNotNull(in)) {
-                return U.inputStreamToString(in);
+            if (Obj.isNotNull(in)) {
+                return Obj.inputStreamToString(in);
             }
         } catch (IOException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
@@ -66,7 +66,7 @@ public class UserAgentUtil {
 
     public static String parseStr(String ua) {
         UserAgent agent = parse(ua);
-        return U.isNotNull(agent) ? agent.toString() : ua;
+        return Obj.isNotNull(agent) ? agent.toString() : ua;
     }
 
     public static UserAgent parse(String ua) {
@@ -74,17 +74,17 @@ public class UserAgentUtil {
     }
 
     private static String parseWithStr(String ua) {
-        if (U.isNull(SCRIPT_ENGINE) || U.isBlank(ua)) {
-            return U.EMPTY;
+        if (Obj.isNull(SCRIPT_ENGINE) || Obj.isBlank(ua)) {
+            return Obj.EMPTY;
         }
 
         try {
-            return U.toStr(SCRIPT_ENGINE.invokeFunction(PARSE_METHOD, ua));
+            return Obj.toStr(SCRIPT_ENGINE.invokeFunction(PARSE_METHOD, ua));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("parse ua({}) exception", ua, e);
             }
-            return U.EMPTY;
+            return Obj.EMPTY;
         }
     }
 }

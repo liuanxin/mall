@@ -35,7 +35,7 @@ public class LogTraceFilter implements Filter {
             String traceId = request.getHeader(Const.TRACE);
             String ip = RequestUtil.getRealIp(request);
             LogUtil.putTraceAndIp(traceId, ip, LocaleContextHolder.getLocale());
-            if (A.isEmpty(excludePathList) || !excludePathList.contains(request.getRequestURI())) {
+            if (Arr.isEmpty(excludePathList) || !excludePathList.contains(request.getRequestURI())) {
                 if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                     String method = request.getMethod();
                     String url = RequestUtil.getRequestUrl(request);
@@ -54,8 +54,8 @@ public class LogTraceFilter implements Filter {
                         sbd.append(")");
                     }
 
-                    String params = U.formatPrintParam(request.getParameterMap());
-                    if (U.isNotBlank(params)) {
+                    String params = Obj.formatPrintParam(request.getParameterMap());
+                    if (Obj.isNotBlank(params)) {
                         sbd.append(" params(").append(params).append(")");
                     }
 

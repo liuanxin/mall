@@ -3,7 +3,7 @@ package com.github.web;
 import com.github.common.json.JsonResult;
 import com.github.common.page.PageParam;
 import com.github.common.page.PageReturn;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import com.github.global.constant.Develop;
 import com.github.liuanxin.api.annotation.ApiGroup;
 import com.github.liuanxin.api.annotation.ApiMethod;
@@ -31,7 +31,7 @@ public class BackendProductController {
     @ApiMethod(value = "分页查询", develop = Develop.PRODUCT)
     @GetMapping
     public JsonResult<PageReturn<ExampleRes>> enumList(ExampleReq req, PageParam page) {
-        U.assertNil(req, "缺少必须的参数");
+        Obj.assertNil(req, "缺少必须的参数");
         req.basicCheck();
 
         PageReturn<UserTest> pageUserExampleInfo = userExampleService.example(req.userTestParam(), req.userTestExtendParam(), page);

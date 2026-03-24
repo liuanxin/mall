@@ -1,6 +1,6 @@
 package com.github.global.converter;
 
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
 import org.springframework.util.NumberUtils;
@@ -24,7 +24,7 @@ public class StringToNumberConverter implements ConverterFactory<String, Number>
 
         @Override
         public T convert(String source) {
-            if (U.isNotBlank(source)) {
+            if (Obj.isNotBlank(source)) {
                 // 如果传 1,234,567 将转成 1234567 这样的整数
                 if (source.contains(",")) {
                     source = source.replace(",", "");

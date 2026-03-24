@@ -8,8 +8,8 @@ import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 import org.apache.poi.hssf.usermodel.HSSFPalette;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -60,13 +60,13 @@ public class StyleCellHandler implements CellWriteHandler {
     }
 
     private void setWidthAndHeight(Cell cell, String data) {
-        if (U.isNotNull(data)) {
+        if (Obj.isNotNull(data)) {
             // 内容里面有换行则宽度以最长的行为主, 行高以行数为主
             int maxWidth = 0;
             String[] lines = data.split("\n");
             for (String s : lines) {
                 // 列宽: 从内容来确定, 中文为 2 个长度, 左移 8 相当于 * 256
-                int lineWidth = (U.toLen(s) + 2) << 8;
+                int lineWidth = (Obj.toLen(s) + 2) << 8;
                 if (lineWidth > maxWidth) {
                     maxWidth = lineWidth;
                 }
@@ -103,7 +103,7 @@ public class StyleCellHandler implements CellWriteHandler {
                 settingWidth(cell, head.getHeadNameList().get(relativeRowIndex));
             } else { */
             if (!isHead) {
-                if (U.isNotNull(cellData)) {
+                if (Obj.isNotNull(cellData)) {
                     CellDataTypeEnum dataType = cellData.getType();
                     if (dataType == CellDataTypeEnum.NUMBER || dataType == CellDataTypeEnum.BOOLEAN) {
                         cell.setCellStyle(numberStyle(cell.getSheet().getWorkbook()));
@@ -122,7 +122,7 @@ public class StyleCellHandler implements CellWriteHandler {
         Thread thread = Thread.currentThread();
         String key = "head";
         Map<String, CellStyle> styleMap = CELL_STYLE_CACHE.getIfPresent(thread);
-        if (A.isNotEmpty(styleMap)) {
+        if (Arr.isNotEmpty(styleMap)) {
             if (styleMap.containsKey(key)) {
                 return styleMap.get(key);
             }
@@ -166,7 +166,7 @@ public class StyleCellHandler implements CellWriteHandler {
         Thread thread = Thread.currentThread();
         String key = "content";
         Map<String, CellStyle> styleMap = CELL_STYLE_CACHE.getIfPresent(thread);
-        if (A.isNotEmpty(styleMap)) {
+        if (Arr.isNotEmpty(styleMap)) {
             if (styleMap.containsKey(key)) {
                 return styleMap.get(key);
             }
@@ -192,7 +192,7 @@ public class StyleCellHandler implements CellWriteHandler {
         Thread thread = Thread.currentThread();
         String key = "number";
         Map<String, CellStyle> styleMap = CELL_STYLE_CACHE.getIfPresent(thread);
-        if (A.isNotEmpty(styleMap)) {
+        if (Arr.isNotEmpty(styleMap)) {
             if (styleMap.containsKey(key)) {
                 return styleMap.get(key);
             }

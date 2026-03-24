@@ -4,8 +4,8 @@ import com.github.common.export.csv.ExportCsv;
 import com.github.common.export.easy.ExportEasyExcel;
 import com.github.common.export.poi.ExportColumnHandler;
 import com.github.common.export.poi.ExportExcel;
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.*;
@@ -80,9 +80,9 @@ public final class FileExport {
         ExportType exportType = ExportType.to(type);
         if (exportType.isExcel()) {
             if (primitivePoi) {
-                saveExcel(type, name, A.linkedMaps(name, titleMap), A.linkedMaps(name, dataList), directory);
+                saveExcel(type, name, Arr.linkedMaps(name, titleMap), Arr.linkedMaps(name, dataList), directory);
             } else {
-                saveEasyExcel(type, name, A.linkedMaps(name, titleMap), A.linkedMaps(name, dataList), directory);
+                saveEasyExcel(type, name, Arr.linkedMaps(name, titleMap), Arr.linkedMaps(name, dataList), directory);
             }
         } else if (exportType.isCsv()) {
             saveCsv(name, titleMap, dataList, directory);
@@ -130,7 +130,7 @@ public final class FileExport {
         String fileName = encodeName(name) + "." + (excel07 ? "xlsx" : "xls");
 
         try (
-                OutputStream output = new FileOutputStream(U.addSuffix(directory) + fileName);
+                OutputStream output = new FileOutputStream(Obj.addSuffix(directory) + fileName);
                 Workbook workbook = ExportExcel.handle(excel07, titleMap, dataList)
         ) {
             try {
@@ -157,7 +157,7 @@ public final class FileExport {
         boolean excel07 = !(ExportType.to(type).is03());
         String fileName = encodeName(name) + "." + (excel07 ? "xlsx" : "xls");
 
-        try (OutputStream output = new FileOutputStream(U.addSuffix(directory) + fileName)) {
+        try (OutputStream output = new FileOutputStream(Obj.addSuffix(directory) + fileName)) {
             ExportEasyExcel.handle(excel07, titleMap, dataList, output);
         } catch (IOException e) {
             throw new RuntimeException(String.format("保存文件(%s)到(%s)时异常", fileName, directory), e);

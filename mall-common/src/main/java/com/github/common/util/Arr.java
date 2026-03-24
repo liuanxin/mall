@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 
 /** 集合相关的工具包 */
 @SuppressWarnings({"rawtypes", "unchecked", "DuplicatedCode"})
-public final class A {
+public final class Arr {
 
     private static final String SPLIT = ",";
 
@@ -86,12 +86,12 @@ public final class A {
 
     public static String toStr(Collection<?> collection, String prefix, String suffix) {
         if (isEmpty(collection)) {
-            return U.EMPTY;
+            return Obj.EMPTY;
         }
 
         StringBuilder sbd = new StringBuilder();
         for (Object o : collection) {
-            if (U.isNotNull(o)) {
+            if (Obj.isNotNull(o)) {
                 sbd.append(prefix).append(o).append(suffix);
             }
         }
@@ -101,12 +101,12 @@ public final class A {
     /** 拿英文逗号(,)分隔数组(忽略空) */
     public static <T> String toStr(T[] array, String prefix, String suffix) {
         if (isEmpty(array)) {
-            return U.EMPTY;
+            return Obj.EMPTY;
         }
 
         StringBuilder sbd = new StringBuilder();
         for (Object o : array) {
-            if (U.isNotNull(o)) {
+            if (Obj.isNotNull(o)) {
                 sbd.append(prefix).append(o).append(suffix);
             }
         }
@@ -119,7 +119,7 @@ public final class A {
         }
         StringJoiner sj = new StringJoiner(split);
         for (T obj : list) {
-            if (U.isNotNull(obj)) {
+            if (Obj.isNotNull(obj)) {
                 sj.add(func.apply(obj));
             }
         }
@@ -143,18 +143,18 @@ public final class A {
      */
     public static String toStr(Collection<?> collection, String split, boolean ignoreNull, boolean ignoreBlank) {
         if (isEmpty(collection)) {
-            return U.EMPTY;
+            return Obj.EMPTY;
         }
 
         StringJoiner joiner = new StringJoiner(split);
         for (Object obj : collection) {
-            if (U.isNull(obj)) {
+            if (Obj.isNull(obj)) {
                 if (!ignoreNull) {
                     joiner.add(null);
                 }
             } else {
                 String str = obj.toString();
-                if (U.isNotBlank(str) || !ignoreBlank) {
+                if (Obj.isNotBlank(str) || !ignoreBlank) {
                     joiner.add(str);
                 }
             }
@@ -167,14 +167,14 @@ public final class A {
     }
     /** 拿指定字符分隔数组或集合(忽略空) */
     public static String toString(Object arrayOrCollection, String split) {
-        if (U.isNull(arrayOrCollection)) {
-            return U.EMPTY;
+        if (Obj.isNull(arrayOrCollection)) {
+            return Obj.EMPTY;
         } else if (arrayOrCollection.getClass().isArray()) {
             StringJoiner joiner = new StringJoiner(split);
             int len = Array.getLength(arrayOrCollection);
             for (int i = 0; i < len; i++) {
                 Object obj = Array.get(arrayOrCollection, i);
-                if (U.isNotNull(obj)) {
+                if (Obj.isNotNull(obj)) {
                     joiner.add(obj.toString());
                 }
             }
@@ -182,7 +182,7 @@ public final class A {
         } else if (arrayOrCollection instanceof Collection<?> c) {
             StringJoiner joiner = new StringJoiner(split);
             for (Object obj : c) {
-                if (U.isNotNull(obj)) {
+                if (Obj.isNotNull(obj)) {
                     joiner.add(obj.toString());
                 }
             }
@@ -209,18 +209,18 @@ public final class A {
      */
     public static String toStr(Object[] array, String split, boolean ignoreNull, boolean ignoreBlank) {
         if (isEmpty(array)) {
-            return U.EMPTY;
+            return Obj.EMPTY;
         }
 
         StringJoiner joiner = new StringJoiner(split);
         for (Object obj : array) {
-            if (U.isNull(obj)) {
+            if (Obj.isNull(obj)) {
                 if (!ignoreNull) {
                     joiner.add(null);
                 }
             } else {
                 String str = obj.toString();
-                if (U.isNotBlank(str) || !ignoreBlank) {
+                if (Obj.isNotBlank(str) || !ignoreBlank) {
                     joiner.add(str);
                 }
             }
@@ -230,7 +230,7 @@ public final class A {
 
     /** 数组转成集合 */
     public static <T> List<T> arrayToList(Object array) {
-        if (U.isNull(array)) {
+        if (Obj.isNull(array)) {
             return Collections.emptyList();
         }
         if (array instanceof List l) {
@@ -320,7 +320,7 @@ public final class A {
     private static <T> List<T> list(List<T> result, boolean skipNull, T... objs) {
         if (isNotEmpty(objs)) {
             for (T obj : objs) {
-                if (U.isNotNull(obj) || !skipNull) {
+                if (Obj.isNotNull(obj) || !skipNull) {
                     result.add(obj);
                 }
             }
@@ -379,11 +379,11 @@ public final class A {
 
     /** 集合中随机返回一个 */
     public static <T> T rand(Collection<T> list) {
-        return getIndex(list, U.RANDOM.nextInt(list.size()));
+        return getIndex(list, Obj.RANDOM.nextInt(list.size()));
     }
     /** 数组中随机返回一个 */
     public static <T> T rand(T[] array) {
-        return getIndex(array, U.RANDOM.nextInt(array.length));
+        return getIndex(array, Obj.RANDOM.nextInt(array.length));
     }
 
 
@@ -405,9 +405,9 @@ public final class A {
     private static <T, R, C extends Collection<R>> C collect(Collection<T> list, Function<T, R> func, C targetList) {
         if (isNotEmpty(list)) {
             for (T obj : list) {
-                if (U.isNotNull(obj)) {
+                if (Obj.isNotNull(obj)) {
                     R value = func.apply(obj);
-                    if (U.isNotNull(value)) {
+                    if (Obj.isNotNull(value)) {
                         targetList.add(value);
                     }
                 }
@@ -475,9 +475,9 @@ public final class A {
                                               MapValueDuplicateType duplicateType) {
         if (isNotEmpty(list)) {
             for (V v : list) {
-                if (U.isNotNull(v)) {
+                if (Obj.isNotNull(v)) {
                     K k = keyFunc.apply(v);
-                    if (U.isNotNull(k)) {
+                    if (Obj.isNotNull(k)) {
                         if (returnMap.containsKey(k)) {
                             duplicateType.handle(returnMap, list, k, v);
                         } else {
@@ -496,11 +496,11 @@ public final class A {
                                                          MapValueDuplicateType duplicateType) {
         if (isNotEmpty(list)) {
             for (T obj : list) {
-                if (U.isNotNull(obj)) {
+                if (Obj.isNotNull(obj)) {
                     K k = keyFunc.apply(obj);
-                    if (U.isNotNull(k)) {
+                    if (Obj.isNotNull(k)) {
                         V v = valueFunc.apply(obj);
-                        if (U.isNotNull(v)) {
+                        if (Obj.isNotNull(v)) {
                             if (returnMap.containsKey(k)) {
                                 duplicateType.handle(returnMap, list, k, v);
                             } else {
@@ -544,11 +544,11 @@ public final class A {
                                                                                  Function<? super V, K> keyFunc,
                                                                                  Map<K, C> multiMap,
                                                                                  Supplier<C> instance) {
-        if (A.isNotEmpty(list)) {
+        if (Arr.isNotEmpty(list)) {
             for (V v : list) {
-                if (U.isNotNull(v)) {
+                if (Obj.isNotNull(v)) {
                     K k = keyFunc.apply(v);
-                    if (U.isNotNull(k)) {
+                    if (Obj.isNotNull(k)) {
                         multiMap.computeIfAbsent(k, (k1) -> instance.get()).add(v);
                     }
                 }
@@ -601,13 +601,13 @@ public final class A {
                                                                                             Function<? super T, V> valueFunc,
                                                                                             Map<K, C> multiMap,
                                                                                             Supplier<C> instance) {
-        if (A.isNotEmpty(list)) {
+        if (Arr.isNotEmpty(list)) {
             for (T obj : list) {
-                if (U.isNotNull(obj)) {
+                if (Obj.isNotNull(obj)) {
                     K k = keyFunc.apply(obj);
-                    if (U.isNotNull(k)) {
+                    if (Obj.isNotNull(k)) {
                         V v = valueFunc.apply(obj);
-                        if (U.isNotNull(v)) {
+                        if (Obj.isNotNull(v)) {
                             multiMap.computeIfAbsent(k, (k1) -> instance.get()).add(v);
                         }
                     }

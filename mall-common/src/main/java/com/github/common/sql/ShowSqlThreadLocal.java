@@ -1,6 +1,6 @@
 package com.github.common.sql;
 
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 public class ShowSqlThreadLocal {
 
@@ -10,7 +10,7 @@ public class ShowSqlThreadLocal {
         PRINT_SQL_LOCAL.set(true);
     }
     public static boolean hasPrint() {
-        return U.defaultIfNull(PRINT_SQL_LOCAL.get(), false);
+        return Obj.defaultIfNull(PRINT_SQL_LOCAL.get(), false);
     }
     public static void clean() {
         PRINT_SQL_LOCAL.remove();

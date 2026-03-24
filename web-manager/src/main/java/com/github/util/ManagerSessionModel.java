@@ -1,8 +1,8 @@
 package com.github.util;
 
 import com.github.common.json.JsonUtil;
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -46,7 +46,7 @@ class ManagerSessionModel implements Serializable {
     }
 
     public String userInfo() {
-        return U.toStr(id) + "/"  + U.toStr(userName);
+        return Obj.toStr(id) + "/"  + Obj.toStr(userName);
     }
 
 
@@ -95,7 +95,7 @@ class ManagerSessionModel implements Serializable {
 
     /** 有访问权限就返回 true */
     private boolean wasPermission(String url, String method) {
-        if (A.isNotEmpty(permissionList)) {
+        if (Arr.isNotEmpty(permissionList)) {
             for (Permission permission : permissionList) {
                 String permissionUrl = permission.getUrl();
                 String permissionMethod = permission.getMethod();
@@ -127,9 +127,9 @@ class ManagerSessionModel implements Serializable {
     /** 将数据库对应的数据模型转换成 session 中存放的对象 */
     static <T,P> ManagerSessionModel assemblyData(T account, List<P> permissions) {
         ManagerSessionModel sessionModel = JsonUtil.convert(account, ManagerSessionModel.class);
-        if (U.isNotNull(sessionModel)) {
+        if (Obj.isNotNull(sessionModel)) {
             List<Permission> permissionList = JsonUtil.convertList(permissions, Permission.class);
-            if (A.isNotEmpty(permissionList)) {
+            if (Arr.isNotEmpty(permissionList)) {
                 sessionModel.setPermissionList(permissionList);
             }
         }

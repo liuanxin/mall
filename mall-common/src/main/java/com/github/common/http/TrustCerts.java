@@ -1,7 +1,7 @@
 package com.github.common.http;
 
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import org.apache.http.ssl.SSLContexts;
 
 import javax.net.ssl.SSLContext;
@@ -20,7 +20,7 @@ class TrustCerts {
      *
      * 设置了 -Dignore-https-ssl=1 将在请求 https 时忽略证书
      */
-    static final boolean IGNORE_SSL = U.toBool(System.getProperty("ignore-https-ssl"));
+    static final boolean IGNORE_SSL = Obj.toBool(System.getProperty("ignore-https-ssl"));
 
     /** 请求 https 时无视 ssl 证书 */
     static final X509TrustManager TRUST_MANAGER;

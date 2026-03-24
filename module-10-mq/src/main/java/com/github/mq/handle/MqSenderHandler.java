@@ -4,7 +4,7 @@ import com.github.common.date.Dates;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.ApplicationContexts;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import com.github.mq.constant.MqConst;
 import com.github.mq.constant.MqData;
 import com.github.mq.constant.MqInfo;
@@ -50,7 +50,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
      * @param delayMs 延迟发送毫秒数, 需要安装 <a href="https://www.rabbitmq.com/community-plugins.html">delay</a> 插件
      */
     public void doProvide(MqInfo mqInfo, String searchKey, String json, int delayMs) {
-        String msgId = U.uuid16();
+        String msgId = Obj.uuid16();
         String traceId = LogUtil.getTraceId();
 
         MqData data = new MqData();
@@ -63,7 +63,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
 
     /** 发送 mq 消息, 不包「发送时间、队列信息」这些内容 */
     public void doProvideJustJson(MqInfo mqInfo, String searchKey, String json) {
-        provide(searchKey, new SelfCorrelationData(U.uuid16(), LogUtil.getTraceId(), mqInfo, json, 0));
+        provide(searchKey, new SelfCorrelationData(Obj.uuid16(), LogUtil.getTraceId(), mqInfo, json, 0));
     }
 
     /**
@@ -72,7 +72,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
      * @param delayMs 延迟发送毫秒数, 需要安装 <a href="https://www.rabbitmq.com/community-plugins.html">delay</a> 插件
      */
     public void doProvideJustJson(MqInfo mqInfo, String searchKey, String json, int delayMs) {
-        provide(searchKey, new SelfCorrelationData(U.uuid16(), LogUtil.getTraceId(), mqInfo, json, delayMs));
+        provide(searchKey, new SelfCorrelationData(Obj.uuid16(), LogUtil.getTraceId(), mqInfo, json, delayMs));
     }
 
     /** 指定 msgId 发送 mq 消息(发送的 mq 消息不包「发送时间、队列信息」这些内容), 一般用于重试 */
@@ -93,16 +93,16 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
 
         MqSend model = null;
         boolean needAdd = false;
-        String remark = U.EMPTY;
+        String remark = Obj.EMPTY;
         int status = MqConst.INIT;
         try {
             model = mqSendService.queryByMsgId(msgId);
-            needAdd = U.isNull(model);
+            needAdd = Obj.isNull(model);
             if (needAdd) {
                 model = new MqSend();
                 model.setMsgId(msgId);
-                if (U.isNotBlank(searchKey)) {
-                    model.setSearchKey(U.toStr(searchKey));
+                if (Obj.isNotBlank(searchKey)) {
+                    model.setSearchKey(Obj.toStr(searchKey));
                 }
                 model.setType(mqInfo.name().toLowerCase());
                 model.setRetryCount(0);
@@ -125,18 +125,18 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                 LogUtil.ROOT_LOG.info("发送({})数据({})成功", desc, msgId);
             }
             status = MqConst.SUCCESS;
-            remark = String.format("<%s : 消息(%s)发送成功>%s", Dates.nowDateTime(), desc, U.toStr(model.getRemark()));
+            remark = String.format("<%s : 消息(%s)发送成功>%s", Dates.nowDateTime(), desc, Obj.toStr(model.getRemark()));
         } catch (RuntimeException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("发送({})数据({})异常", desc, msgId, e);
             }
             status = MqConst.FAIL;
-            String oldRemark = U.toStr(U.isNull(model) ? null : model.getRemark());
+            String oldRemark = Obj.toStr(Obj.isNull(model) ? null : model.getRemark());
             remark = String.format("<%s : 发送(%s)数据异常(%s)>%s", Dates.nowDateTime(),
                     desc, e.getMessage(), oldRemark);
             throw e;
         } finally {
-            if (U.isNotNull(model)) {
+            if (Obj.isNotNull(model)) {
                 if (needAdd) {
                     model.setStatus(status);
                     model.setRemark(remark);
@@ -164,11 +164,11 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
                 LogUtil.ROOT_LOG.error("消息({})到交换机失败, 原因({})", JsonUtil.toJson(correlationData), cause);
             }
             String msgId = correlationData.getId();
-            if (U.isNotBlank(msgId)) {
+            if (Obj.isNotBlank(msgId)) {
                 MqSend mqSend = mqSendService.queryByMsgId(msgId);
-                if (U.isNotNull(mqSend)) {
+                if (Obj.isNotNull(mqSend)) {
                     if (correlationData instanceof SelfCorrelationData data) {
-                        int retryCount = U.toInt(mqSend.getRetryCount());
+                        int retryCount = Obj.toInt(mqSend.getRetryCount());
                         // 如果重试次数未达到设定的值则进行重试
                         if (retryCount < providerRetryCount) {
                             ApplicationContexts.getBean(MqSenderHandler.class).provide(null, data);
@@ -202,9 +202,9 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         }
         // msgId 放在 messageId, traceId 放在 correlationId
         String msgId = msg.getMessage().getMessageProperties().getMessageId();
-        if (U.isNotBlank(msgId)) {
+        if (Obj.isNotBlank(msgId)) {
             MqSend mqSend = mqSendService.queryByMsgId(msgId);
-            if (U.isNotNull(mqSend)) {
+            if (Obj.isNotNull(mqSend)) {
                 int code = msg.getReplyCode();
                 String text = msg.getReplyText();
                 String remark = String.format("<%s : 消息到队列时失败(%s -> %s)>", Dates.nowDateTime(), code, text);
@@ -217,7 +217,7 @@ public class MqSenderHandler implements RabbitTemplate.ConfirmCallback, RabbitTe
         MqSend model = new MqSend();
         model.setId(mqSend.getId());
         model.setStatus(MqConst.FAIL);
-        model.setRemark(remark + U.toStr(mqSend.getRemark()));
+        model.setRemark(remark + Obj.toStr(mqSend.getRemark()));
         mqSendService.updateById(model);
     }
 }

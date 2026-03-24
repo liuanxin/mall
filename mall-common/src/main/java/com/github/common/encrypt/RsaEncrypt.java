@@ -1,6 +1,6 @@
 package com.github.common.encrypt;
 
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 import javax.crypto.Cipher;
 import java.nio.charset.StandardCharsets;
@@ -161,7 +161,7 @@ public final class RsaEncrypt {
     public static String rsaEncode(String publicKey, String source) {
         // 使用 rsa 加密时数据的最大长度
         int maxDateLen = 53;
-        if (U.isBlank(publicKey) || source == null || source.length() > maxDateLen) {
+        if (Obj.isBlank(publicKey) || source == null || source.length() > maxDateLen) {
             throw new RuntimeException(String.format("用 rsa 基于公钥(%s)加密(%s)时数据不能为空或长度不能超过 %s",
                     publicKey, source, maxDateLen));
         }
@@ -191,7 +191,7 @@ public final class RsaEncrypt {
      * @return 原文
      */
     public static String rsaDecode(String privateKey, String encryptData) {
-        if (U.isBlank(privateKey) || U.isBlank(encryptData)) {
+        if (Obj.isBlank(privateKey) || Obj.isBlank(encryptData)) {
             throw new RuntimeException(String.format("用 rsa 基于私钥(%s)解密(%s)时数据不能为空", privateKey, encryptData));
         }
         try {
@@ -219,7 +219,7 @@ public final class RsaEncrypt {
      * @return 签名数据
      */
     public static String rsaSign(String privateKey, String source) {
-        if (U.isBlank(privateKey) || U.isBlank(source)) {
+        if (Obj.isBlank(privateKey) || Obj.isBlank(source)) {
             throw new RuntimeException(String.format("用 rsa 基于私钥(%s)生成验签时数据(%s)不能为空", privateKey, source));
         }
         try {
@@ -247,7 +247,7 @@ public final class RsaEncrypt {
      * @return true 表示验签成功
      */
     public static boolean rsaVerify(String publicKey, String source, String signData) {
-        if (U.isBlank(publicKey) || U.isBlank(source) || U.isBlank(signData)) {
+        if (Obj.isBlank(publicKey) || Obj.isBlank(source) || Obj.isBlank(signData)) {
             // throw new RuntimeException(String.format("用 rsa 基于公钥(%s)验签(%s)时(%s)不能为空", publicKey, source, signData));
             return false;
         }
@@ -280,7 +280,7 @@ public final class RsaEncrypt {
      */
     public static Map<String, String> rsaEncodeWithValueAes(String publicKey, String data) {
         // 随机数, 用来做 aes 的密钥, 长度 16 位. 用 rsa 基于公钥加密这个值, 用 aes 基于这个值加密数据
-        String key = U.uuid();
+        String key = Obj.uuid();
         return Map.of("k", rsaEncode(publicKey, key), "v", Encrypt.aesEncode(data, key));
     }
     /**
@@ -314,7 +314,7 @@ public final class RsaEncrypt {
      */
     public static Map<String, String> rsaEncodeWithValueDes(String publicKey, String data) {
         // 随机数, 用来做 aes 的密钥, 长度 8 位. 数据用这个来加密, 用 rsa 私钥加密这个值也传过去
-        String key = U.uuid();
+        String key = Obj.uuid();
         return Map.of("k", rsaEncode(publicKey, key), "v", Encrypt.desEncode(data, key));
     }
 

@@ -30,40 +30,40 @@ public final class LogUtil {
 
     /** 将 跟踪号 和 接收到请求的时间 放进日志上下文, 主要用在非 web 环境的地方(如定时任务, mq 消费等) */
     public static void putTraceId(String traceId) {
-        if (U.lessAndEquals0(getStartTime())) {
+        if (Obj.lessAndEquals0(getStartTime())) {
             Date now = new Date();
-            MDC.put(START_TIME, U.toStr(now.getTime()));
+            MDC.put(START_TIME, Obj.toStr(now.getTime()));
             MDC.put(RECEIVE_TIME_CONTEXT, Dates.formatDateTimeMs(now) + " -> ");
         }
         if (hasNotTraceId()) {
             // 跟踪号放在最后, 因此在最前加一个空格
-            MDC.put(TRACE_ID_CONTEXT, " " + U.defaultIfBlank(U.toStr(traceId).trim(), U.uuid16()));
+            MDC.put(TRACE_ID_CONTEXT, " " + Obj.defaultIfBlank(Obj.toStr(traceId).trim(), Obj.uuid16()));
         }
     }
     /** 将 跟踪号 和 接收到请求的时间 和 ip 放进日志上下文, 主要用在有 web 环境的地方 */
     public static void putTraceAndIp(String traceId, String ip, Locale locale) {
         putTraceId(traceId);
-        if (U.isNotBlank(ip)) {
+        if (Obj.isNotBlank(ip)) {
             MDC.put(REAL_IP, ip.trim());
         }
-        if (U.isNotNull(locale)) {
+        if (Obj.isNotNull(locale)) {
             // 请求头中用的是中横线(en-US、zh-CN), 但是 locale 时却是下划线, 写进上下文的时候用中横线
             MDC.put(LANGUAGE, locale.toString().replace("_", "-").trim());
         }
     }
 
     public static boolean hasNotTraceId() {
-        return U.isBlank(getTraceId());
+        return Obj.isBlank(getTraceId());
     }
 
     public static long getStartTime() {
-        return U.toLong(MDC.get(START_TIME));
+        return Obj.toLong(MDC.get(START_TIME));
     }
     public static String getTraceId() {
-        return U.toStr(MDC.get(TRACE_ID_CONTEXT)).trim();
+        return Obj.toStr(MDC.get(TRACE_ID_CONTEXT)).trim();
     }
     public static String getIp() {
-        return U.toStr(MDC.get(REAL_IP));
+        return Obj.toStr(MDC.get(REAL_IP));
     }
     public static String getLanguage() {
         return MDC.get(LANGUAGE);

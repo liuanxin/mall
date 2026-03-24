@@ -54,7 +54,7 @@ public class CronUtil {
      */
     public static void runTask(String desc, Predicate<String> predicate) {
         try {
-            LogUtil.putTraceId(U.uuid16());
+            LogUtil.putTraceId(Obj.uuid16());
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("任务({})开始", desc);
             }

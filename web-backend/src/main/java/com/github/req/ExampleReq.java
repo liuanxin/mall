@@ -2,7 +2,7 @@ package com.github.req;
 
 import com.github.common.enums.Gender;
 import com.github.common.json.JsonUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import com.github.liuanxin.api.annotation.ApiParam;
 import com.github.product.enums.ProductTestType;
 import com.github.product.model.ProductTest;
@@ -33,19 +33,19 @@ public class ExampleReq {
 
     /** 基本的数据检查 */
     public void basicCheck() {
-        if (U.isNotBlank(nickName)) {
+        if (Obj.isNotBlank(nickName)) {
             int max = 30;
-            U.assertException(nickName.length() > max, String.format("昵称只在 %s 位以内", max));
+            Obj.assertException(nickName.length() > max, String.format("昵称只在 %s 位以内", max));
         }
-        U.assertNil(gender, "请选择性别进行查询");
+        Obj.assertNil(gender, "请选择性别进行查询");
         // 检查还是给默认值, 看业务
-        if (U.isNull(level)) {
+        if (Obj.isNull(level)) {
             level = UserTestLevel.Normal;
         }
 
-        if (U.isNotBlank(name)) {
+        if (Obj.isNotBlank(name)) {
             int max = 60;
-            U.assertException(name.length() > max, String.format("商品名只在 %s 位以内", max));
+            Obj.assertException(name.length() > max, String.format("商品名只在 %s 位以内", max));
         }
     }
 

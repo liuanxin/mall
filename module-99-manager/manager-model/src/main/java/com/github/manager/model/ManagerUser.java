@@ -1,6 +1,6 @@
 package com.github.manager.model;
 
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
@@ -54,7 +54,7 @@ public class ManagerUser implements Serializable {
 
     /** 一个用户有多个角色, 一个角色又有多个菜单(且会有父子层级关系)和多个权限, 基于用户的角色将菜单和权限赋值 */
     public void assignmentData(List<ManagerRole> roles) {
-        if (A.isNotEmpty(roles)) {
+        if (Arr.isNotEmpty(roles)) {
             List<ManagerMenu> menuList = new ArrayList<>();
             Set<ManagerPermission> set = new HashSet<>();
             for (ManagerRole role : roles) {

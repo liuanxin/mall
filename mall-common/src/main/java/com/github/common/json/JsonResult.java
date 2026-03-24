@@ -2,7 +2,7 @@ package com.github.common.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import com.github.liuanxin.api.annotation.ApiReturn;
 
 import java.util.List;
@@ -73,7 +73,7 @@ public class JsonResult<T> {
         this.traceId = traceId;
     }
     public String getTraceId() {
-        return U.defaultIfBlank(traceId, LogUtil.getTraceId());
+        return Obj.defaultIfBlank(traceId, LogUtil.getTraceId());
     }
 
     public Map<String, String> getValidate() {
@@ -95,37 +95,37 @@ public class JsonResult<T> {
 
     public static <T> JsonResult<T> success(String msg) {
         JsonCode code = JsonCode.SUCCESS;
-        return new JsonResult<>(code, U.defaultIfBlank(msg, code.getValue()));
+        return new JsonResult<>(code, Obj.defaultIfBlank(msg, code.getValue()));
     }
 
     public static <T> JsonResult<T> success(String msg, T data) {
         JsonCode code = JsonCode.SUCCESS;
-        return new JsonResult<>(code, U.defaultIfBlank(msg, code.getValue()), data);
+        return new JsonResult<>(code, Obj.defaultIfBlank(msg, code.getValue()), data);
     }
 
 
     public static <T> JsonResult<T> badRequest(String msg, Map<String, String> validate) {
         JsonCode code = JsonCode.BAD_REQUEST;
-        return new JsonResult<>(code, U.defaultIfBlank(msg, code.getValue()), validate);
+        return new JsonResult<>(code, Obj.defaultIfBlank(msg, code.getValue()), validate);
     }
 
     public static <T> JsonResult<T> needLogin(String msg) {
         JsonCode code = JsonCode.NOT_LOGIN;
-        return new JsonResult<>(code, U.defaultIfBlank(msg, code.getValue()));
+        return new JsonResult<>(code, Obj.defaultIfBlank(msg, code.getValue()));
     }
 
     public static <T> JsonResult<T> needPermission(String msg) {
         JsonCode code = JsonCode.NOT_PERMISSION;
-        return new JsonResult<>(code, U.defaultIfBlank(msg, code.getValue()));
+        return new JsonResult<>(code, Obj.defaultIfBlank(msg, code.getValue()));
     }
 
     public static <T> JsonResult<T> notFound(String msg) {
         JsonCode code = JsonCode.NOT_FOUND;
-        return new JsonResult<>(code, U.defaultIfBlank(msg, code.getValue()));
+        return new JsonResult<>(code, Obj.defaultIfBlank(msg, code.getValue()));
     }
 
     public static <T> JsonResult<T> fail(String msg) {
         JsonCode code = JsonCode.FAIL;
-        return new JsonResult<>(code, U.defaultIfBlank(msg, code.getValue()));
+        return new JsonResult<>(code, Obj.defaultIfBlank(msg, code.getValue()));
     }
 }

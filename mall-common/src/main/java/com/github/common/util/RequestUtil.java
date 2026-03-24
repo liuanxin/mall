@@ -49,41 +49,41 @@ public final class RequestUtil {
      */
     public static String getRealIp() {
         HttpServletRequest request = getRequest();
-        return U.isNull(request) ? U.EMPTY : getRealIp(request);
+        return Obj.isNull(request) ? Obj.EMPTY : getRealIp(request);
     }
     public static String getRealIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
-        if (U.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
+        if (Obj.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
             return ip.split(",")[0].trim();
         }
 
         ip = request.getHeader("X-Real-IP");
-        if (U.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
+        if (Obj.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
             return ip.split(",")[0].trim();
         }
 
         ip = request.getHeader("Proxy-Client-IP");
-        if (U.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
+        if (Obj.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
             return ip.split(",")[0].trim();
         }
 
         ip = request.getHeader("WL-Proxy-Client-IP");
-        if (U.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
+        if (Obj.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
             return ip.split(",")[0].trim();
         }
 
         ip = request.getHeader("HTTP_CLIENT_IP");
-        if (U.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
+        if (Obj.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
             return ip.split(",")[0].trim();
         }
 
         ip = request.getHeader("X-Cluster-Client-IP");
-        if (U.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
+        if (Obj.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
             return ip.split(",")[0].trim();
         }
 
         ip = request.getRemoteAddr();
-        if (U.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
+        if (Obj.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
             return ip.split(",")[0].trim();
         }
 
@@ -95,12 +95,12 @@ public final class RequestUtil {
         return getScheme(getRequest());
     }
     public static String getScheme(HttpServletRequest request) {
-        if (U.isNull(request)) {
-            return U.EMPTY;
+        if (Obj.isNull(request)) {
+            return Obj.EMPTY;
         }
 
         String proto = request.getHeader(NGINX_PROTO);
-        return U.isBlank(proto) ? request.getScheme() : proto.split(",")[0].trim().toLowerCase();
+        return Obj.isBlank(proto) ? request.getScheme() : proto.split(",")[0].trim().toLowerCase();
     }
 
     /** 获取请求的语言信息 */
@@ -108,7 +108,7 @@ public final class RequestUtil {
         return getLocale(getRequest());
     }
     public static Locale getLocale(HttpServletRequest request) {
-        return U.isNull(request) ? LocaleContextHolder.getLocale() : RequestContextUtils.getLocale(request);
+        return Obj.isNull(request) ? LocaleContextHolder.getLocale() : RequestContextUtils.getLocale(request);
     }
 
     /** 获取 ua 信息 */
@@ -116,21 +116,21 @@ public final class RequestUtil {
         return userAgent(getRequest());
     }
     public static String userAgent(HttpServletRequest request) {
-        return U.isNull(request) ? U.EMPTY : request.getHeader(USER_AGENT);
+        return Obj.isNull(request) ? Obj.EMPTY : request.getHeader(USER_AGENT);
     }
 
     public static String getReferrer() {
         return getReferrer(getRequest());
     }
     public static String getReferrer(HttpServletRequest request) {
-        return U.isNull(request) ? U.EMPTY : request.getHeader(REFERRER);
+        return Obj.isNull(request) ? Obj.EMPTY : request.getHeader(REFERRER);
     }
 
     public static String getMethod() {
         return getMethod(getRequest());
     }
     public static String getMethod(HttpServletRequest request) {
-        return U.isNull(request) ? U.EMPTY : request.getMethod();
+        return Obj.isNull(request) ? Obj.EMPTY : request.getMethod();
     }
 
     /** 获取请求地址, 比如请求的是 http://www.abc.com/x/y 将返回 /x/y */
@@ -138,7 +138,7 @@ public final class RequestUtil {
         return getRequestUri(getRequest());
     }
     public static String getRequestUri(HttpServletRequest request) {
-        return U.isNull(request) ? U.EMPTY : request.getRequestURI();
+        return Obj.isNull(request) ? Obj.EMPTY : request.getRequestURI();
     }
     /** 获取请求地址, 如 http://www.abc.com/x/y */
     public static String getRequestUrl() {
@@ -153,8 +153,8 @@ public final class RequestUtil {
         return getDomain(getRequest());
     }
     public static String getDomain(HttpServletRequest request) {
-        if (U.isNull(request)) {
-            return U.EMPTY;
+        if (Obj.isNull(request)) {
+            return Obj.EMPTY;
         }
 
         String scheme = getScheme(request);
@@ -172,8 +172,8 @@ public final class RequestUtil {
 
     /** 从 url 中获取 domain 信息. 如: http://www.jd.com/product/123 返回 http://www.jd.com */
     public static String getDomain(String url) {
-        if (U.isBlank(url)) {
-            return U.EMPTY;
+        if (Obj.isBlank(url)) {
+            return Obj.EMPTY;
         }
 
         String lowerUrl = url.toLowerCase();
@@ -194,7 +194,7 @@ public final class RequestUtil {
     /** 检查 url 在不在指定的域名中(以根域名检查, 如 www.qq.com 是以 qq.com 为准), 将所在根域名返回, 不在指定域名中则返回空 */
     public static String getDomainInUrl(String url, List<String> domainList) {
         url = getDomain(url);
-        if (U.isNotBlank(url) && A.isNotEmpty(domainList)) {
+        if (Obj.isNotBlank(url) && Arr.isNotEmpty(domainList)) {
             for (String domain : domainList) {
                 String lowerDomain = domain.toLowerCase();
                 if (lowerDomain.startsWith(HTTP)) {
@@ -213,19 +213,19 @@ public final class RequestUtil {
                 }
             }
         }
-        return U.EMPTY;
+        return Obj.EMPTY;
     }
 
     public static String getRootDomain() {
         return getRootDomain(getRequest());
     }
     public static String getRootDomain(HttpServletRequest request) {
-        if (U.isNull(request)) {
-            return U.EMPTY;
+        if (Obj.isNull(request)) {
+            return Obj.EMPTY;
         }
         String serverName = request.getServerName();
-        if (U.isBlank(serverName)) {
-            return U.EMPTY;
+        if (Obj.isBlank(serverName)) {
+            return Obj.EMPTY;
         }
 
         // 处理 IP 地址或 localhost
@@ -256,7 +256,7 @@ public final class RequestUtil {
         return parseParam(des, getRequest());
     }
     public static Map<String, String> parseParam(boolean des, HttpServletRequest request) {
-        if (U.isNull(request)) {
+        if (Obj.isNull(request)) {
             return Collections.emptyMap();
         }
 
@@ -286,22 +286,22 @@ public final class RequestUtil {
         return formatParam(des, getRequest());
     }
     public static String formatParam(boolean des, HttpServletRequest request) {
-        return U.isNull(request) ? U.EMPTY : U.formatParam(request.getParameterMap(), false, false, true, des);
+        return Obj.isNull(request) ? Obj.EMPTY : Obj.formatParam(request.getParameterMap(), false, false, true, des);
     }
 
     public static boolean hasUploadFile() {
         HttpServletRequest request = getRequest();
-        return U.isNotNull(request) && hasUploadFile(request);
+        return Obj.isNotNull(request) && hasUploadFile(request);
     }
     public static boolean hasUploadFile(HttpServletRequest request) {
-        return U.toStr(request.getHeader("Content-Type")).toLowerCase().startsWith("multipart/");
+        return Obj.toStr(request.getHeader("Content-Type")).toLowerCase().startsWith("multipart/");
     }
 
     public static Map<String, String> parseHeader(boolean des) {
         return parseHeader(des, getRequest());
     }
     public static Map<String, String> parseHeader(boolean des, HttpServletRequest request) {
-        if (U.isNull(request)) {
+        if (Obj.isNull(request)) {
             return Collections.emptyMap();
         }
 
@@ -320,8 +320,8 @@ public final class RequestUtil {
         return formatHeader(des, getRequest());
     }
     public static String formatHeader(boolean des, HttpServletRequest request) {
-        if (U.isNull(request)) {
-            return U.EMPTY;
+        if (Obj.isNull(request)) {
+            return Obj.EMPTY;
         }
 
         StringBuilder sbd = new StringBuilder();
@@ -339,35 +339,35 @@ public final class RequestUtil {
     /** 从请求头中获取值 */
     public static String getHeader(String headerName) {
         HttpServletRequest request = getRequest();
-        return U.isNull(request) ? U.EMPTY : request.getHeader(headerName);
+        return Obj.isNull(request) ? Obj.EMPTY : request.getHeader(headerName);
     }
     /** 先从请求头中查, 为空再从参数中查 */
     public static String getHeaderOrParam(String param) {
         return getHeaderOrParam(param, getRequest());
     }
     public static String getHeaderOrParam(String param, HttpServletRequest request) {
-        if (U.isNull(request)) {
-            return U.EMPTY;
+        if (Obj.isNull(request)) {
+            return Obj.EMPTY;
         }
-        return U.defaultIfBlank(U.defaultIfBlank(request.getHeader(param), request.getParameter(param)), U.EMPTY);
+        return Obj.defaultIfBlank(Obj.defaultIfBlank(request.getHeader(param), request.getParameter(param)), Obj.EMPTY);
     }
 
     /** 从 cookie 中获取值 */
     public static String getCookieValue(String name) {
         Cookie cookie = getCookie(name, getRequest());
-        return U.isNull(cookie) ? U.EMPTY : cookie.getValue();
+        return Obj.isNull(cookie) ? Obj.EMPTY : cookie.getValue();
     }
     public static String getCookieValue(String name, HttpServletRequest request) {
         Cookie cookie = getCookie(name, request);
-        return U.isNull(cookie) ? U.EMPTY : cookie.getValue();
+        return Obj.isNull(cookie) ? Obj.EMPTY : cookie.getValue();
     }
     private static Cookie getCookie(String name, HttpServletRequest request) {
-        if (U.isNull(request)) {
+        if (Obj.isNull(request)) {
             return null;
         }
 
         Cookie[] cookies = request.getCookies();
-        if (A.isNotEmpty(cookies)) {
+        if (Arr.isNotEmpty(cookies)) {
             for (Cookie cookie : cookies) {
                 if (cookie.getName().equals(name)) {
                     return cookie;
@@ -386,7 +386,7 @@ public final class RequestUtil {
         render(APPLICATION_JSON, data, response);
     }
     private static void render(String type, String data, HttpServletResponse response) {
-        if (U.isNull(response)) {
+        if (Obj.isNull(response)) {
             return;
         }
 
@@ -419,17 +419,17 @@ public final class RequestUtil {
 
     public static HttpServletRequest getRequest() {
         ServletRequestAttributes requestAttributes = getRequestAttributes();
-        return U.isNull(requestAttributes) ? null : requestAttributes.getRequest();
+        return Obj.isNull(requestAttributes) ? null : requestAttributes.getRequest();
     }
 
     public static HttpSession getSession() {
         HttpServletRequest request = getRequest();
-        return U.isNull(request) ? null : request.getSession();
+        return Obj.isNull(request) ? null : request.getSession();
     }
 
     public static HttpServletResponse getResponse() {
         ServletRequestAttributes requestAttributes = getRequestAttributes();
-        return U.isNull(requestAttributes) ? null : requestAttributes.getResponse();
+        return Obj.isNull(requestAttributes) ? null : requestAttributes.getResponse();
     }
 
     private static ServletRequestAttributes getRequestAttributes() {

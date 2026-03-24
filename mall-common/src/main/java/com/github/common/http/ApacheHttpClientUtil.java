@@ -1,9 +1,9 @@
 package com.github.common.http;
 
 import com.github.common.json.JsonUtil;
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import org.apache.http.*;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
@@ -145,7 +145,7 @@ public class ApacheHttpClientUtil {
                                Map<String, Object> headers, boolean printLog) {
         String useUrl = HttpConst.appendParamsToUrl(HttpConst.handleEmptyScheme(url), params);
         HttpGet request = new HttpGet(useUrl);
-        Map<String, Object> headerMap = U.defaultIfNull(headers, new HashMap<>());
+        Map<String, Object> headerMap = Obj.defaultIfNull(headers, new HashMap<>());
         headerMap.put("Content-Type", "application/x-www-form-urlencoded");
         handleHeader(request, headerMap);
         return handleRequest(request, timeoutSecond, null, null, printLog);
@@ -170,17 +170,17 @@ public class ApacheHttpClientUtil {
                                          Map<String, Object> headers, boolean printLog) {
         HttpPost request = new HttpPost(HttpConst.handleEmptyScheme(url));
         List<NameValuePair> nameValuePairs = new ArrayList<>();
-        if (A.isNotEmpty(params)) {
+        if (Arr.isNotEmpty(params)) {
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
-                if (U.isNotBlank(key) && U.isNotNull(value)) {
-                    nameValuePairs.add(new BasicNameValuePair(key, A.toString(value)));
+                if (Obj.isNotBlank(key) && Obj.isNotNull(value)) {
+                    nameValuePairs.add(new BasicNameValuePair(key, Arr.toString(value)));
                 }
             }
             request.setEntity(new UrlEncodedFormEntity(nameValuePairs, StandardCharsets.UTF_8));
         }
-        Map<String, Object> headerMap = U.defaultIfNull(headers, new HashMap<>());
+        Map<String, Object> headerMap = Obj.defaultIfNull(headers, new HashMap<>());
         headerMap.put("Content-Type", "application/x-www-form-urlencoded");
         handleHeader(request, headerMap);
         return handleRequest(request, timeoutSecond, params, null, printLog);
@@ -192,7 +192,7 @@ public class ApacheHttpClientUtil {
     }
     /** 向指定的 url 基于 post 发起请求(body 中是 json) */
     public static HttpData post(String url, Map<String, Object> params, String json) {
-        return post(url, params, json, A.maps("Content-Type", "application/json"));
+        return post(url, params, json, Arr.maps("Content-Type", "application/json"));
     }
     /** 向指定的 url 基于 post 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData post(String url, String data, Map<String, Object> headers) {
@@ -212,7 +212,7 @@ public class ApacheHttpClientUtil {
                                 String data, Map<String, Object> headers, boolean printLog) {
         String useUrl = HttpConst.appendParamsToUrl(HttpConst.handleEmptyScheme(url), params);
         HttpPost request = new HttpPost(useUrl);
-        request.setEntity(new ByteArrayEntity(U.toStr(data).getBytes(StandardCharsets.UTF_8)));
+        request.setEntity(new ByteArrayEntity(Obj.toStr(data).getBytes(StandardCharsets.UTF_8)));
         handleHeader(request, headers);
         return handleRequest(request, timeoutSecond, null, data, printLog);
     }
@@ -224,7 +224,7 @@ public class ApacheHttpClientUtil {
     }
     /** 向指定的 url 基于 put 发起请求(body 中是 json) */
     public static HttpData put(String url, Map<String, Object> params, String json) {
-        return put(url, params, json, A.maps("Content-Type", "application/json"));
+        return put(url, params, json, Arr.maps("Content-Type", "application/json"));
     }
     /** 向指定的 url 基于 put 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData put(String url, String data, Map<String, Object> headers) {
@@ -244,7 +244,7 @@ public class ApacheHttpClientUtil {
                                Map<String, Object> headers, boolean printLog) {
         String useUrl = HttpConst.appendParamsToUrl(HttpConst.handleEmptyScheme(url), params);
         HttpPut request = new HttpPut(useUrl);
-        request.setEntity(new ByteArrayEntity(U.toStr(data).getBytes(StandardCharsets.UTF_8)));
+        request.setEntity(new ByteArrayEntity(Obj.toStr(data).getBytes(StandardCharsets.UTF_8)));
         handleHeader(request, headers);
         return handleRequest(request, timeoutSecond, null, data, printLog);
     }
@@ -252,7 +252,7 @@ public class ApacheHttpClientUtil {
 
     /** 向指定的 url 基于 delete 发起请求(body 中是 json) */
     public static HttpData delete(String url, String json) {
-        return delete(url, json, A.maps("Content-Type", "application/json"));
+        return delete(url, json, Arr.maps("Content-Type", "application/json"));
     }
     /** 向指定的 url 基于 delete 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData delete(String url, String data, Map<String, Object> headers) {
@@ -271,7 +271,7 @@ public class ApacheHttpClientUtil {
             }
         };
         request.setURI(URI.create(HttpConst.handleEmptyScheme(url)));
-        request.setEntity(new ByteArrayEntity(U.toStr(data).getBytes(StandardCharsets.UTF_8)));
+        request.setEntity(new ByteArrayEntity(Obj.toStr(data).getBytes(StandardCharsets.UTF_8)));
         handleHeader(request, headers);
         return handleRequest(request, timeoutSecond, null, data, printLog);
     }
@@ -298,7 +298,7 @@ public class ApacheHttpClientUtil {
     /** 向指定 url 上传文件, 只支持 POST|PUT(默认是 POST) + form-data 的方式 */
     public static HttpData uploadFile(String url, String method, int timeoutSecond, Map<String, Object> headers,
                                       Map<String, Object> params, Map<String, File> files, boolean printLog) {
-        if (A.isEmpty(params)) {
+        if (Arr.isEmpty(params)) {
             params = new HashMap<>();
         }
 
@@ -310,20 +310,20 @@ public class ApacheHttpClientUtil {
         }
         handleHeader(request, headers);
         MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create().setLaxMode();
-        boolean hasParam = A.isNotEmpty(params);
+        boolean hasParam = Arr.isNotEmpty(params);
         if (hasParam) {
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 String key = entry.getKey();
-                String value = U.toStr(entry.getValue());
+                String value = Obj.toStr(entry.getValue());
                 entityBuilder.addTextBody(key, value);
             }
         }
         Map<String, String> fileMap = new LinkedHashMap<>();
-        boolean hasFile = A.isNotEmpty(files);
+        boolean hasFile = Arr.isNotEmpty(files);
         if (hasFile) {
             for (Map.Entry<String, File> entry : files.entrySet()) {
                 File file = entry.getValue();
-                if (U.isNotNull(file)) {
+                if (Obj.isNotNull(file)) {
                     String key = entry.getKey();
                     entityBuilder.addBinaryBody(key, file);
                     fileMap.put(key, file.toString());
@@ -340,17 +340,17 @@ public class ApacheHttpClientUtil {
     /** 处理请求时存到 header 中的数据 */
     private static void handleHeader(HttpRequestBase request, Map<String, Object> headers) {
         Map<String, Object> headerMap = HttpConst.handleCommonHeader(headers/*, USER_AGENT*/);
-        if (A.isNotEmpty(headerMap)) {
+        if (Arr.isNotEmpty(headerMap)) {
             for (Map.Entry<String, Object> entry : headerMap.entrySet()) {
                 Object value = entry.getValue();
-                if (U.isNotNull(value)) {
+                if (Obj.isNotNull(value)) {
                     request.addHeader(entry.getKey(), value.toString());
                 }
             }
         }
     }
     private static Map<String, Object> handleHeader(Header[] headers) {
-        if (A.isNotEmpty(headers)) {
+        if (Arr.isNotEmpty(headers)) {
             Map<String, Object> returnMap = new LinkedHashMap<>();
             for (Header header : headers) {
                 returnMap.put(header.getName(), header.getValue());
@@ -366,13 +366,13 @@ public class ApacheHttpClientUtil {
         String url = request.getURI().toString();
 
         HttpData httpData = new HttpData();
-        httpData.fillReq(method, url, handleHeader(request.getAllHeaders()), U.formatPrintParam(params), body);
+        httpData.fillReq(method, url, handleHeader(request.getAllHeaders()), Obj.formatPrintParam(params), body);
         try (
                 CloseableHttpClient httpClient = createHttpClient();
                 CloseableHttpResponse response = httpClient.execute(request, HttpClientContext.create())
         ) {
             HttpEntity entity = response.getEntity();
-            if (U.isNotNull(entity)) {
+            if (Obj.isNotNull(entity)) {
                 try {
                     int statusCode = response.getStatusLine().getStatusCode();
                     Map<String, Object> resHeader = handleHeader(response.getAllHeaders());

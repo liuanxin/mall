@@ -2,8 +2,8 @@ package com.github.global.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.common.exception.ParamException;
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -41,20 +41,20 @@ public class ValidationService {
      */
     public void validateBinding(BindingResult result) {
         Map<String, String> fieldErrorMap = validate(result);
-        if (A.isNotEmpty(fieldErrorMap)) {
+        if (Arr.isNotEmpty(fieldErrorMap)) {
             throw new ParamException(fieldErrorMap);
         }
     }
 
     public Map<String, String> validate(BindingResult result) {
         Object obj = result.getTarget();
-        Class<?> clazz = U.isNull(obj) ? null : obj.getClass();
+        Class<?> clazz = Obj.isNull(obj) ? null : obj.getClass();
 
         Map<String, Set<String>> fieldErrorMap = new LinkedHashMap<>();
         List<FieldError> errors = result.getFieldErrors();
         for (FieldError error : errors) {
             String field = getParamField(clazz, error.getField());
-            if (U.isNotBlank(field)) {
+            if (Obj.isNotBlank(field)) {
                 String message = getMessage(error.getDefaultMessage());
                 fieldErrorMap.computeIfAbsent(field, (k1) -> new LinkedHashSet<>()).add(message);
             }
@@ -63,7 +63,7 @@ public class ValidationService {
     }
 
     public String getParamField(Class<?> clazz, String field) {
-        if (U.isNull(clazz)) {
+        if (Obj.isNull(clazz)) {
             return field;
         } else {
             List<String> modelList = new ArrayList<>();
@@ -84,12 +84,12 @@ public class ValidationService {
                 suffix = first.substring(idx);
             } else {
                 model = first;
-                suffix = U.EMPTY;
+                suffix = Obj.EMPTY;
             }
-            Field fd = U.getField(clazz, model);
-            if (U.isNotNull(fd)) {
+            Field fd = Obj.getField(clazz, model);
+            if (Obj.isNotNull(fd)) {
                 JsonProperty property = AnnotationUtils.findAnnotation(fd, JsonProperty.class);
-                modelList.add(U.callIfNotNull(property, JsonProperty::value, first) + suffix);
+                modelList.add(Obj.callIfNotNull(property, JsonProperty::value, first) + suffix);
 
                 // 只处理数组 model[0].xxx 和 键值对 model[xx].xxx 的情况, 其他的泛型无法处理
                 Class<?> type;
@@ -104,17 +104,17 @@ public class ValidationService {
                 calcParamProperty(type, field.substring(index + 1), modelList);
             }
         } else {
-            Field fd = U.getField(clazz, field);
-            if (U.isNotNull(fd)) {
+            Field fd = Obj.getField(clazz, field);
+            if (Obj.isNotNull(fd)) {
                 JsonProperty property = AnnotationUtils.findAnnotation(fd, JsonProperty.class);
-                modelList.add(U.callIfNotNull(property, JsonProperty::value, field));
+                modelList.add(Obj.callIfNotNull(property, JsonProperty::value, field));
             }
         }
     }
 
     /** 如果值是以 { 开头且以 } 结尾则调用 i18n 处理国际化 */
     public String getMessage(String msg) {
-        if (U.isBlank(msg)) {
+        if (Obj.isBlank(msg)) {
             return msg;
         }
 
@@ -128,9 +128,9 @@ public class ValidationService {
 
     public Map<String, String> handleError(Map<String, Set<String>> fieldErrorMap) {
         Map<String, String> errorMap = new LinkedHashMap<>();
-        if (A.isNotEmpty(fieldErrorMap)) {
+        if (Arr.isNotEmpty(fieldErrorMap)) {
             for (Map.Entry<String, Set<String>> entry : fieldErrorMap.entrySet()) {
-                errorMap.put(entry.getKey(), A.toStr(entry.getValue(), "<", ">"));
+                errorMap.put(entry.getKey(), Arr.toStr(entry.getValue(), "<", ">"));
             }
         }
         return errorMap;

@@ -1,8 +1,8 @@
 package com.github.common.page;
 
 import com.github.common.json.JsonUtil;
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 import com.mybatisflex.core.paginate.Page;
 
 import java.util.Collections;
@@ -17,15 +17,15 @@ public final class Pages {
     }
 
     public static <T> List<T> returnList(Page<T> pageInfo) {
-        return U.isNull(pageInfo) ? Collections.emptyList() : pageInfo.getRecords();
+        return Obj.isNull(pageInfo) ? Collections.emptyList() : pageInfo.getRecords();
     }
 
     public static <T> T returnOne(Page<T> pageInfo) {
-        return U.isNull(pageInfo) ? null : A.first(pageInfo.getRecords());
+        return Obj.isNull(pageInfo) ? null : Arr.first(pageInfo.getRecords());
     }
 
     public static <T> boolean hasExists(Page<T> pageInfo) {
-        return U.isNotNull(pageInfo) && U.isNotNull(A.first(pageInfo.getRecords()));
+        return Obj.isNotNull(pageInfo) && Obj.isNotNull(Arr.first(pageInfo.getRecords()));
     }
 
     public static <T> boolean hasNotExists(Page<T> pageInfo) {
@@ -41,7 +41,7 @@ public final class Pages {
 
     /** 在 service 的实现类中调用 --> 在 repository 方法上的返回类型是 mbp 的 Page 对象, service 上的返回类型是 PageReturn, 使用此方法进行转换 */
     public static <T> PageReturn<T> returnPage(Page<T> pageInfo) {
-        if (U.isNull(pageInfo)) {
+        if (Obj.isNull(pageInfo)) {
             return PageReturn.empty();
         } else {
             return PageReturn.page(pageInfo.getTotalRow(), pageInfo.getRecords());
@@ -49,21 +49,21 @@ public final class Pages {
     }
 
     public static <T,S> PageReturn<T> returnPage(Page<S> page, Class<T> clazz) {
-        if (U.isNull(page)) {
+        if (Obj.isNull(page)) {
             return PageReturn.empty();
         }
 
         long total = page.getTotalRow();
-        if (U.less0(total)) {
+        if (Obj.less0(total)) {
             return PageReturn.empty();
         }
 
         List<S> objList = page.getRecords();
-        if (A.isEmpty(objList)) {
+        if (Arr.isEmpty(objList)) {
             return PageReturn.page(total, Collections.emptyList());
         }
 
         List<T> list = JsonUtil.convertList(objList, clazz);
-        return PageReturn.page(total, A.isEmpty(list) ? Collections.emptyList() : list);
+        return PageReturn.page(total, Arr.isEmpty(list) ? Collections.emptyList() : list);
     }
 }

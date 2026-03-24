@@ -3,7 +3,7 @@ package com.github.res;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.common.Const;
 import com.github.common.json.JsonUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import com.github.liuanxin.api.annotation.ApiReturn;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -24,7 +24,7 @@ public class UserLoginRes {
     /** 将 service 查询之后的数据组装成前端需要的 */
     public static <T> UserLoginRes assemblyData(T user, String token) {
         UserLoginRes res = JsonUtil.convert(user, UserLoginRes.class);
-        if (U.isNotNull(res)) {
+        if (Obj.isNotNull(res)) {
             res.setToken(token);
         }
         return res;

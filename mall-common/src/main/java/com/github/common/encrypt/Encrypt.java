@@ -4,7 +4,7 @@ import com.github.common.encrypt.jwt.JWTExpiredException;
 import com.github.common.encrypt.jwt.JWTSigner;
 import com.github.common.encrypt.jwt.JWTVerifier;
 import com.github.common.exception.ForbiddenException;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
@@ -65,7 +65,7 @@ public final class Encrypt {
     }
     /** 使用 aes 解密 */
     public static String aesDecode(String data, String secretKey) {
-        if (U.isBlank(data)) {
+        if (Obj.isBlank(data)) {
             throw new RuntimeException(String.format("空无需使用 %s 解密", AES));
         }
         try {
@@ -203,7 +203,7 @@ public final class Encrypt {
     }
     /** 使用 aes 解密并基于 secret 解码 jwt 及验证过期和数据完整性, 解码异常 或 数据已过期 或 验证失败 则抛出未登录异常 */
     public static Map<String, Object> jwtDecode(String secret, String data) {
-        if (U.isBlank(data)) {
+        if (Obj.isBlank(data)) {
             throw new ForbiddenException("数据有误, 请重新登录");
         }
 
@@ -227,7 +227,7 @@ public final class Encrypt {
     }
     /** 使用 aes 解密并解码 jwt 及验证过期和数据完整性, 解码异常 或 数据已过期 或 验证失败 则抛出未登录异常 */
     public static Map<String, Object> jwtDecode(String data) {
-        if (U.isBlank(data)) {
+        if (Obj.isBlank(data)) {
             throw new ForbiddenException("数据有误, 请重新登录");
         }
 

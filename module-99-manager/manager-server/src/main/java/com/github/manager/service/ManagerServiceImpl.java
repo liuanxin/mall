@@ -4,8 +4,8 @@ import com.github.common.encrypt.Encrypt;
 import com.github.common.page.PageParam;
 import com.github.common.page.PageReturn;
 import com.github.common.page.Pages;
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 import com.github.manager.model.*;
 import com.github.manager.model.table.*;
 import com.github.manager.repository.*;
@@ -41,9 +41,9 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public ManagerUser getUser(Long userId) {
-        U.assert0(userId, "没有这个用户");
+        Obj.assert0(userId, "没有这个用户");
         ManagerUser user = userMapper.selectOneById(userId);
-        U.assertNil(user, "无此用户");
+        Obj.assertNil(user, "无此用户");
         return user;
     }
 
@@ -52,10 +52,10 @@ public class ManagerServiceImpl implements ManagerService {
     public PageReturn<ManagerUser> queryUser(String userName, Boolean status, PageParam page) {
         QueryWrapper query = QueryWrapper.create();
         ManagerUserTableDef muDef = ManagerUserTableDef.MANAGER_USER;
-        if (U.isNotBlank(userName)) {
+        if (Obj.isNotBlank(userName)) {
             query.and(muDef.USER_NAME.like(userName));
         }
-        if (U.isNotNull(status)) {
+        if (Obj.isNotNull(status)) {
             query.and(muDef.STATUS.eq(status));
         }
         return Pages.returnPage(userMapper.paginate(Pages.param(page), query));
@@ -64,13 +64,13 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     public void addOrUpdateUser(ManagerUser user) {
         Long userId = user.getId();
-        if (U.greater0(userId)) {
+        if (Obj.greater0(userId)) {
             ManagerUser u = userMapper.selectOneById(userId);
-            U.assertNil(u, "没有这个用户, 无法修改");
+            Obj.assertNil(u, "没有这个用户, 无法修改");
 
-            if (U.isNotBlank(u.getPassword())) {
-                U.assertException(U.isNotNull(u.getHasManager()) && u.getHasManager(), "不能重置管理员密码, 请使用旧密码进行修改");
-                U.assertException(U.isNotNull(u.getStatus()) && u.getStatus(), "用户已被禁用, 请先解禁再修改密码");
+            if (Obj.isNotBlank(u.getPassword())) {
+                Obj.assertException(Obj.isNotNull(u.getHasManager()) && u.getHasManager(), "不能重置管理员密码, 请使用旧密码进行修改");
+                Obj.assertException(Obj.isNotNull(u.getStatus()) && u.getStatus(), "用户已被禁用, 请先解禁再修改密码");
 
                 user.setPassword(Encrypt.bcryptEncode(user.getPassword()));
             }
@@ -80,7 +80,7 @@ public class ManagerServiceImpl implements ManagerService {
             QueryWrapper query = QueryWrapper.create();
             query.select(muDef.ID).and(muDef.USER_NAME.eq(user.getNickName()));
             boolean exists = Pages.hasExists(userMapper.paginate(Pages.paramOnlyLimit(1), query));
-            U.assertException(exists, "已经有同名用户, 不能再次添加");
+            Obj.assertException(exists, "已经有同名用户, 不能再次添加");
 
             user.setId(null);
             user.setPassword(Encrypt.bcryptEncode(user.getPassword()));
@@ -89,14 +89,14 @@ public class ManagerServiceImpl implements ManagerService {
         }
 
         List<Long> rids = user.getRoleIds();
-        if (A.isNotEmpty(rids)) {
+        if (Arr.isNotEmpty(rids)) {
             List<ManagerUserRole> userRoles = new ArrayList<>();
             for (Long rid : rids) {
-                if (U.greater0(rid)) {
+                if (Obj.greater0(rid)) {
                     userRoles.add(new ManagerUserRole().setUserId(userId).setRoleId(rid));
                 }
             }
-            if (A.isNotEmpty(userRoles)) {
+            if (Arr.isNotEmpty(userRoles)) {
                 userRoleMapper.deleteByQuery(QueryWrapper.create().and(ManagerUserRoleTableDef.MANAGER_USER_ROLE.USER_ID.eq(userId)));
                 userRoleMapper.insertBatch(userRoles);
             }
@@ -105,7 +105,7 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public void deleteUser(Long id) {
-        U.assert0(id, "无此用户");
+        Obj.assert0(id, "无此用户");
         int flag = userMapper.deleteById(id);
         if (flag == 1) {
             userRoleMapper.deleteByQuery(QueryWrapper.create().and(ManagerUserRoleTableDef.MANAGER_USER_ROLE.USER_ID.eq(id)));
@@ -114,12 +114,12 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public void updatePassword(Long userId, String oldPass, String newPass) {
-        U.assert0(userId, "无此用户");
+        Obj.assert0(userId, "无此用户");
 
         ManagerUser user = userMapper.selectOneById(userId);
-        U.assertNil(user, "没有这个用户");
-        U.assertException(U.isNotNull(user.getStatus()) && user.getStatus(), "用户不能登录");
-        U.assertException(Encrypt.checkNotBcrypt(oldPass, user.getPassword()), "旧密码有误");
+        Obj.assertNil(user, "没有这个用户");
+        Obj.assertException(Obj.isNotNull(user.getStatus()) && user.getStatus(), "用户不能登录");
+        Obj.assertException(Encrypt.checkNotBcrypt(oldPass, user.getPassword()), "旧密码有误");
 
         ManagerUser update = new ManagerUser();
         update.setId(userId);
@@ -132,11 +132,11 @@ public class ManagerServiceImpl implements ManagerService {
     public List<ManagerRole> getUserRole(Long userId, boolean loadMenu, boolean loadPermission) {
         QueryWrapper query = QueryWrapper.create().and(ManagerUserRoleTableDef.MANAGER_USER_ROLE.USER_ID.eq(userId));
         List<ManagerUserRole> userRoles = userRoleMapper.selectListByQuery(query);
-        if (A.isEmpty(userRoles)) {
+        if (Arr.isEmpty(userRoles)) {
             return Collections.emptyList();
         }
-        List<Long> rids = A.collect(userRoles, ManagerUserRole::getRoleId);
-        if (A.isEmpty(rids)) {
+        List<Long> rids = Arr.collect(userRoles, ManagerUserRole::getRoleId);
+        if (Arr.isEmpty(rids)) {
             return Collections.emptyList();
         }
 
@@ -144,15 +144,15 @@ public class ManagerServiceImpl implements ManagerService {
         if (loadMenu) {
             List<ManagerRoleMenu> roleMenus = roleMenuMapper.selectListByQuery(QueryWrapper.create()
                     .and(ManagerRoleMenuTableDef.MANAGER_ROLE_MENU.ROLE_ID.in(rids)));
-            if (A.isNotEmpty(roleMenus)) {
-                List<Long> ids = A.collect(roleMenus, ManagerRoleMenu::getMenuId);
-                if (A.isNotEmpty(ids)) {
+            if (Arr.isNotEmpty(roleMenus)) {
+                List<Long> ids = Arr.collect(roleMenus, ManagerRoleMenu::getMenuId);
+                if (Arr.isNotEmpty(ids)) {
                     List<ManagerMenu> menus = menuMapper.selectListByQuery(QueryWrapper.create()
                             .and(ManagerMenuTableDef.MANAGER_MENU.ID.in(ids)));
-                    Map<Long, ManagerMenu> menuMap = A.listToMap(menus, ManagerMenu::getId);
+                    Map<Long, ManagerMenu> menuMap = Arr.listToMap(menus, ManagerMenu::getId);
                     for (ManagerRoleMenu roleMenu : roleMenus) {
                         ManagerMenu menu = menuMap.get(roleMenu.getMenuId());
-                        if (U.isNotNull(menu)) {
+                        if (Obj.isNotNull(menu)) {
                             menuMultiMap.computeIfAbsent(roleMenu.getRoleId(), (k1) -> new ArrayList<>()).add(menu);
                         }
                     }
@@ -164,17 +164,17 @@ public class ManagerServiceImpl implements ManagerService {
         if (loadPermission) {
             QueryWrapper rolePermissionQuery = QueryWrapper.create().and(ManagerRolePermissionTableDef.MANAGER_ROLE_PERMISSION.ROLE_ID.in(rids));
             List<ManagerRolePermission> rolePermissions = rolePermissionMapper.selectListByQuery(rolePermissionQuery);
-            if (A.isNotEmpty(rolePermissions)) {
-                List<Long> ids = A.collect(rolePermissions, ManagerRolePermission::getPermissionId);
-                if (A.isNotEmpty(ids)) {
+            if (Arr.isNotEmpty(rolePermissions)) {
+                List<Long> ids = Arr.collect(rolePermissions, ManagerRolePermission::getPermissionId);
+                if (Arr.isNotEmpty(ids)) {
                     QueryWrapper permissionQuery = QueryWrapper.create().and(ManagerPermissionTableDef.MANAGER_PERMISSION.ID.in(ids));
                     List<ManagerPermission> permissions = permissionMapper.selectListByQuery(permissionQuery);
 
-                    Map<Long, ManagerPermission> permissionMap = A.listToMap(permissions, ManagerPermission::getId);
+                    Map<Long, ManagerPermission> permissionMap = Arr.listToMap(permissions, ManagerPermission::getId);
                     for (ManagerRolePermission rolePermission : rolePermissions) {
                         Long permissionId = rolePermission.getPermissionId();
                         ManagerPermission permission = permissionMap.get(permissionId);
-                        if (U.isNotNull(permission)) {
+                        if (Obj.isNotNull(permission)) {
                             permissionMultiMap.computeIfAbsent(permissionId, (k1) -> new ArrayList<>()).add(permission);
                         }
                     }
@@ -184,7 +184,7 @@ public class ManagerServiceImpl implements ManagerService {
 
         QueryWrapper roleQuery = QueryWrapper.create().and(ManagerRoleTableDef.MANAGER_ROLE.ID.in(rids));
         List<ManagerRole> roles = roleMapper.selectListByQuery(roleQuery);
-        if (A.isEmpty(roles)) {
+        if (Arr.isEmpty(roles)) {
             return Collections.emptyList();
         }
 
@@ -192,12 +192,12 @@ public class ManagerServiceImpl implements ManagerService {
             Long rid = role.getId();
 
             List<ManagerMenu> managerMenus = menuMultiMap.get(rid);
-            if (A.isNotEmpty(managerMenus)) {
+            if (Arr.isNotEmpty(managerMenus)) {
                 role.setMenus(managerMenus);
             }
 
             List<ManagerPermission> managerPermissions = permissionMultiMap.get(rid);
-            if (A.isNotEmpty(managerPermissions)) {
+            if (Arr.isNotEmpty(managerPermissions)) {
                 role.setPermissions(managerPermissions);
             }
         }
@@ -214,18 +214,18 @@ public class ManagerServiceImpl implements ManagerService {
     public void addOrUpdateRole(ManagerRole role) {
         Long rid = role.getId();
         ManagerRoleTableDef mrDef = ManagerRoleTableDef.MANAGER_ROLE;
-        if (U.greater0(rid)) {
+        if (Obj.greater0(rid)) {
             QueryWrapper existsQuery = QueryWrapper.create()
                     .select(mrDef.ID).and(mrDef.ID.eq(rid));
             boolean hasNotExists = Pages.hasNotExists(roleMapper.paginate(Pages.paramOnlyLimit(1), existsQuery));
-            U.assertException(hasNotExists, "无需修改");
+            Obj.assertException(hasNotExists, "无需修改");
 
             roleMapper.update(role);
         } else {
             QueryWrapper existsQuery = QueryWrapper.create()
                     .select(mrDef.ID).and(mrDef.NAME.eq(role.getName()));
             boolean exists = Pages.hasExists(roleMapper.paginate(Pages.paramOnlyLimit(1), existsQuery));
-            U.assertException(exists, "已经有同名角色, 不能再次添加");
+            Obj.assertException(exists, "已经有同名角色, 不能再次添加");
 
             role.setId(null);
             roleMapper.insert(role);
@@ -233,28 +233,28 @@ public class ManagerServiceImpl implements ManagerService {
         }
 
         List<Long> mids = role.getMenuIds();
-        if (A.isNotEmpty(mids)) {
+        if (Arr.isNotEmpty(mids)) {
             List<ManagerRoleMenu> roleMenus = new ArrayList<>();
             for (Long mid : mids) {
-                if (U.greater0(mid)) {
+                if (Obj.greater0(mid)) {
                     roleMenus.add(new ManagerRoleMenu().setRoleId(rid).setMenuId(mid));
                 }
             }
-            if (A.isNotEmpty(roleMenus)) {
+            if (Arr.isNotEmpty(roleMenus)) {
                 roleMenuMapper.deleteByQuery(QueryWrapper.create().and(ManagerRoleMenuTableDef.MANAGER_ROLE_MENU.ROLE_ID.eq(rid)));
                 roleMenuMapper.batchInsert(roleMenus);
             }
         }
 
         List<Long> pids = role.getPermissionIds();
-        if (A.isNotEmpty(pids)) {
+        if (Arr.isNotEmpty(pids)) {
             List<ManagerRolePermission> rolePermissions = new ArrayList<>();
             for (Long pid : pids) {
-                if (U.greater0(pid)) {
+                if (Obj.greater0(pid)) {
                     rolePermissions.add(new ManagerRolePermission().setRoleId(rid).setPermissionId(pid));
                 }
             }
-            if (A.isNotEmpty(rolePermissions)) {
+            if (Arr.isNotEmpty(rolePermissions)) {
                 rolePermissionMapper.deleteByQuery(QueryWrapper.create().and(ManagerRolePermissionTableDef.MANAGER_ROLE_PERMISSION.ROLE_ID.eq(rid)));
                 rolePermissionMapper.batchInsert(rolePermissions);
             }
@@ -264,12 +264,12 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     @Transactional
     public void deleteRole(Long roleId) {
-        U.assert0(roleId, "无此角色");
+        Obj.assert0(roleId, "无此角色");
 
         ManagerUserRoleTableDef murDef = ManagerUserRoleTableDef.MANAGER_USER_ROLE;
         QueryWrapper existsQuery = QueryWrapper.create().select(murDef.ID).and(murDef.ROLE_ID.eq(roleId));
         boolean exists = Pages.hasExists(userRoleMapper.paginate(Pages.paramOnlyLimit(1), existsQuery));
-        U.assertException(exists, "已经有用户分配了这个角色, 请先取消分配再删除");
+        Obj.assertException(exists, "已经有用户分配了这个角色, 请先取消分配再删除");
 
         int flag = roleMapper.deleteById(roleId);
         if (flag == 1) {
@@ -282,7 +282,7 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     public List<ManagerMenu> queryMenu(String name) {
         QueryWrapper query = QueryWrapper.create();
-        if (U.isNotBlank(name)) {
+        if (Obj.isNotBlank(name)) {
             query.and(ManagerMenuTableDef.MANAGER_MENU.NAME.like(name));
         }
         return menuMapper.selectListByQuery(query);
@@ -291,9 +291,9 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     public void addOrUpdateMenu(ManagerMenu menu) {
         Long mid = menu.getId();
-        if (U.greater0(mid)) {
+        if (Obj.greater0(mid)) {
             ManagerMenu m = menuMapper.selectOneById(mid);
-            U.assertNil(m, "无需修改");
+            Obj.assertNil(m, "无需修改");
 
             menuMapper.update(menu);
         } else {
@@ -301,7 +301,7 @@ public class ManagerServiceImpl implements ManagerService {
             QueryWrapper existsQuery = QueryWrapper.create().select(mmDef.ID)
                     .where(mmDef.NAME.eq(menu.getName()));
             boolean exists = Pages.hasExists(menuMapper.paginate(Pages.paramOnlyLimit(1), existsQuery));
-            U.assertException(exists, "已有同名菜单");
+            Obj.assertException(exists, "已有同名菜单");
 
             menu.setId(null);
             menuMapper.insert(menu);
@@ -310,26 +310,26 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public void deleteMenu(Long menuId) {
-        U.assert0(menuId, "无此菜单");
+        Obj.assert0(menuId, "无此菜单");
 
         ManagerPermissionTableDef mpDef = ManagerPermissionTableDef.MANAGER_PERMISSION;
         QueryWrapper existsQuery = QueryWrapper.create()
                 .select(mpDef.ID).and(mpDef.MENU_ID.eq(menuId));
         boolean exists = Pages.hasExists(permissionMapper.paginate(Pages.paramOnlyLimit(1), existsQuery));
-        U.assertException(exists, "菜单已有权限, 请先将权限删除再删除菜单");
+        Obj.assertException(exists, "菜单已有权限, 请先将权限删除再删除菜单");
 
         menuMapper.deleteById(menuId);
     }
 
     @Override
     public void deleteMenus(List<Long> mids) {
-        if (A.isNotEmpty(mids)) {
+        if (Arr.isNotEmpty(mids)) {
             ManagerPermissionTableDef mpDef = ManagerPermissionTableDef.MANAGER_PERMISSION;
             QueryWrapper existsQuery = QueryWrapper.create()
                     .select(mpDef.ID)
                     .and(mpDef.MENU_ID.in(mids));
             boolean exists = Pages.hasExists(permissionMapper.paginate(Pages.paramOnlyLimit(1), existsQuery));
-            U.assertException(exists, "菜单已有权限, 请先删除权限再删除菜单");
+            Obj.assertException(exists, "菜单已有权限, 请先删除权限再删除菜单");
 
             menuMapper.deleteByQuery(QueryWrapper.create().and(ManagerMenuTableDef.MANAGER_MENU.ID.in(mids)));
         }
@@ -339,7 +339,7 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     public List<ManagerPermission> queryPermission(String name) {
         QueryWrapper query = QueryWrapper.create();
-        if (U.isNotBlank(name)) {
+        if (Obj.isNotBlank(name)) {
             query.and(ManagerPermissionTableDef.MANAGER_PERMISSION.NAME.like(name));
         }
         return permissionMapper.selectListByQuery(query);
@@ -348,9 +348,9 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     public void addOrUpdatePermission(ManagerPermission permission) {
         Long pid = permission.getId();
-        if (U.greater0(pid)) {
+        if (Obj.greater0(pid)) {
             ManagerPermission p = permissionMapper.selectOneById(pid);
-            U.assertNil(p, "无需修改");
+            Obj.assertNil(p, "无需修改");
 
             permissionMapper.update(permission);
         } else {
@@ -360,7 +360,7 @@ public class ManagerServiceImpl implements ManagerService {
                     .and(mpDef.METHOD.eq(permission.getMethod()))
                     .and(mpDef.URL.eq(permission.getUrl()));
             boolean exists = Pages.hasExists(permissionMapper.paginate(Pages.paramOnlyLimit(1), existsQuery));
-            U.assertException(exists, "已经有同样规则的权限");
+            Obj.assertException(exists, "已经有同样规则的权限");
 
             permission.setId(null);
             permissionMapper.insert(permission);
@@ -374,7 +374,7 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public void deletePermissions(List<Long> pids) {
-        if (A.isNotEmpty(pids)) {
+        if (Arr.isNotEmpty(pids)) {
             permissionMapper.deleteByQuery(QueryWrapper.create().and(ManagerPermissionTableDef.MANAGER_PERMISSION.ID.in(pids)));
         }
     }

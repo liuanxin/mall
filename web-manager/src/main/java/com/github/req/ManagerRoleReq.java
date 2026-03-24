@@ -1,7 +1,7 @@
 package com.github.req;
 
 import com.github.common.json.JsonUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import com.github.liuanxin.api.annotation.ApiParam;
 import com.github.manager.model.ManagerRole;
 import lombok.Getter;
@@ -30,11 +30,11 @@ public class ManagerRoleReq {
     private List<Long> pids;
 
     public boolean hasUpdate() {
-        return U.greater0(id);
+        return Obj.greater0(id);
     }
     public void basicCheck() {
         int max = 20;
-        U.assertException(U.isBlank(name) || name.trim().length() > max, String.format("角色名要有, 且在 %s 个字以内", max));
+        Obj.assertException(Obj.isBlank(name) || name.trim().length() > max, String.format("角色名要有, 且在 %s 个字以内", max));
     }
 
     public ManagerRole operateParam() {

@@ -2,7 +2,7 @@ package com.github.common.json;
 
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 import java.lang.annotation.*;
 
@@ -46,28 +46,28 @@ public @interface JsonSensitiveString {
         String des(String value, boolean showLen) {
             return switch (this) {
                 case EMAIL -> email(value, showLen);
-                case PHONE -> U.foggyValue(value, 11, 3, 4, showLen);
-                case NAME -> U.foggyValue(value, 2, 1, 0, showLen);
+                case PHONE -> Obj.foggyValue(value, 11, 3, 4, showLen);
+                case NAME -> Obj.foggyValue(value, 2, 1, 0, showLen);
                 case PASSWORD -> "***";
-                case BANK_CARD -> U.foggyValue(value, 10, 2, 2, showLen);
-                case ID_CARD -> U.foggyValue(value, 12, 2, 2, showLen);
-                case CAR -> U.foggyValue(value, 7, 2, 2, showLen);
-                case ADDRESS -> U.foggyValue(value, 10, 3, 3, showLen);
-                case IPV4 -> U.foggyValue(value, 7, 1, 1, showLen);
+                case BANK_CARD -> Obj.foggyValue(value, 10, 2, 2, showLen);
+                case ID_CARD -> Obj.foggyValue(value, 12, 2, 2, showLen);
+                case CAR -> Obj.foggyValue(value, 7, 2, 2, showLen);
+                case ADDRESS -> Obj.foggyValue(value, 10, 3, 3, showLen);
+                case IPV4 -> Obj.foggyValue(value, 7, 1, 1, showLen);
                 case IPV6 -> ipv6(value, showLen);
-                case TOKEN -> U.foggyValue(value, 16, 3, 3, showLen);
+                case TOKEN -> Obj.foggyValue(value, 16, 3, 3, showLen);
             };
         }
         private String email(String value, boolean showLen) {
             String split = "@";
             if (value.contains(split)) {
                 int index = value.indexOf(split);
-                String s = U.foggyValue(value.substring(0, index), 2, 1, 0, showLen);
+                String s = Obj.foggyValue(value.substring(0, index), 2, 1, 0, showLen);
                 String right = value.substring(index);
                 String endSplit = ".";
                 if (right.contains(endSplit)) {
                     int ei = right.lastIndexOf(endSplit);
-                    return s + U.foggyValue(value.substring(0, ei), 2, 1, 0, showLen) + right.substring(ei);
+                    return s + Obj.foggyValue(value.substring(0, ei), 2, 1, 0, showLen) + right.substring(ei);
                 }
             }
             return value;

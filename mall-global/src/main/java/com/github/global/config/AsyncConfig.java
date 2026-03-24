@@ -3,7 +3,7 @@ package com.github.global.config;
 import com.github.common.json.JsonUtil;
 import com.github.common.util.AsyncUtil;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -48,10 +48,10 @@ public class AsyncConfig implements AsyncConfigurer {
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        int poolSize = U.calcPoolSize(0.8, 20, 180);
+        int poolSize = Obj.calcPoolSize(0.8, 20, 180);
         executor.setCorePoolSize(corePoolSize > 0 ? corePoolSize : poolSize);
         executor.setMaxPoolSize(maxPoolSize > 0 ? maxPoolSize : (poolSize + 1));
-        executor.setQueueCapacity(queueCapacity > 0 ? queueCapacity : (U.CPU_SIZE << 11));
+        executor.setQueueCapacity(queueCapacity > 0 ? queueCapacity : (Obj.CPU_SIZE << 11));
         executor.setThreadNamePrefix("task-executor-");
         // 见: https://moelholm.com/blog/2017/07/24/spring-43-using-a-taskdecorator-to-copy-mdc-data-to-async-threads
         executor.setTaskDecorator(AsyncUtil::wrapRunContext);
@@ -63,7 +63,7 @@ public class AsyncConfig implements AsyncConfigurer {
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return (ex, method, params) -> {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("调用异步方法({})参数({})时异常", method, U.toStr(JsonUtil.toJsonNil(params)), ex);
+                LogUtil.ROOT_LOG.error("调用异步方法({})参数({})时异常", method, Obj.toStr(JsonUtil.toJsonNil(params)), ex);
             }
         };
     }

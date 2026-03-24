@@ -1,6 +1,6 @@
 package com.github.common.export;
 
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 /** 如果想要将数据导成文件保存, 使用 {@link FileExport} 类, 如果要导出文件在 web 端下载, 使用 {@link WebExport} 类 */
 public enum ExportType {
@@ -22,7 +22,7 @@ public enum ExportType {
     }
 
     public static ExportType to(String type) {
-        if (U.isNotBlank(type)) {
+        if (Obj.isNotBlank(type)) {
             for (ExportType exportType : values()) {
                 if (type.equalsIgnoreCase(exportType.name())) {
                     return exportType;

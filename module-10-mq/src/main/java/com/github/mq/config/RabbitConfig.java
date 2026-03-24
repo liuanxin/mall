@@ -1,6 +1,6 @@
 package com.github.mq.config;
 
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.common.util.LogUtil;
 import com.github.mq.constant.MqInfo;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +46,7 @@ public class RabbitConfig {
                 if (mqInfo.isDelayExchange()) {
                     builder.delayed();
                 }
-                if (A.isNotEmpty(exchangeArgs)) {
+                if (Arr.isNotEmpty(exchangeArgs)) {
                     builder.withArguments(exchangeArgs);
                 }
                 return builder.build();
@@ -55,14 +55,14 @@ public class RabbitConfig {
             final Queue queue = queueMap.computeIfAbsent(queueName, key -> {
                 // 持久化(durable 是 true), 不自动删除(autoDelete 是 false)
                 QueueBuilder builder = QueueBuilder.durable(key);
-                if (A.isNotEmpty(mqArgs)) {
+                if (Arr.isNotEmpty(mqArgs)) {
                     builder.withArguments(mqArgs);
                 }
                 return builder.build();
             });
 
             bindingMap.computeIfAbsent(bindingName, k -> BindingBuilder.bind(queue).to(exchange).with(routingKey)
-                    .and(A.isEmpty(bindingArgs) ? Collections.emptyMap() : bindingArgs));
+                    .and(Arr.isEmpty(bindingArgs) ? Collections.emptyMap() : bindingArgs));
         }
 
         for (Exchange exchange : exchangeMap.values()) {

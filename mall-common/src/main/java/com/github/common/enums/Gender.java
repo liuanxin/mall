@@ -2,7 +2,7 @@ package com.github.common.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 /** 性别 */
 public enum Gender {
@@ -26,7 +26,7 @@ public enum Gender {
 
     @JsonCreator
     public static Gender deserializer(Object obj) {
-        if (U.isNotNull(obj)) {
+        if (Obj.isNotNull(obj)) {
             String str = obj.toString().trim();
             for (Gender e : values()) {
                 if (str.equals(String.valueOf(e.code)) || str.equalsIgnoreCase(e.value)) {
@@ -40,13 +40,13 @@ public enum Gender {
     /** 基于身份证号码返回性别 */
     public static Gender fromIdCard(String num) {
         String idCard = num.trim();
-        if (U.hasIdCard(idCard)) {
+        if (Obj.hasIdCard(idCard)) {
             String gender = switch (idCard.length()) {
                 case 15 -> idCard.substring(14, 15);
                 case 18 -> idCard.substring(16, 17);
-                default -> U.EMPTY;
+                default -> Obj.EMPTY;
             };
-            return (U.isNotBlank(gender) && U.isInt(gender) && U.toInt(gender) % 2 == 1) ? Gender.Male : Gender.Female;
+            return (Obj.isNotBlank(gender) && Obj.isInt(gender) && Obj.toInt(gender) % 2 == 1) ? Gender.Male : Gender.Female;
         } else {
             return Gender.Nil;
         }

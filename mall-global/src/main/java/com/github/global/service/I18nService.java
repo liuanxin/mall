@@ -1,7 +1,7 @@
 package com.github.global.service;
 
 import com.github.common.Const;
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.common.util.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
@@ -18,7 +18,7 @@ public class I18nService {
     private final MessageSource messageSource;
 
     public String getMessage(String code, List<?> args) {
-        return getMessage(code, A.isEmpty(args) ? null : args.toArray(new Object[0]));
+        return getMessage(code, Arr.isEmpty(args) ? null : args.toArray(new Object[0]));
     }
 
     public String getMessage(String code, Object... args) {

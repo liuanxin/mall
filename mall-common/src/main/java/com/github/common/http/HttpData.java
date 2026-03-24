@@ -2,8 +2,8 @@ package com.github.common.http;
 
 import com.github.common.date.Dates;
 import com.github.common.json.JsonUtil;
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 
 import java.util.*;
 
@@ -174,19 +174,19 @@ public class HttpData {
 
     public String reqInfo() {
         List<String> reqList = new ArrayList<>();
-        if (A.isNotEmpty(reqHeader)) {
-            reqList.add("header(" + U.formatHeader(reqHeader, true) + ")");
+        if (Arr.isNotEmpty(reqHeader)) {
+            reqList.add("header(" + Obj.formatHeader(reqHeader, true) + ")");
         }
-        if (U.isNotBlank(reqParam)) {
+        if (Obj.isNotBlank(reqParam)) {
             reqList.add("param(" + reqParam + ")");
         }
-        if (U.isNotBlank(reqBody)) {
+        if (Obj.isNotBlank(reqBody)) {
             reqList.add("body(" + dropWhite(reqBody) + ")");
         }
         return String.join(" ", reqList);
     }
     private String dropWhite(String json) {
-        if (U.isBlank(json)) {
+        if (Obj.isBlank(json)) {
             return json;
         }
         String t = json.trim();
@@ -198,25 +198,25 @@ public class HttpData {
     }
     public String resInfo() {
         List<String> resList = new ArrayList<>();
-        if (U.isNotNull(resStatus)) {
+        if (Obj.isNotNull(resStatus)) {
             resList.add("statusCode(" + resStatus + ")");
         }
         // https://stackoverflow.com/questions/67345954/how-do-i-get-the-http-status-message-from-responses-on-java-net-httpclient-reque
         resList.add("reason(" + REASONS.getOrDefault(resStatus, UNKNOWN_STATUS) + ")");
-        if (A.isNotEmpty(resHeader)) {
-            resList.add("header(" + U.formatHeader(resHeader, true) + ")");
+        if (Arr.isNotEmpty(resHeader)) {
+            resList.add("header(" + Obj.formatHeader(resHeader, true) + ")");
         }
-        if (U.isNotBlank(resBody)) {
+        if (Obj.isNotBlank(resBody)) {
             resList.add("body(" + dropWhite(resBody) + ")");
         }
         return String.join(" ", resList);
     }
     public String exceptionInfo() {
         List<String> exceptionList = new ArrayList<>();
-        if (U.isNotNull(exception)) {
+        if (Obj.isNotNull(exception)) {
             exceptionList.add(exception.getMessage());
             StackTraceElement[] stackTraceArray = exception.getStackTrace();
-            if (A.isNotEmpty(stackTraceArray)) {
+            if (Arr.isNotEmpty(stackTraceArray)) {
                 for (StackTraceElement trace : stackTraceArray) {
                     exceptionList.add(trace.toString().trim());
                 }
@@ -229,32 +229,32 @@ public class HttpData {
     @Override
     public String toString() {
         StringBuilder sbd = new StringBuilder();
-        if (U.isNotNull(reqTime)) {
+        if (Obj.isNotNull(reqTime)) {
             // time
             sbd.append("[").append(Dates.formatDateTimeMs(reqTime));
-            if (U.isNotNull(resTime)) {
+            if (Obj.isNotNull(resTime)) {
                 sbd.append(" -> ").append(Dates.formatDateTimeMs(resTime));
                 sbd.append("(").append(Dates.toHuman(resTime.getTime() - reqTime.getTime())).append(")");
             }
             sbd.append("]");
 
             // method url
-            sbd.append(" [").append(U.toStr(method)).append(" ").append(url).append("]");
+            sbd.append(" [").append(Obj.toStr(method)).append(" ").append(url).append("]");
 
             // req
             String req = reqInfo();
-            if (U.isNotBlank(req)) {
+            if (Obj.isNotBlank(req)) {
                 sbd.append(" req[").append(req).append("]");
             }
         }
 
         // res
-        if (U.isNotNull(resTime)) {
+        if (Obj.isNotNull(resTime)) {
             sbd.append(" res[").append(resInfo()).append("]");
         }
 
         // exception
-        if (U.isNotNull(exception)) {
+        if (Obj.isNotNull(exception)) {
             sbd.append(" exception[").append(exceptionInfo()).append("]");
         }
         return sbd.toString();

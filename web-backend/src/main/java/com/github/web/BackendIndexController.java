@@ -1,10 +1,10 @@
 package com.github.web;
 
 import com.github.common.json.JsonUtil;
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.common.util.LogUtil;
+import com.github.common.util.Obj;
 import com.github.common.util.SecurityCodeUtil;
-import com.github.common.util.U;
 import com.github.liuanxin.api.annotation.ApiIgnore;
 import com.github.util.BackendSessionUtil;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -61,8 +61,8 @@ public class BackendIndexController {
             RequestMappingInfo info = entry.getKey();
             HandlerMethod method = entry.getValue();
             urlList.add(Map.of(
-                    "url", U.isNull(info.getPatternsCondition()) ? U.EMPTY : String.join(",", info.getPatternsCondition().getPatterns()),
-                    "method", A.toStr(info.getMethodsCondition().getMethods()),
+                    "url", Obj.isNull(info.getPatternsCondition()) ? Obj.EMPTY : String.join(",", info.getPatternsCondition().getPatterns()),
+                    "method", Arr.toStr(info.getMethodsCondition().getMethods()),
                     "class", method.getBeanType().getName() + "#" + method.getMethod().getName()
             ));
         }

@@ -204,18 +204,18 @@ public class PdfTest {
 
         Map<String, Object> data = new HashMap<>();
         data.put("barCode", "RV000013-150721-0004");
-        data.put("remarkInfo", Collections.singletonList(A.maps(
+        data.put("remarkInfo", Collections.singletonList(Arr.maps(
                 "name", "备注: ",
                 "value", "显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字显示120个包含中文的字"
         )));
         data.put("orderInfo", Arrays.asList(
-                A.maps("c1", "入库单号: ", "c2", "RV000013-150721-0004", "c3", "创建时间: ", "c4", Dates.formatDateTime(LocalDateTime.now())),
-                A.maps("c1", "目的仓库: ", "c2", "USEA", "c3", "客户代码: ", "c4", "000013"),
-                A.maps("c1", "跟踪号: ", "c2", "YT1520216989500749", "c3", "客户参考号: ", "c4", "JD2015002")
+                Arr.maps("c1", "入库单号: ", "c2", "RV000013-150721-0004", "c3", "创建时间: ", "c4", Dates.formatDateTime(LocalDateTime.now())),
+                Arr.maps("c1", "目的仓库: ", "c2", "USEA", "c3", "客户代码: ", "c4", "000013"),
+                Arr.maps("c1", "跟踪号: ", "c2", "YT1520216989500749", "c3", "客户参考号: ", "c4", "JD2015002")
         ));
         List<Map<Object, Object>> list = new ArrayList<>();
         for (int i = 0; i < 31; i++) {
-            list.add(A.maps(
+            list.add(Arr.maps(
                     "boxNum", "1",
                     "productCode", "000013-1399379",
                     "cnName", "（仓库自配转换插）手持式电动旋盖机 欧规 220V (采购下单备注英文说明书)（12个一箱）（散单采购200元包邮）",
@@ -227,7 +227,7 @@ public class PdfTest {
                     "forecastNum", "30",
                     "receiveNum", "30"
             ));
-            list.add(A.maps(
+            list.add(Arr.maps(
                     "boxNum", "1",
                     "productCode", "000013-1392179",
                     "cnName", "夏日花草（合金支架120cm ）浴桶+坐垫+保温盖+10个浴袋（下单备注4个一箱发货）（拍单发图）",
@@ -442,14 +442,14 @@ public class PdfTest {
         data.put("warehouse", "[GC] USEA");
         data.put("barCode", "RV000014-150807-0003");
         data.put("orderInfo", Arrays.asList(
-                A.maps("name", "客户代码:", "value", "G666"),
-                A.maps("name", "跟踪号:", "value", "X7832178"),
-                A.maps("name", "参考编号:", "value", "G666-211204-5678"),
-                A.maps("name", "创建时间:", "value", "2020-11-29 12:23:56"),
-                A.maps("name", "备注:", "value", "很长「我人有的和主产不为这工要在地一上是中国经以发了民同」的描述")
+                Arr.maps("name", "客户代码:", "value", "G666"),
+                Arr.maps("name", "跟踪号:", "value", "X7832178"),
+                Arr.maps("name", "参考编号:", "value", "G666-211204-5678"),
+                Arr.maps("name", "创建时间:", "value", "2020-11-29 12:23:56"),
+                Arr.maps("name", "备注:", "value", "很长「我人有的和主产不为这工要在地一上是中国经以发了民同」的描述")
         ));
         data.put("printInfo", Collections.singletonList(
-                A.maps(
+                Arr.maps(
                         "printTime", "打印时间: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
                         "boxTotal", "总箱数: 1",
                         "receiver", "收货员: _______________",
@@ -458,7 +458,7 @@ public class PdfTest {
         ));
         List<Map<Object, Object>> list = new ArrayList<>();
         for (int i = 0; i < 31; i++) {
-            list.add(A.maps(
+            list.add(Arr.maps(
                     "stockCodeAndBoxNum", "0*1",
                     "productCode", "00014-A4B01",
                     "forecastNum", "40",
@@ -468,7 +468,7 @@ public class PdfTest {
                     "size", "16.00*16.00*4.50",
                     "weight", "0.200"
             ));
-            list.add(A.maps(
+            list.add(Arr.maps(
                     "stockCodeAndBoxNum", "0*1",
                     "abcde", "fdsa",
                     "productCode", "00014-A4W01",
@@ -546,11 +546,11 @@ public class PdfTest {
         List<Map<Object, Object>> list1 = new ArrayList<>();
         List<Map<Object, Object>> list2 = new ArrayList<>();
 
-        list1.add(A.maps("qrCode", "G1082-AUTOTEST9336290"));
-        list1.add(A.maps("qrCode", "G1082-AUTOTEST9336291"));
+        list1.add(Arr.maps("qrCode", "G1082-AUTOTEST9336290"));
+        list1.add(Arr.maps("qrCode", "G1082-AUTOTEST9336291"));
 
-        list2.add(A.maps("barCode", "G1082-AUTOTEST9336290"));
-        list2.add(A.maps("barCode", "G1082-AUTOTEST9336291"));
+        list2.add(Arr.maps("barCode", "G1082-AUTOTEST9336290"));
+        list2.add(Arr.maps("barCode", "G1082-AUTOTEST9336291"));
 
         data.put("dynamicInfo", list1);
         data.put("dynamicTable", list2);
@@ -656,13 +656,13 @@ public class PdfTest {
         data.put("countryCode", "UK");
 
         List<Map<Object, Object>> list1 = new ArrayList<>();
-        list1.add(A.maps("barCode", "G1082-AUTOTEST9336290"));
-        list1.add(A.maps("barCode", "G1082-AUTOTEST9336291"));
+        list1.add(Arr.maps("barCode", "G1082-AUTOTEST9336290"));
+        list1.add(Arr.maps("barCode", "G1082-AUTOTEST9336291"));
         data.put("dynamicInfo", list1);
 
         List<Map<Object, Object>> list2 = new ArrayList<>();
-        list2.add(A.maps("num", "G1082-AUTOTEST9336290", "pcs", "0"));
-        list2.add(A.maps("num", "G1082-AUTOTEST9336291", "pcs", "1"));
+        list2.add(Arr.maps("num", "G1082-AUTOTEST9336290", "pcs", "0"));
+        list2.add(Arr.maps("num", "G1082-AUTOTEST9336291", "pcs", "1"));
         data.put("dt", list2);
 
         String file = "/home/ty/test-number.pdf";

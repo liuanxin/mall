@@ -1,6 +1,6 @@
 package com.github.global.aop;
 
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.common.util.LogUtil;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -15,7 +15,7 @@ public class AopSelfAdvice implements MethodInterceptor {
         try {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 LogUtil.ROOT_LOG.info("Before call aop -> method({}) args({})",
-                        invocation.getMethod(), A.toStr(invocation.getArguments(), "<", ">"));
+                        invocation.getMethod(), Arr.toStr(invocation.getArguments(), "<", ">"));
             }
             return invocation.proceed();
         } finally {

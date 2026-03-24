@@ -6,9 +6,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.github.common.date.FormatType;
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -130,7 +130,7 @@ public class JsonUtil {
      */
     public static <S,T> T convert(S source, Class<T> clazz, boolean ignoreSourceAnnotation, boolean ignoreTargetAnnotation) {
         // noinspection DuplicatedCode
-        if (U.isNull(source)) {
+        if (Obj.isNull(source)) {
             return null;
         }
 
@@ -142,20 +142,20 @@ public class JsonUtil {
                 json = (ignoreSourceAnnotation ? IGNORE_OBJECT_MAPPER : EMPTY_OBJECT_MAPPER).writeValueAsString(source);
             } catch (Exception e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("obj({}) to json exception", U.compress(source.toString()), e);
+                    LogUtil.ROOT_LOG.error("obj({}) to json exception", Obj.compress(source.toString()), e);
                 }
                 return null;
             }
         }
 
-        if (U.isBlank(json)) {
+        if (Obj.isBlank(json)) {
             return null;
         }
         try {
             return (ignoreTargetAnnotation ? IGNORE_OBJECT_MAPPER : EMPTY_OBJECT_MAPPER).readValue(json, clazz);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("json({}) to Class({}) exception", U.compress(json), clazz.getName(), e);
+                LogUtil.ROOT_LOG.error("json({}) to Class({}) exception", Obj.compress(json), clazz.getName(), e);
             }
             return null;
         }
@@ -168,7 +168,7 @@ public class JsonUtil {
      */
     public static <S,T> List<T> convertList(Collection<S> sourceList, Class<T> clazz,
                                             boolean ignoreSourceAnnotation, boolean ignoreTargetAnnotation) {
-        if (A.isEmpty(sourceList)) {
+        if (Arr.isEmpty(sourceList)) {
             return Collections.emptyList();
         }
 
@@ -177,11 +177,11 @@ public class JsonUtil {
             json = (ignoreSourceAnnotation ? IGNORE_OBJECT_MAPPER : EMPTY_OBJECT_MAPPER).writeValueAsString(sourceList);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("List({}) to json exception", U.compress(sourceList.toString()), e);
+                LogUtil.ROOT_LOG.error("List({}) to json exception", Obj.compress(sourceList.toString()), e);
             }
             return Collections.emptyList();
         }
-        if (U.isBlank(json)) {
+        if (Obj.isBlank(json)) {
             return Collections.emptyList();
         }
 
@@ -192,7 +192,7 @@ public class JsonUtil {
                     fun -> mapper.getTypeFactory().constructCollectionType(List.class, clazz)));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("json({}) to List<{}> exception", U.compress(json), key, e);
+                LogUtil.ROOT_LOG.error("json({}) to List<{}> exception", Obj.compress(json), key, e);
             }
             return Collections.emptyList();
         }
@@ -205,7 +205,7 @@ public class JsonUtil {
      */
     public static <SK,SV,K,V> Map<K,V> convertMap(Map<SK,SV> sourceMap, Class<K> keyClass, Class<V> valueClass,
                                                   boolean ignoreSourceAnnotation, boolean ignoreTargetAnnotation) {
-        if (A.isEmpty(sourceMap)) {
+        if (Arr.isEmpty(sourceMap)) {
             return Collections.emptyMap();
         }
 
@@ -214,11 +214,11 @@ public class JsonUtil {
             json = (ignoreSourceAnnotation ? IGNORE_OBJECT_MAPPER : EMPTY_OBJECT_MAPPER).writeValueAsString(sourceMap);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("Map({}) to json exception", U.compress(sourceMap.toString()), e);
+                LogUtil.ROOT_LOG.error("Map({}) to json exception", Obj.compress(sourceMap.toString()), e);
             }
             return Collections.emptyMap();
         }
-        if (U.isBlank(json)) {
+        if (Obj.isBlank(json)) {
             return Collections.emptyMap();
         }
 
@@ -229,7 +229,7 @@ public class JsonUtil {
                     fun -> mapper.getTypeFactory().constructMapType(LinkedHashMap.class, keyClass, valueClass)));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("json({}) to List<{}> exception", U.compress(json), key, e);
+                LogUtil.ROOT_LOG.error("json({}) to List<{}> exception", Obj.compress(json), key, e);
             }
             return Collections.emptyMap();
         }
@@ -260,7 +260,7 @@ public class JsonUtil {
     public static <S,T> T convertType(S source, TypeReference<T> type,
                                       boolean ignoreSourceAnnotation, boolean ignoreTargetAnnotation) {
         // noinspection DuplicatedCode
-        if (U.isNull(source)) {
+        if (Obj.isNull(source)) {
             return null;
         }
 
@@ -272,20 +272,20 @@ public class JsonUtil {
                 json = (ignoreSourceAnnotation ? IGNORE_OBJECT_MAPPER : EMPTY_OBJECT_MAPPER).writeValueAsString(source);
             } catch (Exception e) {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                    LogUtil.ROOT_LOG.error("obj({}) to json exception", U.compress(source.toString()), e);
+                    LogUtil.ROOT_LOG.error("obj({}) to json exception", Obj.compress(source.toString()), e);
                 }
                 return null;
             }
         }
 
-        if (U.isBlank(json)) {
+        if (Obj.isBlank(json)) {
             return null;
         }
         try {
             return (ignoreTargetAnnotation ? IGNORE_OBJECT_MAPPER : EMPTY_OBJECT_MAPPER).readValue(json, type);
         } catch (IOException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("json({}) to Class({}) exception", U.compress(json), type.getClass().getName(), e);
+                LogUtil.ROOT_LOG.error("json({}) to Class({}) exception", Obj.compress(json), type.getClass().getName(), e);
             }
             return null;
         }
@@ -293,7 +293,7 @@ public class JsonUtil {
 
     /** 对象转换成 json 字符串 */
     public static String toJson(Object obj) {
-        if (U.isNull(obj)) {
+        if (Obj.isNull(obj)) {
             return null;
         }
         if (obj instanceof String s) {
@@ -302,12 +302,12 @@ public class JsonUtil {
         try {
             return OBJECT_MAPPER.writeValueAsString(obj);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("object(%s) to json exception.", U.compress(obj.toString())), e);
+            throw new RuntimeException(String.format("object(%s) to json exception.", Obj.compress(obj.toString())), e);
         }
     }
     /** 对象转换成 json 字符串 */
     public static String toJsonNil(Object obj) {
-        if (U.isNull(obj)) {
+        if (Obj.isNull(obj)) {
             return null;
         }
         if (obj instanceof String s) {
@@ -317,7 +317,7 @@ public class JsonUtil {
             return OBJECT_MAPPER.writeValueAsString(obj);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("Object({}) to json exception", U.compress(obj.toString()), e);
+                LogUtil.ROOT_LOG.error("Object({}) to json exception", Obj.compress(obj.toString()), e);
             }
             return null;
         }
@@ -325,39 +325,39 @@ public class JsonUtil {
 
     /** 将 json 字符串转换为对象 */
     public static <T> T toObject(String json, Class<T> clazz) {
-        if (U.isBlank(json)) {
+        if (Obj.isBlank(json)) {
             return null;
         }
         try {
             return OBJECT_MAPPER.readValue(json, clazz);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("json(%s) to Class(%s) exception", U.compress(json), clazz.getName()), e);
+            throw new RuntimeException(String.format("json(%s) to Class(%s) exception", Obj.compress(json), clazz.getName()), e);
         }
     }
     /** 将 json 字符串转换为对象, 当转换异常时, 返回 null */
     public static <T> T toObjectNil(String json, Class<T> clazz) {
-        if (U.isBlank(json)) {
+        if (Obj.isBlank(json)) {
             return null;
         }
         try {
             return OBJECT_MAPPER.readValue(json, clazz);
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("json({}) to Class({}) exception", U.compress(json), clazz.getName(), e);
+                LogUtil.ROOT_LOG.error("json({}) to Class({}) exception", Obj.compress(json), clazz.getName(), e);
             }
             return null;
         }
     }
     /** 将 json 字符串转换为泛型对象 */
     public static <T> T toObjectType(String json, TypeReference<T> type) {
-        if (U.isBlank(json)) {
+        if (Obj.isBlank(json)) {
             return null;
         }
         try {
             return OBJECT_MAPPER.readValue(json, type);
         } catch (IOException e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("json({}) to Class({}) exception", U.compress(json), type.getClass().getName(), e);
+                LogUtil.ROOT_LOG.error("json({}) to Class({}) exception", Obj.compress(json), type.getClass().getName(), e);
             }
             return null;
         }
@@ -365,7 +365,7 @@ public class JsonUtil {
 
     /** 将 json 字符串转换为指定的集合, 转换失败则抛出 RuntimeException */
     public static <T> List<T> toList(String json, Class<T> clazz) {
-        if (U.isBlank(json)) {
+        if (Obj.isBlank(json)) {
             return Collections.emptyList();
         }
 
@@ -374,12 +374,12 @@ public class JsonUtil {
             return OBJECT_MAPPER.readValue(json, TYPE_CACHE.computeIfAbsent(key,
                     fun -> OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, clazz)));
         } catch (Exception e) {
-            throw new RuntimeException(String.format("json(%s) to List<%s> exception", U.compress(json), key), e);
+            throw new RuntimeException(String.format("json(%s) to List<%s> exception", Obj.compress(json), key), e);
         }
     }
     /** 将 json 字符串转换为指定的命令, 转换失败则返回空集合 */
     public static <T> List<T> toListNil(String json, Class<T> clazz) {
-        if (U.isBlank(json)) {
+        if (Obj.isBlank(json)) {
             return Collections.emptyList();
         }
 
@@ -389,7 +389,7 @@ public class JsonUtil {
                     fun -> OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, clazz)));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("json({}) to List<{}> exception", U.compress(json), key, e);
+                LogUtil.ROOT_LOG.error("json({}) to List<{}> exception", Obj.compress(json), key, e);
             }
             return Collections.emptyList();
         }
@@ -397,7 +397,7 @@ public class JsonUtil {
 
     /** 将 json 字符串转换为指定的数组列表 */
     public static <K, V> Map<K, V> toMap(String json, final Class<K> keyClass, final Class<V> valueClass) {
-        if (U.isBlank(json)) {
+        if (Obj.isBlank(json)) {
             return Collections.emptyMap();
         }
 
@@ -406,12 +406,12 @@ public class JsonUtil {
             return OBJECT_MAPPER.readValue(json, TYPE_CACHE.computeIfAbsent(key,
                     fun -> OBJECT_MAPPER.getTypeFactory().constructMapType(LinkedHashMap.class, keyClass, valueClass)));
         } catch (Exception e) {
-            throw new RuntimeException(String.format("json(%s) to Map<%s> exception", U.compress(json), key), e);
+            throw new RuntimeException(String.format("json(%s) to Map<%s> exception", Obj.compress(json), key), e);
         }
     }
     /** 将 json 字符串转换为指定的数组列表 */
     public static <K, V> Map<K, V> toMapNil(String json, final Class<K> keyClass, final Class<V> valueClass) {
-        if (U.isBlank(json)) {
+        if (Obj.isBlank(json)) {
             return Collections.emptyMap();
         }
 
@@ -421,7 +421,7 @@ public class JsonUtil {
                     fun -> OBJECT_MAPPER.getTypeFactory().constructMapType(LinkedHashMap.class, keyClass, valueClass)));
         } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
-                LogUtil.ROOT_LOG.error("json({}) to Map<{}> exception", U.compress(json), key, e);
+                LogUtil.ROOT_LOG.error("json({}) to Map<{}> exception", Obj.compress(json), key, e);
             }
             return Collections.emptyMap();
         }

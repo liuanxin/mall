@@ -1,8 +1,8 @@
 package com.github.global.filter;
 
 import com.github.common.Const;
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -34,7 +34,7 @@ public class CorsFilter implements Filter {
     private final Set<String> allowOriginSet;
     public CorsFilter(String allowHeaders) {
         Set<String> allowOriginSet = new HashSet<>();
-        if (U.isNotBlank(allowHeaders)) {
+        if (Obj.isNotBlank(allowHeaders)) {
             // 英文逗号 或 空格
             for (String allowHeader : allowHeaders.split("[, ]")) {
                 allowOriginSet.add(allowHeader.trim());
@@ -49,7 +49,7 @@ public class CorsFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) res;
 
         String origin = request.getHeader(ORIGIN);
-        if (U.isBlank(origin)) {
+        if (Obj.isBlank(origin)) {
             if (hasOptions(request)) {
                 response.setStatus(HttpServletResponse.SC_OK);
                 return;
@@ -57,9 +57,9 @@ public class CorsFilter implements Filter {
         } else {
             String domain = getDomain(request);
             // 头里面带过来的 origin 跟请求的不一样才需要设置 cors
-            if (U.notEquals(domain, origin)) {
+            if (Obj.notEquals(domain, origin)) {
                 // 配置项为空则设置 cors
-                if (A.isEmpty(allowOriginSet)) {
+                if (Arr.isEmpty(allowOriginSet)) {
                     if (hasOptions(request)) {
                         response.setStatus(HttpServletResponse.SC_OK);
                         return;

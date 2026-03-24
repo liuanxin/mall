@@ -36,7 +36,7 @@ public final class SignUtil {
     }
     /** 发起请求前使用指定的密钥处理一下参数 */
     public static Map<String, String[]> handleSign(Map<String, String[]> parameterMap, String key) {
-        if (A.isEmpty(parameterMap)) {
+        if (Arr.isEmpty(parameterMap)) {
             return Collections.emptyMap();
         } else {
             parameterMap.put(SIGN, new String[]{sign(parameterMap, key)});
@@ -88,10 +88,10 @@ public final class SignUtil {
     }
     /** 收到请求时使用指定的密钥检查参数是否正确 */
     public static void checkSign(Map<String, String[]> parameterMap, String ticketValue) {
-        U.assertEmpty(parameterMap, "缺少参数");
+        Obj.assertEmpty(parameterMap, "缺少参数");
 
-        String sign = A.first(parameterMap.get(SIGN));
-        U.assertBlank(sign, "缺少必要的参数");
-        U.assertException(!sign(parameterMap, ticketValue).equals(sign), "参数有误");
+        String sign = Arr.first(parameterMap.get(SIGN));
+        Obj.assertBlank(sign, "缺少必要的参数");
+        Obj.assertException(!sign(parameterMap, ticketValue).equals(sign), "参数有误");
     }
 }

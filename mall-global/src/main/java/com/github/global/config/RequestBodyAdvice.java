@@ -1,10 +1,10 @@
 package com.github.global.config;
 
 import com.github.common.json.JsonUtil;
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.common.util.LogUtil;
+import com.github.common.util.Obj;
 import com.github.common.util.RequestUtil;
-import com.github.common.util.U;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -50,7 +50,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override
     public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
                                            Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
-        if (A.isEmpty(excludePathList) || !excludePathList.contains(RequestUtil.getRequestUri())) {
+        if (Arr.isEmpty(excludePathList) || !excludePathList.contains(RequestUtil.getRequestUri())) {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 return new HttpInputMessage() {
                     @Override
@@ -73,7 +73,7 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
                         ) {
                             // 用 ByteArrayOutputStream 的方式是最快的
                             // 见: https://stackoverflow.com/questions/309424/how-do-i-read-convert-an-inputstream-into-a-string-in-java
-                            U.inputToOutput(input, output);
+                            Obj.inputToOutput(input, output);
                             byte[] bytes = output.toByteArray();
 
                             String method = RequestUtil.getMethod();
@@ -95,11 +95,11 @@ public class RequestBodyAdvice extends RequestBodyAdviceAdapter {
      * 1.去掉原数据中可能有的空白符(比如换行制表空格等), 2.字段脱敏(比如密码字段的值输出成 *** 等)
      */
     private String dropWhiteAndDesensitization(String json) {
-        if (U.isNotBlank(json)) {
+        if (Obj.isNotBlank(json)) {
             String t = json.trim();
             if ((t.startsWith("[") && t.endsWith("]")) || (t.startsWith("{") && t.endsWith("}"))) {
                 String str = logHandler.toJson(JsonUtil.toObjectNil(t, Object.class));
-                if (U.isNotBlank(str)) {
+                if (Obj.isNotBlank(str)) {
                     return str;
                 }
             }

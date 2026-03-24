@@ -1,7 +1,7 @@
 package com.github.global.service;
 
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
@@ -76,7 +76,7 @@ public class RedisService {
 
     /** 获取 key 的超时时间(单位: 秒）, 对应命令: TTL key */
     public long getExpireTime(String key) {
-        return U.toLong(redisTemplate.getExpire(key));
+        return Obj.toLong(redisTemplate.getExpire(key));
     }
 
 
@@ -102,7 +102,7 @@ public class RedisService {
      * @param consumer 实际的处理
      */
     public void scan(String pattern, int singleCount, int singleActionCount, Consumer<List<String>> consumer) {
-        if (U.isBlank(pattern)) {
+        if (Obj.isBlank(pattern)) {
             return;
         }
         int sc = singleCount <= 0 ? 100 : singleCount;
@@ -110,13 +110,13 @@ public class RedisService {
         try (Cursor<Object> cursor = redisTemplate.scan(ScanOptions.scanOptions().match(pattern).count(sc).build())) {
             List<String> keys = new ArrayList<>();
             while (cursor.hasNext()) {
-                keys.add(U.toStr(cursor.next()));
+                keys.add(Obj.toStr(cursor.next()));
                 if (keys.size() >= sac) {
                     consumer.accept(keys);
                     keys.clear();
                 }
             }
-            if (A.isNotEmpty(keys)) {
+            if (Arr.isNotEmpty(keys)) {
                 consumer.accept(keys);
             }
         }
@@ -136,7 +136,7 @@ public class RedisService {
      * @param key 键
      */
     public <T> T tryLockAndRun(String key, Supplier<T> supplier) {
-        String value = U.uuid16();
+        String value = Obj.uuid16();
         if (tryLock(key, value)) {
             try {
                 return supplier.get();
@@ -204,7 +204,7 @@ public class RedisService {
                 end
                 """;
         Integer i = runScript(script, Integer.class, Collections.singletonList(key), value, unit.toMillis(lockTime));
-        return U.toInt(i) == 1;
+        return Obj.toInt(i) == 1;
     }
 
     /**

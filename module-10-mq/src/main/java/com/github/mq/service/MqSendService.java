@@ -2,7 +2,7 @@ package com.github.mq.service;
 
 import com.github.common.date.Dates;
 import com.github.common.page.Pages;
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.mq.constant.MqConst;
 import com.github.mq.model.MqSend;
 import com.github.mq.model.table.MqSendTableDef;
@@ -56,6 +56,6 @@ public class MqSendService {
                 .orderBy(msDef.UPDATE_TIME.asc());
         // 表中有 text 字段, 因此先只查出 id, 再用 id 查具体的数据
         List<MqSend> sendList = Pages.returnList(mqSendMapper.paginate(Pages.paramOnlyLimit(limit), query));
-        return A.isEmpty(sendList) ? Collections.emptyList() : mqSendMapper.selectListByIds(A.collect(sendList, MqSend::getId));
+        return Arr.isEmpty(sendList) ? Collections.emptyList() : mqSendMapper.selectListByIds(Arr.collect(sendList, MqSend::getId));
     }
 }

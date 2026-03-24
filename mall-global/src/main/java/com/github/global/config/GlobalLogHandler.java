@@ -3,7 +3,7 @@ package com.github.global.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.common.json.JsonModule;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
@@ -44,8 +44,8 @@ public class GlobalLogHandler {
     }
 
     public String toJson(Object data) {
-        if (U.isNull(data)) {
-            return U.EMPTY;
+        if (Obj.isNull(data)) {
+            return Obj.EMPTY;
         }
 
         String json;
@@ -58,11 +58,11 @@ public class GlobalLogHandler {
                 if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                     LogUtil.ROOT_LOG.error("data desensitization exception", e);
                 }
-                return U.EMPTY;
+                return Obj.EMPTY;
             }
         }
 
-        String str = hasCompress ? U.compress(json) : json;
-        return cutJson ? U.foggyValue(str, cutJsonMax, cutJsonLeftRightLen) : str;
+        String str = hasCompress ? Obj.compress(json) : json;
+        return cutJson ? Obj.foggyValue(str, cutJsonMax, cutJsonLeftRightLen) : str;
     }
 }

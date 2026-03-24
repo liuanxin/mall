@@ -1,6 +1,6 @@
 package com.github.common.exception;
 
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 
 import java.util.Collections;
 import java.util.Map;
@@ -16,8 +16,8 @@ public class ParamException extends RuntimeException {
 	}
 
 	public ParamException(Map<String, String> errorMap) {
-		super(A.isEmpty(errorMap) ? "" : String.join("; ", errorMap.values()));
-		this.errorMap = A.isEmpty(errorMap) ? Collections.emptyMap() : errorMap;
+		super(Arr.isEmpty(errorMap) ? "" : String.join("; ", errorMap.values()));
+		this.errorMap = Arr.isEmpty(errorMap) ? Collections.emptyMap() : errorMap;
 	}
 
 	public Map<String, String> getErrorMap() {

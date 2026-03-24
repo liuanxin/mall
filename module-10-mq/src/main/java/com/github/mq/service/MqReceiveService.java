@@ -2,7 +2,7 @@ package com.github.mq.service;
 
 import com.github.common.date.Dates;
 import com.github.common.page.Pages;
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.mq.constant.MqConst;
 import com.github.mq.model.MqReceive;
 import com.github.mq.model.table.MqReceiveTableDef;
@@ -56,6 +56,6 @@ public class MqReceiveService {
                 .orderBy(mrDef.UPDATE_TIME.asc());
         // 表中有 text 字段, 因此先只查出 id, 再用 id 查具体的数据
         List<MqReceive> receiveList = Pages.returnList(mqReceiveMapper.paginate(Pages.paramOnlyLimit(limit), query));
-        return A.isEmpty(receiveList) ? Collections.emptyList() : mqReceiveMapper.selectListByIds(A.collect(receiveList, MqReceive::getId));
+        return Arr.isEmpty(receiveList) ? Collections.emptyList() : mqReceiveMapper.selectListByIds(Arr.collect(receiveList, MqReceive::getId));
     }
 }

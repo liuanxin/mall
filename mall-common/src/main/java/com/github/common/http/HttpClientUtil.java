@@ -1,10 +1,10 @@
 package com.github.common.http;
 
 import com.github.common.json.JsonUtil;
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.common.util.AsyncUtil;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,7 +56,7 @@ public class HttpClientUtil {
     public static HttpData get(String url, int timeoutSecond, Map<String, Object> params,
                                Map<String, Object> headers, boolean printLog) {
         String useUrl = HttpConst.appendParamsToUrl(url, params);
-        Map<String, Object> headerMap = U.defaultIfNull(headers, new HashMap<>());
+        Map<String, Object> headerMap = Obj.defaultIfNull(headers, new HashMap<>());
         headerMap.put("Content-Type", "application/x-www-form-urlencoded");
         return handleRequest("GET", useUrl, timeoutSecond, null, headerMap, null, printLog);
     }
@@ -78,7 +78,7 @@ public class HttpClientUtil {
     /** 向指定的 url 进行 post 请求(普通表单方式) */
     public static HttpData postUrlEncode(String url, int timeoutSecond, Map<String, Object> params,
                                          Map<String, Object> headers, boolean printLog) {
-        Map<String, Object> headerMap = U.defaultIfNull(headers, new HashMap<>());
+        Map<String, Object> headerMap = Obj.defaultIfNull(headers, new HashMap<>());
         headerMap.put("Content-Type", "application/x-www-form-urlencoded");
         return handleRequest("POST", url, timeoutSecond, params, headerMap, null, printLog);
     }
@@ -89,7 +89,7 @@ public class HttpClientUtil {
     }
     /** 向指定的 url 基于 post 发起请求(body 中是 json) */
     public static HttpData post(String url, Map<String, Object> params, String json) {
-        return post(url, params, json, A.maps("Content-Type", "application/json"));
+        return post(url, params, json, Arr.maps("Content-Type", "application/json"));
     }
     /** 向指定的 url 基于 post 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData post(String url, String data, Map<String, Object> headers) {
@@ -118,7 +118,7 @@ public class HttpClientUtil {
     }
     /** 向指定的 url 基于 put 发起请求(body 中是 json) */
     public static HttpData put(String url, Map<String, Object> params, String json) {
-        return put(url, params, json, A.maps("Content-Type", "application/json"));
+        return put(url, params, json, Arr.maps("Content-Type", "application/json"));
     }
     /** 向指定的 url 基于 put 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData put(String url, String data, Map<String, Object> headers) {
@@ -143,7 +143,7 @@ public class HttpClientUtil {
 
     /** 向指定的 url 基于 delete 发起请求(body 中是 json) */
     public static HttpData delete(String url, String json) {
-        return delete(url, json, A.maps("Content-Type", "application/json"));
+        return delete(url, json, Arr.maps("Content-Type", "application/json"));
     }
     /** 向指定的 url 基于 delete 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData delete(String url, String data, Map<String, Object> headers) {
@@ -184,17 +184,17 @@ public class HttpClientUtil {
 
         Map<String, String> fileMap = new LinkedHashMap<>();
         HttpRequest.Builder builder = HttpRequest.newBuilder();
-        boolean hasParam = A.isNotEmpty(params);
-        boolean hasFile = A.isNotEmpty(files);
+        boolean hasParam = Arr.isNotEmpty(params);
+        boolean hasFile = Arr.isNotEmpty(files);
         HttpRequest.BodyPublisher body;
         if (hasParam || hasFile) {
-            String boundary = U.uuid16();
+            String boundary = Obj.uuid16();
             builder.setHeader("Content-Type", "multipart/form-data;boundary=" + boundary);
             List<byte[]> arr = new ArrayList<>();
             if (hasParam) {
                 for (Map.Entry<String, Object> entry : params.entrySet()) {
                     String key = entry.getKey();
-                    String value = U.toStr(entry.getValue());
+                    String value = Obj.toStr(entry.getValue());
 
                     arr.add(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
                     String paramInfo = "Content-Disposition: form-data; name=\"%s\"\r\n\r\n";
@@ -228,16 +228,16 @@ public class HttpClientUtil {
         builder.method(useMethod, body);
         builder.uri(URI.create(HttpConst.handleEmptyScheme(url)));
         Map<String, Object> headerMap = HttpConst.handleCommonHeader(headers/*, USER_AGENT*/);
-        if (A.isNotEmpty(headerMap)) {
+        if (Arr.isNotEmpty(headerMap)) {
             for (Map.Entry<String, Object> entry : headerMap.entrySet()) {
-                builder.setHeader(entry.getKey(), U.toStr(entry.getValue()));
+                builder.setHeader(entry.getKey(), Obj.toStr(entry.getValue()));
             }
         }
         builder.timeout(timeoutSecond > 0 ? Duration.ofSeconds(timeoutSecond) : Duration.ofMillis(HttpConst.READ_TIME_OUT));
         HttpRequest request = builder.build();
 
         HttpData httpData = new HttpData();
-        httpData.fillReq(useMethod, url, handleHeader(request.headers()), U.formatPrintParam(params), JsonUtil.toJsonNil(fileMap));
+        httpData.fillReq(useMethod, url, handleHeader(request.headers()), Obj.formatPrintParam(params), JsonUtil.toJsonNil(fileMap));
         try {
             HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             httpData.fillRes(response.statusCode(), handleHeader(response.headers()), response.body());
@@ -257,23 +257,23 @@ public class HttpClientUtil {
                                           Map<String, Object> headers, String data, boolean printLog) {
         HttpRequest.Builder builder = HttpRequest.newBuilder();
         HttpRequest.BodyPublisher body;
-        if (A.isNotEmpty(params)) {
-            body = HttpRequest.BodyPublishers.ofString(U.formatRequestParam(params));
+        if (Arr.isNotEmpty(params)) {
+            body = HttpRequest.BodyPublishers.ofString(Obj.formatRequestParam(params));
         } else {
-            body = U.isBlank(data) ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(data);
+            body = Obj.isBlank(data) ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(data);
         }
         builder.method(method, body);
         builder.uri(URI.create(HttpConst.handleEmptyScheme(url)));
         builder.timeout(timeoutSecond > 0 ? Duration.ofSeconds(timeoutSecond) : Duration.ofMillis(HttpConst.READ_TIME_OUT));
         Map<String, Object> headerMap = HttpConst.handleCommonHeader(headers/*, USER_AGENT*/);
-        if (A.isNotEmpty(headerMap)) {
+        if (Arr.isNotEmpty(headerMap)) {
             for (Map.Entry<String, Object> entry : headerMap.entrySet()) {
-                builder.setHeader(entry.getKey(), U.toStr(entry.getValue()));
+                builder.setHeader(entry.getKey(), Obj.toStr(entry.getValue()));
             }
         }
         HttpRequest request = builder.build();
         HttpData httpData = new HttpData();
-        httpData.fillReq(method, url, handleHeader(request.headers()), U.formatPrintParam(params), data);
+        httpData.fillReq(method, url, handleHeader(request.headers()), Obj.formatPrintParam(params), data);
         try {
             HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             httpData.fillRes(response.statusCode(), handleHeader(response.headers()), response.body());

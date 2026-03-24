@@ -1,10 +1,10 @@
 package com.github.global.config;
 
 import com.github.common.date.Dates;
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.common.util.LogUtil;
+import com.github.common.util.Obj;
 import com.github.common.util.RequestUtil;
-import com.github.common.util.U;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -42,19 +42,19 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
     @Override
     protected void beforeBodyWriteInternal(MappingJacksonValue bodyContainer, MediaType contentType, MethodParameter parameter,
                                            ServerHttpRequest request, ServerHttpResponse response) {
-        if (A.isEmpty(excludePathList) || !excludePathList.contains(RequestUtil.getRequestUri())) {
+        if (Arr.isEmpty(excludePathList) || !excludePathList.contains(RequestUtil.getRequestUri())) {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 StringBuilder sbd = new StringBuilder();
                 ServletServerHttpRequest req = (ServletServerHttpRequest) request;
                 sbd.append("[").append(req.getMethod()).append(" ").append(req.getURI()).append("]");
                 long startTime = LogUtil.getStartTime();
-                if (U.greater0(startTime)) {
+                if (Obj.greater0(startTime)) {
                     sbd.append(" time(").append(Dates.toHuman(System.currentTimeMillis() - startTime)).append(") ");
                 }
 
                 sbd.append(parameter.getContainingClass().getName());
                 Method method = parameter.getMethod();
-                if (U.isNotNull(method)) {
+                if (Obj.isNotNull(method)) {
                     sbd.append("#").append(method.getName());
                 }
 

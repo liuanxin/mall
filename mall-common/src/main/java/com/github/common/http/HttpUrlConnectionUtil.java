@@ -1,9 +1,9 @@
 package com.github.common.http;
 
 import com.github.common.json.JsonUtil;
-import com.github.common.util.A;
+import com.github.common.util.Arr;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
@@ -23,7 +23,7 @@ public class HttpUrlConnectionUtil {
 
     /** @see jdk.internal.net.http.RedirectFilter */
     @SuppressWarnings("JavadocReference")
-    private static final int MAX_REDIRECT_COUNT = U.toInt(System.getProperty("jdk.httpclient.redirects.retrylimit"), 5);
+    private static final int MAX_REDIRECT_COUNT = Obj.toInt(System.getProperty("jdk.httpclient.redirects.retrylimit"), 5);
 
 
     /** 向指定 url 进行 get 请求(普通表单方式) */
@@ -46,7 +46,7 @@ public class HttpUrlConnectionUtil {
     public static HttpData get(String url, int timeoutSecond, Map<String, Object> params,
                                Map<String, Object> headers, boolean printLog) {
         String useUrl = HttpConst.appendParamsToUrl(url, params);
-        Map<String, Object> headerMap = U.defaultIfNull(headers, new HashMap<>());
+        Map<String, Object> headerMap = Obj.defaultIfNull(headers, new HashMap<>());
         headerMap.put("Content-Type", "application/x-www-form-urlencoded");
         return handleRequest("GET", useUrl, timeoutSecond, null, headerMap, null, printLog);
     }
@@ -68,7 +68,7 @@ public class HttpUrlConnectionUtil {
     /** 向指定的 url 进行 post 请求(普通表单方式) */
     public static HttpData postUrlEncode(String url, int timeoutSecond, Map<String, Object> params,
                                          Map<String, Object> headers, boolean printLog) {
-        Map<String, Object> headerMap = U.defaultIfNull(headers, new HashMap<>());
+        Map<String, Object> headerMap = Obj.defaultIfNull(headers, new HashMap<>());
         headerMap.put("Content-Type", "application/x-www-form-urlencoded");
         return handleRequest("POST", url, timeoutSecond, params, headerMap, null, printLog);
     }
@@ -79,7 +79,7 @@ public class HttpUrlConnectionUtil {
     }
     /** 向指定的 url 基于 post 发起请求(body 中是 json) */
     public static HttpData post(String url, Map<String, Object> params, String json) {
-        return post(url, params, json, A.maps("Content-Type", "application/json"));
+        return post(url, params, json, Arr.maps("Content-Type", "application/json"));
     }
     /** 向指定的 url 基于 post 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData post(String url, String data, Map<String, Object> headers) {
@@ -97,7 +97,7 @@ public class HttpUrlConnectionUtil {
     /** 向指定的 url 基于 post 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData post(String url, int timeoutSecond, Map<String, Object> params,
                                 String data, Map<String, Object> headers, boolean printLog) {
-        String content = U.toStr(data);
+        String content = Obj.toStr(data);
         String useUrl = HttpConst.appendParamsToUrl(url, params);
         return handleRequest("POST", useUrl, timeoutSecond, null, headers, content, printLog);
     }
@@ -109,7 +109,7 @@ public class HttpUrlConnectionUtil {
     }
     /** 向指定的 url 基于 put 发起请求(body 中是 json) */
     public static HttpData put(String url, Map<String, Object> params, String json) {
-        return put(url, params, json, A.maps("Content-Type", "application/json"));
+        return put(url, params, json, Arr.maps("Content-Type", "application/json"));
     }
     /** 向指定的 url 基于 put 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData put(String url, Map<String, Object> params, String data, Map<String, Object> headers) {
@@ -123,7 +123,7 @@ public class HttpUrlConnectionUtil {
     /** 向指定的 url 基于 put 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData put(String url, int timeoutSecond, Map<String, Object> params,
                                Map<String, Object> headers, String data, boolean printLog) {
-        String content = U.toStr(data);
+        String content = Obj.toStr(data);
         String useUrl = HttpConst.appendParamsToUrl(url, params);
         return handleRequest("PUT", useUrl, timeoutSecond, null, headers, content, printLog);
     }
@@ -131,7 +131,7 @@ public class HttpUrlConnectionUtil {
 
     /** 向指定的 url 基于 delete 发起请求(body 中是 json) */
     public static HttpData delete(String url, String json) {
-        return delete(url, json, A.maps("Content-Type", "application/json"));
+        return delete(url, json, Arr.maps("Content-Type", "application/json"));
     }
     /** 向指定的 url 基于 delete 发起请求(json : data 是 json 格式 + header 中的 Content-Type 是 application/json. xml : data 是 xml 格式 + header 中 Content-Type 是 application/xml) */
     public static HttpData delete(String url, String data, Map<String, Object> headers) {
@@ -184,25 +184,25 @@ public class HttpUrlConnectionUtil {
             con.setConnectTimeout(HttpConst.CONNECT_TIME_OUT);
             con.setReadTimeout(timeoutSecond > 0 ? ((int) TimeUnit.SECONDS.toMillis(timeoutSecond)) : HttpConst.READ_TIME_OUT);
             Map<String, Object> headerMap = HttpConst.handleCommonHeader(headers/*, USER_AGENT*/);
-            if (A.isNotEmpty(headerMap)) {
+            if (Arr.isNotEmpty(headerMap)) {
                 for (Map.Entry<String, ?> entry : headerMap.entrySet()) {
-                    con.setRequestProperty(entry.getKey(), U.toStr(entry.getValue()));
+                    con.setRequestProperty(entry.getKey(), Obj.toStr(entry.getValue()));
                 }
             }
             Map<String, String> fileMap = new LinkedHashMap<>();
-            boolean hasParam = A.isNotEmpty(params);
-            boolean hasFile = A.isNotEmpty(files);
+            boolean hasParam = Arr.isNotEmpty(params);
+            boolean hasFile = Arr.isNotEmpty(files);
             if (hasParam || hasFile) {
                 con.setDoOutput(true);
 
-                String boundary = U.uuid16();
+                String boundary = Obj.uuid16();
                 // 使用 from 表单上传文件时, 需设置 enctype="multipart/form-data" 属性
                 con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
                 try (DataOutputStream data = new DataOutputStream(con.getOutputStream())) {
                     if (hasParam) {
                         for (Map.Entry<String, Object> entry : params.entrySet()) {
                             String key = entry.getKey();
-                            String value = U.toStr(entry.getValue());
+                            String value = Obj.toStr(entry.getValue());
 
                             data.writeBytes("--" + boundary + "\r\n");
                             String paramInfo = "Content-Disposition: form-data; name=\"%s\"\r\n\r\n";
@@ -229,7 +229,7 @@ public class HttpUrlConnectionUtil {
             }
 
             Map<String, Object> reqHeader = handleHeader(con.getRequestProperties());
-            httpData.fillReq(method, url, reqHeader, U.formatPrintParam(params), JsonUtil.toJsonNil(fileMap));
+            httpData.fillReq(method, url, reqHeader, Obj.formatPrintParam(params), JsonUtil.toJsonNil(fileMap));
             con.connect();
 
             int resCode = con.getResponseCode();
@@ -247,8 +247,8 @@ public class HttpUrlConnectionUtil {
             }
             Map<String, List<String>> resHeaders = con.getHeaderFields();
             // ??? null -> HTTP/1.1 200 OK
-            String nilInfo = A.first(resHeaders.get(null));
-            if (U.isNotBlank(result) && U.isNotBlank(nilInfo)) {
+            String nilInfo = Arr.first(resHeaders.get(null));
+            if (Obj.isNotBlank(result) && Obj.isNotBlank(nilInfo)) {
                 if (result.endsWith(nilInfo)) {
                     result = result.substring(0, result.length() - nilInfo.length());
                 } else if (result.startsWith(nilInfo)) {
@@ -293,23 +293,23 @@ public class HttpUrlConnectionUtil {
                     con.setRequestMethod(method);
                     con.setConnectTimeout(HttpConst.CONNECT_TIME_OUT);
                     con.setReadTimeout(timeoutSecond > 0 ? ((int) TimeUnit.SECONDS.toMillis(timeoutSecond)) : HttpConst.READ_TIME_OUT);
-                    if (A.isNotEmpty(headerMap)) {
+                    if (Arr.isNotEmpty(headerMap)) {
                         for (Map.Entry<String, ?> entry : headerMap.entrySet()) {
-                            con.setRequestProperty(entry.getKey(), U.toStr(entry.getValue()));
+                            con.setRequestProperty(entry.getKey(), Obj.toStr(entry.getValue()));
                         }
                     }
-                    if (A.isNotEmpty(params) || U.isNotBlank(body)) {
+                    if (Arr.isNotEmpty(params) || Obj.isNotBlank(body)) {
                         // 默认值 false, 当向远程服务器传送数据/写数据时, 需设置为 true
                         con.setDoOutput(true);
                         try (OutputStreamWriter output = new OutputStreamWriter(con.getOutputStream())) {
-                            output.write(U.defaultIfBlank(U.formatRequestParam(params), body));
+                            output.write(Obj.defaultIfBlank(Obj.formatRequestParam(params), body));
                             output.flush();
                         }
                     }
 
                     Map<String, Object> reqHeader = handleHeader(con.getRequestProperties());
                     // 这里的 url 可能是重定向之后的
-                    httpData.fillReq(method, connectionUrl, reqHeader, U.formatPrintParam(params), body);
+                    httpData.fillReq(method, connectionUrl, reqHeader, Obj.formatPrintParam(params), body);
                     con.connect();
 
                     responseCode = con.getResponseCode();
@@ -338,8 +338,8 @@ public class HttpUrlConnectionUtil {
                             result = sbd.toString();
                         }
                         // null : HTTP/1.1 200 OK
-                        String nilInfo = A.first(resHeaders.get(null));
-                        if (U.isNotBlank(result) && U.isNotBlank(nilInfo)) {
+                        String nilInfo = Arr.first(resHeaders.get(null));
+                        if (Obj.isNotBlank(result) && Obj.isNotBlank(nilInfo)) {
                             if (result.endsWith(nilInfo)) {
                                 result = result.substring(0, result.length() - nilInfo.length());
                             } else if (result.startsWith(nilInfo)) {
@@ -360,7 +360,7 @@ public class HttpUrlConnectionUtil {
                     return httpData;
                 }
             }
-            httpData.fillRes(responseCode, handleHeader(resHeaders), JsonUtil.toJson(A.maps(
+            httpData.fillRes(responseCode, handleHeader(resHeaders), JsonUtil.toJson(Arr.maps(
                     "error", "ERR_TOO_MANY_REDIRECTS",
                     "redirect_chain", redirectUrlList
             )));
@@ -372,7 +372,7 @@ public class HttpUrlConnectionUtil {
         }
     }
     private static Map<String, Object> handleHeader(Map<String, List<String>> resHeaders) {
-        if (A.isNotEmpty(resHeaders)) {
+        if (Arr.isNotEmpty(resHeaders)) {
             Map<String, Object> returnMap = new HashMap<>();
             for (Map.Entry<String, List<String>> entry : resHeaders.entrySet()) {
                 returnMap.put(entry.getKey(), String.join(",", entry.getValue()));

@@ -2,7 +2,7 @@ package com.github.common.pdf;
 
 import com.github.common.json.JsonUtil;
 import com.github.common.util.LogUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.qrcode.EncodeHintType;
@@ -478,7 +478,7 @@ public class PdfUtil {
 
     private static boolean headHasCn(List<String> headList) {
         for (String head : headList) {
-            if (U.containsChinese(head)) {
+            if (Obj.containsChinese(head)) {
                 return true;
             }
         }
@@ -552,7 +552,7 @@ public class PdfUtil {
     }
 
     private static BaseFont toBaseFont(String value, boolean bold) {
-        return toBaseFont(U.containsChinese(value), bold);
+        return toBaseFont(Obj.containsChinese(value), bold);
     }
     private static BaseFont toBaseFont(boolean hasCn, boolean bold) {
         if (hasCn) {
@@ -562,7 +562,7 @@ public class PdfUtil {
         }
     }
     private static Font toFont(String value, boolean bold, float fontSize, BaseColor color) {
-        boolean hasCn = U.containsChinese(value);
+        boolean hasCn = Obj.containsChinese(value);
         BaseFont baseFont = toBaseFont(hasCn, bold);
         return new Font(baseFont, fontSize, (bold ? Font.BOLD : Font.UNDEFINED), color);
     }
@@ -575,7 +575,7 @@ public class PdfUtil {
     }
     private static String handleSpace(String str, boolean space) {
         // 中文字体里的字母和数字会很紧凑, 在字母和数字左右加一个空格, 两个空格替换成一个空格
-        return (space && U.containsChinese(str)) ? SPACE_PATTERN.matcher(str).replaceAll(" $1 ").replace("  ", " ") : str;
+        return (space && Obj.containsChinese(str)) ? SPACE_PATTERN.matcher(str).replaceAll(" $1 ").replace("  ", " ") : str;
     }
     private static float toFloat(Float num, float defaultValue) {
         return num == null || num < 0 ? defaultValue : num;

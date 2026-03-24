@@ -1,8 +1,8 @@
 package com.github.global.service;
 
 import com.github.common.exception.ParamException;
-import com.github.common.util.A;
-import com.github.common.util.U;
+import com.github.common.util.Arr;
+import com.github.common.util.Obj;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
@@ -41,21 +41,21 @@ public class ValidatorService {
      * @param groups 校验时用到的组, 见 {@link javax.validation.groups.Default}, 用任意类都行, 只要确保跟 @Null 等注解里的一致即可
      */
     public <T> void handleValidate(T obj, Class<?>... groups) {
-        if (U.isNull(obj)) {
+        if (Obj.isNull(obj)) {
             throw new ParamException("参数不能为空");
         }
         // 这里返回的是无序的
         Set<ConstraintViolation<T>> set = validator.validate(obj, groups);
-        if (A.isNotEmpty(set)) {
+        if (Arr.isNotEmpty(set)) {
             Map<String, String> errorMap = validate(new LinkedHashSet<>(set));
-            if (A.isNotEmpty(errorMap)) {
+            if (Arr.isNotEmpty(errorMap)) {
                 throw new ParamException(errorMap);
             }
         }
     }
 
     public Map<String, String> validate(Set<ConstraintViolation<?>> errorSet) {
-        if (A.isEmpty(errorSet)) {
+        if (Arr.isEmpty(errorSet)) {
             return Collections.emptyMap();
         }
 
@@ -63,7 +63,7 @@ public class ValidatorService {
         for (ConstraintViolation<?> error : errorSet) {
             Class<?> clazz = error.getRootBeanClass();
             String field = validationService.getParamField(clazz, error.getPropertyPath().toString());
-            if (U.isNotBlank(field)) {
+            if (Obj.isNotBlank(field)) {
                 String message = validationService.getMessage(error.getMessage());
                 fieldErrorMap.computeIfAbsent(field, (k1) -> new LinkedHashSet<>()).add(message);
             }

@@ -12,7 +12,7 @@ import java.util.concurrent.*;
 public final class AsyncUtil {
 
     public static ExecutorService ioExecutor(int queueSize) {
-        int poolSize = U.calcPoolSize(0.75, 10, 190);
+        int poolSize = Obj.calcPoolSize(0.75, 10, 190);
         return new ThreadPoolExecutor(
                 poolSize, poolSize + 1,
                 60L, TimeUnit.SECONDS,
@@ -22,12 +22,12 @@ public final class AsyncUtil {
     }
     /** IO 密集型的线程池(时间都消耗在了磁盘、网络上), 线程数可以大一点, 队列数可以小一点 */
     public static ExecutorService ioExecutor() {
-        return ioExecutor(U.CPU_SIZE << 14); // * 16384
+        return ioExecutor(Obj.CPU_SIZE << 14); // * 16384
     }
 
     public static ExecutorService cpuExecutor(int queueSize) {
         // core: CPU 核心数,  max: CPU 核心 + 1,  queue: CPU 核心 * 2048
-        int cpuSize = U.CPU_SIZE;
+        int cpuSize = Obj.CPU_SIZE;
         return new ThreadPoolExecutor(
                 cpuSize, cpuSize + 1,
                 60L, TimeUnit.SECONDS,
@@ -37,7 +37,7 @@ public final class AsyncUtil {
     }
     /** CPU 密集型的线程池(时间都消耗在了计算上), 线程数保持跟 cpu 核数一样, 队列数可以大一点 */
     public static ExecutorService cpuExecutor() {
-        return cpuExecutor(U.CPU_SIZE << 15); // * 32768
+        return cpuExecutor(Obj.CPU_SIZE << 15); // * 32768
     }
 
     /**
@@ -52,7 +52,7 @@ public final class AsyncUtil {
     /** 线程想要共享主线程的上下文, 使用此方法 */
     public static Runnable wrapRunContext(Runnable runnable) {
         // noinspection DuplicatedCode
-        if (U.isNull(runnable)) {
+        if (Obj.isNull(runnable)) {
             return null;
         }
 
@@ -60,7 +60,7 @@ public final class AsyncUtil {
         boolean hasWeb = (attributes instanceof ServletRequestAttributes);
 
         Map<String, String> logContextMap = MDC.getCopyOfContextMap();
-        boolean hasLogContext = A.isNotEmpty(logContextMap);
+        boolean hasLogContext = Arr.isNotEmpty(logContextMap);
 
         if (hasWeb || hasLogContext) {
             // 把主线程运行时的请求和日志上下文放到子线程的请求和日志上下文去
@@ -92,7 +92,7 @@ public final class AsyncUtil {
     /** 回调线程想要共享主线程的上下文, 使用此方法 */
     public static <T> Callable<T> wrapCallContext(Callable<T> callable) {
         // noinspection DuplicatedCode
-        if (U.isNull(callable)) {
+        if (Obj.isNull(callable)) {
             return null;
         }
 
@@ -100,7 +100,7 @@ public final class AsyncUtil {
         boolean hasWeb = (attributes instanceof ServletRequestAttributes);
 
         Map<String, String> logContextMap = MDC.getCopyOfContextMap();
-        boolean hasLogContext = A.isNotEmpty(logContextMap);
+        boolean hasLogContext = Arr.isNotEmpty(logContextMap);
 
         if (hasWeb || hasLogContext) {
             return () -> {

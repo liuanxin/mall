@@ -1,7 +1,7 @@
 package com.github.req;
 
 import com.github.common.json.JsonUtil;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import com.github.liuanxin.api.annotation.ApiParam;
 import com.github.manager.model.ManagerUser;
 import lombok.Getter;
@@ -36,16 +36,16 @@ public class ManagerUserReq {
     private List<Long> rids;
 
     public boolean hasUpdate() {
-        return U.greater0(id);
+        return Obj.greater0(id);
     }
     public void basicCheck() {
-        if (U.isNotBlank(userName)) {
+        if (Obj.isNotBlank(userName)) {
             int max = 20;
-            U.assertException(userName.trim().length() > max, String.format("用户名请保持在 %s 个字以内", max));
+            Obj.assertException(userName.trim().length() > max, String.format("用户名请保持在 %s 个字以内", max));
         }
-        if (U.isNotBlank(password)) {
+        if (Obj.isNotBlank(password)) {
             int max = 16;
-            U.assertException(password.length() > max, String.format("密码长度只需要在 %s 位即可", max));
+            Obj.assertException(password.length() > max, String.format("密码长度只需要在 %s 位即可", max));
         }
     }
 

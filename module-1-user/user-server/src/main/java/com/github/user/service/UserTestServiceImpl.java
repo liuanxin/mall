@@ -3,7 +3,7 @@ package com.github.user.service;
 import com.github.common.page.PageParam;
 import com.github.common.page.PageReturn;
 import com.github.common.page.Pages;
-import com.github.common.util.U;
+import com.github.common.util.Obj;
 import com.github.user.model.UserTest;
 import com.github.user.model.UserTestExtend;
 import com.github.user.model.table.UserTestTableDef;
@@ -25,14 +25,14 @@ public class UserTestServiceImpl implements UserTestService {
     public PageReturn<UserTest> example(UserTest userTest, UserTestExtend userTestExtend, PageParam page) {
         UserTestTableDef utDef = UserTestTableDef.USER_TEST;
         QueryWrapper query = QueryWrapper.create().select(utDef.ID, utDef.USER_NAME, utDef.LEVEL);
-        if (U.isNotNull(userTest)) {
-            if (U.isNotBlank(userTest.getUserName())) {
+        if (Obj.isNotNull(userTest)) {
+            if (Obj.isNotBlank(userTest.getUserName())) {
                 query.and(utDef.USER_NAME.eq(userTest.getUserName()));
             }
-            if (U.isNotBlank(userTest.getPassword())) {
+            if (Obj.isNotBlank(userTest.getPassword())) {
                 query.and(utDef.PASSWORD.eq(userTest.getPassword()));
             }
-            if (U.isNotNull(userTest.getLevel())) {
+            if (Obj.isNotNull(userTest.getLevel())) {
                 query.and(utDef.LEVEL.eq(userTest.getLevel()));
             }
         }
