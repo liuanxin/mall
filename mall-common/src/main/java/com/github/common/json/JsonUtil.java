@@ -10,7 +10,6 @@ import com.github.common.util.Arr;
 import com.github.common.util.LogUtil;
 import com.github.common.util.Obj;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -283,7 +282,7 @@ public class JsonUtil {
         }
         try {
             return (ignoreTargetAnnotation ? IGNORE_OBJECT_MAPPER : EMPTY_OBJECT_MAPPER).readValue(json, type);
-        } catch (IOException e) {
+        } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("json({}) to Class({}) exception", Obj.compress(json), type.getClass().getName(), e);
             }
@@ -355,7 +354,7 @@ public class JsonUtil {
         }
         try {
             return OBJECT_MAPPER.readValue(json, type);
-        } catch (IOException e) {
+        } catch (Exception e) {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
                 LogUtil.ROOT_LOG.error("json({}) to Class({}) exception", Obj.compress(json), type.getClass().getName(), e);
             }
