@@ -1,6 +1,5 @@
 package com.github.global.config;
 
-import com.github.global.filter.CorsFilter;
 import com.github.global.filter.LogTraceFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -25,10 +24,6 @@ public class GlobalFilterConfig {
     @Value("${req.log-print-header:true}")
     private boolean printHeader;
 
-    /** 支持 cors 的 ip 地址列表 */
-    @Value("${http.cors.allow-headers:}")
-    private String allowHeaders;
-
 //    /** 处理语言时的参数名(/path?lang=zh-CN) */
 //    @Value("${http.language.param-name:lang}")
 //    private String languageParam;
@@ -48,14 +43,32 @@ public class GlobalFilterConfig {
         return filterBean;
     }
 
-    @Bean
-    @Order(2)
-    public FilterRegistrationBean<CorsFilter> corsFilter() {
-        CorsFilter filter = new CorsFilter(allowHeaders);
-        FilterRegistrationBean<CorsFilter> filterBean = new FilterRegistrationBean<>(filter);
-        filterBean.setOrder(Integer.MIN_VALUE + 2);
-        return filterBean;
-    }
+//    @Bean
+//    @Order(2)
+//    public FilterRegistrationBean<CorsFilter> corsFilter() {
+//        CorsConfiguration config = new CorsConfiguration();
+//
+//        // 1. 允许的客户端域名 (对应 Nginx 的 Access-Control-Allow-Origin)
+//        // 注意：Spring Boot 2.4 之后，如果 allowCredentials 为 true，这里不能直接用 "*"
+//        // 必须明确指定域名，或者使用 allowedOriginPatterns("*") 来支持带有凭证的通配符
+//        config.addAllowedOriginPattern("*");
+//        // 2. 允许携带凭证 (Cookie/Token)
+//        config.setAllowCredentials(true);
+//        // 3. 允许的请求头 (对应 Nginx 的 Access-Control-Allow-Headers)
+//        config.addAllowedHeader("*"); // Spring 会自动处理，把它展开
+//        // 4. 允许的请求方法 (GET, POST, OPTIONS 等)
+//        config.addAllowedMethod("*");
+//        // 5. 预检请求的缓存时间 (对应 Nginx 的 Access-Control-Max-Age)，单位是秒
+//        config.setMaxAge(1728000L);
+//        // 6. 为哪些接口配置跨域（这里是全局所有接口）
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", config);
+//
+//        CorsFilter corsFilter = new CorsFilter(source);
+//        FilterRegistrationBean<CorsFilter> filterBean = new FilterRegistrationBean<>(corsFilter);
+//        filterBean.setOrder(Integer.MIN_VALUE + 2);
+//        return filterBean;
+//    }
 
 //    @Bean
 //    @Order(3)
