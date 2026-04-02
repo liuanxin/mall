@@ -43,6 +43,26 @@ public class GlobalFilterConfig {
         return filterBean;
     }
 
+    /*
+    # 如果配置 nginx 可以将下面的内容保存成 /etc/nginx/cors.conf 再每个用到的地方: `include /etc/nginx/cors.conf;`
+    # 注意, 尽量用在 location, 如果写在 server, 只要 location 里面有 add_header 会导致 server 块的 Header 全部丢失
+
+    add_header 'Access-Control-Allow-Origin' '$http_origin' always;
+    add_header 'Access-Control-Allow-Credentials' 'true' always;
+    add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization, X-Requested-With, Accept, Origin, token, appId' always;
+    add_header 'Access-Control-Allow-Methods' 'OPTIONS, PATCH, HEAD, GET, POST, PUT, DELETE' always;
+
+    if ($request_method = 'OPTIONS') {
+        add_header 'Access-Control-Allow-Origin' '$http_origin' always;
+        add_header 'Access-Control-Allow-Credentials' 'true' always;
+        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization, X-Requested-With, Accept, Origin, token, appId' always;
+        add_header 'Access-Control-Allow-Methods' 'OPTIONS, PATCH, HEAD, GET, POST, PUT, DELETE' always;
+        add_header 'Access-Control-Max-Age' 1728000;
+        add_header 'Content-Type' 'text/plain charset=UTF-8';
+        add_header 'Content-Length' 0;
+        return 204;
+    }
+    */
 //    @Bean
 //    @Order(2)
 //    public FilterRegistrationBean<CorsFilter> corsFilter() {
