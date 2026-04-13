@@ -234,7 +234,7 @@ public class GlobalException {
 
         if (knowError) {
             if (LogUtil.ROOT_LOG.isDebugEnabled()) {
-                LogUtil.ROOT_LOG.debug("{}", sbd, e);
+                LogUtil.ROOT_LOG.debug("{}", sbd);
             }
         } else {
             if (LogUtil.ROOT_LOG.isErrorEnabled()) {
