@@ -79,7 +79,7 @@ public class GlobalFilterConfig {
 //        // 4. 允许的请求方法 (GET, POST, OPTIONS 等)
 //        config.addAllowedMethod("*");
 //        // 5. 预检请求的缓存时间 (对应 Nginx 的 Access-Control-Max-Age)，单位是秒
-//        config.setMaxAge(1728000L);
+//        config.setMaxAge(5 * 24 * 3600L); // 5 天
 //        // 6. 为哪些接口配置跨域（这里是全局所有接口）
 //        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 //        source.registerCorsConfiguration("/**", config);
@@ -102,7 +102,6 @@ public class GlobalFilterConfig {
     @Bean
     @Order(4)
     public FilterRegistrationBean<LogTraceFilter> traceFilter() {
-//        LogTraceFilter filter = new LogTraceFilter();
         LogTraceFilter filter = new LogTraceFilter(excludePathList, printHeader);
         FilterRegistrationBean<LogTraceFilter> filterBean = new FilterRegistrationBean<>(filter);
         filterBean.setOrder(Integer.MIN_VALUE + 4);
