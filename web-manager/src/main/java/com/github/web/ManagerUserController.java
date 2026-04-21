@@ -6,7 +6,9 @@ import com.github.common.encrypt.Encrypt;
 import com.github.common.json.JsonResult;
 import com.github.common.util.FileUtil;
 import com.github.common.util.Obj;
+import com.github.common.util.RequestUtil;
 import com.github.config.ManagerConfig;
+import com.github.global.config.CaptchaHandler;
 import com.github.liuanxin.api.annotation.ApiGroup;
 import com.github.liuanxin.api.annotation.ApiMethod;
 import com.github.liuanxin.api.annotation.ApiParam;
@@ -15,6 +17,9 @@ import com.github.manager.service.ManagerService;
 import com.github.res.ManagerUserRes;
 import com.github.user.constant.UserConst;
 import com.github.util.ManagerSessionUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,23 +29,45 @@ import org.springframework.web.multipart.MultipartFile;
 @ApiGroup(UserConst.MODULE_INFO)
 @RestController
 @RequestMapping("/user")
+@RequiredArgsConstructor
 public class ManagerUserController {
 
-
     private final ManagerConfig config;
+    private final CacheManager cacheManager;
     private final ManagerService adminService;
-    public ManagerUserController(ManagerConfig config, ManagerService adminService) {
-        this.config = config;
-        this.adminService = adminService;
-    }
+    private final CaptchaHandler captchaHandler;
 
     @NotNeedLogin
     @ApiMethod(value = "登录", index = 0)
     @PostMapping("/login")
-    public JsonResult<ManagerUserRes> login(@ApiParam("用户名") String userName, @ApiParam("密码") String password) {
-        Obj.assertException(Obj.isBlank(userName) || Obj.isBlank(password), "请输入用户名或密码");
+    public JsonResult<ManagerUserRes> login(
+            @ApiParam("用户名") String username,
+            @ApiParam("密码") String password,
+            @ApiParam("点选验证码通过后的一次性凭证") String captchaPassToken
+    ) {
+        Obj.assertException(Obj.isBlank(username) || Obj.isBlank(password), "请输入用户名或密码");
 
-        ManagerUser user = adminService.getUser(userName);
+        boolean clickVerified;
+        if (Obj.isNotBlank(captchaPassToken)) {
+            clickVerified = captchaHandler.consumePassToken(captchaPassToken);
+            Obj.assertException(!clickVerified, "验证码已失效, 请重新验证");
+        } else {
+            clickVerified = false;
+        }
+        Cache failCache = cacheManager.getCache("login_fail");
+        Integer failCount = Obj.defaultIfNull(failCache == null ? 0 : failCache.get(username, Integer.class), 0);
+        if (failCount >= 3) {
+            Obj.assertException(!clickVerified, "请先完成验证码验证");
+        }
+
+        Cache ipFailCache = cacheManager.getCache("login_fail_ip");
+        String ip = RequestUtil.getRealIp();
+        Integer ipFailCount = Obj.defaultIfNull(ipFailCache == null ? 0 : ipFailCache.get(ip, Integer.class), 0);
+        if (ipFailCount >= 5) {
+            Obj.assertException(!clickVerified, "请务必先完成验证码验证");
+        }
+
+        ManagerUser user = adminService.getUser(username);
         Obj.assertNil(user, "用户名或密码有误");
         Obj.assertException(Encrypt.checkNotBcrypt(password, user.getPassword()), "用户名或密码不正确");
         Obj.assertException(Obj.isTrue(user.getStatus()), "用户被禁止登录, 请联系管理员");

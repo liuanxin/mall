@@ -41,12 +41,18 @@ public final class Encrypt {
     public static byte[] base64Encode(byte[] src) {
         return Base64.getEncoder().encode(src);
     }
+    public static String base64StringEncode(byte[] src) {
+        return new String(base64Encode(src), StandardCharsets.UTF_8);
+    }
     /** 使用 base64 解码 */
     public static String base64Decode(String src) {
         return new String(base64Decode(src.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
     }
     public static byte[] base64Decode(byte[] src) {
         return Base64.getDecoder().decode(src);
+    }
+    public static String base64StringDecode(byte[] src) {
+        return new String(base64Decode(src), StandardCharsets.UTF_8);
     }
 
 
