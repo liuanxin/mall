@@ -2,6 +2,7 @@ package com.github.common.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -39,15 +40,7 @@ public class JsonUtil {
     static {
         DEFAULT_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT+8"));
     }
-    private static final ObjectMapper OBJECT_MAPPER = globalConfig(
-            JsonMapper.builder()
-                    // 「null、空字符串、list 及 map 为空或长度为 0」不序列化
-                    .serializationInclusion(JsonInclude.Include.NON_EMPTY)
-                    // 「null、空字符串、list 及 map 为空或长度为 0、数字为 0、时间的毫秒数为 0」不序列化, 最大程度的节省带宽
-                    // .serializationInclusion(JsonInclude.Include.NON_DEFAULT)
-                    .build()
-                    .setDateFormat(DEFAULT_DATE_FORMAT)
-    );
+    private static final ObjectMapper OBJECT_MAPPER = globalConfig(JsonMapper.builder().build());
 
 
     private static final ObjectMapper EMPTY_OBJECT_MAPPER = JsonMapper.builder()
@@ -61,15 +54,20 @@ public class JsonUtil {
             .configure(MapperFeature.USE_ANNOTATIONS, false)
             .build();
 
-    @SuppressWarnings("deprecation")
     public static ObjectMapper globalConfig(ObjectMapper objectMapper) {
         return objectMapper
+                .setDateFormat(DEFAULT_DATE_FORMAT)
+                // 「null、空字符串、list 及 map 为空或长度为 0」不序列化
+                .setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY)
+                // 「null、空字符串、list 及 map 为空或长度为 0、数字为 0、时间的毫秒数为 0」不序列化, 最大程度的节省带宽
+                // .setSerializationInclusion(JsonInclude.Include.NON_DEFAULT)
                 // 反序列化时, 对 json5 部分功能的支持
                 .enable(
                         // 支持注释: { /* xx */ "a": "x" } 可以正常解析
                         JsonParser.Feature.ALLOW_COMMENTS,
                         // 支持尾逗号: [ 1, 2, ] 和 { "a": 1, } 可以正常解析
-                        JsonParser.Feature.ALLOW_TRAILING_COMMA,
+                        // JsonParser.Feature.ALLOW_TRAILING_COMMA,
+                        JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(),
                         // 字符串可以使用单引号: { 'a': 'x' } 可以正常解析
                         JsonParser.Feature.ALLOW_SINGLE_QUOTES,
                         // key 可以不带引号: { a: "x" } 可以正常解析
