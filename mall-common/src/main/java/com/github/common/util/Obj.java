@@ -26,6 +26,8 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /** 工具类 */
 @SuppressWarnings("DuplicatedCode")
@@ -1172,6 +1174,36 @@ public final class Obj {
             }
         } catch (IOException e) {
             throw new RuntimeException("read to output with channel exception", e);
+        }
+    }
+
+    /** 将文件或目录压缩成 zip */
+    public static void zipFile(String filePath, String zipPath) {
+        File source = new File(filePath);
+        try (
+                FileOutputStream fos = new FileOutputStream(zipPath);
+                ZipOutputStream zos = new ZipOutputStream(fos)
+        ) {
+            zipFile(source, source.getParent(), zos);
+        } catch (IOException e) {
+            throw new RuntimeException("zip file exception", e);
+        }
+    }
+    private static void zipFile(File source, String basePath, ZipOutputStream zos) throws IOException {
+        if (source.isDirectory()) {
+            File[] children = source.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    zipFile(child, basePath, zos);
+                }
+            }
+        } else {
+            String entryName = (basePath != null) ? source.getPath().substring(basePath.length() + 1) : source.getName();
+            zos.putNextEntry(new ZipEntry(entryName));
+            try (FileInputStream fis = new FileInputStream(source)) {
+                fis.transferTo(zos);
+            }
+            zos.closeEntry();
         }
     }
 
