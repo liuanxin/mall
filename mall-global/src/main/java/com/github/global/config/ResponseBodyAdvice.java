@@ -45,20 +45,18 @@ public class ResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice
         if (Arr.isEmpty(excludePathList) || !excludePathList.contains(RequestUtil.getRequestUri())) {
             if (LogUtil.ROOT_LOG.isInfoEnabled()) {
                 StringBuilder sbd = new StringBuilder();
-                ServletServerHttpRequest req = (ServletServerHttpRequest) request;
-                sbd.append("[").append(req.getMethod()).append(" ").append(req.getURI()).append("]");
-                long startTime = LogUtil.getStartTime();
-                if (Obj.greater0(startTime)) {
-                    sbd.append(" time(").append(Dates.toHuman(System.currentTimeMillis() - startTime)).append(") ");
-                }
-
                 sbd.append(parameter.getContainingClass().getName());
                 Method method = parameter.getMethod();
                 if (Obj.isNotNull(method)) {
                     sbd.append("#").append(method.getName());
                 }
-
-                sbd.append(" return(").append(logHandler.toJson(bodyContainer.getValue())).append(")");
+                ServletServerHttpRequest req = (ServletServerHttpRequest) request;
+                sbd.append(" [").append(req.getMethod()).append(" ").append(req.getURI()).append("] ");
+                long startTime = LogUtil.getStartTime();
+                if (Obj.greater0(startTime)) {
+                    sbd.append("time(").append(Dates.toHuman(System.currentTimeMillis() - startTime)).append(") ");
+                }
+                sbd.append("return(").append(logHandler.toJson(bodyContainer.getValue())).append(")");
                 LogUtil.ROOT_LOG.info(sbd.toString());
             }
         }
