@@ -12,24 +12,23 @@ import java.util.List;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class PageReturn<T> {
 
-    private static final PageReturn EMPTY = new PageReturn<>(0, Collections.emptyList());
-
+    private static final PageReturn EMPTY = new PageReturn<>(0, Collections.emptyList(), null);
 
     @ApiReturn("总条数: SELECT COUNT(*) FROM ... 的结果")
     private long total;
+
     @ApiReturn("当页数据: SELECT ... FROM ... LIMIT 0, 10 的结果")
     private List<T> list;
 
+    @ApiReturn("总计项")
+    private T summary;
 
     public PageReturn() {}
-    public PageReturn(long total) {
-        this.total = total;
-    }
-    public PageReturn(long total, List<T> list) {
+    public PageReturn(long total, List<T> list, T summary) {
         this.total = total;
         this.list = list;
+        this.summary = summary;
     }
-
 
     public long getTotal() {
         return total;
@@ -45,15 +44,25 @@ public class PageReturn<T> {
         this.list = list;
     }
 
+    public T getSummary() {
+        return summary;
+    }
+    public void setSummary(T summary) {
+        this.summary = summary;
+    }
+
 
     public static <T> PageReturn<T> empty() {
         return EMPTY;
     }
     public static <T> PageReturn<T> total(long total) {
-        return new PageReturn<>(total, Collections.emptyList());
+        return new PageReturn<>(total, Collections.emptyList(), null);
     }
     public static <T> PageReturn<T> page(long total, List<T> list) {
-        return new PageReturn<>(total, list);
+        return new PageReturn<>(total, list, null);
+    }
+    public static <T> PageReturn<T> pageAndSummary(long total, List<T> list, T summary) {
+        return new PageReturn<>(total, list, summary);
     }
 
     /** 在 Controller 中调用 --> 组装不同的 res 时使用此方法 */
@@ -61,7 +70,7 @@ public class PageReturn<T> {
         if (Obj.isNull(pageInfo)) {
             return EMPTY;
         } else {
-            return new PageReturn<>(pageInfo.getTotal());
+            return new PageReturn<>(pageInfo.getTotal(), Collections.emptyList(), null);
         }
     }
 
@@ -70,7 +79,7 @@ public class PageReturn<T> {
         if (Obj.isNull(pageInfo)) {
             return EMPTY;
         } else {
-            return new PageReturn<>(pageInfo.getTotal(), JsonUtil.convertList(pageInfo.getList(), clazz));
+            return new PageReturn<>(pageInfo.getTotal(), JsonUtil.convertList(pageInfo.getList(), clazz), null);
         }
     }
 }
