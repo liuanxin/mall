@@ -44,7 +44,7 @@ public class AsyncConfig implements AsyncConfigurer {
      * @see org.springframework.boot.autoconfigure.task.TaskExecutionProperties
      * @see org.springframework.aop.interceptor.AsyncExecutionInterceptor#determineAsyncExecutor
      */
-    @SuppressWarnings({"JavadocReference", "NullableProblems"})
+    @SuppressWarnings({"JavadocReference"})
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

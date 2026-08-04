@@ -51,11 +51,6 @@ public final class AsyncUtil {
 
     /** 线程想要共享主线程的上下文, 使用此方法 */
     public static Runnable wrapRunContext(Runnable runnable) {
-        // noinspection DuplicatedCode
-        if (Obj.isNull(runnable)) {
-            return null;
-        }
-
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         boolean hasWeb = (attributes instanceof ServletRequestAttributes);
 
@@ -91,11 +86,6 @@ public final class AsyncUtil {
 
     /** 回调线程想要共享主线程的上下文, 使用此方法 */
     public static <T> Callable<T> wrapCallContext(Callable<T> callable) {
-        // noinspection DuplicatedCode
-        if (Obj.isNull(callable)) {
-            return null;
-        }
-
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         boolean hasWeb = (attributes instanceof ServletRequestAttributes);
 
