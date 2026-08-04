@@ -69,18 +69,18 @@ public class GlobalFilterConfig {
 //        CorsConfiguration config = new CorsConfiguration();
 //
 //        // 1. 允许的客户端域名 (对应 Nginx 的 Access-Control-Allow-Origin)
-//        // 注意：Spring Boot 2.4 之后，如果 allowCredentials 为 true，这里不能直接用 "*"
-//        // 必须明确指定域名，或者使用 allowedOriginPatterns("*") 来支持带有凭证的通配符
+//        // 注意: Spring Boot 2.4 之后, 如果 allowCredentials 为 true, addAllowedOrigin("*") 会报错
+//        // 使用 addAllowedOriginPattern("*") 可以支持带有凭证的通配符, 是正确做法
 //        config.addAllowedOriginPattern("*");
 //        // 2. 允许携带凭证 (Cookie/Token)
 //        config.setAllowCredentials(true);
 //        // 3. 允许的请求头 (对应 Nginx 的 Access-Control-Allow-Headers)
-//        config.addAllowedHeader("*"); // Spring 会自动处理，把它展开
+//        config.addAllowedHeader("*");
 //        // 4. 允许的请求方法 (GET, POST, OPTIONS 等)
 //        config.addAllowedMethod("*");
-//        // 5. 预检请求的缓存时间 (对应 Nginx 的 Access-Control-Max-Age)，单位是秒
+//        // 5. 预检请求的缓存时间 (对应 Nginx 的 Access-Control-Max-Age), 单位是秒
 //        config.setMaxAge(5 * 24 * 3600L); // 5 天
-//        // 6. 为哪些接口配置跨域（这里是全局所有接口）
+//        // 6. 为哪些接口配置跨域 (这里是全局所有接口)
 //        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 //        source.registerCorsConfiguration("/**", config);
 //
