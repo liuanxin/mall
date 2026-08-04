@@ -1,13 +1,7 @@
 package com.github.common.encrypt;
 
+import com.github.common.util.LogUtil;
 import com.github.common.util.Obj;
-import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
-import org.bouncycastle.jce.ECNamedCurveTable;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
-import org.bouncycastle.jce.spec.ECPrivateKeySpec;
-import org.bouncycastle.jce.spec.ECPublicKeySpec;
-import org.bouncycastle.util.encoders.Hex;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
@@ -17,8 +11,10 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.interfaces.ECPrivateKey;
-import java.security.spec.ECGenParameterSpec;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.*;
 import java.util.Base64;
+import java.util.HexFormat;
 
 /**
  * <pre>
@@ -34,115 +30,283 @@ import java.util.Base64;
 public final class EccEncrypt {
 
     /*
-    // src/utils/ecc.js
+    // ecc.js
 
     // 采用 ECC + AES 混合加密模式
-    // 依赖安装: npm i elliptic crypto-js
-    
-    import elliptic from 'elliptic'
-    import CryptoJS from 'crypto-js'
-    
-    const hasDev = import.meta.env.DEV
-    
-    const ec = new elliptic.ec('p256')
-    
-    // 生成密钥对 (十六进制)
-    const eccGenerateKey = () => {
-        const key = ec.genKeyPair()
-        return {
-            priKey: key.getPrivate('hex'),
-            pubKey: key.getPublic(false, 'hex')
+    // 依赖安装: npm install @noble/curves aes-js
+
+    import { p256 } from '@noble/curves/nist.js'
+    import aesjs from 'aes-js'
+
+    // true 表示打印日志, 线上跑时一定要改成 false
+    const NOT_ONLINE = true
+
+    // 十六进制转换成字节数组
+    export const hexToBytes = (hex) => {
+        if (!hex) return new Uint8Array(0)
+        const bytes = new Uint8Array(hex.length / 2)
+        for (let i = 0, j = 0; i < hex.length; i += 2) {
+            bytes[j++] = parseInt(hex.substring(i, i + 2), 16)
+        }
+        return bytes
+    }
+
+    // 生成随机数
+    export const randomBytes = (length) => {
+        const bytes = new Uint8Array(length)
+        if (globalThis.crypto && globalThis.crypto.getRandomValues) {
+            globalThis.crypto.getRandomValues(bytes)
+        } else {
+            if (NOT_ONLINE) {
+                console.error("Crypto 环境未准备好! 需要在微信层面处理一下? 见下面日志\n" +
+                    "// 微信小游戏环境补丁: 在游戏初始化(比如 Loading 脚本)时跑一次这段代码\n" +
+                    "if (typeof wx !== 'undefined' && wx.getRandomValues) {\n" +
+                    "    if (typeof globalThis !== 'undefined' && !globalThis.crypto) {\n" +
+                    "        // @ts-ignore\n" +
+                    "        globalThis.crypto = {\n" +
+                    "            getRandomValues: (arr) => {\n" +
+                    "                const buffer = wx.getRandomValues({ length: arr.length });\n" +
+                    "                arr.set(new Uint8Array(buffer));\n" +
+                    "                return arr;\n" +
+                    "            }\n" +
+                    "        };\n" +
+                    "    }\n" +
+                    "}")
+            }
+            // 兜底逻辑：填充伪随机
+            for (let i = 0; i < length; i++) {
+                bytes[i] = Math.floor(Math.random() * 256);
+            }
+        }
+        return bytes
+    }
+
+    // 强制补零，确保 Hex 长度对齐
+    const forceHex = (bytes) => {
+        return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')
+    }
+
+    // 替换 new TextEncoder().encode
+    const strToU8 = (str) => {
+        const bytes = []
+        for (let i = 0; i < str.length; i++) {
+            let code = str.charCodeAt(i)
+            if (code < 0x80) {
+                bytes.push(code)
+            } else if (code < 0x800) {
+                bytes.push(0xc0 | (code >> 6), 0x80 | (code & 0x3f))
+            } else if (code >= 0xd800 && code <= 0xdbff) {
+                if (i + 1 < str.length) {
+                    const next = str.charCodeAt(++i)
+                    const cp = 0x10000 + ((code - 0xd800) << 10) + (next - 0xdc00)
+                    bytes.push(0xf0 | (cp >> 18), 0x80 | ((cp >> 12) & 0x3f), 0x80 | ((cp >> 6) & 0x3f), 0x80 | (cp & 0x3f))
+                }
+            } else {
+                bytes.push(0xe0 | (code >> 12), 0x80 | ((code >> 6) & 0x3f), 0x80 | (code & 0x3f))
+            }
+        }
+        return new Uint8Array(bytes)
+    }
+    // 替换 new TextDecoder().decode
+    const u8ToStr = (bytes) => {
+        let str = ''
+        for (let i = 0; i < bytes.length; i++) {
+            let b1 = bytes[i]
+            if (b1 < 0x80) {
+                str += String.fromCharCode(b1)
+            } else if (b1 < 0xe0) {
+                let b2 = bytes[++i]
+                str += String.fromCharCode(((b1 & 0x1f) << 6) | (b2 & 0x3f))
+            } else if (b1 < 0xf0) {
+                let b2 = bytes[++i]
+                let b3 = bytes[++i]
+                str += String.fromCharCode(((b1 & 0x0f) << 12) | ((b2 & 0x3f) << 6) | (b3 & 0x3f))
+            } else {
+                let b2 = bytes[++i]
+                let b3 = bytes[++i]
+                let b4 = bytes[++i]
+                let cp = ((b1 & 0x07) << 18) | ((b2 & 0x3f) << 12) | ((b3 & 0x3f) << 6) | (b4 & 0x3f)
+                if (cp <= 0xffff) {
+                    str += String.fromCharCode(cp)
+                } else {
+                    cp -= 0x10000
+                    str += String.fromCharCode((cp >> 10) | 0xd800, (cp & 0x3ff) | 0xdc00)
+                }
+            }
+        }
+        return str
+    }
+
+    const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+    // Base64 编码(不依赖 btoa)
+    const bytesToBase64 = (bytes) => {
+        let base64 = ""
+        for (let i = 0; i < bytes.length; i += 3) {
+            const chunk = ((bytes[i] << 16) | (bytes[i + 1] << 8) | (bytes[i + 2] || 0)) >>> 0
+            base64 += CHARS[(chunk >> 18) & 63] + CHARS[(chunk >> 12) & 63] + CHARS[(chunk >> 6) & 63] + CHARS[chunk & 63]
+        }
+        const p = bytes.length % 3
+        if (p === 1) {
+            return base64.slice(0, -2) + "=="
+        } else if (p === 2) {
+            return base64.slice(0, -1) + "="
+        } else {
+            return base64
         }
     }
-    
-    // 内部辅助：获取公/私钥对象
-    const getPubKeyObj = (pubKey) => ec.keyFromPublic(pubKey, 'hex')
-    const getPriKeyObj = (priKey) => ec.keyFromPrivate(priKey, 'hex')
-    
+    // Base64 解码(不依赖 atob)
+    const base64ToBytes = (base64) => {
+        const lookup = new Uint8Array(256)
+        for (let i = 0; i < CHARS.length; i++) {
+            lookup[CHARS.charCodeAt(i)] = i
+        }
+
+        const buffer = base64.replace(/=/g, "")
+        const n = buffer.length
+        const bytes = new Uint8Array((n * 3) / 4)
+        for (let i = 0, j = 0; i < n; i += 4) {
+            const w1 = lookup[buffer.charCodeAt(i)]
+            const w2 = lookup[buffer.charCodeAt(i + 1)]
+            const w3 = lookup[buffer.charCodeAt(i + 2)]
+            const w4 = lookup[buffer.charCodeAt(i + 3)]
+            bytes[j++] = (w1 << 2) | (w2 >> 4)
+            if (j < bytes.length) {
+                bytes[j++] = ((w2 & 15) << 4) | (w3 >> 2)
+            }
+            if (j < bytes.length) {
+                bytes[j++] = ((w3 & 3) << 6) | w4
+            }
+        }
+        return bytes
+    }
+
+    // 生成密钥对
+    export const eccGenerateKey = () => {
+        const privateKey = randomBytes(32)
+        return {
+            priKey: forceHex(privateKey),
+            pubKey: forceHex(p256.getPublicKey(privateKey, false))
+        }
+    }
+
     // 公钥加密
-    export const eccEncrypt = (pubKey, strData) => {
-        // 1. 生成临时密钥对并推导共享密钥 (ECDH)
-        const ephemeralKey = ec.genKeyPair()
-        const sharedSecret = ephemeralKey.derive(getPubKeyObj(pubKey).getPublic()).toString(16).padStart(64, '0')
-    
-        // 2. 准备 AES 参数 (取共享密钥前 32 位作为 128 位 AES Key)
-        const aesKey = CryptoJS.enc.Hex.parse(sharedSecret.substring(0, 32))
-        const iv = CryptoJS.lib.WordArray.random(128 / 8)
-    
-        // 3. 执行 AES 加密 (默认即为 CBC + Pkcs7)
-        const encrypted = CryptoJS.AES.encrypt(strData, aesKey, { iv: iv })
-    
-        // 4. 拼接：临时公钥(130位) + IV(32位) + 密文
-        const result = ephemeralKey.getPublic(false, 'hex') + iv.toString() + encrypted.toString()
-    
-        if (hasDev) {
-            console.log(`ECC 公钥(${pubKey})加密(${strData}) -> (${result})`)
+    export const eccEncrypt = (pubKeyHex, strData) => {
+        const ephemPrivateKey = randomBytes(32)
+        const ephemPubKey = p256.getPublicKey(ephemPrivateKey, false)
+        const sharedSecret = p256.getSharedSecret(ephemPrivateKey, hexToBytes(pubKeyHex))
+        const aesKey = sharedSecret.slice(1, 17)
+        const ivBytes = randomBytes(16)
+        const textBytes = strToU8(strData)
+        const paddedBytes = aesjs.padding.pkcs7.pad(textBytes)
+        const aesCbc = new aesjs.ModeOfOperation.cbc(aesKey, ivBytes)
+        const encryptedBytes = aesCbc.encrypt(paddedBytes)
+        const ciphertextBase64 = bytesToBase64(encryptedBytes)
+        const result = forceHex(ephemPubKey) + forceHex(ivBytes) + ciphertextBase64
+        if (NOT_ONLINE) {
+            console.log(`ECC 公钥(${pubKeyHex})加密(${strData}) -> (${result})`)
         }
         return result
     }
-    
     // 私钥解密
-    export const eccDecrypt = (priKey, encryptData) => {
+    export const eccDecrypt = (priKeyHex, encryptData) => {
         if (!encryptData || encryptData.length < 162) {
             return null
         }
-    
         const ephemPubKeyHex = encryptData.substring(0, 130)
         const ivHex = encryptData.substring(130, 162)
-        const ciphertext = encryptData.substring(162)
-    
-        // 1. 推导共享密钥
-        const sharedSecret = getPriKeyObj(priKey).derive(getPubKeyObj(ephemPubKeyHex).getPublic()).toString(16).padStart(64, '0')
-    
-        // 2. 还原 AES 参数
-        const aesKey = CryptoJS.enc.Hex.parse(sharedSecret.substring(0, 32))
-        const iv = CryptoJS.enc.Hex.parse(ivHex)
-    
-        // 3. 执行解密
-        const decryptedBytes = CryptoJS.AES.decrypt(ciphertext, aesKey, { iv: iv })
-        const result = decryptedBytes.toString(CryptoJS.enc.Utf8)
-    
-        if (hasDev) {
-            console.log(`ECC 私钥(${priKey})解密(${encryptData}) -> (${result})`)
+        const ciphertextBase64 = encryptData.substring(162)
+        const sharedSecret = p256.getSharedSecret(hexToBytes(priKeyHex), hexToBytes(ephemPubKeyHex))
+        const aesKey = sharedSecret.slice(1, 17)
+        const iv = hexToBytes(ivHex)
+        const ciphertextBytes = base64ToBytes(ciphertextBase64)
+        const aesCbc = new aesjs.ModeOfOperation.cbc(aesKey, iv)
+        const decryptedBytes = aesCbc.decrypt(ciphertextBytes)
+        const unpaddedBytes = aesjs.padding.pkcs7.strip(decryptedBytes)
+        const result = u8ToStr(unpaddedBytes)
+        if (NOT_ONLINE) {
+            console.log(`ECC 私钥(${priKeyHex})解密(${encryptData}) -> (${result})`)
         }
         return result
     }
-    
-    // 私钥生成签名 (SHA256withECDSA)
-    export const eccSign = (priKey, data) => {
-        const msgHash = CryptoJS.SHA256(CryptoJS.enc.Utf8.parse(data)).toString()
-        const sign = getPriKeyObj(priKey).sign(msgHash).toDER('hex')
-        if (hasDev) {
-            console.log(`ECC 私钥(${priKey})给数据(${data})生成签名(${sign})`)
+
+    // 用私钥生成签名
+    export const eccSign = (priKeyHex, data) => {
+        const msgBytes = strToU8(data)
+        const sigBytes = p256.sign(msgBytes, hexToBytes(priKeyHex))
+        // sigBytes 是 Uint8Array(64), 前 32 位是 R, 后 32 位是 S
+        const rBytes = sigBytes.slice(0, 32)
+        const sBytes = sigBytes.slice(32, 64)
+
+        const toDerPart = (bytes) => {
+            let hex = forceHex(bytes)
+            hex = hex.replace(/^0+/, '')
+            if (hex === '' || parseInt(hex.substring(0, 2), 16) >= 0x80) {
+                hex = '00' + hex
+            }
+            if (hex.length % 2 !== 0) {
+                hex = '0' + hex
+            }
+            return hex
         }
-        return sign
-    }
-    
-    // 公钥验证签名
-    export const eccVerify = (pubKey, data, sign) => {
-        const msgHash = CryptoJS.SHA256(CryptoJS.enc.Utf8.parse(data)).toString()
-        const verify = getPubKeyObj(pubKey).verify(msgHash, sign)
-        if (hasDev) {
-            console.log(`ECC 公钥(${pubKey})给数据(${data})验签(${sign}) -> (${verify})`)
+        const rH = toDerPart(rBytes)
+        const sH = toDerPart(sBytes)
+        const rL = (rH.length / 2).toString(16).padStart(2, '0')
+        const sL = (sH.length / 2).toString(16).padStart(2, '0')
+        const totalL = (rH.length / 2 + sH.length / 2 + 4).toString(16).padStart(2, '0')
+        const signHex = `30${totalL}02${rL}${rH}02${sL}${sH}`
+        if (NOT_ONLINE) {
+            console.log(`ECC 私钥(${priKeyHex})给数据(${data})生成签名(${signHex})`)
         }
-        return verify
+        return signHex
     }
-    
+    // 用公钥验签
+    export const eccVerify = (pubKeyHex, data, signHex) => {
+        let signBytes = hexToBytes(signHex)
+        if (signBytes[0] === 0x30) {
+            const raw = new Uint8Array(64)
+            const extract = (start) => {
+                let len = signBytes[start + 1]
+                let val = signBytes.slice(start + 2, start + 2 + len)
+                if (val[0] === 0x00 && val.length > 32) val = val.slice(1)
+                const out = new Uint8Array(32)
+                out.set(val, 32 - val.length)
+                return { out, next: start + 2 + len }
+            }
+            const rPart = extract(2)
+            const sPart = extract(rPart.next)
+            raw.set(rPart.out, 0)
+            raw.set(sPart.out, 32)
+            signBytes = raw
+        }
+        try {
+            const verify = p256.verify(signBytes, strToU8(data), hexToBytes(pubKeyHex))
+            if (NOT_ONLINE) {
+                console.log(`ECC 公钥(${pubKeyHex})给数据(${data})验签(${signHex}) -> (${verify})`)
+            }
+            return verify
+        } catch (e) {
+            if (NOT_ONLINE) {
+                console.log(`ECC 公钥(${pubKeyHex})给数据(${data})验签(${signHex})异常.`, e)
+            }
+            return false
+        }
+    }
+
     // 下面是 ECC 示例
-    
-    export const eccExample = (originalData) => {
+
+    export const testEcc = () => {
         // 1. 初始化并生成密钥对
         const pair = eccGenerateKey()
         const publicKey = pair.pubKey
         const privateKey = pair.priKey
-    
+
         console.log('--- ECC ---')
         console.log('公钥:', publicKey)
         console.log('私钥:', privateKey)
-    
-        // const originalData = '{"key":"Hello ECC 中文 2026!"}'
+
+        const originalData = '{"key":"Hello ECC 中文 2026!"}'
         console.log('原文:', originalData)
-    
+
         // 公钥加密
         let start = Date.now()
         const encrypted = eccEncrypt(publicKey, originalData)
@@ -151,7 +315,7 @@ public final class EccEncrypt {
         start = Date.now()
         const decrypted = eccDecrypt(privateKey, encrypted)
         console.log(`私钥解密后: ${decrypted}, 耗时:(${Date.now() - start})`)
-    
+
         // 私钥签名
         start = Date.now()
         const sign = eccSign(privateKey, originalData)
@@ -164,22 +328,9 @@ public final class EccEncrypt {
     }
     */
 
-    /*
-    引下面的包(支持 ECC 算法的依赖). 见: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on
-    <dependency>
-        <groupId>org.bouncycastle</groupId>
-        <artifactId>bcprov-jdk18on</artifactId>
-        <version>1.83</version>
-        <scope>compile</scope>
-    </dependency>
-    */
-    static {
-        Security.addProvider(new BouncyCastleProvider());
-    }
-
     public static KeyPair generateEccKeyPair() {
         try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC", "BC");
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC");
             // 曲线名 secp256r1 [NIST P-256,X9.62 prime256v1] (1.2.840.10045.3.1.7)
             keyGen.initialize(new ECGenParameterSpec("secp256r1"));
             return keyGen.generateKeyPair();
@@ -189,26 +340,41 @@ public final class EccEncrypt {
     }
 
     public static String publicKeyToEccStr(PublicKey key) {
-        return Encrypt.binary2Hex(((BCECPublicKey) key).getQ().getEncoded(false));
+        ECPoint point = ((ECPublicKey) key).getW();
+        return "04" + toFixedHex(point.getAffineX()) + toFixedHex(point.getAffineY());
     }
     public static String privateKeyToEccStr(PrivateKey key) {
-        return String.format("%064x", ((ECPrivateKey) key).getS());
+        return toFixedHex(((ECPrivateKey) key).getS());
     }
 
     // 辅助：Hex 转 PublicKey
     private static PublicKey eccStrToPublicKey(String publicKey) throws Exception {
-        KeyFactory kf = KeyFactory.getInstance("EC", "BC");
-        ECNamedCurveParameterSpec spec = ECNamedCurveTable.getParameterSpec("secp256r1");
-        ECPublicKeySpec pubSpec = new ECPublicKeySpec(spec.getCurve().decodePoint(Hex.decode(publicKey)), spec);
+        byte[] bytes = HexFormat.of().parseHex(publicKey);
+        if (bytes.length != 65 || bytes[0] != 0x04) {
+            throw new IllegalArgumentException("ECC 公钥格式错误");
+        }
+        BigInteger x = new BigInteger(1, bytes, 1, 32);
+        BigInteger y = new BigInteger(1, bytes, 33, 32);
+        ECPublicKeySpec pubSpec = new ECPublicKeySpec(new ECPoint(x, y), getEccParameterSpec());
+        KeyFactory kf = KeyFactory.getInstance("EC");
         return kf.generatePublic(pubSpec);
     }
 
     // 辅助：Hex 转 PrivateKey
     private static PrivateKey eccStrPrivateKey(String privateKey) throws Exception {
-        KeyFactory kf = KeyFactory.getInstance("EC", "BC");
-        ECNamedCurveParameterSpec spec = ECNamedCurveTable.getParameterSpec("secp256r1");
-        ECPrivateKeySpec priSpec = new ECPrivateKeySpec(new BigInteger(privateKey, 16), spec);
+        ECPrivateKeySpec priSpec = new ECPrivateKeySpec(new BigInteger(privateKey, 16), getEccParameterSpec());
+        KeyFactory kf = KeyFactory.getInstance("EC");
         return kf.generatePrivate(priSpec);
+    }
+
+    private static ECParameterSpec getEccParameterSpec() throws Exception {
+        AlgorithmParameters parameters = AlgorithmParameters.getInstance("EC");
+        parameters.init(new ECGenParameterSpec("secp256r1"));
+        return parameters.getParameterSpec(ECParameterSpec.class);
+    }
+
+    private static String toFixedHex(BigInteger value) {
+        return String.format("%064x", value);
     }
 
 
@@ -227,14 +393,15 @@ public final class EccEncrypt {
      */
     public static String eccEncode(String publicKey, String source) {
         if (Obj.isBlank(publicKey) || source == null) {
-            throw new RuntimeException(String.format("用 ECC 基于公钥(%s)加密(%s)时数据不能为空", publicKey, source));
+            LogUtil.ROOT_LOG.error("用 ECC 基于公钥({})加密({})时数据有误", publicKey, source);
+            throw new RuntimeException(String.format("加密时数据(%s)有误", source));
         }
         try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC", "BC");
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC");
             keyGen.initialize(new ECGenParameterSpec("secp256r1"));
             KeyPair kp = keyGen.generateKeyPair();
 
-            KeyAgreement ka = KeyAgreement.getInstance("ECDH", "BC");
+            KeyAgreement ka = KeyAgreement.getInstance("ECDH");
             ka.init(kp.getPrivate());
             ka.doPhase(eccStrToPublicKey(publicKey), true);
             byte[] sharedSecret = ka.generateSecret();
@@ -246,12 +413,13 @@ public final class EccEncrypt {
             cipher.init(Cipher.ENCRYPT_MODE, aesKey, new IvParameterSpec(iv));
             byte[] cipherBytes = cipher.doFinal(source.getBytes(StandardCharsets.UTF_8));
 
-            String ephemPub = Hex.toHexString(((BCECPublicKey) kp.getPublic()).getQ().getEncoded(false));
-            String ivHex = Hex.toHexString(iv);
+            String ephemPub = publicKeyToEccStr(kp.getPublic());
+            String ivHex = HexFormat.of().formatHex(iv);
             String ciphertext = Base64.getEncoder().encodeToString(cipherBytes);
             return ephemPub + ivHex + ciphertext;
         } catch (Exception e) {
-            throw new RuntimeException(String.format("用 ECC 基于公钥(%s)加密(%s)时异常", publicKey, source), e);
+            LogUtil.ROOT_LOG.error("用 ECC 基于公钥({})加密({})时异常", publicKey, source);
+            throw new RuntimeException(String.format("加密(%s)时异常", source), e);
         }
     }
     /**
@@ -268,11 +436,10 @@ public final class EccEncrypt {
      * @return 原文
      */
     public static String eccDecode(String privateKey, String encryptData) {
-        if (Obj.isBlank(privateKey) || Obj.isBlank(encryptData)) {
-            throw new RuntimeException(String.format("用 ECC 基于私钥(%s)解密(%s)时数据不能为空", privateKey, encryptData));
-        }
-        if (encryptData.length() < 162) {
-            throw new RuntimeException(String.format("用 ECC 基于解密(%s)时长度不足", encryptData));
+        if (Obj.isBlank(privateKey) || Obj.isBlank(encryptData) || encryptData.length() < 162) {
+            LogUtil.ROOT_LOG.error("用 ECC 基于私钥({})解密({})时数据有误",
+                    Obj.foggyValue(privateKey, 12, 4), encryptData);
+            throw new RuntimeException(String.format("解密(%s)时数据有误", encryptData));
         }
 
         try {
@@ -280,17 +447,19 @@ public final class EccEncrypt {
             String ivHex = encryptData.substring(130, 162);
             String ciphertext = encryptData.substring(162);
 
-            KeyAgreement ka = KeyAgreement.getInstance("ECDH", "BC");
+            KeyAgreement ka = KeyAgreement.getInstance("ECDH");
             ka.init(eccStrPrivateKey(privateKey));
             ka.doPhase(eccStrToPublicKey(ephemPub), true);
             byte[] sharedSecret = ka.generateSecret();
 
             SecretKeySpec aesKey = new SecretKeySpec(sharedSecret, 0, 16, "AES");
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            cipher.init(Cipher.DECRYPT_MODE, aesKey, new IvParameterSpec(Hex.decode(ivHex)));
+            cipher.init(Cipher.DECRYPT_MODE, aesKey, new IvParameterSpec(HexFormat.of().parseHex(ivHex)));
             return new String(cipher.doFinal(Base64.getDecoder().decode(ciphertext)), StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("用 ECC 基于私钥(%s)解密(%s)时异常", privateKey, encryptData), e);
+            LogUtil.ROOT_LOG.error("用 ECC 基于私钥({})解密({})时异常",
+                    Obj.foggyValue(privateKey, 12, 4), encryptData);
+            throw new RuntimeException(String.format("解密(%s)时异常", encryptData), e);
         }
     }
 
@@ -309,15 +478,19 @@ public final class EccEncrypt {
      */
     public static String eccSign(String privateKey, String source) {
         if (Obj.isBlank(privateKey) || source == null) {
-            throw new RuntimeException(String.format("用 ECC 基于私钥(%s)生成验签时数据(%s)不能为空", privateKey, source));
+            LogUtil.ROOT_LOG.error("用 ECC 基于私钥({})生成验签时数据({})有误",
+                    Obj.foggyValue(privateKey, 12, 4), source);
+            throw new RuntimeException("生成验签时数据有误");
         }
         try {
-            Signature s = Signature.getInstance("SHA256withECDSA", "BC");
+            Signature s = Signature.getInstance("SHA256withECDSA");
             s.initSign(eccStrPrivateKey(privateKey));
             s.update(source.getBytes(StandardCharsets.UTF_8));
-            return Hex.toHexString(s.sign());
+            return HexFormat.of().formatHex(s.sign());
         } catch (Exception e) {
-            throw new RuntimeException(String.format("用 ECC 基于私钥(%s)给(%s)生成验签时异常", privateKey, source), e);
+            LogUtil.ROOT_LOG.error("用 ECC 基于私钥({})生成验签时({})异常",
+                    Obj.foggyValue(privateKey, 12, 4), source);
+            throw new RuntimeException("生成验签时异常", e);
         }
     }
     /**
@@ -339,10 +512,10 @@ public final class EccEncrypt {
             return false;
         }
         try {
-            Signature s = Signature.getInstance("SHA256withECDSA", "BC");
+            Signature s = Signature.getInstance("SHA256withECDSA");
             s.initVerify(eccStrToPublicKey(publicKey));
             s.update(source.getBytes(StandardCharsets.UTF_8));
-            return s.verify(Hex.decode(sign));
+            return s.verify(HexFormat.of().parseHex(sign));
         } catch (Exception e) {
             return false;
         }
