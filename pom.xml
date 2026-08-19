@@ -310,7 +310,7 @@
             </dependency>
 
             <dependency>
-                <groupId>com.github.liuanxin</groupId>
+                <groupId>io.github.liuanxin</groupId>
                 <artifactId>api-document</artifactId>
                 <version>${api-document.version}</version>
             </dependency>
