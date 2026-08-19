@@ -83,20 +83,21 @@ public final class CaptchaSvgUtil {
                 .append("\" height=\"").append(imageHeight).append("\">");
         svg.append("<rect width=\"").append(imageWidth).append("\" height=\"").append(imageHeight)
                 .append("\" fill=\"").append(bg).append("\"/>");
-        svg.append("<text x=\"10\" y=\"").append(Math.max(16, PROMPT_AREA_HEIGHT * 21 / 32))
-                .append("\" font-size=\"13\" fill=\"").append(secondary).append("\">请依次点击</text>");
+        svg.append("<text x=\"6\" y=\"").append(Math.max(14, PROMPT_AREA_HEIGHT * 20 / 32))
+                .append("\" font-size=\"10\" fill=\"").append(secondary).append("\">请在下方依次点击</text>");
         int promptFont = Math.max(14, Math.min(18, promptBottom - 8));
-        int slot = promptFont + 6;
-        int startX = imageWidth - 8 - targetChars.size() * slot;
+        int slot = promptFont + 4;
+        int startX = imageWidth - 6 - targetChars.size() * slot;
         for (int i = 0; i < targetChars.size(); i++) {
             int cx = startX + i * slot + slot / 2;
             int cy = promptBottom / 2;
             int rotate = Obj.RANDOM.nextInt(31) - 15;
-            // 用左缘坐标代替 text-anchor=middle, 省属性
             int tx = cx - promptFont / 2;
             int ty = cy + promptFont / 3;
             svg.append("<text x=\"").append(tx).append("\" y=\"").append(ty)
-                    .append("\" fill=\"").append(primary).append("\" font-size=\"").append(promptFont).append('"');
+                    .append("\" fill=\"").append(primary)
+                    .append("\" font-size=\"").append(promptFont)
+                    .append("\" font-weight=\"700\"");
             if (rotate != 0) {
                 svg.append(" transform=\"rotate(").append(rotate).append(' ').append(cx).append(' ').append(cy).append(")\"");
             }

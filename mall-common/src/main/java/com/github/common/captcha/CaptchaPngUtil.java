@@ -90,14 +90,14 @@ public final class CaptchaPngUtil {
             g.fillRect(0, 0, imageWidth, imageHeight);
 
             g.setColor(secondary);
-            g.setFont(glyphFont(13));
-            g.drawString("请依次点击", 10, Math.max(16, PROMPT_AREA_HEIGHT * 21 / 32));
+            g.setFont(glyphFont(10));
+            g.drawString("请在下方依次点击", 6, Math.max(14, PROMPT_AREA_HEIGHT * 20 / 32));
             g.setColor(primary);
             int promptFont = Math.max(14, Math.min(18, promptBottom - 8));
-            g.setFont(glyphFont(promptFont));
+            g.setFont(glyphFont(promptFont).deriveFont(Font.BOLD));
             FontMetrics pfm = g.getFontMetrics();
-            int slot = promptFont + 6;
-            int startX = imageWidth - 8 - targetChars.size() * slot;
+            int slot = promptFont + 4;
+            int startX = imageWidth - 6 - targetChars.size() * slot;
             for (int i = 0; i < targetChars.size(); i++) {
                 String ch = targetChars.get(i);
                 int cx = startX + i * slot + slot / 2;

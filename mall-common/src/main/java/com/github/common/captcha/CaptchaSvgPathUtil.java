@@ -8,14 +8,16 @@ import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 中文点选验证码(单张 SVG Path 化).
- * 布局: 上方提示区 + 下方点击区; 全部字形输出为 path, 不含 text/transform.
+ * 布局: 上方提示区(明文提示) + 下方点击区(字形 Path 化).
  * 需服务器有真实中文字体; 无可用字体时由 CaptchaHandler 降级 CaptchaSvgUtil(客户端渲染).
  */
 @SuppressWarnings("DuplicatedCode")
@@ -43,6 +45,12 @@ public final class CaptchaSvgPathUtil {
 
     /** 启动时探测本机可显示中文的字体族(不含 Dialog/DejaVu 等伪支持) */
     private static final List<String> GLYPH_FONT_FAMILIES = resolveGlyphFontFamilies();
+    private static final FontRenderContext FONT_RENDER_CONTEXT = new FontRenderContext(null, true, true);
+    /** Font / 未变形轮廓缓存, 避免每次 new Font 与重复矢量轮廓 */
+    private static final ConcurrentHashMap<String, Font> FONT_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Shape> OUTLINE_CACHE = new ConcurrentHashMap<>();
+    /** Path 展平精度: 越大段越少越快, 验证码观感仍可接受 */
+    private static final double PATH_FLATNESS = 0.75;
     /** 当前字体可显示的干扰字池 / 同类字池 / 数字白名单 */
     private static final String RENDERABLE_NOISE_POOL;
     private static final List<String> RENDERABLE_GROUPS;
@@ -53,7 +61,6 @@ public final class CaptchaSvgPathUtil {
         RENDERABLE_GROUPS = CaptchaChars.filterGroups(font);
         RENDERABLE_NUMBER_TRIPLETS = CaptchaChars.filterNumberTriplets(font);
     }
-    private static final FontRenderContext FONT_RENDER_CONTEXT = new FontRenderContext(null, true, true);
 
     private CaptchaSvgPathUtil() {
     }
@@ -81,8 +88,6 @@ public final class CaptchaSvgPathUtil {
         int clickHeight = imageHeight - promptBottom;
 
         List<SvgPath> pathList = new ArrayList<>();
-        // 固定文案「请依次点击」不含秘密, 图内画提示目标字(与点击区同字但独立形变, 禁止复用 path)
-        appendPromptGlyphPaths(pathList, targetChars, theme, imageWidth, promptBottom);
         // 点击区: targetCount 目标 + noiseCount 干扰(个数均已随机); 前端会把图拉伸到容器宽, 字号偏小一档显示才合适
         List<CaptchaRecord.Glyph> glyphList = new ArrayList<>();
         int totalGlyphCount = targetChars.size() + noiseChars.size();
@@ -109,7 +114,8 @@ public final class CaptchaSvgPathUtil {
         pathList.add(buildDividerPath(imageWidth, promptBottom, theme));
 
         Collections.shuffle(pathList, Obj.RANDOM);
-        String svgText = buildSvgDocument(imageWidth, imageHeight, theme, pathList);
+        // 提示目标字用明文 text(不变形), 避免与下方点击区混淆; 也少做几次 outline
+        String svgText = buildSvgDocument(imageWidth, imageHeight, theme, pathList, targetChars, promptBottom);
         if (LogUtil.ROOT_LOG.isDebugEnabled()) {
             LogUtil.ROOT_LOG.debug("生成的 svg({})", svgText);
         }
@@ -189,8 +195,7 @@ public final class CaptchaSvgPathUtil {
             float strokeWidth,
             String strokeColor
     ) {
-        GlyphVector gv = font.createGlyphVector(FONT_RENDER_CONTEXT, value);
-        Shape outline = gv.getOutline();
+        Shape outline = cachedOutline(font, value);
         Rectangle2D bounds = outline.getBounds2D();
         if (bounds.getWidth() <= 0 || bounds.getHeight() <= 0) {
             return new GlyphBuild(null, List.of());
@@ -202,7 +207,7 @@ public final class CaptchaSvgPathUtil {
         at.scale(scaleX, scaleY);
         at.translate(-bounds.getCenterX(), -bounds.getCenterY());
 
-        List<String> dList = pathIteratorToDList(outline.getPathIterator(at));
+        List<String> dList = pathIteratorToDList(outline.getPathIterator(at, PATH_FLATNESS));
         List<SvgPath> paths = new ArrayList<>(1);
         // 单字全部轮廓并成一条 path: evenodd 挖孔仍然正确, 且少重复 fill/stroke 属性
         StringBuilder merged = new StringBuilder(256);
@@ -420,7 +425,10 @@ public final class CaptchaSvgPathUtil {
         return new SvgPath(d, "none", 1f, theme.dividerColor());
     }
 
-    private static String buildSvgDocument(int width, int height, CaptchaTheme theme, List<SvgPath> pathList) {
+    private static String buildSvgDocument(
+            int width, int height, CaptchaTheme theme, List<SvgPath> pathList,
+            List<String> promptTargets, int promptBottom
+    ) {
         StringBuilder svg = new StringBuilder(Math.max(4096, pathList.size() * 140));
         // fill-rule 写在根节点由子元素继承, 保证孔洞轮廓正确挖空且不依赖轮廓方向
         svg.append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"").append(width)
@@ -429,10 +437,37 @@ public final class CaptchaSvgPathUtil {
                 .append("\" fill-rule=\"evenodd\">");
         svg.append("<rect width=\"").append(width).append("\" height=\"").append(height)
                 .append("\" fill=\"").append(theme.bgColor()).append("\"/>");
-        // 固定公开文案不含秘密, 用 text 节点即可, 比 Path 化省 2KB 左右
-        svg.append("<text x=\"10\" y=\"").append(Math.max(16, PROMPT_AREA_HEIGHT * 21 / 32))
-                .append("\" font-size=\"13\" fill=\"")
-                .append(theme.secondaryColor()).append("\">请依次点击</text>");
+        // 提示文案用小字; 目标字明文 + 轻旋转, 与下方 Path 点击区仍能区分
+        int promptBaseY = Math.max(14, PROMPT_AREA_HEIGHT * 20 / 32);
+        svg.append("<text x=\"6\" y=\"").append(promptBaseY)
+                .append("\" font-size=\"10\" fill=\"")
+                .append(theme.secondaryColor()).append("\">请在下方依次点击</text>");
+        if (Arr.isNotEmpty(promptTargets)) {
+            int promptFont = Math.max(14, Math.min(18, promptBottom - 8));
+            double rightPad = 6;
+            // 左侧小字约占 90px, 其余给目标字
+            double maxBlockW = Math.max(40, width - 90 - rightPad);
+            double slotW = Math.min(promptFont + 4, maxBlockW / promptTargets.size());
+            promptFont = (int) Math.max(12, Math.min(promptFont, slotW - 1));
+            double blockW = promptTargets.size() * slotW;
+            double startX = width - rightPad - blockW;
+            double cy = promptBottom / 2.0;
+            for (int i = 0; i < promptTargets.size(); i++) {
+                double cx = startX + (i + 0.5) * slotW;
+                int rotate = randomInRange(-15, 15);
+                int tx = (int) Math.round(cx - promptFont / 2.0);
+                int ty = (int) Math.round(cy + promptFont * 0.35);
+                svg.append("<text x=\"").append(tx).append("\" y=\"").append(ty)
+                        .append("\" font-size=\"").append(promptFont)
+                        .append("\" font-weight=\"700\" fill=\"")
+                        .append(theme.primaryColor()).append('"');
+                if (rotate != 0) {
+                    svg.append(" transform=\"rotate(").append(rotate).append(' ')
+                            .append(Math.round(cx)).append(' ').append(Math.round(cy)).append(")\"");
+                }
+                svg.append('>').append(escapeXml(promptTargets.get(i))).append("</text>");
+            }
+        }
         for (SvgPath path : pathList) {
             svg.append("<path d=\"").append(path.d()).append('"');
             svg.append(" fill=\"").append(path.fill()).append('"');
@@ -448,6 +483,16 @@ public final class CaptchaSvgPathUtil {
         }
         svg.append("</svg>");
         return svg.toString();
+    }
+
+    private static String escapeXml(String value) {
+        if (Obj.isBlank(value)) {
+            return "";
+        }
+        return value.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
     }
 
     private static String randomGlyphColor(CaptchaTheme theme) {
@@ -595,16 +640,28 @@ public final class CaptchaSvgPathUtil {
     }
 
     private static Font pickFont(int size, boolean preferAlternate) {
+        String family;
         if (Arr.isEmpty(GLYPH_FONT_FAMILIES)) {
-            return new Font(Font.DIALOG, Font.PLAIN, size);
+            family = Font.DIALOG;
+        } else {
+            int idx = 0;
+            if (preferAlternate && GLYPH_FONT_FAMILIES.size() > 1) {
+                idx = 1 + Obj.RANDOM.nextInt(GLYPH_FONT_FAMILIES.size() - 1);
+            } else if (GLYPH_FONT_FAMILIES.size() > 1 && Obj.RANDOM.nextBoolean()) {
+                idx = Obj.RANDOM.nextInt(GLYPH_FONT_FAMILIES.size());
+            }
+            family = GLYPH_FONT_FAMILIES.get(idx);
         }
-        int idx = 0;
-        if (preferAlternate && GLYPH_FONT_FAMILIES.size() > 1) {
-            idx = 1 + Obj.RANDOM.nextInt(GLYPH_FONT_FAMILIES.size() - 1);
-        } else if (GLYPH_FONT_FAMILIES.size() > 1 && Obj.RANDOM.nextBoolean()) {
-            idx = Obj.RANDOM.nextInt(GLYPH_FONT_FAMILIES.size());
-        }
-        return new Font(GLYPH_FONT_FAMILIES.get(idx), Font.PLAIN, size);
+        String key = family + "|" + size;
+        return FONT_CACHE.computeIfAbsent(key, k -> new Font(family, Font.PLAIN, size));
+    }
+
+    private static Shape cachedOutline(Font font, String value) {
+        String key = font.getName() + "|" + font.getSize() + "|" + value;
+        return OUTLINE_CACHE.computeIfAbsent(key, k -> {
+            GlyphVector gv = font.createGlyphVector(FONT_RENDER_CONTEXT, value);
+            return new GeneralPath(gv.getOutline());
+        });
     }
 
     private static List<String> resolveGlyphFontFamilies() {

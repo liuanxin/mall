@@ -26,8 +26,11 @@ public class CaptchaRes {
     @ApiReturn("需要点击的目标字数")
     private Integer count;
 
+    @ApiReturn("上方提示区高度(像素), 仅允许点击此线以下")
+    private Integer promptHeight;
+
     public static CaptchaRes assembly(String id, CaptchaRecord.Build build) {
         return new CaptchaRes(id, build.image(), build.width(), build.height(),
-                build.challenge().targetChars().size());
+                build.challenge().targetChars().size(), build.challenge().clickAreaTop());
     }
 }
