@@ -610,7 +610,8 @@ public final class CaptchaSvgPathUtil {
     private static List<String> resolveGlyphFontFamilies() {
         List<String> resolved = new ArrayList<>();
         final String probe = "验证码春夏秋";
-        // 仅真实 CJK; 不含 Dialog/DejaVu/Nimbus 等(canDisplay 可能撒谎或轮廓是方框)
+        // 仅真实 CJK; 不含 Dialog/DejaVu/Nimbus 等(canDisplay 可能撒谎或轮廓是方框).
+        // 最小安装(装完需重启 JVM): yum install -y wqy-microhei-fonts / apt install -y fonts-wqy-microhei
         String[] candidates = {
                 "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei",
                 "WenQuanYi Zen Hei", "WenQuanYi Micro Hei", "PingFang SC",
