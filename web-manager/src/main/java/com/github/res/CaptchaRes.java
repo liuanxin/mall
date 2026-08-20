@@ -1,6 +1,6 @@
 package com.github.res;
 
-import com.github.common.captcha.CaptchaRecord;
+import com.github.common.captcha.Captcha;
 import com.github.liuanxin.api.annotation.ApiReturn;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,7 +29,7 @@ public class CaptchaRes {
     @ApiReturn("上方提示区高度(像素), 仅允许点击此线以下")
     private Integer promptHeight;
 
-    public static CaptchaRes assembly(String id, CaptchaRecord.Build build) {
+    public static CaptchaRes assembly(String id, Captcha.Build build) {
         return new CaptchaRes(id, build.image(), build.width(), build.height(),
                 build.challenge().targetChars().size(), build.challenge().clickAreaTop());
     }

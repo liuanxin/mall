@@ -1,7 +1,7 @@
 package com.github.web;
 
 import com.github.common.annotation.NotNeedLogin;
-import com.github.common.captcha.CaptchaRecord;
+import com.github.common.captcha.Captcha;
 import com.github.common.constant.CommonConst;
 import com.github.common.json.JsonResult;
 import com.github.common.util.Obj;
@@ -39,17 +39,18 @@ public class ManagerCommonController {
                 JsonResult.success("枚举信息", ManagerDataCollectUtil.singleEnumInfo(type));
     }
 
-    /** width/height/dark 可选; dark=1|true|on 时深色主题, 否则浅色; image 为完整 data URI */
+    /** width/height/dark/png 可选; dark=1|true|on 深色; png=true 出 PNG, 默认 SVG */
     @ApiMethod(value = "验证码", index = 1)
     @NotNeedLogin
     @GetMapping("/captcha")
     public JsonResult<CaptchaRes> captcha(
             @RequestParam(required = false) String width,
             @RequestParam(required = false) String height,
-            @RequestParam(required = false) String dark
+            @RequestParam(required = false) String dark,
+            @RequestParam(required = false) String png
     ) {
         String id = Obj.uuid16();
-        CaptchaRecord.Build build = captchaHandler.saveChallenge(id, width, height, dark);
+        Captcha.Build build = captchaHandler.saveChallenge(id, width, height, dark, png);
         return JsonResult.success("验证码", CaptchaRes.assembly(id, build));
     }
 

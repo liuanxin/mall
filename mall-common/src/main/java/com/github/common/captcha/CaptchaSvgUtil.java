@@ -1,10 +1,8 @@
 package com.github.common.captcha;
 
-import com.github.common.util.Arr;
 import com.github.common.util.Obj;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -13,45 +11,25 @@ import java.util.Locale;
  * 布局: 上方提示区 + 下方点击区.
  */
 @SuppressWarnings("DuplicatedCode")
-public final class CaptchaSvgUtil {
-
-    /** GET /captcha 未传 width 时的默认像素 */
-    public static final int DEFAULT_CAPTCHA_WIDTH = 224;
-    /** GET /captcha 未传 height 时的默认像素(含提示区) */
-    public static final int DEFAULT_CAPTCHA_HEIGHT = 88;
-    /** 提示区高度(像素), 与前端约定: 仅允许点击此线以下 */
-    public static final int PROMPT_AREA_HEIGHT = 32;
-    private static final int CAPTCHA_WIDTH_MIN = 200;
-    private static final int CAPTCHA_WIDTH_MAX = 400;
-    private static final int CAPTCHA_HEIGHT_MIN = 72;
-    private static final int CAPTCHA_HEIGHT_MAX = 140;
-    public static final int TARGET_COUNT_MIN = CaptchaChars.TARGET_COUNT_MIN;
-    public static final int TARGET_COUNT_MAX = CaptchaChars.TARGET_COUNT_MAX;
-    private static final int NOISE_COUNT_MIN = 2;
-    private static final int GLYPH_TOTAL_MAX = 7;
-    private static final int DEFAULT_CLICK_TOLERANCE_PX = 12;
-
-    private CaptchaSvgUtil() {
-    }
+public class CaptchaSvgUtil {
 
     /**
      * @param dark 可选, 为 1/true/on(忽略大小写) 时使用深色主题; 否则浅色
      */
-    public static CaptchaRecord.Build buildClickCaptcha(String width, String height, String dark) {
-        int imageWidth = resolveSize(width, DEFAULT_CAPTCHA_WIDTH, CAPTCHA_WIDTH_MIN, CAPTCHA_WIDTH_MAX);
-        int imageHeight = resolveSize(height, DEFAULT_CAPTCHA_HEIGHT, CAPTCHA_HEIGHT_MIN, CAPTCHA_HEIGHT_MAX);
+    public static Captcha.Build buildClickCaptcha(String width, String height, String dark) {
+        int imageWidth = Captcha.resolveWidth(width);
+        int imageHeight = Captcha.resolveHeight(height);
         boolean darkBg = Obj.toBool(dark);
 
-        int targetCount = TARGET_COUNT_MIN + Obj.RANDOM.nextInt(TARGET_COUNT_MAX - TARGET_COUNT_MIN + 1);
-        int noiseCount = NOISE_COUNT_MIN + Obj.RANDOM.nextInt(GLYPH_TOTAL_MAX - targetCount - NOISE_COUNT_MIN + 1);
-        List<String> targetChars = CaptchaChars.pickTargets(targetCount);
-        List<String> noiseChars = CaptchaChars.pickNoise(targetChars, noiseCount);
+        int targetCount = Captcha.randomTargetCount();
+        int noiseCount = Captcha.randomNoiseCount(targetCount);
+        List<String> targetChars = Captcha.pickTargets(targetCount);
+        List<String> noiseChars = Captcha.pickNoise(targetChars, noiseCount);
 
-        // 提示区高度固定, 与前端 CAPTCHA_PROMPT_AREA_HEIGHT 保持一致
-        int promptBottom = Math.min(PROMPT_AREA_HEIGHT, Math.max(24, imageHeight - 40));
+        int promptBottom = Captcha.promptBottom(imageHeight);
         int clickHeight = imageHeight - promptBottom;
         int clickFontSize = Math.max(15, Math.min(20, clickHeight / 3));
-        List<CaptchaRecord.Point> points = randomPoints(imageWidth, clickHeight, clickFontSize, targetChars.size() + noiseChars.size());
+        List<Captcha.Point> points = Captcha.randomPoints(imageWidth, clickHeight, clickFontSize, targetChars.size() + noiseChars.size());
 
         // light/dark 模式下底色略随机(3 位 hex 更短)
         String bg = darkBg ? randomHex(0.06, 0.18, 0.02, 0.16) : randomHex(0.92, 0.99, 0.02, 0.14);
@@ -59,18 +37,18 @@ public final class CaptchaSvgUtil {
         String secondary = darkBg ? "#aaa" : "#678";
         String divider = darkBg ? "#444" : "#cde";
 
-        List<CaptchaRecord.Glyph> glyphList = new ArrayList<>();
+        List<Captcha.Glyph> glyphList = new ArrayList<>();
         StringBuilder body = new StringBuilder(1024);
         int idx = 0;
         for (int i = 0; i < targetChars.size(); i++) {
-            CaptchaRecord.Point p = points.get(idx++);
+            Captcha.Point p = points.get(idx++);
             GlyphPaint paint = paintGlyph(targetChars.get(i), p.x(), p.y() + promptBottom, true, i,
                     clickFontSize, imageWidth, promptBottom, imageHeight, darkBg, bg);
             glyphList.add(paint.glyph());
             appendText(body, paint);
         }
         for (String noise : noiseChars) {
-            CaptchaRecord.Point p = points.get(idx++);
+            Captcha.Point p = points.get(idx++);
             GlyphPaint paint = paintGlyph(noise, p.x(), p.y() + promptBottom, false, -1,
                     clickFontSize, imageWidth, promptBottom, imageHeight, darkBg, bg);
             glyphList.add(paint.glyph());
@@ -83,7 +61,7 @@ public final class CaptchaSvgUtil {
                 .append("\" height=\"").append(imageHeight).append("\">");
         svg.append("<rect width=\"").append(imageWidth).append("\" height=\"").append(imageHeight)
                 .append("\" fill=\"").append(bg).append("\"/>");
-        svg.append("<text x=\"6\" y=\"").append(Math.max(14, PROMPT_AREA_HEIGHT * 20 / 32))
+        svg.append("<text x=\"6\" y=\"").append(Math.max(14, Captcha.PROMPT_AREA_HEIGHT * 20 / 32))
                 .append("\" font-size=\"10\" fill=\"").append(secondary).append("\">请在下方依次点击</text>");
         int promptFont = Math.max(14, Math.min(18, promptBottom - 8));
         int slot = promptFont + 4;
@@ -109,8 +87,8 @@ public final class CaptchaSvgUtil {
         svg.append(body).append("</svg>");
 
         String dataUri = "data:image/svg+xml," + encodeSvgDataUri(svg.toString());
-        return new CaptchaRecord.Build(dataUri, imageWidth, imageHeight,
-                new CaptchaRecord.Challenge(targetChars, glyphList, imageWidth, imageHeight, promptBottom));
+        return new Captcha.Build(dataUri, imageWidth, imageHeight,
+                new Captcha.Challenge(targetChars, glyphList, imageWidth, imageHeight, promptBottom));
     }
 
     private static GlyphPaint paintGlyph(
@@ -124,7 +102,7 @@ public final class CaptchaSvgUtil {
         String raw = darkBg ? randomHex(0.72, 1.0, 0.05, 0.55) : randomHex(0.18, 0.62, 0.22, 0.82);
         String fill = blendHex(raw, bg, opacity);
         int radius = Math.max(10, fontSize / 2 + 4);
-        CaptchaRecord.Glyph glyph = new CaptchaRecord.Glyph(value,
+        Captcha.Glyph glyph = new Captcha.Glyph(value,
                 Math.min(imageWidth - 4, Math.max(4, cx)),
                 Math.min(imageHeight - 4, Math.max(clickTop + 4, cy)),
                 radius, target, targetOrder);
@@ -212,91 +190,53 @@ public final class CaptchaSvgUtil {
         return src.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
-    /**
-     * 解析 URL 中的宽高: 未传或非法则用默认值, 否则夹在 min~max 防止过大图拖垮服务.
-     */
-    private static int resolveSize(String param, int defaultPx, int minPx, int maxPx) {
-        if (Obj.isBlank(param)) {
-            return defaultPx;
-        }
-        int v = Obj.toInt(param);
-        if (v <= 0) {
-            return defaultPx;
-        }
-        return Math.min(maxPx, Math.max(minPx, v));
-    }
 
 
-    /**
-     * 每个字独占一段水平区间并在区间内抖动, 避免纯随机失败后降级成「忽略间距」导致叠字.
-     */
-    private static List<CaptchaRecord.Point> randomPoints(int width, int height, int fontSize, int count) {
-        int padX = Math.min(fontSize + 14, Math.max(10, width / 5));
-        int padY = Math.min(fontSize / 2 + 6, Math.max(8, height / 3));
-        int innerW = Math.max(1, width - padX * 2);
-        int innerH = Math.max(1, height - padY * 2);
-        List<CaptchaRecord.Point> list = new ArrayList<>(count);
-        List<Integer> slots = new ArrayList<>(count);
-        for (int i = 0; i < count; i++) {
-            slots.add(i);
-        }
-        Collections.shuffle(slots, Obj.RANDOM);
-        double cellW = innerW / (double) count;
-        for (int i = 0; i < count; i++) {
-            int slot = slots.get(i);
-            int x = (int) Math.round(padX + (slot + 0.5) * cellW);
-            int y = padY + Obj.RANDOM.nextInt(innerH);
-            list.add(new CaptchaRecord.Point(Math.min(width - padX - 1, Math.max(padX, x)), y));
-        }
-        return list;
-    }
+    private static final class GlyphPaint {
+        private final Captcha.Glyph glyph;
+        private final String value;
+        private final int cx;
+        private final int cy;
+        private final String fill;
+        private final int fontSize;
+        private final int rotate;
 
-    public static boolean verifyClick(CaptchaRecord.Challenge challenge, List<CaptchaRecord.PointInput> points, Integer tolerancePx) {
-        if (challenge == null || Arr.isEmpty(points) || Arr.isEmpty(challenge.targetChars())) {
-            return false;
+        private GlyphPaint(Captcha.Glyph glyph, String value, int cx, int cy, String fill, int fontSize, int rotate) {
+            this.glyph = glyph;
+            this.value = value;
+            this.cx = cx;
+            this.cy = cy;
+            this.fill = fill;
+            this.fontSize = fontSize;
+            this.rotate = rotate;
         }
-        int targetCount = challenge.targetChars().size();
-        if (points.size() != targetCount) {
-            return false;
-        }
-        int tolerance = Obj.toInt(tolerancePx, DEFAULT_CLICK_TOLERANCE_PX);
-        if (tolerance <= 0) {
-            tolerance = DEFAULT_CLICK_TOLERANCE_PX;
-        }
-        int clickTop = challenge.clickAreaTop() > 0 ? challenge.clickAreaTop() : PROMPT_AREA_HEIGHT;
-        for (int i = 0; i < targetCount; i++) {
-            CaptchaRecord.PointInput pointInput = points.get(i);
-            if (pointInput == null || pointInput.x() < 0 || pointInput.x() > 1
-                    || pointInput.y() < 0 || pointInput.y() > 1) {
-                return false;
-            }
-            int px = (int) Math.round(pointInput.x() * challenge.width());
-            int py = (int) Math.round(pointInput.y() * challenge.height());
-            if (py < clickTop) {
-                return false;
-            }
-            CaptchaRecord.Glyph targetGlyph = null;
-            for (CaptchaRecord.Glyph glyph : challenge.glyphList()) {
-                if (glyph.target() && glyph.targetOrder() == i) {
-                    targetGlyph = glyph;
-                    break;
-                }
-            }
-            if (targetGlyph == null) {
-                return false;
-            }
-            int radius = Math.max(targetGlyph.radius() + Math.min(4, tolerance / 3), tolerance);
-            int dx = targetGlyph.x() - px;
-            int dy = targetGlyph.y() - py;
-            if (dx * dx + dy * dy > radius * radius) {
-                return false;
-            }
-        }
-        return true;
-    }
 
-    private record GlyphPaint(
-            CaptchaRecord.Glyph glyph, String value, int cx, int cy, String fill, int fontSize, int rotate
-    ) {
+        private Captcha.Glyph glyph() {
+            return glyph;
+        }
+
+        private String value() {
+            return value;
+        }
+
+        private int cx() {
+            return cx;
+        }
+
+        private int cy() {
+            return cy;
+        }
+
+        private String fill() {
+            return fill;
+        }
+
+        private int fontSize() {
+            return fontSize;
+        }
+
+        private int rotate() {
+            return rotate;
+        }
     }
 }

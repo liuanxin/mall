@@ -21,81 +21,38 @@ import java.util.concurrent.ConcurrentHashMap;
  * 需服务器有真实中文字体; 无可用字体时由 CaptchaHandler 降级 CaptchaSvgUtil(客户端渲染).
  */
 @SuppressWarnings("DuplicatedCode")
-public final class CaptchaSvgPathUtil {
+public class CaptchaSvgPathUtil {
 
-    /** GET /captcha 未传 width 时的默认像素 */
-    public static final int DEFAULT_CAPTCHA_WIDTH = 224;
-    private static final int CAPTCHA_WIDTH_MIN = 200;
-    private static final int CAPTCHA_WIDTH_MAX = 400;
-    /** GET /captcha 未传 height 时的默认像素(含提示区) */
-    public static final int DEFAULT_CAPTCHA_HEIGHT = 88;
-    private static final int CAPTCHA_HEIGHT_MIN = 72;
-    private static final int CAPTCHA_HEIGHT_MAX = 140;
-    /** 提示区高度(像素), 与前端约定: 仅允许点击此线以下 */
-    public static final int PROMPT_AREA_HEIGHT = 32;
-
-    /** 目标字数每次在 [MIN, MAX] 随机; 数字白名单是 3 字条目, 目标数不为 3 时数字类自动不参与 */
-    public static final int TARGET_COUNT_MIN = CaptchaChars.TARGET_COUNT_MIN;
-    public static final int TARGET_COUNT_MAX = CaptchaChars.TARGET_COUNT_MAX;
-    /** 干扰字数每次随机, 下限保底混淆, 上限受总字形数约束 */
-    private static final int NOISE_COUNT_MIN = 2;
-    /** 点击区总字形数(目标+干扰)上限, 默认 224 宽下超过 7 个会开始拥挤 */
-    private static final int GLYPH_TOTAL_MAX = 7;
-    private static final int DEFAULT_CLICK_TOLERANCE_PX = 12;
-
-    /** 启动时探测本机可显示中文的字体族(不含 Dialog/DejaVu 等伪支持) */
-    private static final List<String> GLYPH_FONT_FAMILIES = resolveGlyphFontFamilies();
     private static final FontRenderContext FONT_RENDER_CONTEXT = new FontRenderContext(null, true, true);
-    /** Font / 未变形轮廓缓存, 避免每次 new Font 与重复矢量轮廓 */
-    private static final ConcurrentHashMap<String, Font> FONT_CACHE = new ConcurrentHashMap<>();
+    /** 未变形轮廓缓存, 避免重复矢量轮廓 */
     private static final ConcurrentHashMap<String, Shape> OUTLINE_CACHE = new ConcurrentHashMap<>();
     /** Path 展平精度: 越大段越少越快, 验证码观感仍可接受 */
     private static final double PATH_FLATNESS = 0.75;
-    /** 当前字体可显示的干扰字池 / 同类字池 / 数字白名单 */
-    private static final String RENDERABLE_NOISE_POOL;
-    private static final List<String> RENDERABLE_GROUPS;
-    private static final List<String> RENDERABLE_NUMBER_TRIPLETS;
-    static {
-        Font font = pickFont(18, false);
-        RENDERABLE_NOISE_POOL = CaptchaChars.filterNoisePool(font);
-        RENDERABLE_GROUPS = CaptchaChars.filterGroups(font);
-        RENDERABLE_NUMBER_TRIPLETS = CaptchaChars.filterNumberTriplets(font);
-    }
-
-    private CaptchaSvgPathUtil() {
-    }
-
-    /** 是否有真实中文字体可做 path; 否则应降级 CaptchaSvgUtil */
-    public static boolean canRenderPathGlyphs() {
-        return Arr.isNotEmpty(GLYPH_FONT_FAMILIES);
-    }
 
     /**
      * @param dark 可选, 为 1/true/on(忽略大小写) 时使用深色主题; 否则浅色
      */
-    public static CaptchaRecord.Build buildClickCaptcha(String width, String height, String dark) {
-        int imageWidth = resolveCaptchaWidthOrHeight(width, DEFAULT_CAPTCHA_WIDTH, CAPTCHA_WIDTH_MIN, CAPTCHA_WIDTH_MAX);
-        int imageHeight = resolveCaptchaWidthOrHeight(height, DEFAULT_CAPTCHA_HEIGHT, CAPTCHA_HEIGHT_MIN, CAPTCHA_HEIGHT_MAX);
+    public static Captcha.Build buildClickCaptcha(String width, String height, String dark) {
+        int imageWidth = Captcha.resolveWidth(width);
+        int imageHeight = Captcha.resolveHeight(height);
         CaptchaTheme theme = randomTheme(Obj.toBool(dark));
 
-        int targetCount = TARGET_COUNT_MIN + Obj.RANDOM.nextInt(TARGET_COUNT_MAX - TARGET_COUNT_MIN + 1);
-        int noiseCount = NOISE_COUNT_MIN + Obj.RANDOM.nextInt(GLYPH_TOTAL_MAX - targetCount - NOISE_COUNT_MIN + 1);
-        List<String> targetChars = CaptchaChars.pickTargets(targetCount, RENDERABLE_GROUPS, RENDERABLE_NUMBER_TRIPLETS);
-        List<String> noiseChars = CaptchaChars.pickNoise(targetChars, noiseCount, RENDERABLE_NOISE_POOL);
+        int targetCount = Captcha.randomTargetCount();
+        int noiseCount = Captcha.randomNoiseCount(targetCount);
+        List<String> targetChars = Captcha.pickRenderableTargets(targetCount);
+        List<String> noiseChars = Captcha.pickRenderableNoise(targetChars, noiseCount);
 
-        // 提示区高度固定, 与前端 CAPTCHA_PROMPT_AREA_HEIGHT 保持一致
-        int promptBottom = Math.min(PROMPT_AREA_HEIGHT, Math.max(24, imageHeight - 40));
+        int promptBottom = Captcha.promptBottom(imageHeight);
         int clickHeight = imageHeight - promptBottom;
 
         List<SvgPath> pathList = new ArrayList<>();
-        // 点击区: targetCount 目标 + noiseCount 干扰(个数均已随机); 前端会把图拉伸到容器宽, 字号偏小一档显示才合适
-        List<CaptchaRecord.Glyph> glyphList = new ArrayList<>();
+        List<Captcha.Glyph> glyphList = new ArrayList<>();
         int totalGlyphCount = targetChars.size() + noiseChars.size();
         int clickFontSize = Math.max(15, Math.min(20, clickHeight / 3));
-        List<CaptchaRecord.Point> points = randomPoints(imageWidth, clickHeight, clickFontSize, totalGlyphCount);
+        List<Captcha.Point> points = Captcha.randomPoints(imageWidth, clickHeight, clickFontSize, totalGlyphCount);
         int pointIndex = 0;
         for (int i = 0; i < targetChars.size(); i++) {
-            CaptchaRecord.Point point = points.get(pointIndex++);
+            Captcha.Point point = points.get(pointIndex++);
             int absY = point.y() + promptBottom;
             GlyphBuild built = buildClickGlyph(targetChars.get(i), point.x(), absY, true, i,
                     clickFontSize, imageWidth, promptBottom, imageHeight, theme);
@@ -103,7 +60,7 @@ public final class CaptchaSvgPathUtil {
             pathList.addAll(built.paths());
         }
         for (String noiseChar : noiseChars) {
-            CaptchaRecord.Point point = points.get(pointIndex++);
+            Captcha.Point point = points.get(pointIndex++);
             int absY = point.y() + promptBottom;
             GlyphBuild built = buildClickGlyph(noiseChar, point.x(), absY, false, -1,
                     clickFontSize, imageWidth, promptBottom, imageHeight, theme);
@@ -121,32 +78,8 @@ public final class CaptchaSvgPathUtil {
         }
         // 百分号编码比 base64(+33%) 更省, SVG 是纯 ASCII, 只需转义少数字符(约 +5%)
         String dataUri = "data:image/svg+xml," + encodeSvgDataUri(svgText);
-        CaptchaRecord.Challenge challenge = new CaptchaRecord.Challenge(targetChars, glyphList, imageWidth, imageHeight, promptBottom);
-        return new CaptchaRecord.Build(dataUri, imageWidth, imageHeight, challenge);
-    }
-
-    private static void appendPromptGlyphPaths(
-            List<SvgPath> pathList, List<String> targetChars, CaptchaTheme theme, int imageWidth, int promptBottom
-    ) {
-        int fontSize = Math.max(14, Math.min(18, promptBottom - 8));
-        // 固定文案在左侧(text 节点, 约占 80px), 提示目标字靠右; 目标数变多时按剩余宽度压缩槽位和字号
-        double rightPad = 8;
-        double maxBlockW = Math.max(40, imageWidth - 84 - rightPad);
-        double slotW = Math.min(fontSize + 6, maxBlockW / targetChars.size());
-        fontSize = (int) Math.max(11, Math.min(fontSize, slotW - 2));
-        double blockW = targetChars.size() * slotW;
-        double startX = imageWidth - rightPad - blockW;
-        double cy = promptBottom / 2.0;
-        for (int i = 0; i < targetChars.size(); i++) {
-            Font font = pickFont(fontSize, true);
-            double cx = startX + (i + 0.5) * slotW;
-            // 提示字与点击区目标字必须分别形变; 提示字是人读参照, 幅度小于点击区
-            GlyphBuild built = outlineToPaths(targetChars.get(i), font, cx, cy,
-                    randomInRange(0.84, 1.12), randomInRange(0.86, 1.14),
-                    randomInRange(-15, 15), randomInRange(-0.16, 0.16),
-                    blendHexColor(theme.primaryColor(), theme.bgColor(), 0.95), 0f, null);
-            pathList.addAll(built.paths());
-        }
+        Captcha.Challenge challenge = new Captcha.Challenge(targetChars, glyphList, imageWidth, imageHeight, promptBottom);
+        return new Captcha.Build(dataUri, imageWidth, imageHeight, challenge);
     }
 
     private static GlyphBuild buildClickGlyph(
@@ -164,7 +97,7 @@ public final class CaptchaSvgPathUtil {
         // 字号浮动 -3 ~ +5, 大小差异更明显
         int fontSize = baseFontSize + Obj.RANDOM.nextInt(9) - 3;
         fontSize = Math.max(13, Math.min(28, fontSize));
-        Font font = pickFont(fontSize, true);
+        Font font = Captcha.pickFont(fontSize, true);
         // 透明度直接与背景色预混合成最终色, SVG 中不再输出 opacity 属性
         double opacity = 0.72 + Obj.RANDOM.nextDouble() * 0.28;
         String fill = blendHexColor(randomGlyphColor(theme), theme.bgColor(), opacity);
@@ -178,7 +111,7 @@ public final class CaptchaSvgPathUtil {
         int radius = Math.max(10, fontSize / 2 + 4);
         int safeX = Math.min(imageWidth - 4, Math.max(4, cx));
         int safeY = Math.min(imageHeight - 4, Math.max(clickTop + 4, cy));
-        CaptchaRecord.Glyph glyph = new CaptchaRecord.Glyph(value, safeX, safeY, radius, target, targetOrder);
+        Captcha.Glyph glyph = new Captcha.Glyph(value, safeX, safeY, radius, target, targetOrder);
         return new GlyphBuild(glyph, built.paths());
     }
 
@@ -223,12 +156,30 @@ public final class CaptchaSvgPathUtil {
     }
 
     /** 单条轮廓: d 串 + 包围盒(用于孔洞归组; 现已整字合并, 保留盒信息便于后续若再拆分) */
-    private record Contour(String d, double minX, double minY, double maxX, double maxY) {
-        double area() {
+    private static final class Contour {
+        private final String d;
+        private final double minX;
+        private final double minY;
+        private final double maxX;
+        private final double maxY;
+
+        private Contour(String d, double minX, double minY, double maxX, double maxY) {
+            this.d = d;
+            this.minX = minX;
+            this.minY = minY;
+            this.maxX = maxX;
+            this.maxY = maxY;
+        }
+
+        private String d() {
+            return d;
+        }
+
+        private double area() {
             return Math.max(0, maxX - minX) * Math.max(0, maxY - minY);
         }
 
-        boolean containsBox(Contour other) {
+        private boolean containsBox(Contour other) {
             return minX <= other.minX && minY <= other.minY && maxX >= other.maxX && maxY >= other.maxY;
         }
     }
@@ -262,6 +213,7 @@ public final class CaptchaSvgPathUtil {
             while (parent[root] != root && guard++ < n) {
                 root = parent[root];
             }
+            //noinspection unused
             groups.computeIfAbsent(root, key -> new StringBuilder(160)).append(contours.get(i).d());
         }
         List<String> result = new ArrayList<>(groups.size());
@@ -438,7 +390,7 @@ public final class CaptchaSvgPathUtil {
         svg.append("<rect width=\"").append(width).append("\" height=\"").append(height)
                 .append("\" fill=\"").append(theme.bgColor()).append("\"/>");
         // 提示文案用小字; 目标字明文 + 轻旋转, 与下方 Path 点击区仍能区分
-        int promptBaseY = Math.max(14, PROMPT_AREA_HEIGHT * 20 / 32);
+        int promptBaseY = Math.max(14, Captcha.PROMPT_AREA_HEIGHT * 20 / 32);
         svg.append("<text x=\"6\" y=\"").append(promptBaseY)
                 .append("\" font-size=\"10\" fill=\"")
                 .append(theme.secondaryColor()).append("\">请在下方依次点击</text>");
@@ -504,54 +456,7 @@ public final class CaptchaSvgPathUtil {
     }
 
 
-    private static int resolveCaptchaWidthOrHeight(String param, int defaultPx, int minPx, int maxPx) {
-        if (Obj.isBlank(param)) {
-            return defaultPx;
-        }
-        int v = Obj.toInt(param);
-        if (v <= 0) {
-            return defaultPx;
-        }
-        return Math.min(maxPx, Math.max(minPx, v));
-    }
 
-    private static List<CaptchaRecord.Point> randomPoints(int width, int height, int fontSize, int count) {
-        int padX = Math.min(fontSize + 14, Math.max(10, width / 5));
-        int padY = Math.min(fontSize / 2 + 6, Math.max(8, height / 3));
-        if (width <= padX * 2 + 4) {
-            padX = Math.max(6, width / 6);
-        }
-        if (height <= padY * 2 + 4) {
-            padY = Math.max(6, height / 5);
-        }
-        int innerW = width - padX * 2;
-        int innerH = height - padY * 2;
-        List<CaptchaRecord.Point> pointList = new ArrayList<>(count);
-        if (innerW < 1 || innerH < 1) {
-            return pointList;
-        }
-        double halfSpanX = fontSize * 0.55;
-        double cellW = innerW / (double) count;
-        double maxJitterX = cellW / 2.0 - halfSpanX - 2;
-        if (maxJitterX < 0) {
-            maxJitterX = 0;
-        }
-        List<Integer> slots = new ArrayList<>(count);
-        for (int s = 0; s < count; s++) {
-            slots.add(s);
-        }
-        Collections.shuffle(slots, Obj.RANDOM);
-        for (int gi = 0; gi < count; gi++) {
-            int slot = slots.get(gi);
-            double baseX = padX + (slot + 0.5) * cellW;
-            double jitterX = maxJitterX <= 0 ? 0 : (Obj.RANDOM.nextDouble() * 2 - 1) * maxJitterX;
-            int x = (int) Math.round(baseX + jitterX);
-            x = Math.min(width - padX - 1, Math.max(padX, x));
-            int y = padY + Obj.RANDOM.nextInt(innerH);
-            pointList.add(new CaptchaRecord.Point(x, y));
-        }
-        return pointList;
-    }
 
     private static String hsvToHex(double h, double s, double v) {
         double hh = (h % 1.0 + 1.0) % 1.0;
@@ -639,63 +544,13 @@ public final class CaptchaSvgPathUtil {
         return min + Obj.RANDOM.nextInt(maxInclusive - min + 1);
     }
 
-    private static Font pickFont(int size, boolean preferAlternate) {
-        String family;
-        if (Arr.isEmpty(GLYPH_FONT_FAMILIES)) {
-            family = Font.DIALOG;
-        } else {
-            int idx = 0;
-            if (preferAlternate && GLYPH_FONT_FAMILIES.size() > 1) {
-                idx = 1 + Obj.RANDOM.nextInt(GLYPH_FONT_FAMILIES.size() - 1);
-            } else if (GLYPH_FONT_FAMILIES.size() > 1 && Obj.RANDOM.nextBoolean()) {
-                idx = Obj.RANDOM.nextInt(GLYPH_FONT_FAMILIES.size());
-            }
-            family = GLYPH_FONT_FAMILIES.get(idx);
-        }
-        String key = family + "|" + size;
-        return FONT_CACHE.computeIfAbsent(key, k -> new Font(family, Font.PLAIN, size));
-    }
-
     private static Shape cachedOutline(Font font, String value) {
         String key = font.getName() + "|" + font.getSize() + "|" + value;
+        //noinspection unused
         return OUTLINE_CACHE.computeIfAbsent(key, k -> {
             GlyphVector gv = font.createGlyphVector(FONT_RENDER_CONTEXT, value);
             return new GeneralPath(gv.getOutline());
         });
-    }
-
-    private static List<String> resolveGlyphFontFamilies() {
-        List<String> resolved = new ArrayList<>();
-        final String probe = "验证码春夏秋";
-        // 仅真实 CJK; 不含 Dialog/DejaVu/Nimbus 等(canDisplay 可能撒谎或轮廓是方框).
-        // 最小安装(装完需重启 JVM): yum install -y wqy-microhei-fonts / apt install -y fonts-wqy-microhei
-        String[] candidates = {
-                "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei",
-                "WenQuanYi Zen Hei", "WenQuanYi Micro Hei", "PingFang SC",
-                "Hiragino Sans GB", "SimHei", "SimSun", "Droid Sans Fallback"
-        };
-        try {
-            String[] families = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-            Set<String> familySet = new HashSet<>();
-            for (String family : families) {
-                familySet.add(family.toLowerCase());
-            }
-            for (String candidate : candidates) {
-                if (!familySet.contains(candidate.toLowerCase())) {
-                    continue;
-                }
-                Font testFont = new Font(candidate, Font.PLAIN, 18);
-                if (testFont.canDisplayUpTo(probe) == -1) {
-                    resolved.add(candidate);
-                }
-            }
-            if (LogUtil.ROOT_LOG.isInfoEnabled()) {
-                LogUtil.ROOT_LOG.info("captcha path fonts={}, fallbackSvg={}",
-                        resolved, resolved.isEmpty());
-            }
-        } catch (Exception ignore) {
-        }
-        return resolved;
     }
 
 
@@ -715,78 +570,87 @@ public final class CaptchaSvgPathUtil {
         return new CaptchaTheme(false, bg, primary, secondary, divider);
     }
 
-    public static boolean verifyClick(CaptchaRecord.Challenge challenge, List<CaptchaRecord.PointInput> points, Integer tolerancePx) {
-        if (challenge == null || Arr.isEmpty(points) || Arr.isEmpty(challenge.targetChars())) {
-            return false;
-        }
-        int targetCount = challenge.targetChars().size();
-        if (points.size() != targetCount) {
-            return false;
-        }
-        int tolerance = Obj.toInt(tolerancePx, DEFAULT_CLICK_TOLERANCE_PX);
-        if (tolerance <= 0) {
-            tolerance = DEFAULT_CLICK_TOLERANCE_PX;
-        }
-        int clickTop = challenge.clickAreaTop() > 0 ? challenge.clickAreaTop() : PROMPT_AREA_HEIGHT;
+    private static final class CaptchaTheme {
+        private final boolean dark;
+        private final String bgColor;
+        private final String primaryColor;
+        private final String secondaryColor;
+        private final String dividerColor;
 
-        for (int i = 0; i < targetCount; i++) {
-            CaptchaRecord.PointInput pointInput = points.get(i);
-            if (pointInput == null) {
-                return false;
-            }
-            if (pointInput.x() < 0 || pointInput.x() > 1 || pointInput.y() < 0 || pointInput.y() > 1) {
-                return false;
-            }
-            int px = (int) Math.round(pointInput.x() * challenge.width());
-            int py = (int) Math.round(pointInput.y() * challenge.height());
-            // 点在提示区直接失败
-            if (py < clickTop) {
-                return false;
-            }
-            CaptchaRecord.Glyph targetGlyph = findTargetGlyphByOrder(challenge.glyphList(), i);
-            if (targetGlyph == null || !isHit(px, py, targetGlyph, tolerance)) {
-                return false;
-            }
+        private CaptchaTheme(boolean dark, String bgColor, String primaryColor, String secondaryColor, String dividerColor) {
+            this.dark = dark;
+            this.bgColor = bgColor;
+            this.primaryColor = primaryColor;
+            this.secondaryColor = secondaryColor;
+            this.dividerColor = dividerColor;
         }
-        return true;
+
+        private boolean dark() {
+            return dark;
+        }
+
+        private String bgColor() {
+            return bgColor;
+        }
+
+        private String primaryColor() {
+            return primaryColor;
+        }
+
+        private String secondaryColor() {
+            return secondaryColor;
+        }
+
+        private String dividerColor() {
+            return dividerColor;
+        }
     }
 
-    private static CaptchaRecord.Glyph findTargetGlyphByOrder(List<CaptchaRecord.Glyph> glyphList, int order) {
-        if (Arr.isEmpty(glyphList)) {
-            return null;
+    private static final class SvgPath {
+        private final String d;
+        private final String fill;
+        private final float strokeWidth;
+        private final String stroke;
+
+        private SvgPath(String d, String fill, float strokeWidth, String stroke) {
+            this.d = d;
+            this.fill = fill;
+            this.strokeWidth = strokeWidth;
+            this.stroke = stroke;
         }
-        for (CaptchaRecord.Glyph glyph : glyphList) {
-            if (glyph.target() && glyph.targetOrder() == order) {
-                return glyph;
-            }
+
+        private String d() {
+            return d;
         }
-        return null;
-    }
 
-    private static boolean isHit(int px, int py, CaptchaRecord.Glyph glyph, int tolerance) {
-        // 以字形半径为主, 仅加少量容差, 避免旧逻辑把命中圈扩到整图高度
-        int radius = glyph.radius() + Math.min(4, tolerance / 3);
-        if (radius < tolerance) {
-            radius = tolerance;
+        private String fill() {
+            return fill;
         }
-        int dx = glyph.x() - px;
-        int dy = glyph.y() - py;
-        return dx * dx + dy * dy <= radius * radius;
+
+        private float strokeWidth() {
+            return strokeWidth;
+        }
+
+        private String stroke() {
+            return stroke;
+        }
     }
 
+    private static final class GlyphBuild {
+        private final Captcha.Glyph glyph;
+        private final List<SvgPath> paths;
 
-    private record CaptchaTheme(
-            boolean dark,
-            String bgColor,
-            String primaryColor,
-            String secondaryColor,
-            String dividerColor
-    ) {
-    }
+        private GlyphBuild(Captcha.Glyph glyph, List<SvgPath> paths) {
+            this.glyph = glyph;
+            this.paths = paths;
+        }
 
-    private record SvgPath(String d, String fill, float strokeWidth, String stroke) {
-    }
+        private Captcha.Glyph glyph() {
+            return glyph;
+        }
 
-    private record GlyphBuild(CaptchaRecord.Glyph glyph, List<SvgPath> paths) {
+        private List<SvgPath> paths() {
+            return paths;
+        }
     }
 }
