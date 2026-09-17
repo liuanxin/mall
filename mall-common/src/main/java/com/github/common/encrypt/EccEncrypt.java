@@ -442,10 +442,16 @@ public final class EccEncrypt {
             throw new RuntimeException(String.format("解密(%s)时数据有误", encryptData));
         }
 
+        String useData;
+        if (encryptData.startsWith("\"") && encryptData.endsWith("\"")) {
+            useData = encryptData.substring(1, encryptData.length() - 1);
+        } else {
+            useData = encryptData;
+        }
         try {
-            String ephemPub = encryptData.substring(0, 130);
-            String ivHex = encryptData.substring(130, 162);
-            String ciphertext = encryptData.substring(162);
+            String ephemPub = useData.substring(0, 130);
+            String ivHex = useData.substring(130, 162);
+            String ciphertext = useData.substring(162);
 
             KeyAgreement ka = KeyAgreement.getInstance("ECDH");
             ka.init(eccStrPrivateKey(privateKey));

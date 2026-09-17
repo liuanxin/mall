@@ -194,11 +194,18 @@ public final class RsaEncrypt {
         if (Obj.isBlank(privateKey) || Obj.isBlank(encryptData)) {
             throw new RuntimeException(String.format("用 rsa 基于私钥(%s)解密(%s)时数据不能为空", privateKey, encryptData));
         }
+
+        String useData;
+        if (encryptData.startsWith("\"") && encryptData.endsWith("\"")) {
+            useData = encryptData.substring(1, encryptData.length() - 1);
+        } else {
+            useData = encryptData;
+        }
         try {
             Cipher cipher = Cipher.getInstance(RSA);
             cipher.init(Cipher.DECRYPT_MODE, rsaStrToPrivateKey(privateKey));
             // 用 base64 解码, 跟 rsaClientEncode 中的 xxx 对应
-            byte[] decodeBytes = cipher.doFinal(Encrypt.base64Decode(encryptData.getBytes(StandardCharsets.UTF_8)));
+            byte[] decodeBytes = cipher.doFinal(Encrypt.base64Decode(useData.getBytes(StandardCharsets.UTF_8)));
             return new String(decodeBytes, StandardCharsets.UTF_8);
         } catch (Exception e) {
             throw new RuntimeException(String.format("用 rsa 基于私钥(%s)解密(%s)时异常", privateKey, encryptData), e);
