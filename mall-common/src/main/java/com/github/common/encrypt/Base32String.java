@@ -67,7 +67,7 @@ final class Base32String {
 
         // Canonicalize to all upper case
         encoded = encoded.toUpperCase(Locale.US);
-        if (encoded.length() == 0) {
+        if (encoded.isEmpty()) {
             return new byte[0];
         }
         int encodedLength = encoded.length();

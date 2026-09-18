@@ -102,7 +102,7 @@ public final class Encrypt {
     }
     /** 使用 des 解密 */
     public static String desDecode(String data, String secretKey) {
-        if (data == null || data.trim().length() == 0) {
+        if (data == null || data.trim().isEmpty()) {
             throw new RuntimeException(String.format("空无需使用 %s 解密", DES));
         }
         try {
@@ -140,7 +140,7 @@ public final class Encrypt {
     }
     /** 使用 DES/CBC/PKCS5Padding 解密 */
     public static String desCbcDecode(String data, String secretKey) {
-        if (data == null || data.trim().length() == 0) {
+        if (data == null || data.trim().isEmpty()) {
             throw new RuntimeException(String.format("空无需使用 %s 解密", DES_CBC_PKCS5PADDING));
         }
         if (secretKey.length() != 8) {
@@ -176,7 +176,7 @@ public final class Encrypt {
      * @return 如果加密后相同, 则返回 true
      */
     public static boolean checkBcrypt(String password, String encryptPass) {
-        if (encryptPass == null || encryptPass.length() == 0) {
+        if (encryptPass == null || encryptPass.trim().isEmpty()) {
             return false;
         }
 

@@ -53,7 +53,7 @@ public final class ChineseConvert {
      * @return 大写
      */
     public static String upperCase(String money) {
-        if (money == null || money.trim().length() == 0) {
+        if (money == null || money.trim().isEmpty()) {
             return BLANK;
         }
         // 如果是 0 直接返回
