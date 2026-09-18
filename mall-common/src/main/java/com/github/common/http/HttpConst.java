@@ -13,7 +13,7 @@ final class HttpConst {
     /** 建立连接的超时时间, 单位: 毫秒 */
     static final int CONNECT_TIME_OUT = 5000;
     /** 数据交互的时间, 单位: 毫秒 */
-    static final int READ_TIME_OUT = 60000;
+    static final int READ_TIME_OUT = 10000;
     /**
      * <pre>
      * 连接池最大数量.
