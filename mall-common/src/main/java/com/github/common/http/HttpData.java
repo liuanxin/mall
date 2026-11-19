@@ -172,7 +172,7 @@ public class HttpData {
     }
 
 
-    public String reqInfo() {
+    private String reqInfo() {
         List<String> reqList = new ArrayList<>();
         if (Arr.isNotEmpty(reqHeader)) {
             reqList.add("header(" + Obj.formatHeader(reqHeader, true) + ")");
@@ -196,7 +196,7 @@ public class HttpData {
             return json;
         }
     }
-    public String resInfo() {
+    private String resInfo() {
         List<String> resList = new ArrayList<>();
         if (Obj.isNotNull(resStatus)) {
             resList.add("statusCode(" + resStatus + ")");
@@ -211,7 +211,7 @@ public class HttpData {
         }
         return String.join(" ", resList);
     }
-    public String exceptionInfo() {
+    private String exceptionInfo() {
         List<String> exceptionList = new ArrayList<>();
         if (Obj.isNotNull(exception)) {
             exceptionList.add(exception.getMessage());
@@ -225,6 +225,60 @@ public class HttpData {
         return String.join(",", exceptionList);
     }
 
+
+    /** 不脱敏的日志 */
+    public String callbackLine(Map<String, ?> params, String jsonBody) {
+        Date end = resTime != null ? resTime : new Date();
+        long cost = reqTime == null ? 0L : Math.max(0L, end.getTime() - reqTime.getTime());
+        StringBuilder sbd = new StringBuilder();
+        sbd.append("[");
+        sbd.append(reqTime == null ? "未记录" : Dates.formatDateTimeMs(reqTime));
+        sbd.append(" -> ").append(Dates.formatDateTimeMs(end));
+        sbd.append(" (").append(cost).append("ms)]");
+        sbd.append(" req[(").append(Obj.toStr(method)).append(" ").append(Obj.toStr(url)).append(")");
+        String reqHeaderText = headerText(reqHeader);
+        if (Obj.isNotBlank(reqHeaderText)) {
+            sbd.append(" header(").append(reqHeaderText).append(")");
+        }
+        String paramText = Obj.formatParam(params, false, true, false, false);
+        if (Obj.isNotBlank(paramText)) {
+            sbd.append(" param(").append(paramText).append(")");
+        }
+        if (Obj.isNotBlank(jsonBody)) {
+            sbd.append(" json(").append(dropWhite(jsonBody)).append(")");
+        }
+        sbd.append("] res(");
+        String resHeaderText = headerText(resHeader);
+        if (Obj.isNotBlank(resHeaderText)) {
+            sbd.append("header(").append(resHeaderText).append(") ");
+        }
+        if (Obj.isNotBlank(resBody)) {
+            sbd.append(oneLine(dropWhite(resBody)));
+        } else if (exception != null) {
+            sbd.append(oneLine(Obj.defaultIfBlank(exception.getMessage(), exception.getClass().getSimpleName())));
+        }
+        sbd.append(")");
+        return oneLine(sbd.toString());
+    }
+
+    private static String headerText(Map<String, ?> headers) {
+        if (Arr.isEmpty(headers)) {
+            return "";
+        }
+        StringJoiner sj = new StringJoiner("><", "<", ">");
+        for (Map.Entry<String, ?> entry : headers.entrySet()) {
+            String value = entry.getValue() == null ? "" : String.valueOf(entry.getValue());
+            sj.add(entry.getKey() + " : " + value);
+        }
+        return sj.toString();
+    }
+
+    private static String oneLine(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replace('\r', ' ').replace('\n', ' ').trim();
+    }
 
     @Override
     public String toString() {
